@@ -1,0 +1,122 @@
+#!/usr/bin/env python
+
+import sys, os, httplib, re
+myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
+sys.path.append(myBinDir + "/../lib")
+from optparse import OptionParser
+
+host="eutils.ncbi.nlm.nih.gov"
+
+class CmdLine(object):
+    usage="""%prog [options] [id1 ...]
+
+Retrieve genbank records or sequences from NCBI nucleotide (GenBank/RefSeq),
+give accessions or or ids understood by efetch server.
+"""
+    def __init__(self):
+        parser = OptionParser(usage=CmdLine.usage)
+        parser.add_option("--idFile", dest="idFiles", action="append", default=[],
+                          help="file containing ids, can be specified multiple times.")
+        parser.add_option("--out", "-o", dest="out", action="store", default=None,
+                          help="output to this file instead of stdout")
+        parser.add_option("--fasta", "-f", dest="fasta", action="store_true", default=False,
+                          help="retrieve sequences in fasta format")
+        parser.add_option("--simplifyIds", dest="simplifyIds", action="store_true", default=False,
+                          help="simplify genbank fasta ids")
+        parser.add_option("--verbose", "-v", dest="verbose", action="store_true", default=False,
+                          help="verbose tracing")
+        parser.add_option("--debug", "-c", dest="debug", action="store", type="int", default=None,
+                          help="set HTTP debug level to this value")
+        (opts, args) = parser.parse_args()
+        self.__dict__.update(opts.__dict__)
+        if self.simplifyIds and not self.fasta:
+            Exception("can only specify --simplifyIds with --fasta");
+        self.ids = args
+        self._loadIdFiles()
+        if len(self.ids) == 0:
+            Exception("no ids specified on command line or with --idFiles")
+
+    def _loadIdFiles(self):
+        for idFile in self.idFiles:
+            self.ids.extend(self._loadIdFile(idFile))
+
+    def _loadIdFile(self, idFile):
+        ids = []
+        fh = open(idFile)
+        for line in fh:
+            line=line.strip()
+            if (len(line) > 0) and (line[0] != '#'):
+                ids.append(line)
+        fh.close()
+        return ids
+
+# >gi|37590707|gb|AAH59029.1| RIKEN cDNA A930017N06 gene [Mus musculus]
+# >gi|14424222|sp|O94933|SLIK3_HUMAN SLIT and NTRK-like protein 3 precursor
+
+faIdSplitRe = re.compile(r"^>([^\s]+)(\s.*)", re.DOTALL)
+def simplifyFastaId(ent):
+    "simplify genbank ids in a fasta record"
+
+    # split id from rest of entry
+    m = faIdSplitRe.match(ent)
+    if m == None:
+        Exception("not a fasta record: " + ent)
+    id = m.group(1)
+    # split into parts
+    parts = id.split('|')
+    if len(parts) < 2:
+        Exception("not a genbank fasta id: " + id)
+    if len(parts[-1]) == 0:
+        sid = parts[-2]  # id ends with '|'
+    else:
+        sid = parts[-1]
+    return ">" + sid + m.group(2)
+    
+def efetch(opts, conn, id, outFh):
+    "fetch a genbank entry or fasta"
+    if opts.fasta:
+        fmt = "fasta"
+    else:
+        fmt = "gb"
+    url = "/entrez/eutils/efetch.fcgi?db=nucleotide&rettype=" + fmt + "&id=" + id
+    if opts.verbose:
+        print >>sys.stderr,"get http://" + host + url
+    conn.request("get", url)
+    resp = conn.getresponse()
+    if resp.status != httplib.OK:
+        raise httplib.HTTPException(resp.reason + " (" + str(resp.status) + "): http://" + host + url)
+    ent = resp.read()
+    if len(ent) <= 1:
+        raise Exception("no entry found for \""+id+"\"")
+    if opts.simplifyIds:
+        ent = simplifyFastaId(ent)
+    outFh.write(ent)
+
+def doFetch(opts, outFh):
+    conn = httplib.HTTPConnection(host)
+    if opts.debug != None:
+        conn.set_debuglevel(opts.debug)
+
+    for id in opts.ids:
+        efetch(opts, conn, id, outFh)
+        # FIXME: some bug with either httplib or eutils cause crash for second
+        # request because data stream is confused.  This might have to do with
+        # chunked.  For now, just close on each response
+        conn.close()
+    conn.close()
+
+def ncbiGbFetch(opts):
+    if opts.out != None:
+        outFh = open(opts.out, "w")
+    else:
+        outFh = sys.stdout
+    doFetch(opts, outFh)
+
+    if outFh != sys.stdout:
+        outFh.close()
+
+def main():
+    opts = CmdLine()
+    ncbiGbFetch(opts)
+
+main()

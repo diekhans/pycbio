@@ -1,0 +1,178 @@
+#!/usr/bin/env python
+
+import sys, os
+myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
+sys.path.append(myBinDir + "/../lib")
+from optparse import OptionParser
+from pycbio.sys import fileOps
+from pycbio.hgdata.ClusterGenes import ClusterGenes
+from pycbio.stats.Venn import Venn
+from pycbio.sys.fileOps import prRowv
+from pycbio.tsv.TabFile import TabFile
+
+cmdOpts = None
+
+def fmtFrac(cnt, total):
+    if (total == 0):
+        return "0"
+    else:
+        return "%0.3f" % (float(cnt)/float(total))
+
+class CmdOpts(object):
+    usage="""%prog [options] clusterFile statsFile
+
+    Get stats on clusterGenes clusters
+    """
+
+    def __init__(self):
+        parser = OptionParser(usage=CmdOpts.usage)
+        parser.add_option("--totalsOut", action="store", dest="totalsOut", default=None,
+                          help="output count of total loci for each track to this file")
+        parser.add_option("--geneSubsetOut", action="store", dest="geneSubsetOut", default=None,
+                          help="output gene ids and subsets")
+        parser.add_option("--lociCats", action="store", dest="lociCatsFile", default=None,
+                          help="tab separated file with two columns, locus numberic id and a category. "
+                          "The category is included in the subset. e.g. single-exon loci vs multi-exon loci")
+        parser.add_option("--omitZero", action="store_true", dest="omitZero", default=False,
+                          help="don't subsets buckets with zero count")
+        parser.add_option("--total", action="store_true", dest="total", default=False,
+                          help="include a faux subset of TOTAL for overall counts")
+        (opts, args) = parser.parse_args()
+        if len(args) != 2:
+            parser.error("wrong number of arguments")
+        (self.clusterFile, self.statsFile) = args
+        if opts.lociCatsFile != None:
+            self.lociCats = self._readLociCats(opts.lociCatsFile)
+        else:
+            self.lociCats = None
+        self.__dict__.update(opts.__dict__)
+
+    def _readLociCats(self, catsFile):
+        cats = {}
+        for row in TabFile(catsFile):
+            if len(row) < 2:
+                raise Exception("rows must have at least two columns: "+catsFile)
+            cats[int(row[0])] = intern(row[1])
+        return cats
+
+class Total(object):
+    def __init__(self, name):
+        self.name = name
+        self.transCnt = 0
+        self.lociCnt = 0;
+
+    def sum(self, other):
+        self.transCnt += other.transCnt
+        self.lociCnt += other.lociCnt
+
+    def __str__(self):
+        return str(self.lociCnt) + "/" + str(self.transCnt)
+
+class ClusterStats(object):
+    def __init__(self, clusterFile, lociCats=None, omitZero=False):
+        self.clusters = ClusterGenes(clusterFile)
+        if lociCats == None:
+            self.lociCats = {} # empty
+        else:
+            self.lociCats = lociCats
+        self.omitZero = omitZero
+        self._buildClusterVenn()
+        self.total = self._countTotal()
+        self.setTotals = None
+
+    def _getLocusTableCat(self, gene):
+        locusCat = self.lociCats.get(gene.clusterObj.clusterId)
+        if (locusCat != None):
+            return intern(locusCat + "+" + gene.table)
+        else:
+            return gene.table
+        
+    def _buildClusterVenn(self):
+        self.venn = Venn()
+        for cluster in self.clusters:
+            for gene in cluster:
+                self.venn.addItem(self._getLocusTableCat(gene), gene.cluster)
+
+    def _countTotal(self):
+        total = Total(None)
+        for subset in self.venn.subsets.getSubsets():
+            for clusterId in self.venn.getSubsetIds(subset):
+                total.lociCnt += 1
+                total.transCnt += len(self.clusters[clusterId])
+        return total
+        
+    def _getSetTotal(self, name):
+        t = self.setTotals.get(name)
+        if t == None:
+            self.setTotals[name] = t = Total(name)
+        return t
+
+    def _buildSetTotals(self):
+        self.setTotals = {}
+        for cluster in self.clusters:
+            countedCats = set()  # has locus been counted for this category
+            for gene in cluster:
+                cat = self._getLocusTableCat(gene)
+                t = self._getSetTotal(cat)
+                t.transCnt += 1
+                if gene.table not in countedCats:
+                    t.lociCnt += 1
+                    countedCats.add(cat)
+
+    def _cntSubset(self, subsetIds):
+        geneCnt = 0
+        for id in subsetIds:
+            geneCnt += len(self.clusters[id])
+        return geneCnt
+
+    def _prSubsetStats(self, statsFh, subset):
+        ids = self.venn.getSubsetIds(subset)
+        if (len(ids) > 0) or not self.omitZero:
+            geneCnt = self._cntSubset(ids)
+            prRowv(statsFh, " ".join(subset), len(ids), geneCnt,
+                   fmtFrac(len(ids), self.total.lociCnt),
+                   fmtFrac(geneCnt, self.total.transCnt))
+
+    def _prTotal(self, statsFh):
+        prRowv(statsFh, "TOTAL", self.total.lociCnt, self.total.transCnt,
+                   fmtFrac(self.total.lociCnt, self.total.lociCnt),
+                   fmtFrac(self.total.transCnt, self.total.transCnt))
+
+    def saveVenn(self, statsFile, total):
+        fh = file(statsFile, "w")
+        prRowv(fh, "subset", "loci", "trans", "fracLoci", "fracTrans")
+        for subset in self.venn.subsets.getSubsets():
+            self._prSubsetStats(fh, subset)
+        if total:
+            self._prTotal(fh)
+        fh.close()
+
+    def saveSetTotals(self, totalsFile):
+        if self.setTotals == None:
+            self._buildSetTotals()
+        fh = file(totalsFile, "w")
+        prRowv(fh, "set", "loci", "transcripts")
+        for t in self.setTotals.itervalues():
+            if (t.transCnt > 0) or not self.omitZero:
+                prRowv(fh, t.name, t.lociCnt, t.transCnt)
+        fh.close()
+
+    def saveGeneSubsets(self, geneSubsetFile):
+        fh = file(geneSubsetFile, "w")
+        prRowv(fh, "gene", "cluster", "subset")
+        for subset in self.venn.subsets.getSubsets():
+            for clusterId in self.venn.getSubsetIds(subset):
+                for gene in self.clusters[clusterId]:
+                    prRowv(fh, gene.gene, clusterId, " ".join(subset))
+        fh.close()
+
+def main():
+    opts = CmdOpts()
+    clStats = ClusterStats(opts.clusterFile, opts.lociCats, opts.omitZero)
+    clStats.saveVenn(opts.statsFile, opts.total)
+    if opts.totalsOut != None:
+        clStats.saveSetTotals(opts.totalsOut)
+    if opts.geneSubsetOut:
+        clStats.saveGeneSubsets(opts.geneSubsetOut)
+
+main()

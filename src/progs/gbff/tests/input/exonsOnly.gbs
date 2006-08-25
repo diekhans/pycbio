@@ -1,0 +1,45 @@
+LOCUS       NT_039590           26502527 bp    DNA     linear   CON 12-MAY-2005
+DEFINITION  Mus musculus chromosome 13 genomic contig, strain C57BL/6J.
+ACCESSION   NT_039590
+VERSION     NT_039590.4  GI:63655976
+KEYWORDS    .
+SOURCE      Mus musculus (house mouse)
+  ORGANISM  Mus musculus
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+            Mammalia; Eutheria; Rodentia; Sciurognathi; Muridae; Murinae; Mus.
+REFERENCE   1  (bases 1 to 26502527)
+  AUTHORS   Waterston,R.H., Lindblad-Toh,K., Birney,E., Rogers,J., Abril,J.F.,
+  TITLE     Initial sequencing and comparative analysis of the mouse genome
+  JOURNAL   Nature 420 (6915), 520-562 (2002)
+   PUBMED   12466850
+COMMENT     GENOME ANNOTATION REFSEQ:  Features on this sequence have been
+            produced for build 34 version 1 of the NCBI's genome annotation
+            [see documentation].
+FEATURES             Location/Qualifiers
+     source          1..26502527
+                     /organism="Mus musculus"
+                     /mol_type="genomic DNA"
+                     /strain="C57BL/6J"
+                     /db_xref="taxon:10090"
+                     /chromosome="13"
+     exon            complement(8289906..8289987)
+                     /gene="delta Naip1"
+                     /number=9
+     exon            complement(8293307..8293406)
+                     /gene="delta Naip1"
+                     /note="region of sequence similarity; adjoining introns
+                     may not be removed to form a functional product"
+                     /number=8
+     exon            complement(8294142..8294261)
+                     /gene="delta Naip1"
+                     /number=7
+     gene            complement(8294287..8328858)
+                     /gene="Birc1g"
+                     /note="Derived by automated computational analysis using
+                     gene prediction method: BestRefseq. Supporting evidence
+                     includes similarity to: 1 mRNA"
+                     /db_xref="GeneID:53880"
+                     /db_xref="MGI:1858256"
+ORIGIN      
+        1 actgcctttc ccttctacca gcttgtgatt tctgtataat ccagccattt tggtcatgct
+//

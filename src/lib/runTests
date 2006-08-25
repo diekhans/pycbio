@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+#
+# run all of the tests
+# 
+
+import unittest, sys
+sys.path.append(".")
+
+suites = []
+
+# pycbio.tsv
+from pycbio.tsv.tests import TSVTests
+suites.append(TSVTests.suite())
+
+# pycbio.sys
+from pycbio.sys.tests import EnumerationTests
+suites.append(EnumerationTests.suite())
+
+from pycbio.sys.tests import PipelineTests
+suites.append(PipelineTests.suite())
+
+# pycbio.hgdata
+from pycbio.hgdata.tests import GenePredTests
+suites.append(GenePredTests.suite())
+
+from pycbio.hgdata.tests import GeneCheckTests
+suites.append(GeneCheckTests.suite())
+
+from pycbio.hgdata.tests import PslTests
+suites.append(PslTests.suite())
+
+from pycbio.hgdata.tests import ClusterGenesTests
+suites.append(ClusterGenesTests.suite())
+
+# pycbio.stats
+from pycbio.stats.tests import SubsetsTests
+suites.append(SubsetsTests.suite())
+
+from pycbio.stats.tests import VennTests
+suites.append(VennTests.suite())
+
+# pycbio.exrun
+from pycbio.exrun.tests import ErrorTests
+suites.append(ErrorTests.suite())
+
+from pycbio.exrun.tests import BasicTests
+suites.append(BasicTests.suite())
+
+
+alltests = unittest.TestSuite(suites)
+runner = unittest.TextTestRunner(sys.stdout, verbosity=2)
+result = runner.run(alltests)
+if not result.wasSuccessful():
+    sys.exit(1)
+

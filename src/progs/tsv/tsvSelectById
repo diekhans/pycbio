@@ -1,0 +1,48 @@
+#!/usr/bin/env python
+
+usage="""%prog [options] selectCol selectTsv inCol inTsv outTsv
+
+Select rows from inTsv where inCol is in selectTsv selectCol.
+Currently only string comparisons are supported.
+"""
+
+import sys, os
+myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
+sys.path.append(myBinDir + "/../lib")
+from optparse import OptionParser
+from pycbio.sys import fileOps
+from pycbio.tsv.TSVReader import TSVReader
+from pycbio.tsv.TSVTable import tsvPrRow
+cmdOpts = None
+
+def openTsv(col, tsv):
+    "create a TSVReader, ensuring that it contains col"
+    rd = TSVReader(tsv)
+    if not col in rd.colMap:
+        raise Exception("column \"" + col + " not found in " + tsv)
+
+def loadSelect(selectCol, selectTsv):
+    selectTbl = dict()
+    rd = openTsv(selectCol, selectTsv)
+    for row in rd:
+        selectTbl[row[selectCol]] = True
+
+def selectById(selectCol, selectTsv, inCol, inTsv, outTsv):
+    selectTbl = loadSelect(selectCol, selectTsv)
+    rd = openTsv(inCol, inTsv)
+    outFh = file(outTsv, "w")
+    tsvPrRow(outFh, rd.columns)
+    for row in rd:
+        if row[inCol] in selectTbl:
+            row.write(rd)
+    outFh.close()
+
+def main():
+    parser = OptionParser(usage=usage)
+    global cmdOpts
+    (cmdOpts, args) = parser.parse_args()
+    if len(args) != 5:
+        parser.error("wrong number of arguments")
+    selectById(args[0], args[1], args[2], args[3], args[4])
+
+main()

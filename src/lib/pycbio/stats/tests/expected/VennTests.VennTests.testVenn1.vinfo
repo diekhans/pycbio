@@ -1,0 +1,7 @@
+frozenset(['A'])	set([1, 2])
+frozenset(['B'])	set([4])
+frozenset(['C'])	set([6])
+frozenset(['A', 'B'])	set([])
+frozenset(['A', 'C'])	set([])
+frozenset(['C', 'B'])	set([5])
+frozenset(['A', 'C', 'B'])	set([3])
