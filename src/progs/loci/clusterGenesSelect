@@ -1,0 +1,112 @@
+#!/usr/bin/env python
+
+import sys, os
+myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
+sys.path.append(myBinDir + "/../lib")
+from optparse import OptionParser
+from pycbio.hgdata.ClusterGenes import ClusterGenes
+from pycbio.sys.fileOps import prRow, prRowv, readFileLines
+
+class CmdOpts(object):
+    usage="""%prog [options] clusterFile outFile
+
+    Select clusters based on the criteria specified by the options.
+    By default, output a clusterGenes file with just the selected
+    records.  If multiple select criteria are specified, they all
+    must be specified."""
+
+    def __init__(self):
+        parser = OptionParser(usage=CmdOpts.usage)
+        parser.add_option("--onlyInTrackSets",
+                          action="append", dest="onlyInTrackSets", default=None,
+                          help="""argument is one or more track names, seperated by commas'.
+                          This selects loci that have genes from all of the specified tracks.  If this
+                          argument is specified multiple times, loci are selected if they match
+                          on of the sets of tracks.""")
+        parser.add_option("--geneIds", action="append", dest="geneIdFiles", default=None,
+                          help="""select loci containing these gene ids""")
+        parser.add_option("--geneIdBedOut", action="store_true", dest="geneIdBedOut", default=False,
+                          help="""Output loci bed for each gene in --geneIds with name column being the gene id""")
+        (opts, args) = parser.parse_args()
+        if len(args) != 2:
+            parser.error("wrong number of arguments")
+        (self.clusterFile, self.outFile) = args
+        self.__dict__.update(opts.__dict__)
+
+class ClusterSelect(object):
+
+    def __init__(self, opts):
+        self.clusters = ClusterGenes(opts.clusterFile)
+        self.trackSetsLst = None
+        if opts.onlyInTrackSets != None:
+            self.trackSetsLst = self._buildTrackSetLst(opts.onlyInTrackSets)
+        self.geneIds = None
+        if opts.geneIdFiles != None:
+            self.geneIds = self._loadIdFiles(opts.geneIdFiles)
+            
+    def _buildTrackSetLst(self, onlyInTrackSets):
+        trackSetsLst = []
+        for ts in onlyInTrackSets:
+            selSet = set()
+            for tr in ts.split(","):
+                selSet.add(intern(tr))
+            trackSetsLst.append(selSet)
+        return trackSetsLst
+
+    def _loadIdFiles(self, idFiles):
+        ids = set()
+        for f in idFiles:
+            for line in readFileLines(f):
+                ids.add(line.strip())
+        return ids
+
+    def _selectedByTrackSets(self, cl):
+        for ts in self.trackSetsLst:
+            if ts == cl.tableSet:
+                return True
+        return False
+
+    def _selectedByGeneId(self, cl):
+        for gene in cl:
+            if gene.gene in self.geneIds:
+                return True
+        return False
+
+    def _selected(self, cl):
+        if (self.trackSetsLst != None) and not self._selectedByTrackSets(cl):
+            return False
+        if (self.geneIds != None) and not self._selectedByGeneId(cl):
+            return False
+        return True
+
+    def outClusters(self, outFile):
+        outFh = open(outFile, "w")
+        outFh.write('#')
+        prRow(outFh, self.clusters.columns)
+        
+        for cl in self.clusters:
+            if self._selected(cl):
+                cl.write(outFh)
+        outFh.close()
+
+    def _writeGeneIdBed(self, outFh, cl):
+        for gene in cl:
+            if gene.gene in self.geneIds:
+                prRowv(outFh, cl.chrom, cl.start, cl.end, gene.gene)
+
+    def outGeneIdBed(self, outFile):
+        outFh = open(outFile, "w")
+        for cl in self.clusters:
+            if self._selected(cl):
+                self._writeGeneIdBed(outFh, cl)
+        outFh.close()
+
+def main():
+    opts = CmdOpts()
+    clSelect = ClusterSelect(opts)
+    if opts.geneIdBedOut:
+        clSelect.outGeneIdBed(opts.outFile)
+    else:
+        clSelect.outClusters(opts.outFile)
+
+main()
