@@ -1,6 +1,6 @@
 from pycbio.tsv.TSVRow import TSVRow
-from pycbio.tsv. TSVTable import TSVTable
-from pycbio.tsv. TSVReader import TSVReader
+from pycbio.tsv.TSVTable import TSVTable
+from pycbio.tsv.TSVReader import TSVReader
 from pycbio.hgdata.AutoSql import strArrayType
 from pycbio.sys.Enumeration import Enumeration
 

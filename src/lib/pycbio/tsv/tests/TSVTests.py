@@ -17,23 +17,13 @@ class ReadTests(TestCaseBase):
         self.failUnlessEqual(r[10],"BC032353")
         self.failUnlessEqual(r.qName, "BC032353")
 
-    def testGetById(self):
-        tsv = TSVTable(self.getInputFile("mrna1.tsv"), idCol="qName")
-        r = tsv.getById("AK095183")
-        self.failUnlessEqual(r["tName"], "chr1")
-        self.failUnlessEqual(int(r["tStart"]), 4222)
- 	self.failUnlessEqual(int(r["tEnd"]), 19206)
-
-        self.failUnlessEqual(r.tName, "chr1")
-        self.failUnlessEqual(int(r.tStart), 4222)
-
     def testMultiIdx(self):
         tsv = TSVTable(self.getInputFile("mrna1.tsv"), multiKeyCols=("tName", "tStart"))
-        rows = tsv.indices.tName["chr1"]
+        rows = tsv.idx.tName["chr1"]
         self.failUnlessEqual(len(rows), 10)
         self.failUnlessEqual(rows[1].qName, "AK095183")
 
-        rows = tsv.indices.tStart["4268"]
+        rows = tsv.idx.tStart["4268"]
         self.failUnlessEqual(len(rows), 5)
         self.failUnlessEqual(rows[0].qName, "BC015400")
 
@@ -76,9 +66,9 @@ class ReadTests(TestCaseBase):
                    "blockSizes": intArrayType,
                    "qStarts": intArrayType, "tStarts": intArrayType}
         
-        tsv = TSVTable(self.getInputFile("mrna1.tsv"), idCol="qName",
+        tsv = TSVTable(self.getInputFile("mrna1.tsv"), uniqKeyCols="qName",
                   typeMap=typeMap, defaultColType=int)
-        r = tsv.getById("AK095183")
+        r = tsv.idx.qName["AK095183"]
         self.failUnlessEqual(r.tStart, 4222)
  	self.failUnlessEqual(r.tEnd, 19206)
         self.failUnlessEqual(r.tName, "chr1")
@@ -98,14 +88,14 @@ class ReadTests(TestCaseBase):
         self.failIfEqual(err, None)
 
     def testWrite(self):
-        tsv = TSVTable(self.getInputFile("mrna1.tsv"), idCol="qName")
+        tsv = TSVTable(self.getInputFile("mrna1.tsv"), uniqKeyCols="qName")
         fh = open(self.getOutputFile(".tsv"), "w")
         tsv.write(fh)
         fh.close()
         self.diffExpected(".tsv")
 
     def testAddColumn(self):
-        tsv = TSVTable(self.getInputFile("mrna1.tsv"), idCol="qName")
+        tsv = TSVTable(self.getInputFile("mrna1.tsv"), uniqKeyCols="qName")
         tsv.addColumn("joke")
         i = 0
         for row in tsv:
