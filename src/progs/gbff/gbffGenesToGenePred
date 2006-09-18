@@ -20,6 +20,9 @@ Parse gene features from genbank flat file records and create a genePred.
 Will do pseudogenes or non-pseudogenes.  This is designed to be used on the
 NCBI *.gbs.gz files to extract chromosome annotations.  Will read compressed
 files.
+
+Retrieve files with:
+    wget -nv -r -A 'hs_ref_*.gbs.gz' 'ftp://ftp.ncbi.nih.gov/genomes/H_sapiens/CHR*'
 """
     def __init__(self):
         parser = OptionParser(usage=CmdOpts.usage)

@@ -3,7 +3,7 @@ from pycbio.tsv.TabFile import TabFile
 from pycbio.hgdata.AutoSql import intArraySplit, intArrayJoin
 from pycbio.sys.Enumeration import Enumeration
 
-## FIXME: build on TSV code, allow indices
+## FIXME: build on TSV code, allow indices, add GenePredReader
 
 CdsStat = Enumeration("CdsStat", [
     ("none", "none"),             # No CDS (non-coding)

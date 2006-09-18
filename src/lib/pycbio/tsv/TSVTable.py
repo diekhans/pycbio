@@ -9,34 +9,30 @@ class TSVTable(list):
     """Class for reading and writing TSV files. Stores rows as a list of Row
     objects. Columns are indexed by name.
 
-    indices - attribute has a dict or MultiDict per keyed columns.
+    - idx - index objects dict or MultiDict attribute per keyed columns.
     """
     class Indices (object):
-        """attrs are dynamically added to per-class index"""
+        """object with attribute for each key column"""
 
         def __getitem__(self, key):
             return self.__dict__[key]
 
-    def _createIndex(self, keyCol, dictClass):
-        "create an index for a column"
+    def _addIndex(self, keyCol, dictClass):
         if not self.colMap.has_key(keyCol):
             raise TSVError("key column \"" + keyCol + "\" is not defined")
-        self.indices.__dict__[keyCol] = dictClass()
-
+        self.idx.__dict__[keyCol] = dictClass()
+        
     def _createIndices(self, keyCols, dictClass):
         "keyCols maybe string or seq of strings"
         if type(keyCols) == str:
-            self._createIndex(keyCols, dictClass)
+            self._addIndex(keyCols, dictClass)
         else:
             for kc in keyCols:
-                self._createIndex(kc, dictClass)
+                self._addIndex(kc, dictClass)
 
-    def _buildIndices(self, idCol, uniqKeyCols, multiKeyCols):
-        self.indices = TSVTable.Indices()
-        self.idCol = idCol
-        if idCol != None:
-            self._createIndex(idCol, dict)
-            self.idColDict = self.indices[idCol]
+    def _buildIndices(self, uniqKeyCols, multiKeyCols):
+        self.idx = TSVTable.Indices()
+        self.indices = self.idx # FIXME: old name, delete 
         if uniqKeyCols != None:
             self._createIndices(uniqKeyCols, dict)
         if multiKeyCols != None:
@@ -45,11 +41,11 @@ class TSVTable(list):
     def _buildColDictTbl(self):
         """build an array, index by column number, of dict objects, or None if not
         indexed.  Used when loading rows. """
-        if len(self.indices.__dict__) == 0:
+        if len(self.idx.__dict__) == 0:
             return None
         tbl = []
         for iCol in xrange(len(self.columns)):
-            tbl.append(self.indices.__dict__.get(self.columns[iCol]))
+            tbl.append(self.idx.__dict__.get(self.columns[iCol]))
         return tbl
 
     def _indexCol(self, iCol, colDict, col, row):
@@ -71,13 +67,11 @@ class TSVTable(list):
                 self._indexRow(colDictTbl, row)
 
 
-    def __init__(self, fileName, idCol=None, uniqKeyCols=None, multiKeyCols=None,
+    def __init__(self, fileName, uniqKeyCols=None, multiKeyCols=None,
                  rowClass=None, typeMap=None, defaultColType=None, isRdb=False,
                  columns=None, ignoreExtraCols=False):
         """Read TSV file into the object
         
-        idCol - if specified,  the name of a column to use for getById(), which must have
-            unique values. (obsolete)
         uniqKeyCols - name or names of columns to index with uniq keys,
             can be string or sequence
         multiKeyCols - name or names of columns to index, allowing multiple keys.
@@ -95,15 +89,11 @@ class TSVTable(list):
             self.columns = reader.columns
             self.colTypes = reader.colTypes
             self.colMap = reader.colMap
-            self._buildIndices(idCol, uniqKeyCols, multiKeyCols)
+            self._buildIndices(uniqKeyCols, multiKeyCols)
             self._readBody(reader)
         except Exception, e:
             raise
         #FIXME: raise TSVError("load failed", reader=reader, cause=e),sys.exc_traceback
-
-    def getById(self, id):
-        "get a row by the id column"
-        return self.idColDict[id]
 
     def addColumn(self, colName, initValue=None, colType=None):
         "add a column to all rows in the table"
