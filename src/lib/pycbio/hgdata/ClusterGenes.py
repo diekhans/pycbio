@@ -66,6 +66,15 @@ class Cluster(list):
             self.hasCdsConflicts = row.hasCdsConflicts
         self.tableSet.add(row.table)
 
+    def getTableGenes(self, table):
+        genes = None
+        for g in self:
+            if g.table == table:
+                if genes == None:
+                    genes = []
+                genes.append(g)
+        return genes
+
     def write(self, fh):
         for gene in self:
             gene.write(fh)
