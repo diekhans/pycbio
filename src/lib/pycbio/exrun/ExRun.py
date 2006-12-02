@@ -10,12 +10,12 @@ class ExRunException(Exception):
     pass
 
 class File(Production):
-    "object representing a file production"
+    "Object representing a file production"
     def __init__(self, id, path):
         "id should be realpath()"
         Production.__init__(self, id)
         self.path = path
-        self.tmpOut = None
+        self.tmpName = None
 
     def __str__(self):
         return self.path
@@ -27,17 +27,26 @@ class File(Production):
         else:
             return -1.0
 
+    def getTmpIn(self):
+        """get the temporary name for the file for input.  If the file doesn't have a tmpName,
+        an error is generated."""
+        if self.tmpName == None:
+            raise ExRunException("file has not been created under it's temporary name: " + self.path)
+        return self.tmpName
+
     def getTmpOut(self):
-        "get the temporary output name for the file"
-        if self.tmpOut == None:
-            self.tmpOut = self.path + "." + self.exRun.getUniqId() + ".tmp"
-        return self.tmpOut
+        """get the temporary name for the file for output.  If a temporary name has
+        not been assigned, it will assigned.
+        """
+        if self.tmpName == None:
+            self.tmpName = self.path + "." + self.exRun.getUniqId() + ".tmp"
+        return self.tmpName
 
     def isCompressed(self):
-        return self.path.endswith(".gz")
+        return self.path.endswith(".gz") || self.path.endswith(".bz2")
 
-    def getUncompressed(self):
-        "get the file name without a .gz"
+    def getUncompressedName(self):
+        "get the file name without a .gz/.bz2"
         if self.isCompressed():
             return os.path.splitext(self.path)[0]
         else:
@@ -45,14 +54,17 @@ class File(Production):
 
     def installTmpOut(self):
         "atomic install of tmp output file as actual file"
-        if self.tmpOut == None:
-            raise ExRunException("getTmpOut() never called for " + path)
-        os.rename(self.tmpOut, self.path)
+        if self.tmpName == None:
+            raise ExRunException("temporary file not create for: " + path)
+        os.unlink(self.path)
+        os.rename(self.tmpName, self.path)
 
 class Cmd(list):
     """A command in a CmdRule. An instance can either be a simple command,
     which is a list of words, or a command pipe line, which is a list of list
-    of words. The stdin,stdout, stderr arguments are used for redirect I/O."""
+    of words. The stdin,stdout, stderr arguments are used for redirect I/O.
+    These may also be 
+    """
 
     def __init__(self, cmd, stdin=None, stdout=None, stderr=None):
         # copy list(s)
@@ -96,29 +108,13 @@ class Cmd(list):
         pl.wait()
 
 class CmdRule(Rule):
-    """Rule to execute commands.  The cmds argument can either be a list of
+    """Rule to execute commands   The cmds argument can either be a list of
     Cmd objects, a single Cmd object, or a list that is a valid argument to
     Cmd.__init__. If multiple commands are given, they are executed in order.
-    Cmds can be added a create or when run() is called"""
-    def __init__(self, id, cmds=None, produces=None, requires=None):
+    Cmds can be added at create or when run() is called"""
+
+    def __init__(self, id, produces=None, requires=None):
         Rule.__init__(self, id, produces, requires)
-        self.cmds = []
-
-        # initialize commands
-        if cmds != None:
-            if isinstance(cmds[0], Cmd):
-                for c in cmds:
-                    self.addCmd(c)
-            else:
-                self.addCmd(cmds)
-
-    def addCmd(self, cmd):
-        """add a command, or command pipeline.  cmd is either a Cmd object
-        or a list that is a valid argument to Cmd.__init__"""
-        if isinstance(cmd, Cmd):
-            self.cmds.append(cmd)
-        else:
-            self.cmds.append(Cmd(cmd))
 
     def mkProdDirs(self):
         "create directories for all file productions"
@@ -176,6 +172,7 @@ class ExRun(object):
         self.verb = Verb()
         self.graph = Graph()
         self.hostName = socket.gethostname()
+        self.uniqIdCnt = 0
 
     def _getNode(self, id, type):
         "great a node of a particular type, or None"
@@ -282,7 +279,9 @@ class ExRun(object):
 
     def getUniqId():
         "get a unique id for generating file names"
-        return self.hostName + "." + str(os.getpid())
+        id = self.hostName + "." + str(os.getpid()) + "." + str(self.uniqIdCnt)
+        self.uniqIdCnt += 1
+        return id
 
     def run(self):
         "run the experiment"
