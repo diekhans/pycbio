@@ -6,163 +6,54 @@ from pycbio.sys import strOps,fileOps,typeOps
 
 os.stat_float_times(True) # very, very gross
 
+# FIXME: should rules automatically be added
+
 class ExRunException(Exception):
     pass
 
-class File(Production):
-    "Object representing a file production"
-    def __init__(self, id, path):
-        "id should be realpath()"
-        Production.__init__(self, id)
-        self.path = path
-        self.tmpName = None
-
-    def __str__(self):
-        return self.path
-
-    def getTime(self):
-        "modification time of file, or -1.0 if it doesn't exist"
-        if os.path.exists(self.path):
-            return os.path.getmtime(self.path)
-        else:
-            return -1.0
-
-    def getTmpIn(self):
-        """get the temporary name for the file for input.  If the file doesn't have a tmpName,
-        an error is generated."""
-        if self.tmpName == None:
-            raise ExRunException("file has not been created under it's temporary name: " + self.path)
-        return self.tmpName
-
-    def getTmpOut(self):
-        """get the temporary name for the file for output.  If a temporary name has
-        not been assigned, it will assigned.
-        """
-        if self.tmpName == None:
-            self.tmpName = self.path + "." + self.exRun.getUniqId() + ".tmp"
-        return self.tmpName
-
-    def isCompressed(self):
-        return self.path.endswith(".gz") || self.path.endswith(".bz2")
-
-    def getUncompressedName(self):
-        "get the file name without a .gz/.bz2"
-        if self.isCompressed():
-            return os.path.splitext(self.path)[0]
-        else:
-            return self.path
-
-    def installTmpOut(self):
-        "atomic install of tmp output file as actual file"
-        if self.tmpName == None:
-            raise ExRunException("temporary file not create for: " + path)
-        os.unlink(self.path)
-        os.rename(self.tmpName, self.path)
-
-class Cmd(list):
-    """A command in a CmdRule. An instance can either be a simple command,
-    which is a list of words, or a command pipe line, which is a list of list
-    of words. The stdin,stdout, stderr arguments are used for redirect I/O.
-    These may also be 
-    """
-
-    def __init__(self, cmd, stdin=None, stdout=None, stderr=None):
-        # copy list(s)
-        if isinstance(cmd[0], str):
-            self.append(tuple(cmd))
-        else:
-            for c in cmd:
-                self.append(tuple(c))
-        self.stdin = stdin
-        self.stdout = stdout
-        self.stderr = stderr
-
-    def _trace(self, verb):
-        """trace the command execution, building a description that looks like
-        a shell command"""
-        desc = []
-        for c in self:
-            cmdDesc = []
-            for w in c:
-                if strOps.hasSpaces(w):
-                    cmdDesc.append("\"" + w + "\"")
-                else:
-                    cmdDesc.append(w)
-            desc.append(" ".join(cmdDesc))
-        desc = " | ".join(desc)
-        if self.stdin != None:
-            desc += " <" + self.stdin
-        if (self.stdout != None) and (self.stderr == self.stdout):
-            desc += " >&" + self.stdout
-        else:
-            if self.stdout != None:
-                desc += " >" + self.stdout
-            if self.stderr != None:
-                desc += " 2>" + self.stderr
-        verb.prTrace(1, desc)
-        
-    def run(self, verb):
-        "run the command"
-        self._trace(verb)
-        pl = Procline(self, self.stdin, self.stdout, self.stderr)
-        pl.wait()
-
-class CmdRule(Rule):
-    """Rule to execute commands   The cmds argument can either be a list of
-    Cmd objects, a single Cmd object, or a list that is a valid argument to
-    Cmd.__init__. If multiple commands are given, they are executed in order.
-    Cmds can be added at create or when run() is called"""
-
-    def __init__(self, id, produces=None, requires=None):
-        Rule.__init__(self, id, produces, requires)
-
-    def mkProdDirs(self):
-        "create directories for all file productions"
-        for p in self.produces:
-            if isinstance(p, File):
-                fileOps.ensureFileDir(p.path)
-
-    def run(self):
-        "Run the rule, executing the commands"
-        self.verb.enter()
-        try:
-            for cmd in self.cmds:
-                cmd.run(self.verb)
-        finally:
-            self.verb.leave()
+# FIXME: dependency on file here is weird, have factory in File; must be after ExRunException
+from pycbio.exrun.CmdRule import File
 
 class Verb(object):
-    "verbose information"
+    "Verbose tracing, bases on a set of flags."
+    
+    # flag values
+    error = intern("error")     # output erors
+    trace = intern("trace")     # basic tracing
+    details = intern("details") # detailed tracing
+    graph = intern("graph")     # dump graph at the start
 
     def __init__(self, fh=sys.stderr):
         self.fh = fh
-        self.traceLevel = 1
+        #self.flags = set([Verb.error, Verb.trace, Verb.graph])
+        self.flags = set([Verb.error, Verb.trace])
         self.indent = 0
 
-    def _traceOn(self, level):
-        return (self.traceLevel>= level)
+    def enabled(self, flag):
+        "determine if tracing is enabled for the specified flag"
+        return (flag in self.flags)
 
-    def _prMsg(self, msg):
+    def _prIndent(self, msg):
         self.fh.write(("%*s" % (2*self.indent, "")))
         for m in msg:
             self.fh.write(str(m))
         self.fh.write("\n")
 
-    def prTrace(self, level, *msg):
-        "print a trace message"
-        if self._traceOn(level):
-            self._prMsg(msg)
+    def pr(self, flag, *msg):
+        "print a message with indentation"
+        if self.enabled(flag):
+            self._prIndent(msg)
 
-    def enter(self, level=1, *msg):
+    def enter(self, flag=None, *msg):
         "increment indent count and optionally output a trace message"
         self.indent += 1
-        if self._traceOn(level) and (len(msg) > 0):
-            self._prMsg(msg)
+        if self.enabled(flag) and (len(msg) > 0):
+            self._prIndent(msg)
 
-    def leave(self, level=None, *msg):
+    def leave(self, flag=None, *msg):
         "optionally output a trace message and decrement indent count "
-        if self._traceOn(level) and (len(msg) > 0):
-            self._prMsg(msg)
+        if self.enabled(flag) and (len(msg) > 0):
+            self._prIndent(msg)
         self.indent -= 1
 
 class ExRun(object):
@@ -176,7 +67,7 @@ class ExRun(object):
 
     def _getNode(self, id, type):
         "great a node of a particular type, or None"
-        n = self.graph.nodes.get(id)
+        n = self.graph.nodeMap.get(id)
         if n != None:
             if not isinstance(n, type):
                 raise ExRunException("production " + id + " exists, but is not a " + str(type))
@@ -184,7 +75,7 @@ class ExRun(object):
 
     def _addNode(self, node):
         "add a new node"
-        self.graph.nodes[node.id] = node
+        self.graph.addNode(node)
         node.exRun = self
         return node
 
@@ -201,7 +92,7 @@ class ExRun(object):
 
     def getFiles(self, paths):
         """like getFile(), only path can be a single path, or a list of paths,
-        or a File object, or list of File objects.  Returns a list of file
+        or a File object, or list of File objects.  Returns a list of File
         objects"""
         files = []
         if typeOps.isIterable(paths):
@@ -220,7 +111,7 @@ class ExRun(object):
 
     def addRule(self, rule):
         "add a new rule"
-        if rule.id in self.graph.nodes:
+        if rule.id in self.graph.nodeMap:
             raise ExRunException("rule " + id + " conficts with an existing node with the same id");
         n = self._addNode(rule)
         rule.exRun = self
@@ -230,38 +121,40 @@ class ExRun(object):
     def _buildRequires(self, rule):
         "build requirements as needed"
         for r in rule.requires:
-            self._buildProd(r.next)
+            self._buildProd(r)
 
     def _checkProduces(self, rule):
         "check that all produces have been updated"
         for p in rule.produces:
-            if p.prev.isOutdated():
-                raise ExRunException("product: " + str(p.prev) + " not updated by rule: " + str(rule))
+            if p.isOutdated():
+                raise ExRunException("product: " + str(p) + " not updated by rule: " + str(rule))
     
     def _evalRule(self, rule):
         "recursively evaulate a rule"
-        self.verb.enter(1, "eval rule: ", rule)
+        assert(isinstance(rule, Rule))
+        self.verb.enter(Verb.trace, "eval rule: ", rule)
         isOk = False
         try:
             self._buildRequires(rule)
-            self.verb.prTrace(2, "run: ", rule)
-            rule.run()
+            self.verb.pr(Verb.details, "run: ", rule)
+            rule.execute()
             self._checkProduces(rule)
             isOk = True
         finally:
             if isOk:
-                self.verb.leave(1, "done rule: ", rule)
+                self.verb.leave(Verb.trace, "done rule: ", rule)
             else:
-                self.verb.leave(0, "failed rule: ", rule)
+                # FIXME: should also happen on trace?
+                self.verb.leave(Verb.error, "failed rule: ", rule)
 
     def _evalProdRule(self, prod):
         "run rule to build a production"
-        self.verb.prTrace(2, "rebuild: ",prod)
+        self.verb.pr(self.verb.details, "build: ",prod)
         if len(prod.requires) == 0:
             raise ExRunException("no rule to build: " + str(prod))
         for r in prod.requires:
-            self._evalRule(r.next)  # will only ever have one
-        self.verb.prTrace(2, "rebuilt: ", prod)
+            self._evalRule(r)  # will only ever have one
+        self.verb.pr(self.verb.details, "built: ", prod)
         
     def _buildProd(self, prod):
         "recursively rebuild a production if it is out of date"
@@ -273,7 +166,7 @@ class ExRun(object):
             if prod.isOutdated():
                 self._evalProdRule(prod)
             else:
-                self.verb.prTrace(2, "current: ", prod)
+                self.verb.pr(self.verb.details, "current: ", prod)
         finally:
             self.verb.leave()
 
@@ -283,11 +176,27 @@ class ExRun(object):
         self.uniqIdCnt += 1
         return id
 
+    def dumpGraph(self):
+        self.verb.pr(self.verb.graph, "graph dump:")
+        self.verb.enter()
+        for node in self.graph.bfs():
+            if isinstance(node, Rule):
+                self.verb.pr(self.verb.graph, "Rule: ", node.id)
+            else:
+                self.verb.pr(self.verb.graph, "Prod: ", node.id)
+        self.verb.leave()
+        
+
     def run(self):
         "run the experiment"
-        self.graph.cycleCheck()
+        self.graph.check()
+        if self.verb.enabled(self.verb.graph):
+            self.dumpGraph()
 
         for entry in self.graph.getEntryNodes():
             if isinstance(entry, Rule):
-                raise ExRunException("loose rule: " + str(entry))
-            self._buildProd(entry)
+                self._evalRule(entry)
+            else:
+                self._buildProd(entry)
+
+__all__ = (ExRunException.__name__, Verb.__name__, ExRun.__name__)

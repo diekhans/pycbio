@@ -2,7 +2,7 @@ import unittest, sys
 if __name__ == '__main__':
     sys.path.append("../../..")
 from pycbio.sys.TestCaseBase import TestCaseBase
-from pycbio.hgdata.RangeFinder import RangeFinder
+from pycbio.hgdata.RangeFinder import *
 
 debug = True
 

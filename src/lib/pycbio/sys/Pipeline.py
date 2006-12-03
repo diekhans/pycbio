@@ -21,8 +21,10 @@ class Proc(subprocess.Popen):
 
     def __init__(self, pl, cmd, stdin, stdout, stderr):
         self.pipeline = pl
-        self.cmd = list(cmd)  # clone list
         self.failExcept = None  # failure exception
+
+        # clone list, converting words to strings
+        self.cmd = [str(w) for w in cmd]
 
         # open files if needed
         (sin, sout, serr) = (stdin, stdout, stderr)
@@ -77,6 +79,9 @@ class Procline(object):
         stderr is attached to all processed."""
         self.procs = []
         self.failExcept = None
+        self.stdin = stdin
+        self.stdout = stdout
+        self.stderr = stderr
 
         if isinstance(cmds[0], str):
             cmds = [cmds]  # one-process pipeline
@@ -97,13 +102,28 @@ class Procline(object):
         p = Proc(self, cmd, stdin=stdin, stdout=stdout, stderr=stderr)
         self.procs.append(p)
 
+    def _getIoDesc(self):
+        "generate shell-like string describing I/O redirections"
+        desc = ""
+        if self.stdin != None:
+            desc += " <" + self.stdin
+        if (self.stdout != None) and (self.stderr == self.stdout):
+            desc += " >&" + self.stdout
+        else:
+            if self.stdout != None:
+                desc += " >" + self.stdout
+            if self.stderr != None:
+                desc += " 2>" + self.stderr
+        return desc
+
     def getDesc(self):
         """get the pipeline commands as a string to use as a description"""
         strs = []
         for p in self.procs:
             strs.append(p.getDesc())
-        return " | ".join(strs)
-
+        return " | ".join(strs) + self._getaIoDesc()
+        
+        
     def wait(self, noError=False):
         """wait to for processes to complete, generate an exception if one exits
         no-zero, unless noError is True, in which care return the exit code of the
