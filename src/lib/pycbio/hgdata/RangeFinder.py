@@ -9,8 +9,6 @@ searches for overlapping entries."""
 # four result bins on the second level. A range goes into the smallest bin it
 # will fit in.
 
-__all__ = ("RangeFinder")
-
 class Entry(object):
     "entry associating a range with a value"
     __slots__ = ("start", "end", "value")
@@ -139,3 +137,6 @@ class RangeFinder(object):
         for bins in self.seqBins:
             for value in bins.values():
                 yield value
+
+__all__ = (RangeFinder.__name__,)
+

@@ -7,10 +7,13 @@ from pycbio.sys.TestCaseBase import TestCaseBase
 from pycbio.exrun.ExRun import ExRun,ExRunException
 from pycbio.exrun.Graph import Rule,CycleException
 
+# FIXME add:
+#  dup production test
+
 class ErrorRule(Rule):
     "rule that should never be run"
-    def __init__(self, id, produces=None, requires=None):
-        Rule.__init__(self, id, produces, requires)
+    def __init__(self, id, requires=None, produces=None):
+        Rule.__init__(self, id, requires, produces)
 
     def run(self):
         raise Exception("rule should never be run: " + str(self))

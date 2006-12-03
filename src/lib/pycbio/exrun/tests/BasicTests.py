@@ -1,11 +1,12 @@
-"test of basic functionality"
+"tests of basic functionality"
 
 import unittest, sys, os
 if __name__ == '__main__':
     sys.path.append("../../..")
-from pycbio.sys.fileOps import ensureFileDir, rmFiles
+from pycbio.sys.fileOps import ensureFileDir, rmFiles, prLine
 from pycbio.sys.TestCaseBase import TestCaseBase
-from pycbio.exrun.ExRun import ExRun, File, CmdRule, Cmd
+from pycbio.exrun.ExRun import ExRun
+from pycbio.exrun.CmdRule import File
 from pycbio.exrun.Graph import Rule
 
 class ProdSet(object):
@@ -31,15 +32,14 @@ class TouchRule(Rule):
     "rule that creates files"
     def __init__(self, id, tester, pset, requires=None):
         "contents is a dict of optional values to write"
-        Rule.__init__(self, id, pset.fps, requires)
+        Rule.__init__(self, id, requires=requires, produces=pset.fps)
         self.tester = tester
         self.pset = pset
         self.touchCnt = 0
 
-    def run(self):
-        "create file products"
-        for p in self.produces:
-            fp = p.prev
+    def execute(self):
+        "create file product"
+        for fp in self.produces:
             self.tester.failUnless(isinstance(fp, File))
             ext = os.path.splitext(fp.path)[1]
             self.tester.createOutputFile(ext, self.pset.contents.get(fp))
@@ -66,6 +66,7 @@ class TouchTests(TestCaseBase):
         rule.touchCnt = 0
         er.run()
         self.failUnlessEqual(rule.touchCnt, 0)
+        pset.check()
 
     def testTwoLevel(self):
         "two levels of requirements "
@@ -82,7 +83,8 @@ class TouchTests(TestCaseBase):
         
         # top level, dependent on intermediates
         topPset = ProdSet(er, self, (".top1", ".top2", ".top3"))
-        topRule = TouchRule("top", self, topPset, low1Pset.fps+low2Pset.fps)
+        topRule = TouchRule("top", self, topPset, requires=low1Pset.fps+low2Pset.fps)
+        er.addRule(topRule)
         er.run()
         self.failUnlessEqual(low1Rule.touchCnt, 3)
         low1Pset.check()
@@ -91,69 +93,9 @@ class TouchTests(TestCaseBase):
         self.failUnlessEqual(topRule.touchCnt, 3)
         topPset.check()
 
-class CmdTests(TestCaseBase):
-    def testSort1(self):
-        "single command to sort a file"
-        er = ExRun()
-        ifp = er.getFile(self.getInputFile("numbers.txt"))
-        ofp = er.getFile(self.getOutputFile(".txt"))
-        rmFiles(ofp.path)
-        c = Cmd(("sort", "-n", ifp.path),
-                stdout=ofp.path)
-        er.addRule(CmdRule("sort1", c, (ofp,), (ifp,)))
-        er.run()
-        self.diffExpected(".txt")
-
-    def testSortPipe(self):
-        "pipeline command to sort a file"
-        er = ExRun()
-        ifp = er.getFile(self.getInputFile("numbers.txt"))
-        ofp = er.getFile(self.getOutputFile(".txt"))
-        rmFiles(ofp.path)
-        c = Cmd((("sort", "-r", ifp.path), ("sort", "-nr")),
-                stdout=ofp.path)
-        er.addRule(CmdRule("sortPipe", c, (ofp,), (ifp,)))
-        er.run()
-        self.diffExpected(".txt")
-
-    def testSort2(self):
-        "two commands"
-        er = ExRun()
-        ifp = er.getFile(self.getInputFile("numbers.txt"))
-        ofp1 = er.getFile(self.getOutputFile(".txt"))
-        ofp2 = er.getFile(self.getOutputFile(".linecnt"))
-        rmFiles((ofp1.path, ofp2.path))
-        c1 = Cmd((("sort", "-r", ifp.path), ("sort", "-nr")),
-                 stdout=ofp1.path)
-        c2 = Cmd((("wc", "-l"), ("sed", "-e", "s/ //g")),
-                 stdin=ofp1.path, stdout=ofp2.path)
-        er.addRule(CmdRule("sortPipe", (c1, c2), (ofp1, ofp2), (ifp,)))
-        er.run()
-        self.diffExpected(".txt")
-        self.diffExpected(".linecnt")
-
-    def testSort2Rules(self):
-        "two commands in separate rules"
-        er = ExRun()
-        ifp = er.getFile(self.getInputFile("numbers.txt"))
-        ofp1 = er.getFile(self.getOutputFile(".txt"))
-        ofp2 = er.getFile(self.getOutputFile(".linecnt"))
-        rmFiles((ofp1.path, ofp2.path))
-        c1 = Cmd((("sort", "-r", ifp.path), ("sort", "-nr")),
-                 stdout=ofp1.path)
-        c2 = Cmd((("wc", "-l"), ("sed", "-e", "s/ //g")),
-                 stdin=ofp1.path, stdout=ofp2.path)
-        er.addRule(CmdRule("count", c2, (ofp2,), (ofp1,)))
-        er.addRule(CmdRule("sort", c1, (ofp1,), (ifp,)))
-        er.run()
-        self.diffExpected(".txt")
-        self.diffExpected(".linecnt")
-
-
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TouchTests))
-    suite.addTest(unittest.makeSuite(CmdTests))
     return suite
 
 if __name__ == '__main__':
