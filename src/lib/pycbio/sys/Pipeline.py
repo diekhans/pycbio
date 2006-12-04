@@ -121,7 +121,7 @@ class Procline(object):
         strs = []
         for p in self.procs:
             strs.append(p.getDesc())
-        return " | ".join(strs) + self._getaIoDesc()
+        return " | ".join(strs) + self._getIoDesc()
         
         
     def wait(self, noError=False):

@@ -25,9 +25,7 @@ class Node(object):
 
     def linkRequires(self, requires):
         "can be single nodes, or lists or sets of nodes, reverse links are created"
-        if not typeOps.isIterable(requires):
-            requires = (requires,)
-        for r in requires:
+        for r in typeOps.mkiter(requires):
             self.checkRequires(r)
             r.checkProduces(self)
             self.requires.add(r)
@@ -35,9 +33,7 @@ class Node(object):
             
     def linkProduces(self, produces):
         "can be single nodes, or lists or sets of nodes, reverse links are created"
-        if not typeOps.isIterable(produces):
-            produces = (produces,)
-        for p in produces:
+        for p in typeOps.mkiter(produces):
             self.checkProduces(p)
             p.checkRequires(self)
             self.produces.add(p)
