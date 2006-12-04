@@ -43,6 +43,9 @@ suites.append(VennTests.suite())
 from pycbio.exrun.tests import ErrorTests
 suites.append(ErrorTests.suite())
 
+from pycbio.exrun.tests import CmdTests
+suites.append(CmdTests.suite())
+
 from pycbio.exrun.tests import BasicTests
 suites.append(BasicTests.suite())
 
