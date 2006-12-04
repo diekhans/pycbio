@@ -29,8 +29,11 @@ class Verb(object):
         self.indent = 0
 
     def enabled(self, flag):
-        "determine if tracing is enabled for the specified flag"
-        return (flag in self.flags)
+        """determine if tracing is enabled for the specified flag, flag can be either a single flag or a set"""
+        if isinstance(flag, set):
+            return (flag and self.flags)
+        else:
+            return (flag in self.flags)
 
     def _prIndent(self, msg):
         self.fh.write(("%*s" % (2*self.indent, "")))
@@ -44,16 +47,16 @@ class Verb(object):
             self._prIndent(msg)
 
     def enter(self, flag=None, *msg):
-        "increment indent count and optionally output a trace message"
-        self.indent += 1
+        "increment indent count, first optionally output a trace message"
         if self.enabled(flag) and (len(msg) > 0):
             self._prIndent(msg)
+        self.indent += 1
 
     def leave(self, flag=None, *msg):
-        "optionally output a trace message and decrement indent count "
+        "decrement indent count, then optionally outputing a trace message "
+        self.indent -= 1
         if self.enabled(flag) and (len(msg) > 0):
             self._prIndent(msg)
-        self.indent -= 1
 
 class ExRun(object):
     "object that defines and runs an experiment"
@@ -160,14 +163,10 @@ class ExRun(object):
         assert(isinstance(prod, Production))
         assert(len(prod.requires) <= 1);
 
-        self.verb.enter()
-        try:
-            if prod.isOutdated():
-                self._evalProdRule(prod)
-            else:
-                self.verb.pr(self.verb.details, "current: ", prod)
-        finally:
-            self.verb.leave()
+        if prod.isOutdated():
+            self._evalProdRule(prod)
+        else:
+            self.verb.pr(self.verb.details, "current: ", prod)
 
     def getUniqId(self):
         "get a unique id for generating file names"

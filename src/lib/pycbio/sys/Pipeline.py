@@ -106,14 +106,14 @@ class Procline(object):
         "generate shell-like string describing I/O redirections"
         desc = ""
         if self.stdin != None:
-            desc += " <" + self.stdin
+            desc += " <" + str(self.stdin)
         if (self.stdout != None) and (self.stderr == self.stdout):
-            desc += " >&" + self.stdout
+            desc += " >&" + str(self.stdout)
         else:
             if self.stdout != None:
-                desc += " >" + self.stdout
+                desc += " >" + str(self.stdout)
             if self.stderr != None:
-                desc += " 2>" + self.stderr
+                desc += " 2>" + str(self.stderr)
         return desc
 
     def getDesc(self):
