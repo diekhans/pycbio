@@ -1,8 +1,7 @@
 """Experiment running objects"""
 import os.path,sys,socket
 from pycbio.exrun.Graph import *
-from pycbio.sys.Pipeline import Procline
-from pycbio.sys import strOps,fileOps,typeOps
+from pycbio.sys import typeOps
 
 os.stat_float_times(True) # very, very gross
 
@@ -170,7 +169,7 @@ class ExRun(object):
         finally:
             self.verb.leave()
 
-    def getUniqId():
+    def getUniqId(self):
         "get a unique id for generating file names"
         id = self.hostName + "." + str(os.getpid()) + "." + str(self.uniqIdCnt)
         self.uniqIdCnt += 1
@@ -189,9 +188,9 @@ class ExRun(object):
 
     def run(self):
         "run the experiment"
-        self.graph.check()
         if self.verb.enabled(self.verb.graph):
             self.dumpGraph()
+        self.graph.check()
 
         for entry in self.graph.getEntryNodes():
             if isinstance(entry, Rule):
