@@ -1,0 +1,86 @@
+#!/usr/bin/env python
+
+import sys, os
+myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
+sys.path.append(myBinDir + "/../lib")
+from optparse import OptionParser
+from pycbio.hgdata.GenePred import GenePred
+from pycbio.tsv.TabFile import TabFile
+from pycbio.sys import fileOps
+
+class CmdOpts(object):
+    usage="""%prog [options] [inGenePred] [outGenePred]
+
+    Select clusters based on the criteria specified by the options.
+    By default, output a clusterGenes file with just the selected
+    records.  If multiple select criteria are specified, they all
+    must be be true to select a gene."""
+
+    def __init__(self):
+        parser = OptionParser(usage=CmdOpts.usage)
+        parser.add_option("--singleExon", action="store_true", dest="singleExon", default=False,
+                          help="""select genes that have a single exon""")
+        parser.add_option("--multiExon", action="store_true", dest="multiExon", default=False,
+                          help="""select genes that have multiple exons""")
+        parser.add_option("--singleCdsExon", action="store_true", dest="singleCdsExon", default=False,
+                          help="""select genes that have a single CDS exon""")
+        parser.add_option("--multiCdsExon", action="store_true", dest="multiCdsExon", default=False,
+                          help="""select genes that have multiple CDS exons""")
+        parser.add_option("--geneIds", action="append", dest="geneIdFiles", default=None,
+                          help="""select genes with these gene ids""")
+        (opts, args) = parser.parse_args()
+        if len(args) > 2:
+            parser.error("wrong number of arguments")
+        if len(args) > 0:
+            self.genePredIn = args[0]
+        else:
+            self.genePredIn = "/dev/stdin"
+        if len(args) > 1:
+            self.genePredOut = args[1]
+        else:
+            self.genePredOut = "/dev/stdout"
+        self.__dict__.update(opts.__dict__)
+
+class GenePredSelect(object):
+    def __init__(self, opts):
+        self.geneIds = None
+        self.singleExon = opts.singleExon
+        self.multiExon = opts.multiExon
+        self.singleCdsExon = opts.singleCdsExon
+        self.multiCdsExon = opts.multiCdsExon
+        if opts.geneIdFiles != None:
+            self.geneIds = self._loadIdFiles(opts.geneIdFiles)
+            
+    def _loadIdFiles(self, idFiles):
+        ids = set()
+        for f in idFiles:
+            for line in fileOps.readFileLines(f):
+                ids.add(line.strip())
+        return ids
+
+    def _selected(self, gp):
+        if (self.geneIds != None) and not gp.name in geneIds:
+            return False
+        if self.singleExon and (len(gp.exons) != 1):
+            return False
+        if self.multiExon and (len(gp.exons) <= 1):
+            return False
+        if self.singleCdsExon and (gp.getNumCdsExons() != 1):
+            return False
+        if self.multiCdsExon and  (gp.getNumCdsExons() <= 1):
+            return False
+        return True
+
+    def select(self, genePredIn, genePredOut):
+        outFh = file(genePredOut, "w")
+        for row in fileOps.iterRows(genePredIn):
+            gp = GenePred(row)
+            if self._selected(gp):
+                fileOps.prRow(outFh, gp.getRow())
+
+def main():
+    opts = CmdOpts()
+    gs = GenePredSelect(opts)
+    gs.select(opts.genePredIn, opts.genePredOut)
+
+main()

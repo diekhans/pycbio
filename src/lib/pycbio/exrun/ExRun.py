@@ -5,7 +5,13 @@ from pycbio.sys import typeOps
 
 os.stat_float_times(True) # very, very gross
 
-# FIXME: should rules automatically be added
+# FIXME: should rules automatically be added?
+# FIXME: should File *not* be automatically added?
+# FIXME: specification of cmd line with File object can be somewhat redundant, but
+#        how can one figure out input vs output??
+# FIXME: error output is really hard to read, especially when executing a non-existant program
+#        just get `OSError: [Errno 2] No such file or directory', not much help
+# FIXME: need to improve graph dump
 
 class ExRunException(Exception):
     pass
@@ -97,11 +103,8 @@ class ExRun(object):
         or a File object, or list of File objects.  Returns a list of File
         objects"""
         files = []
-        if typeOps.isIterable(paths):
-            for p in paths:
-                files.append(self.getFile(p))
-        else:
-            files.append(self.getFile(paths))
+        for p in typeOps.mkiter(paths):
+            files.append(self.getFile(p))
         return files
 
     def getTarget(self, id):
