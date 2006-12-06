@@ -6,6 +6,38 @@ from pycbio.exrun.ExRun import ExRunException
 from pycbio.exrun.Graph import Production,Rule
 from pycbio.sys.Pipeline import Procline
 
+class FileInRef(object):
+    """Object used to specified a input file name argument to a command
+    that is expanded just before the command is executed."""
+    __slots__ = ["file", "prefix"]
+
+    def __init__(self, file, prefix=None):
+        self.file = file
+        self.prefix = prefix
+
+    def __str__(self):
+        """return input file argument"""
+        if self.prefix == None:
+            return self.file.getInPath()
+        else:
+            return self.prefix + self.file.getInPath()
+
+class FileOutRef(object):
+    """Object used to specified a output file name argument to a command
+    that is expanded just before the command is executed."""
+    __slots__ = ["file", "prefix"]
+
+    def __init__(self, file, prefix=None):
+        self.file = file
+        self.prefix = prefix
+
+    def __str__(self):
+        """return input file argument"""
+        if self.prefix == None:
+            return self.file.getOutPath()
+        else:
+            return self.prefix + self.file.getOutPath()
+
 class File(Production):
     """Object representing a file production. This also handles atomic file
     creation. CmdRule will install productions of this class after the
@@ -28,26 +60,45 @@ class File(Production):
         else:
             return -1.0
 
-    def getInput(self):
-        """Get the input name of the file.  If a new file has been defined
-        using getOutput, but has not been installed, it's path is return,
-        otherwise path is returned.  This allows a newly created file to be
-        used by other commands in a rule before it is installed."""
+    def getInPath(self):
+        """Get the input path name of the file.  If a new file has been defined
+        using getOutPath(), but has not been installed, it's path is return,
+        otherwise path is returned.  Normally one wants to use getIn()
+        to define a command argument."""
         if self.newPath != None:
             return self.newPath
         else:
             return self.path
 
-    def getOutput(self):
+    def getOutPath(self):
         """Get the output name for the file, which is newPath until the rule
         terminates. This will also create the output directory for the file,
-        if it does not exist."""
+        if it does not exist.  Normally one wants to use getOut() to define
+        a command argument"""
         if self.installed:
             raise ExRunException("output file already installed: " + self.path)
         if self.newPath == None:
             fileOps.ensureFileDir(self.path)
             self.newPath = self.getUncompressName() + "." + self.exRun.getUniqId() + ".tmp" + self.getCompressExt()
         return self.newPath
+
+    def getIn(self, prefix=None):
+        """Returns an object that causes the input file path to be substituted
+        when str() is call on it.  CmdRule also adds this File as a requires
+        when it is in a command specified at construction time.  If prefix is
+        specified, it is added before the file name. This allows adding
+        options like --foo=filepath.
+        """
+        return FileInRef(self, prefix)
+
+    def getOut(self, prefix=None):
+        """Returns an object that causes the output file path to be substituted
+        when str() is call on it.  CmdRule also adds this File as a produces
+        when it is in a command specified at construction time.  If prefix is
+        specified, it is added before the file name. This allows adding
+        options like --foo=filepath.
+        """
+        return FileOutRef(self, prefix)
 
     def isCompressed(self):
         return self.path.endswith(".gz") or self.path.endswith(".bz2")
@@ -71,7 +122,7 @@ class File(Production):
         if self.installed:
             raise ExRunException("output file already installed: " + self.path)
         if self.newPath == None:
-            raise ExRunException("getOutput() never called for: " + self.path)
+            raise ExRunException("getOutPath() never called for: " + self.path)
         if not os.path.exists(self.newPath):
             raise ExRunException("output file as not created: " + self.newPath)
         if os.path.exists(self.path):
@@ -102,21 +153,25 @@ class Cmd(list):
         self.stdout = stdout
         self.stderr = stderr
 
+    def isPipe(self):
+        "determine if this command contains multiple processes"
+        return not isinstance(self[0], str)
+        
     def _getInput(self, fspec):
-        "get an input file, if fspec is a file object, return getInput(), fspec string"
+        "get an input file, if fspec is a file object, return getInPath(), fspec string"
         if fspec == None:
             return None
         elif isinstance(fspec, File):
-            return fspec.getInput()
+            return fspec.getInPath()
         else:
             return str(fspec)
 
     def _getOutput(self, fspec):
-        "get an output file, if fspec is a file object, return getOutput(), fspec string"
+        "get an output file, if fspec is a file object, return getOutPath(), fspec string"
         if fspec == None:
             return None
         elif isinstance(fspec, File):
-            return fspec.getOutput()
+            return fspec.getOutPath()
         else:
             return str(fspec)
 
@@ -145,7 +200,7 @@ class CmdRule(Rule):
     The derived class overrides run() function to evaulate the rule and uses
     the call() function to execute each command or pipeline.
 
-    Rule id is generated from productions.
+    Rule id is generated from productions if not specified.
     """
 
     def _mkIdPart(prods):
@@ -156,10 +211,10 @@ class CmdRule(Rule):
     _mkIdPart = staticmethod(_mkIdPart)
 
     def _mkId(requires, produces):
-        return "<"+ CmdRule._mkIdPart(requires) + "=>" + CmdRule._mkIdPart(produces)+">"
+        return "Rule["+ CmdRule._mkIdPart(requires) + "=>" + CmdRule._mkIdPart(produces)+"]"
     _mkId = staticmethod(_mkId)
 
-    def __init__(self, cmds=None, requires=None, produces=None):
+    def __init__(self, cmds=None, id=None, requires=None, produces=None):
         requires = typeOps.mkset(requires)
         produces = typeOps.mkset(produces)
 
@@ -173,21 +228,36 @@ class CmdRule(Rule):
             else:
                 for cmd in cmds:
                     self._addCmd(cmd, requires, produces)
-
-        Rule.__init__(self, CmdRule._mkId(requires, produces), requires, produces)
+        if id == None:
+            id = CmdRule._mkId(requires, produces)
+        Rule.__init__(self, id, requires, produces)
 
     def _addCmd(self, cmd, requires, produces):
         assert(isinstance(cmd, Cmd))
-        self._addCmdFileSpecs(cmd.stdin, requires, produces)
-        self._addCmdFileSpecs(cmd.stdout, produces)
-        self._addCmdFileSpecs(cmd.stderr, produces)
+        self._addCmdStdio(cmd.stdin, requires, produces)
+        self._addCmdStdio(cmd.stdout, produces)
+        self._addCmdStdio(cmd.stderr, produces)
+        if cmd.isPipe():
+            for c in cmd:
+                self._addCmdArgFiles(c, requires, produces)
+        else:
+            self._addCmdArgFiles(c, requires, produces)
         self.cmds.append(cmd)
 
-    def _addCmdFileSpecs(self, fspecs, specSet, exclude=None):
+    def _addCmdStdio(self, fspecs, specSet, exclude=None):
         "add None, a single or a list of file specs as requires or produces links"
         for fspec in typeOps.mkiter(fspecs):
             if isinstance(fspec, File) and ((exclude == None) or (fspec not in exclude)):
                 specSet.add(fspec)
+
+    def _addCmdArgFiles(self, cmd, requires, produces):
+        """scan a command's arguments for FileInRef and FileOutRef object and add these to
+        requires or produces"""
+        for a in cmd:
+            if isinstance(a, FileInRef):
+                requires.add(a.file)
+            elif isinstance(a, FileOutRef):
+                produces.add(a.file)
 
     def call(self, cmd):
         "run a commands with optional tracing"

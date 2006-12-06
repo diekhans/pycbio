@@ -8,7 +8,7 @@ class TabFile(list):
        or read into rows of a specific type.
     """
 
-   # FIXME add try and error msg with file/line num
+   # FIXME add try and error msg with file/line num, move to row reader class; see fileOps.iterRows
     def _read(self, inFh):
         lineNum = 0
         try:

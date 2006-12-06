@@ -1,10 +1,11 @@
 
-VPATH = src/progs/tsv:src/progs/gbff:src/progs/loci:src/progs/ncbi:src/progs/geneCheck
+VPATH = src/progs/tsv:src/progs/gbff:src/progs/genePred:src/progs/loci:src/progs/ncbi:src/progs/geneCheck
 BIN_PROGS = \
 	bin/tsvSelectById \
 	bin/gbffGenesToGenePred \
 	bin/clusterGenesStats \
 	bin/clusterGenesSelect \
+	bin/genePredSelect \
 	bin/ncbiGbFetch \
 	bin/geneCheckStats
 

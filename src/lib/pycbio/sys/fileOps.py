@@ -119,3 +119,21 @@ def readLine(fh):
     if l[-1:] == "\n":
         l = l[:-1]
     return l
+
+def iterRows(fspec):
+    """generator over rows in a tab-separated file.  Each line of the file is
+    parsed, split into columns and returned.  If fspec is a string, open the
+    file and close at end. Otherwise it is file-like object and will not be
+    closed."""
+    if isinstance(fspec, str):
+        fh = opengz(fspec)
+    else:
+        fh = fspec
+    try:
+        for line in fh:
+            yield line[0:-1].split("\t")
+    finally:
+        if isinstance(fspec, str):
+            fh.close()
+
+    

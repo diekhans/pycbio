@@ -228,12 +228,6 @@ class GenePred(object):
     def hasCds(self):
         return (self.cdsStartIExon != None)
 
-    def getNumCdsExons(self):
-        if self.cdsStartIExon != None:
-            return (self.cdsEndIExon - self.cdsStartIExon) + 1
-        else:
-            return 0
-
     def getLenExons(self):
         "get the total length of all exons"
         l = 0
