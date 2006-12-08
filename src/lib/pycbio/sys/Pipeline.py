@@ -1,6 +1,9 @@
 "File-like object to create and manage a pipeline of subprocesses"
 
 # FIXME: should use mixins!!
+# FIXME: would be nice to have an option to kill off all processes in pipleline
+#        if one aborts, but this would require putting them in a process group
+#        probably an extra fork
 
 import subprocess
 from pycbio.sys import strOps
