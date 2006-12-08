@@ -22,6 +22,10 @@ class FileInRef(object):
         else:
             return self.prefix + self.file.getInPath()
 
+    def getInPath(self):
+        "return File.getInPath() for referenced file"
+        return self.file.getInPath()
+
 class FileOutRef(object):
     """Object used to specified a output file name argument to a command
     that is expanded just before the command is executed."""
@@ -37,6 +41,10 @@ class FileOutRef(object):
             return self.file.getOutPath()
         else:
             return self.prefix + self.file.getOutPath()
+
+    def getOutPath(self):
+        "return File.getInPath() for referenced file"
+        return self.file.getOutPath()
 
 class File(Production):
     """Object representing a file production. This also handles atomic file
@@ -161,7 +169,7 @@ class Cmd(list):
         "get an input file, if fspec is a file object, return getInPath(), fspec string"
         if fspec == None:
             return None
-        elif isinstance(fspec, File):
+        elif isinstance(fspec, File) or isinstance(fspec, FileInRef):
             return fspec.getInPath()
         else:
             return str(fspec)
@@ -170,7 +178,7 @@ class Cmd(list):
         "get an output file, if fspec is a file object, return getOutPath(), fspec string"
         if fspec == None:
             return None
-        elif isinstance(fspec, File):
+        elif isinstance(fspec, File) or isinstance(fspec, FileOutRef):
             return fspec.getOutPath()
         else:
             return str(fspec)
@@ -247,7 +255,9 @@ class CmdRule(Rule):
     def _addCmdStdio(self, fspecs, specSet, exclude=None):
         "add None, a single or a list of file specs as requires or produces links"
         for fspec in typeOps.mkiter(fspecs):
-            if isinstance(fspec, File) and ((exclude == None) or (fspec not in exclude)):
+            if  (isinstance(fspec, FileInRef) or isinstance(fspec, FileOutRef)):
+                fspec = fspec.file  # get File object for reference
+            if (isinstance(fspec, File) and ((exclude == None) or (fspec not in exclude))):
                 specSet.add(fspec)
 
     def _addCmdArgFiles(self, cmd, requires, produces):
@@ -258,6 +268,8 @@ class CmdRule(Rule):
                 requires.add(a.file)
             elif isinstance(a, FileOutRef):
                 produces.add(a.file)
+            elif isinstance(a, File):
+                ExRunException("can't use File object in command argument, use getIn() or getOut() to generate a reference object")
 
     def call(self, cmd):
         "run a commands with optional tracing"
@@ -288,5 +300,3 @@ class CmdRule(Rule):
             self._installFileProductions()
         finally:
             self.verb.leave()
-
-

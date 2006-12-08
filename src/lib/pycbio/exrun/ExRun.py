@@ -11,13 +11,13 @@ os.stat_float_times(True) # very, very gross
 #        how can one figure out input vs output??
 # FIXME: error output is really hard to read, especially when executing a non-existant program
 #        just get `OSError: [Errno 2] No such file or directory', not much help
-# FIXME: need to improve graph dump
+# FIXME: need to improve graph dump, drop id on rules, change to description and not enforce dups
 
 class ExRunException(Exception):
     pass
 
 # FIXME: dependency on file here is weird, have factory in File; must be after ExRunException
-from pycbio.exrun.CmdRule import File
+from pycbio.exrun.CmdRule import CmdRule, Cmd, File
 
 class Verb(object):
     "Verbose tracing, bases on a set of flags."
@@ -74,7 +74,7 @@ class ExRun(object):
         self.uniqIdCnt = 0
 
     def _getNode(self, id, type):
-        "great a node of a particular type, or None"
+        "create a node of a particular type, or None"
         n = self.graph.nodeMap.get(id)
         if n != None:
             if not isinstance(n, type):
@@ -122,6 +122,11 @@ class ExRun(object):
         rule.exRun = self
         rule.verb = self.verb
         return n
+
+    def addCmd(self, cmd, id=None, requires=None, produces=None, stdin=None, stdout=None, stderr=None):
+        """add a command rule with a single command or pipeline, this is a
+        shortcut for addRule(CmdRule(Cmd(....),...)"""
+        return self.addRule(CmdRule(Cmd(cmd, stdin=stdin, stdout=stdout, stderr=stderr), id=id, requires=requires, produces=produces))
 
     def _buildRequires(self, rule):
         "build requirements as needed"
