@@ -30,9 +30,8 @@ class ProdSet(object):
 
 class TouchRule(Rule):
     "rule that creates files"
-    def __init__(self, id, tester, pset, requires=None):
-        "contents is a dict of optional values to write"
-        Rule.__init__(self, id, requires=requires, produces=pset.fps)
+    def __init__(self, name, tester, pset, requires=None):
+        Rule.__init__(self, name, requires=requires, produces=pset.fps)
         self.tester = tester
         self.pset = pset
         self.touchCnt = 0
@@ -47,6 +46,7 @@ class TouchRule(Rule):
 
 class TouchTests(TestCaseBase):
     def checkContents(self, fp, contents={}):
+        "contents is a dict of optional values to write"
         ext = os.path.splitext(fp.path)[1]
         self.verifyOutputFile(ext, contents.get(fp))
 

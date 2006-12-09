@@ -2,22 +2,21 @@
 import os.path,sys,socket
 from pycbio.exrun.Graph import *
 from pycbio.sys import typeOps
+from pycbio.exrun import ExRunException
+from pycbio.exrun.CmdRule import CmdRule, Cmd, File
 
 os.stat_float_times(True) # very, very gross
 
+# FIXME: currently, if a rule has no requires and produces a file, it is always
+#        run once.  Maybe time of a node should be the time of it's productions???
 # FIXME: should rules automatically be added?
 # FIXME: should File *not* be automatically added?
 # FIXME: specification of cmd line with File object can be somewhat redundant, but
 #        how can one figure out input vs output??
 # FIXME: error output is really hard to read, especially when executing a non-existant program
 #        just get `OSError: [Errno 2] No such file or directory', not much help
-# FIXME: need to improve graph dump, drop id on rules, change to description and not enforce dups
-
-class ExRunException(Exception):
-    pass
-
-# FIXME: dependency on file here is weird, have factory in File; must be after ExRunException
-from pycbio.exrun.CmdRule import CmdRule, Cmd, File
+# FIXME: need to improve graph dump
+# FIXME: need tracing of what is out of date
 
 class Verb(object):
     "Verbose tracing, bases on a set of flags."
@@ -30,8 +29,8 @@ class Verb(object):
 
     def __init__(self, fh=sys.stderr):
         self.fh = fh
-        #self.flags = set([Verb.error, Verb.trace, Verb.graph])
-        self.flags = set([Verb.error, Verb.trace])
+        self.flags = set([Verb.error, Verb.trace, Verb.graph])
+        #self.flags = set([Verb.error, Verb.trace])
         self.indent = 0
 
     def enabled(self, flag):
@@ -47,8 +46,12 @@ class Verb(object):
             self.fh.write(str(m))
         self.fh.write("\n")
 
+    def prall(self, *msg):
+        "unconditionall print a message with indentation"
+        self._prIndent(msg)
+
     def pr(self, flag, *msg):
-        "print a message with indentation"
+        "print a message with indentation if flag indicates enabled"
         if self.enabled(flag):
             self._prIndent(msg)
 
@@ -72,14 +75,7 @@ class ExRun(object):
         self.graph = Graph()
         self.hostName = socket.gethostname()
         self.uniqIdCnt = 0
-
-    def _getNode(self, id, type):
-        "create a node of a particular type, or None"
-        n = self.graph.nodeMap.get(id)
-        if n != None:
-            if not isinstance(n, type):
-                raise ExRunException("production " + id + " exists, but is not a " + str(type))
-        return n
+        self.files = {}
 
     def _addNode(self, node):
         "add a new node"
@@ -92,11 +88,13 @@ class ExRun(object):
         an instance of File instead of a string, just return it."""
         if isinstance(path, File):
             return path
-        id = os.path.realpath(path)
-        n = self._getNode(id, File)
-        if n == None:
-            n = self._addNode(File(id, path))
-        return n
+        realPath = os.path.realpath(path)
+        fprod = self.files.get(realPath)
+        if fprod == None:
+            fprod = File(path, realPath)
+            self._addNode(fprod)
+            self.files[realPath] = fprod
+        return fprod
 
     def getFiles(self, paths):
         """like getFile(), only path can be a single path, or a list of paths,
@@ -116,65 +114,60 @@ class ExRun(object):
 
     def addRule(self, rule):
         "add a new rule"
-        if rule.id in self.graph.nodeMap:
-            raise ExRunException("rule " + id + " conficts with an existing node with the same id");
-        n = self._addNode(rule)
+        self._addNode(rule)
         rule.exRun = self
         rule.verb = self.verb
-        return n
 
     def addCmd(self, cmd, id=None, requires=None, produces=None, stdin=None, stdout=None, stderr=None):
         """add a command rule with a single command or pipeline, this is a
         shortcut for addRule(CmdRule(Cmd(....),...)"""
         return self.addRule(CmdRule(Cmd(cmd, stdin=stdin, stdout=stdout, stderr=stderr), id=id, requires=requires, produces=produces))
 
-    def _buildRequires(self, rule):
-        "build requirements as needed"
+    def _preEvalRuleCheck(self, rule):
+        "Sanity check before a rule is run"
         for r in rule.requires:
-            self._buildProd(r)
-
-    def _checkProduces(self, rule):
-        "check that all produces have been updated"
-        for p in rule.produces:
-            if p.isOutdated():
-                raise ExRunException("product: " + str(p) + " not updated by rule: " + str(rule))
-    
+            if r.getTime() < 0.0:
+                raise ExRunException("require should have been built:" + str(r))
+        
     def _evalRule(self, rule):
-        "recursively evaulate a rule"
+        "evaulate a rule"
         assert(isinstance(rule, Rule))
         self.verb.enter(Verb.trace, "eval rule: ", rule)
         isOk = False
         try:
-            self._buildRequires(rule)
+            self._preEvalRuleCheck(rule)
             self.verb.pr(Verb.details, "run: ", rule)
+            rule.executed = True  # before actually executing
             rule.execute()
-            self._checkProduces(rule)
+            if rule.isOutdated():
+                raise ExRunException("rule didn't update all productions: " + ", ".join([str(p) for p in rule.getOutdated()]))
             isOk = True
         finally:
             if isOk:
                 self.verb.leave(Verb.trace, "done rule: ", rule)
             else:
                 # FIXME: should also happen on trace?
-                self.verb.leave(Verb.error, "failed rule: ", rule)
+                self.verb.leave(Verb.error, "fail rule: ", rule)
 
-    def _evalProdRule(self, prod):
-        "run rule to build a production"
-        self.verb.pr(self.verb.details, "build: ",prod)
-        if len(prod.requires) == 0:
-            raise ExRunException("no rule to build: " + str(prod))
-        for r in prod.requires:
-            self._evalRule(r)  # will only ever have one
-        self.verb.pr(self.verb.details, "built: ", prod)
-        
+    def _buildRule(self, rule):
+        "recursively build a rule"
+        assert(isinstance(rule, Rule))
+        for r in rule.requires:
+            self._buildProd(r)
+        if rule.isOutdated():
+            self._evalRule(rule)
+            
     def _buildProd(self, prod):
-        "recursively rebuild a production if it is out of date"
+        "recursively build a production"
         assert(isinstance(prod, Production))
         assert(len(prod.requires) <= 1);
-
-        if prod.isOutdated():
-            self._evalProdRule(prod)
-        else:
-            self.verb.pr(self.verb.details, "current: ", prod)
+        for r in prod.requires:
+            self._buildRule(r)
+        if prod.getTime() < 0.0:
+            if (len(prod.requires) == 0):
+                raise ExRunException("No rule to build: " + prod.name)
+            else:
+                raise ExRunException("Product not built: " + prod.name)
 
     def getUniqId(self):
         "get a unique id for generating file names"
@@ -182,16 +175,26 @@ class ExRun(object):
         self.uniqIdCnt += 1
         return id
 
+    def _dumpRule(self, rule):
+        self.verb.prall("Rule: ", rule.name)
+        self.verb.enter()
+        pre = "prd: "
+        for p in rule.produces:
+            self.verb.prall(pre, p.name)
+            pre = "     "
+        pre = "req: "
+        for r in rule.requires:
+            self.verb.prall(pre, r.name)
+            pre = "     "
+        self.verb.leave()
+        
     def dumpGraph(self):
-        self.verb.pr(self.verb.graph, "graph dump:")
+        self.verb.prall("graph dump:")
         self.verb.enter()
         for node in self.graph.bfs():
             if isinstance(node, Rule):
-                self.verb.pr(self.verb.graph, "Rule: ", node.id)
-            else:
-                self.verb.pr(self.verb.graph, "Prod: ", node.id)
+                self._dumpRule(node)
         self.verb.leave()
-        
 
     def run(self):
         "run the experiment"
@@ -201,8 +204,8 @@ class ExRun(object):
 
         for entry in self.graph.getEntryNodes():
             if isinstance(entry, Rule):
-                self._evalRule(entry)
+                self._buildRule(entry)
             else:
                 self._buildProd(entry)
 
-__all__ = (ExRunException.__name__, Verb.__name__, ExRun.__name__)
+__all__ = (Verb.__name__, ExRun.__name__)

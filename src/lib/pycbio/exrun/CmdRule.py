@@ -2,7 +2,7 @@
 
 import os.path
 from pycbio.sys import typeOps,fileOps
-from pycbio.exrun.ExRun import ExRunException
+from pycbio.exrun import ExRunException
 from pycbio.exrun.Graph import Production,Rule
 from pycbio.sys.Pipeline import Procline
 
@@ -51,10 +51,11 @@ class File(Production):
     creation. CmdRule will install productions of this class after the
     commands succesfully complete."""
 
-    def __init__(self, id, path):
-        "id should be realpath()"
-        Production.__init__(self, id)
+    def __init__(self, path, realPath):
+        "realPath is use to detect files accessed from different paths"
+        Production.__init__(self, path)
         self.path = path
+        self.realPath = realPath
         self.newPath = None
         self.installed = False
 
@@ -163,7 +164,7 @@ class Cmd(list):
 
     def isPipe(self):
         "determine if this command contains multiple processes"
-        return not isinstance(self[0], str)
+        return isinstance(self[0], list) or isinstance(self[0], tuple)
         
     def _getInput(self, fspec):
         "get an input file, if fspec is a file object, return getInPath(), fspec string"
@@ -208,26 +209,26 @@ class CmdRule(Rule):
     The derived class overrides run() function to evaulate the rule and uses
     the call() function to execute each command or pipeline.
 
-    Rule id is generated from productions if not specified.
+    Rule name is generated from productions if not specified.
     """
 
-    def _mkIdPart(prods):
+    def _mkNamePart(prods):
         if typeOps.isIterable(prods):
             return ",".join(map(str, prods))
         else:
             return str(prods)
-    _mkIdPart = staticmethod(_mkIdPart)
+    _mkNamePart = staticmethod(_mkNamePart)
 
-    def _mkId(requires, produces):
-        return "Rule["+ CmdRule._mkIdPart(requires) + "=>" + CmdRule._mkIdPart(produces)+"]"
-    _mkId = staticmethod(_mkId)
+    def _mkName(requires, produces):
+        return "Rule["+ CmdRule._mkNamePart(requires) + "=>" + CmdRule._mkNamePart(produces)+"]"
+    _mkName = staticmethod(_mkName)
 
-    def __init__(self, cmds=None, id=None, requires=None, produces=None):
+    def __init__(self, cmds=None, name=None, requires=None, produces=None):
         requires = typeOps.mkset(requires)
         produces = typeOps.mkset(produces)
 
         # deal with commands before super init, so all requires and produces
-        # are there for the id generation
+        # are there for the name generation
         self.cmds = None
         if cmds != None:
             self.cmds = []
@@ -236,9 +237,9 @@ class CmdRule(Rule):
             else:
                 for cmd in cmds:
                     self._addCmd(cmd, requires, produces)
-        if id == None:
-            id = CmdRule._mkId(requires, produces)
-        Rule.__init__(self, id, requires, produces)
+        if name == None:
+            name = CmdRule._mkName(requires, produces)
+        Rule.__init__(self, name, requires, produces)
 
     def _addCmd(self, cmd, requires, produces):
         assert(isinstance(cmd, Cmd))
@@ -269,7 +270,7 @@ class CmdRule(Rule):
             elif isinstance(a, FileOutRef):
                 produces.add(a.file)
             elif isinstance(a, File):
-                ExRunException("can't use File object in command argument, use getIn() or getOut() to generate a reference object")
+                raise ExRunException("can't use File object in command argument, use getIn() or getOut() to generate a reference object")
 
     def call(self, cmd):
         "run a commands with optional tracing"
@@ -278,7 +279,7 @@ class CmdRule(Rule):
     def runCmds(self):
         "run commands supplied in the constructor"
         if self.cmds == None:
-            raise ExRunException("no commands specified and run() not overridden for CmdRule: " + id)
+            raise ExRunException("no commands specified and run() not overridden for CmdRule: " + self.name)
         for cmd in self.cmds:
             self.call(cmd)
 
