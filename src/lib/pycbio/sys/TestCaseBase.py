@@ -21,6 +21,11 @@ class TestCaseBase(unittest.TestCase):
         testDir =  os.path.dirname(sys.modules[self.__class__.__module__].__file__)
         if testDir == "":
             testDir = "."
+        testDir = os.path.realpath(testDir)
+        # turn this into a relative directory
+        cwd = os.getcwd() + "/"
+        if testDir.startswith(cwd):
+            testDir = testDir[len(cwd):]
         return testDir
 
     def getInputFile(self, fname):

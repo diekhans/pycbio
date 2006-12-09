@@ -1,6 +1,7 @@
 import string
 
-# FIXME: danger of dump, etc, methods conflicting with columns
+# FIXME: danger of bdump, etc, methods conflicting with columns??
+# FIXME: option of using a static class (__slots__) would help performance
 
 class TSVRow(object):
     "Row of a TSV where columns are fields."
