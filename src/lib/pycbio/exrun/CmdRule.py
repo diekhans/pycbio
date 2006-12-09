@@ -88,7 +88,7 @@ class File(Production):
             raise ExRunException("output file already installed: " + self.path)
         if self.newPath == None:
             fileOps.ensureFileDir(self.path)
-            self.newPath = self.getUncompressName() + "." + self.exRun.getUniqId() + ".tmp" + self.getCompressExt()
+            self.newPath = self.exRun.getTmpPath(self.path)
         return self.newPath
 
     def getIn(self, prefix=None):
@@ -112,19 +112,14 @@ class File(Production):
     def isCompressed(self):
         return self.path.endswith(".gz") or self.path.endswith(".bz2")
 
-    def getUncompressName(self):
-        "get the file name without a .gz/.bz2"
-        if self.isCompressed():
-            return os.path.splitext(self.path)[0]
+    def getCatCmd(self):
+        "return get the command name to use to cat the file, considering compression"
+        if self.path.endswith(".Z") or self.path.endswith(".gz"):
+            return "zcat"
+        elif self.path.endswith(".bz2"):
+            return "bzcat"
         else:
-            return self.path
-
-    def getCompressExt(self):
-        "return the compressions extension of the file, or an empty string if not compressed"
-        if self.isCompressed():
-            return os.path.splitext(self.path)[1]
-        else:
-            return ""
+            return "cat"
 
     def install(self):
         "atomic install of new output file as actual file"
