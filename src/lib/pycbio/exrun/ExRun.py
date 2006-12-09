@@ -29,8 +29,8 @@ class Verb(object):
 
     def __init__(self, fh=sys.stderr):
         self.fh = fh
-        self.flags = set([Verb.error, Verb.trace, Verb.graph])
-        #self.flags = set([Verb.error, Verb.trace])
+        #self.flags = set([Verb.error, Verb.trace, Verb.graph])
+        self.flags = set([Verb.error, Verb.trace])
         self.indent = 0
 
     def enabled(self, flag):
@@ -118,10 +118,10 @@ class ExRun(object):
         rule.exRun = self
         rule.verb = self.verb
 
-    def addCmd(self, cmd, id=None, requires=None, produces=None, stdin=None, stdout=None, stderr=None):
+    def addCmd(self, cmd, name=None, requires=None, produces=None, stdin=None, stdout=None, stderr=None):
         """add a command rule with a single command or pipeline, this is a
         shortcut for addRule(CmdRule(Cmd(....),...)"""
-        return self.addRule(CmdRule(Cmd(cmd, stdin=stdin, stdout=stdout, stderr=stderr), id=id, requires=requires, produces=produces))
+        return self.addRule(CmdRule(Cmd(cmd, stdin=stdin, stdout=stdout, stderr=stderr), name=name, requires=requires, produces=produces))
 
     def _preEvalRuleCheck(self, rule):
         "Sanity check before a rule is run"
