@@ -71,6 +71,30 @@ class PipelineTests(TestCaseBase):
 
         self.diffExpected(".wc")
 
+    def testPassRead(self):
+        "using /proc fs to pass pipe to another process for reading"
+        inFile = self.getInputFile("simple1.txt")
+        inFileGz = self.getOutputFile(".txt.gz")
+        cpOut = self.getOutputFile(".out")
+        procOps.runProc(("gzip", "-c", inFile), stdout=inFileGz)
+
+        pl = Pipeline(("gzip", "-dc"), "r", otherEnd=inFileGz)
+        procOps.runProc(["cat"],  stdin=pl.pipepath(), stdout=cpOut)
+        pl.wait()
+
+        self.diffExpected(".out")
+
+    def testPassWrite(self):
+        "using /proc fs to pass pipe to another process for writing"
+        inFile = self.getInputFile("simple1.txt")
+        outFile = self.getOutputFile(".out")
+
+        pl = Pipeline(("sort", "-r"), "w", otherEnd=outFile)
+        procOps.runProc(["cat"],  stdin=inFile, stdout=pl.pipepath())
+        pl.wait()
+
+        self.diffExpected(".out")
+
     def testExitCode(self):
         p = Pipeline(("false",))
         ec = p.wait(noError=True)

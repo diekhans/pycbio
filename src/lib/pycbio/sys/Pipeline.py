@@ -5,7 +5,7 @@
 #        if one aborts, but this would require putting them in a process group
 #        probably an extra fork
 
-import subprocess
+import os, subprocess
 from pycbio.sys import strOps
 
 def hasWhiteSpace(word):
@@ -88,7 +88,6 @@ class Procline(object):
 
         if isinstance(cmds[0], str):
             cmds = [cmds]  # one-process pipeline
-
         for cmd in cmds:
             self._createProc(cmd, cmds, stdin, stdout, stderr)
         
@@ -226,6 +225,14 @@ class Pipeline(Procline):
     def flush(self):
         "Flush the internal I/O buffer."
         self.fh.flush()
+
+    def fileno(self):
+        "get the integer OS-dependent file handle"
+        return self.fh.fileno()
+  
+    def pipepath(self):
+        """get a file system path for the pipe, which can be passed to another process"""
+        return "/proc/" + str(os.getpid()) + "/fd/" + str(self.fh.fileno())
   
     def write(self, str):
         "Write string str to file."
@@ -246,16 +253,15 @@ class Pipeline(Procline):
         return self.fh.readlines(size)
 
     def wait(self, noError=False):
-        """wait to for processes to complete, generate an exception if one exits
-        no-zero, unless noError is True, in which care return the exit code of the
-        first process that failed"""
+        """wait to for processes to complete, generate an exception if one
+        exits no-zero, unless noError is True, in which care return the exit
+        code of the first process that failed"""
 
         self.closed = True
 
         # must close before waits for output pipeline
         if self.mode == 'w':
             self.fh.close()
-
         try:
             code = Procline.wait(self, noError)
         finally:
