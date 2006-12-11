@@ -181,12 +181,36 @@ class CmdSubclassTests(TestCaseBase):
         self.diffExpected(".txt")
         self.diffExpected(".linecnt")
 
+class CmdCompressTests(TestCaseBase):
+    "tests of CmdRule with automatic compression/decompression"
 
+    def testCompDecompStdio(self):
+        er = ExRun()
+        ifp = er.getFile(self.getInputFile("numbers.txt"))
+        ofp1 = er.getFile(self.getOutputFile(".txt.gz"))
+        ofp2 = er.getFile(self.getOutputFile(".txt"))
+        er.addCmd(["sort", "-r"], stdin=ifp, stdout=ofp1)
+        er.addCmd(["sed", "-e", "s/^/= /"], stdin=ofp1, stdout=ofp2)
+        er.run()
+        self.diffExpected(".txt")
+        
+    def testCompDecompArgs(self):
+        er = ExRun()
+        ifp = er.getFile(self.getInputFile("numbers.txt"))
+        ofp1 = er.getFile(self.getOutputFile(".txt.gz"))
+        ofp2 = er.getFile(self.getOutputFile(".txt"))
+        er.addCmd((["sort", "-r", ifp.getIn()], ["tee", ofp1.getOut()]), stdout="/dev/null")
+        er.addCmd((["sed", "-e", "s/^/= /", ofp1.getIn()], ["tee", ofp2.getOut()]), stdout="/dev/null")
+        er.run()
+        self.diffExpected(".txt")
+        
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(CmdSuppliedTests))
-    #suite.addTest(unittest.makeSuite(CmdSubclassTests))
+    suite.addTest(unittest.makeSuite(CmdSubclassTests))
+    suite.addTest(unittest.makeSuite(CmdCompressTests))
     return suite
 
 if __name__ == '__main__':
     unittest.main()
+
