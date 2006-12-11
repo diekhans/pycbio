@@ -1,0 +1,48 @@
+class FileInRef(object):
+    """Object used to specified a input file name argument to a command
+    that is expanded just before the command is executed. """
+    __slots__ = ["file", "prefix", "autoDecompress"]
+
+    def __init__(self, file, prefix=None, autoDecompress=True):
+        self.file = file
+        self.prefix = prefix
+        self.autoDecompress = autoDecompress
+
+    def __str__(self):
+        """return input file argument"""
+        if self.prefix == None:
+            return self.file.getInPath(self.autoDecompress)
+        else:
+            return self.prefix + self.file.getInPath(self.autoDecompress)
+
+    def getInPath(self):
+        "return File.getInPath() for referenced file"
+        return self.file.getInPath(self.autoDecompress)
+
+
+class File(Production):
+    """Object representing a file production. This handles atomic file
+    creation. CmdRule will install productions of this class after the
+    commands succesfully complete.  It also handles automatic compression
+    and decompression via pipes.  This is the default behavior, unless
+    overridden by specifying autoCompress=False or autoDecompress=False
+    to various access functions."""
+
+
+    def testDecompErr(self):
+        "test handling of pipes when decompression has error"
+        er = ExRun()
+        ifp = er.getFile(self.getInputFile("numbers.txt"))
+        ofp1 = er.getFile(self.getOutputFile(".txt.gz"))
+        ofp2 = er.getFile(self.getOutputFile(".txt"))
+        # don't really compressed
+        er.addCmd(["cat", ifp.getIn()], stdout=ofp1.getOut(autoCompress=False))
+        er.addCmd((["sed", "-e", "s/^/= /", ofp1.getIn()], ["tee", ofp2.getOut()]), stdout="/dev/null")
+        ex = None
+        try:
+            er.run()
+        except ExRunException, ex:
+            self.failUnlessEqual(str(ex), "")
+        if ex == None:
+            self.fail("expected ExRunException")
+

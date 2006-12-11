@@ -130,7 +130,9 @@ def iterRows(fspec):
     else:
         fh = fspec
     try:
+        cnt = 0
         for line in fh:
+            cnt += 1
             yield line[0:-1].split("\t")
     finally:
         if isinstance(fspec, str):

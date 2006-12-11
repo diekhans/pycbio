@@ -1,11 +1,15 @@
 "File-like object to create and manage a pipeline of subprocesses"
 
+# FIXME: NASTY BUG: read gzcat file, stop reading, hangs on wait, because
+# close hasn't been done!!   
 # FIXME: should use mixins!!
+# FIXME: why the seperate Procline class?? (doc why)
+# FIXME: should proc throw on failure?
 # FIXME: would be nice to have an option to kill off all processes in pipleline
 #        if one aborts, but this would require putting them in a process group
 #        probably an extra fork
 
-import os, subprocess
+import os, subprocess, signal
 from pycbio.sys import strOps
 
 def hasWhiteSpace(word):
@@ -61,15 +65,35 @@ class Proc(subprocess.Popen):
                 strs.append(w)
         return " ".join(strs)
 
+    def _saveFailExcept(self):
+        self.failExcept = OSError(("process exited with %d: \"%s\" in pipeline \"%s\""
+                                   % (self.returncode, self.getDesc(), self.pipeline.getDesc())))
+
+    def poll(self):
+        """check if process has completed, return True if it has.  Calle
+        failed() to see if it failed."""
+        if super(Proc, self).poll() != 0:
+            self._saveFailExcept()
+            return False
+        else:
+            return True
+
     def wait(self):
         """wait for process to complete, set failExcept and return False if
         error occured"""
         if super(Proc, self).wait() != 0:
-            self.failExcept = OSError(("process exited with %d: \"%s\" in pipeline \"%s\""
-                                       % (self.returncode, self.getDesc(), self.pipeline.getDesc())))
+            self._saveFailExcept()
             return False
         else:
             return True
+
+    def failed(self):
+        "check if process failed, call after poll() or wait()"
+        return (self.failExcept != None)
+
+    def kill(self, sig=signal.SIGTERM):
+        "send a signal to the process"
+        os.kill(self.pid, sig)
         
 class Procline(object):
     """Process pipeline"""
@@ -124,7 +148,11 @@ class Procline(object):
         for p in self.procs:
             strs.append(p.getDesc())
         return " | ".join(strs) + self._getIoDesc()
-        
+
+    def kill(self, sig=signal.SIGTERM):
+        "send a signal all process in the pipeline"
+        for p in self.procs:
+            p.kill(sig)
         
     def wait(self, noError=False):
         """wait to for processes to complete, generate an exception if one exits
