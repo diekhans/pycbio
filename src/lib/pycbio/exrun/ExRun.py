@@ -47,6 +47,7 @@ class Verb(object):
         for m in msg:
             self.fh.write(str(m))
         self.fh.write("\n")
+        self.fh.flush()
 
     def prall(self, *msg):
         "unconditionall print a message with indentation"
@@ -138,6 +139,17 @@ class ExRun(object):
         shortcut for addRule(CmdRule(Cmd(....),...)"""
         return self.addRule(CmdRule(Cmd(cmd, stdin=stdin, stdout=stdout, stderr=stderr), name=name, requires=requires, produces=produces))
 
+    def _productionCheck(self):
+        """check that all productions with exist or have a rule to build them.
+        By check this up front, it prevents file from being created as
+        side-affects that are not encoded in the graph"""
+        noRuleFor = set()
+        for node in self.graph.nodes:
+            if isinstance(node, Production) and (len(node.requires) == 0) and (node.getTime() < 0.0):
+                noRuleFor.add(node)
+        if (len(noRuleFor) > 0):
+            raise ExRunException("No rule to build production(s): " + ", ".join([str(p) for p in noRuleFor]))
+                
     def _preEvalRuleCheck(self, rule):
         "Sanity check before a rule is run"
         for r in rule.requires:
@@ -210,7 +222,7 @@ class ExRun(object):
         if self.verb.enabled(self.verb.graph):
             self.dumpGraph()
         self.graph.check()
-
+        self._productionCheck()
         for entry in self.graph.getEntryNodes():
             if isinstance(entry, Rule):
                 self._buildRule(entry)

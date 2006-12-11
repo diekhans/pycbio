@@ -83,7 +83,7 @@ class ErrorTests(TestCaseBase):
             er.addRule(TouchRule("noRule2", self, f2, f1))
             er.run()
         except ExRunException, ex:
-            self.failUnlessEqual(str(ex),"No rule to build: ErrorTests.ErrorTests.testNoRule.file3")
+            self.failUnlessEqual(str(ex), "No rule to build production(s): ErrorTests.ErrorTests.testNoRule.file3")
         if ex == None:
             self.fail("expected ExRunException")
         

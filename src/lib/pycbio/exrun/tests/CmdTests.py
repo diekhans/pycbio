@@ -1,10 +1,11 @@
 "tests of CmdRule"
 
-import unittest, sys, os
+import unittest, sys, os, re
 if __name__ == '__main__':
     sys.path.append("../../..")
 from pycbio.sys.fileOps import ensureFileDir, rmFiles
 from pycbio.sys.TestCaseBase import TestCaseBase
+from pycbio.exrun import ExRunException
 from pycbio.exrun.ExRun import ExRun
 from pycbio.exrun.CmdRule import CmdRule, Cmd, File
 
@@ -125,7 +126,6 @@ class CmdSubclassTests(TestCaseBase):
         er.run()
         self.diffExpected(".txt")
 
-
     def testSort2(self):
         "two commands"
 
@@ -182,28 +182,46 @@ class CmdSubclassTests(TestCaseBase):
         self.diffExpected(".linecnt")
 
 class CmdCompressTests(TestCaseBase):
-    "tests of CmdRule with automatic compression/decompression"
+    "tests of CmdRule with automatic compression"
 
-    def testCompDecompStdio(self):
+    def testStdio(self):
         er = ExRun()
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp1 = er.getFile(self.getOutputFile(".txt.gz"))
         ofp2 = er.getFile(self.getOutputFile(".txt"))
         er.addCmd(["sort", "-r"], stdin=ifp, stdout=ofp1)
-        er.addCmd(["sed", "-e", "s/^/= /"], stdin=ofp1, stdout=ofp2)
+        er.addCmd(([ofp1.getCatCmd(), ofp1.getIn()], ["sed", "-e", "s/^/= /"]), stdout=ofp2)
         er.run()
         self.diffExpected(".txt")
         
-    def testCompDecompArgs(self):
+    def testArgs(self):
         er = ExRun()
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp1 = er.getFile(self.getOutputFile(".txt.gz"))
         ofp2 = er.getFile(self.getOutputFile(".txt"))
         er.addCmd((["sort", "-r", ifp.getIn()], ["tee", ofp1.getOut()]), stdout="/dev/null")
-        er.addCmd((["sed", "-e", "s/^/= /", ofp1.getIn()], ["tee", ofp2.getOut()]), stdout="/dev/null")
+        er.addCmd(([ofp1.getCatCmd(), ofp1.getIn()], ["sed", "-e", "s/^/= /"]), stdout=ofp2.getOut())
         er.run()
         self.diffExpected(".txt")
-        
+
+    def testCmdErr(self):
+        "test handling of pipes when process has error"
+        er = ExRun()
+        ifp = er.getFile(self.getInputFile("numbers.txt"))
+        ofp1 = er.getFile(self.getOutputFile(".txt.gz"))
+        ofp2 = er.getFile(self.getOutputFile(".txt"))
+        er.addCmd((["sort", "-r", ifp.getIn()], ["tee", ofp1.getOut()]), stdout="/dev/null")
+        er.addCmd(([ofp1.getCatCmd(), ofp1.getIn()], ["false"]), stdout=ofp2.getOut())
+        ex = None
+        try:
+            er.run()
+        except OSError, ex:
+            exre = ".*process exited with 1: \"false\" in pipeline.*"
+            if not re.match(exre, str(ex)):
+                self.fail("expected OSError matching: \"" + exre + "\", got: \"" + str(ex) + "\"")
+        if ex == None:
+            self.fail("expected OSError exception")
+            
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(CmdSuppliedTests))

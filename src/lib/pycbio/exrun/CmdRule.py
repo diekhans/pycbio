@@ -6,6 +6,10 @@ from pycbio.exrun import ExRunException
 from pycbio.exrun.Graph import Production,Rule
 from pycbio.sys.Pipeline import Pipeline,Procline
 
+# FIXME: Auto decompressions is not supported, as many programs handle reading
+# compressed files and the use of the /proc/ files to get pipe handles causes
+# file type issues.
+
 class FileOutRef(object):
     """Object used to specified a output file name argument to a command
     that is expanded just before the command is executed."""
@@ -30,31 +34,29 @@ class FileOutRef(object):
 class FileInRef(object):
     """Object used to specified a input file name argument to a command
     that is expanded just before the command is executed. """
-    __slots__ = ["file", "prefix", "autoDecompress"]
+    __slots__ = ["file", "prefix"]
 
-    def __init__(self, file, prefix=None, autoDecompress=True):
+    def __init__(self, file, prefix=None):
         self.file = file
         self.prefix = prefix
-        self.autoDecompress = autoDecompress
 
     def __str__(self):
         """return input file argument"""
         if self.prefix == None:
-            return self.file.getInPath(self.autoDecompress)
+            return self.file.getInPath()
         else:
-            return self.prefix + self.file.getInPath(self.autoDecompress)
+            return self.prefix + self.file.getInPath()
 
     def getInPath(self):
         "return File.getInPath() for referenced file"
-        return self.file.getInPath(self.autoDecompress)
+        return self.file.getInPath()
 
 class File(Production):
     """Object representing a file production. This handles atomic file
     creation. CmdRule will install productions of this class after the
-    commands succesfully complete.  It also handles automatic compression
-    and decompression via pipes.  This is the default behavior, unless
-    overridden my specifying autoCompress=False or autoDecompress=False
-    to various access functions."""
+    commands succesfully complete.  It also handles automatic compression of
+    output.  This is the default behavior, unless overridden by specifying the
+    autoCompress=False option the output functions. """
 
     def __init__(self, path, realPath):
         "realPath is use to detect files accessed from different paths"
@@ -63,9 +65,7 @@ class File(Production):
         self.realPath = realPath
         self.newPath = None
         self.installed = False
-        self.isCompressed = self.path.endswith(".gz") or self.path.endswith(".bz2") or self.path.endswith(".Z")
         self.compPipe = None
-        self.decompPipe = None
 
     def __str__(self):
         return self.path
@@ -76,6 +76,23 @@ class File(Production):
             return os.path.getmtime(self.path)
         else:
             return -1.0
+
+    def isCompressed(self):
+        return self.path.endswith(".gz") or self.path.endswith(".bz2") or self.path.endswith(".Z")
+
+    def getUncompressName(self):
+        "get the file name without a .gz/.bz2"
+        if self.isCompressed():
+            return os.path.splitext(self.path)[0]
+        else:
+            return self.path
+
+    def getCompressExt(self):
+        "return the compressions extension of the file, or an empty string if not compressed"
+        if self.isCompressed():
+            return os.path.splitext(self.path)[1]
+        else:
+            return ""
 
     def getOut(self, prefix=None, autoCompress=True):
         """Returns an object that causes the output file path to be substituted
@@ -96,7 +113,7 @@ class File(Production):
         if self.newPath == None:
             fileOps.ensureFileDir(self.path)
             self.newPath = self.exRun.getTmpPath(self.path)
-        if self.isCompressed and autoCompress:
+        if self.isCompressed() and autoCompress:
             if self.compPipe == None:
                 self.compPipe = Pipeline([self.getCompressCmd()], "w", otherEnd=self.newPath)
             return self.compPipe.pipepath()
@@ -107,36 +124,26 @@ class File(Production):
         self.compPipe.wait()
         self.compPipe = None
 
-    def getIn(self, prefix=None, autoDecompress=True):
+    def getIn(self, prefix=None):
         """Returns an object that causes the input file path to be substituted
         when str() is call on it.  CmdRule also adds this File as a requires
         when it is in a command specified at construction time.  If prefix is
         specified, it is added before the file name. This allows adding
         options like --foo=filepath.
         """
-        return FileInRef(self, prefix, autoDecompress)
+        return FileInRef(self, prefix)
 
-    def getInPath(self, autoDecompress=True):
+    def getInPath(self):
         """Get the input path name of the file.  If a new file has been defined
         using getOutPath(), but has not been installed, it's path is return,
         otherwise path is returned.  Normally one wants to use getIn()
         to define a command argument."""
         if self.compPipe != None:
-            self._compressWait()
+            self._compressWait()  # wait for initial compress
         if self.newPath != None:
-            path = self.newPath
+            return self.newPath
         else:
-            path = self.path
-        if self.isCompressed and autoDecompress:
-            if self.decompPipe == None:
-                self.decompPipe = Pipeline([self.getCatCmd()], otherEnd=path)
-            return self.decompPipe.pipepath()
-        else:
-            return path
-
-    def _decompressWait(self):
-        self.decompPipe.wait()
-        self.decompPipe = None
+            return self.path
 
     def getCatCmd(self):
         "return get the command name to use to cat the file, considering compression"
@@ -178,8 +185,6 @@ class File(Production):
         called, even on error, unless install() is called"""
         if self.compPipe != None:
             self._compressWait()
-        if self.decompPipe != None:
-            self._decompressWait()
 
 class Cmd(list):
     """A command in a CmdRule. An instance can either be a simple command,
