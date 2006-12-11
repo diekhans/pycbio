@@ -173,6 +173,7 @@ class Pipeline(Procline):
             raise IOError('invalid mode "' + mode + '"')
         self.mode = mode
         self.closed = False
+        self._pipePath = None # created on first call to pipepath
 
         (firstIn, lastOut, otherFh) = self._setupEnds(otherEnd)
         Procline.__init__(self, cmds, stdin=firstIn, stdout=lastOut)
@@ -232,7 +233,9 @@ class Pipeline(Procline):
   
     def pipepath(self):
         """get a file system path for the pipe, which can be passed to another process"""
-        return "/proc/" + str(os.getpid()) + "/fd/" + str(self.fh.fileno())
+        if self._pipePath == None:
+            self._pipePath = "/proc/" + str(os.getpid()) + "/fd/" + str(self.fh.fileno())
+        return self._pipePath
   
     def write(self, str):
         "Write string str to file."

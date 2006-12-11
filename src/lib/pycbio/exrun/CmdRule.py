@@ -4,52 +4,57 @@ import os.path
 from pycbio.sys import typeOps,fileOps
 from pycbio.exrun import ExRunException
 from pycbio.exrun.Graph import Production,Rule
-from pycbio.sys.Pipeline import Procline
-
-class FileInRef(object):
-    """Object used to specified a input file name argument to a command
-    that is expanded just before the command is executed."""
-    __slots__ = ["file", "prefix"]
-
-    def __init__(self, file, prefix=None):
-        self.file = file
-        self.prefix = prefix
-
-    def __str__(self):
-        """return input file argument"""
-        if self.prefix == None:
-            return self.file.getInPath()
-        else:
-            return self.prefix + self.file.getInPath()
-
-    def getInPath(self):
-        "return File.getInPath() for referenced file"
-        return self.file.getInPath()
+from pycbio.sys.Pipeline import Pipeline,Procline
 
 class FileOutRef(object):
     """Object used to specified a output file name argument to a command
     that is expanded just before the command is executed."""
-    __slots__ = ["file", "prefix"]
+    __slots__ = ["file", "prefix", "autoCompress"]
 
-    def __init__(self, file, prefix=None):
+    def __init__(self, file, prefix=None, autoCompress=True):
         self.file = file
         self.prefix = prefix
+        self.autoCompress = autoCompress
 
     def __str__(self):
         """return input file argument"""
         if self.prefix == None:
-            return self.file.getOutPath()
+            return self.file.getOutPath(self.autoCompress)
         else:
-            return self.prefix + self.file.getOutPath()
+            return self.prefix + self.file.getOutPath(self.autoCompress)
 
     def getOutPath(self):
         "return File.getInPath() for referenced file"
-        return self.file.getOutPath()
+        return self.file.getOutPath(self.autoCompress)
+
+class FileInRef(object):
+    """Object used to specified a input file name argument to a command
+    that is expanded just before the command is executed. """
+    __slots__ = ["file", "prefix", "autoDecompress"]
+
+    def __init__(self, file, prefix=None, autoDecompress=True):
+        self.file = file
+        self.prefix = prefix
+        self.autoDecompress = autoDecompress
+
+    def __str__(self):
+        """return input file argument"""
+        if self.prefix == None:
+            return self.file.getInPath(self.autoDecompress)
+        else:
+            return self.prefix + self.file.getInPath(self.autoDecompress)
+
+    def getInPath(self):
+        "return File.getInPath() for referenced file"
+        return self.file.getInPath(self.autoDecompress)
 
 class File(Production):
-    """Object representing a file production. This also handles atomic file
+    """Object representing a file production. This handles atomic file
     creation. CmdRule will install productions of this class after the
-    commands succesfully complete."""
+    commands succesfully complete.  It also handles automatic compression
+    and decompression via pipes.  This is the default behavior, unless
+    overridden my specifying autoCompress=False or autoDecompress=False
+    to various access functions."""
 
     def __init__(self, path, realPath):
         "realPath is use to detect files accessed from different paths"
@@ -58,6 +63,9 @@ class File(Production):
         self.realPath = realPath
         self.newPath = None
         self.installed = False
+        self.isCompressed = self.path.endswith(".gz") or self.path.endswith(".bz2") or self.path.endswith(".Z")
+        self.compPipe = None
+        self.decompPipe = None
 
     def __str__(self):
         return self.path
@@ -69,17 +77,16 @@ class File(Production):
         else:
             return -1.0
 
-    def getInPath(self):
-        """Get the input path name of the file.  If a new file has been defined
-        using getOutPath(), but has not been installed, it's path is return,
-        otherwise path is returned.  Normally one wants to use getIn()
-        to define a command argument."""
-        if self.newPath != None:
-            return self.newPath
-        else:
-            return self.path
+    def getOut(self, prefix=None, autoCompress=True):
+        """Returns an object that causes the output file path to be substituted
+        when str() is call on it.  CmdRule also adds this File as a produces
+        when it is in a command specified at construction time.  If prefix is
+        specified, it is added before the file name. This allows adding
+        options like --foo=filepath.
+        """
+        return FileOutRef(self, prefix, autoCompress)
 
-    def getOutPath(self):
+    def getOutPath(self, autoCompress=True):
         """Get the output name for the file, which is newPath until the rule
         terminates. This will also create the output directory for the file,
         if it does not exist.  Normally one wants to use getOut() to define
@@ -89,28 +96,47 @@ class File(Production):
         if self.newPath == None:
             fileOps.ensureFileDir(self.path)
             self.newPath = self.exRun.getTmpPath(self.path)
-        return self.newPath
+        if self.isCompressed and autoCompress:
+            if self.compPipe == None:
+                self.compPipe = Pipeline([self.getCompressCmd()], "w", otherEnd=self.newPath)
+            return self.compPipe.pipepath()
+        else:
+            return self.newPath
 
-    def getIn(self, prefix=None):
+    def _compressWait(self):
+        self.compPipe.wait()
+        self.compPipe = None
+
+    def getIn(self, prefix=None, autoDecompress=True):
         """Returns an object that causes the input file path to be substituted
         when str() is call on it.  CmdRule also adds this File as a requires
         when it is in a command specified at construction time.  If prefix is
         specified, it is added before the file name. This allows adding
         options like --foo=filepath.
         """
-        return FileInRef(self, prefix)
+        return FileInRef(self, prefix, autoDecompress)
 
-    def getOut(self, prefix=None):
-        """Returns an object that causes the output file path to be substituted
-        when str() is call on it.  CmdRule also adds this File as a produces
-        when it is in a command specified at construction time.  If prefix is
-        specified, it is added before the file name. This allows adding
-        options like --foo=filepath.
-        """
-        return FileOutRef(self, prefix)
+    def getInPath(self, autoDecompress=True):
+        """Get the input path name of the file.  If a new file has been defined
+        using getOutPath(), but has not been installed, it's path is return,
+        otherwise path is returned.  Normally one wants to use getIn()
+        to define a command argument."""
+        if self.compPipe != None:
+            self._compressWait()
+        if self.newPath != None:
+            path = self.newPath
+        else:
+            path = self.path
+        if self.isCompressed and autoDecompress:
+            if self.decompPipe == None:
+                self.decompPipe = Pipeline([self.getCatCmd()], otherEnd=path)
+            return self.decompPipe.pipepath()
+        else:
+            return path
 
-    def isCompressed(self):
-        return self.path.endswith(".gz") or self.path.endswith(".bz2")
+    def _decompressWait(self):
+        self.decompPipe.wait()
+        self.decompPipe = None
 
     def getCatCmd(self):
         "return get the command name to use to cat the file, considering compression"
@@ -121,10 +147,22 @@ class File(Production):
         else:
             return "cat"
 
+    def getCompressCmd(self):
+        "return get the command compress the file, or None if not compressed"
+        if self.path.endswith(".Z"):
+            raise ExRunException("writing compress .Z files not supported")
+        elif self.path.endswith(".gz"):
+            return "gzip"
+        elif self.path.endswith(".bz2"):
+            return "bzip2"
+        else:
+            return None
+
     def install(self):
         "atomic install of new output file as actual file"
         if self.installed:
             raise ExRunException("output file already installed: " + self.path)
+        self.finish()
         if self.newPath == None:
             raise ExRunException("getOutPath() never called for: " + self.path)
         if not os.path.exists(self.newPath):
@@ -134,6 +172,14 @@ class File(Production):
         os.rename(self.newPath, self.path)
         self.installed = True
         self.newPath = None
+
+    def finish(self):
+        """Called when command is finish to cleanup any process.  This must be
+        called, even on error, unless install() is called"""
+        if self.compPipe != None:
+            self._compressWait()
+        if self.decompPipe != None:
+            self._decompressWait()
 
 class Cmd(list):
     """A command in a CmdRule. An instance can either be a simple command,
@@ -283,16 +329,37 @@ class CmdRule(Rule):
         commands specified at construction, overrider this for a derived class"""
         self.runCmds()
 
-    def _installFileProductions(self):
+    def _succeedFinishFiles(self):
+        "finish up finish up requires/produces on success"
         for p in self.produces:
             if isinstance(p, File):
                 p.install()
+        for r in self.requires:
+            if isinstance(r, File):
+                r.finish()
+
+    def _finishNoRaise(self, p):
+        try:
+            p.finish()
+        except Exception, ex:
+            self.exRun.verb.prall("Error closing pipe after rule error: ", str(ex))
+        
+    def _failFinishFiles(self):
+        """finish up finish up requires/produces on failure, will log errors,
+        but not fail so original error is not lost"""
+        for p in self.produces:
+            if isinstance(p, File):
+                self._finishNoRaise(p)
+        for r in self.requires:
+            if isinstance(r, File):
+                self._finishNoRaise(r)
 
     def execute(self):
         "execute the rule"
         self.verb.enter()
         try:
             self.run()
-            self._installFileProductions()
+            self._succeedFinishFiles()
         finally:
+            self._failFinishFiles()
             self.verb.leave()
