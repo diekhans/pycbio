@@ -1,6 +1,6 @@
 from pycbio.tsv.TSVTable import TSVTable
 from pycbio.tsv.TSVReader import TSVReader
-
+#inId	selectId	inOverlap	selectOverlap	overBases
 typeMap =  {
     "inOverlap": float,
     "selectOverlap": float,
@@ -18,3 +18,4 @@ class OverlapSelectStatsTbl(TSVTable):
     def __init__(self, fileName):
         TSVTable.__init__(self, fileName, typeMap=typeMap, multiKeyCols=("inId","selectId"))
         
+__all__ = [OverlapSelectStatsReader.__name__, OverlapSelectStatsTbl.__name__]

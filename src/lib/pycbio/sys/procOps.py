@@ -2,6 +2,7 @@
 
 # FIXME: thes should build on pipeline
 # also see stderr changes in genbank copy of this file
+# FIXME: names are a bit too verbose (callLines instead of callProcLines)
 
 import subprocess
 

@@ -34,7 +34,7 @@ class CmdOpts(object):
                           help="tab separated file with two columns, locus numberic id and a category. "
                           "The category is included in the subset. e.g. single-exon loci vs multi-exon loci")
         parser.add_option("--omitZero", action="store_true", dest="omitZero", default=False,
-                          help="don't subsets buckets with zero count")
+                          help="don't output subsets buckets with zero counts")
         parser.add_option("--total", action="store_true", dest="total", default=False,
                           help="include a faux subset of TOTAL for overall counts")
         (opts, args) = parser.parse_args()

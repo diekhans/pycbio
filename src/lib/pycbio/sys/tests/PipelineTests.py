@@ -99,6 +99,11 @@ class PipelineTests(TestCaseBase):
         p = Pipeline(("false",))
         ec = p.wait(noError=True)
         self.failUnless(ec == 1)
+
+    def testSigPipe(self):
+        "test not reading all of pipe output"
+        pl = Pipeline([("cat", "/dev/zero"), ("true",)], "r")
+        pl.wait()
         
 def suite():
     suite = unittest.TestSuite()
