@@ -1,16 +1,12 @@
 "File-like object to create and manage a pipeline of subprocesses"
 
-# FIXME: NASTY BUG: read gzcat file, stop reading, hangs on wait, because
-# close hasn't been done!!   
 # FIXME: should use mixins!!
 # FIXME: why the seperate Procline class?? (doc why)
-# FIXME: should proc throw on failure?
-# FIXME: would be nice to have an option to kill off all processes in pipleline
-#        if one aborts, but this would require putting them in a process group
-#        probably an extra fork
+# FIXME: should Proc.wait throw on failure?
 
 import os, subprocess, signal
 from pycbio.sys import strOps
+import sys # FIXME: debug
 
 def hasWhiteSpace(word):
     "check if a string contains any whitespace"
@@ -19,6 +15,12 @@ def hasWhiteSpace(word):
             return True
     return False
 
+def setSigPipe():
+    "enable sigpipe exit in current process"
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+    if signal.getsignal(signal.SIGPIPE) != signal.SIG_DFL:
+        raise Exception("SIGPIPE could not be set to SIG_DLF")
+    
 class Proc(subprocess.Popen):
     """A process in the pipeline.  This extends subprocess.Popen(),
     it also has the following members:
@@ -43,8 +45,8 @@ class Proc(subprocess.Popen):
             serr = open(serr, "w")
 
         # need close_fds, or write pipe line fails due to pipes being
-        # incorrectly left open (FIXME: report bug??)
-        subprocess.Popen.__init__(self, self.cmd, stdin=sin, stdout=sout, stderr=serr, close_fds=True)
+        # incorrectly left open (FIXME: could handle in pre-exec)
+        subprocess.Popen.__init__(self, self.cmd, stdin=sin, stdout=sout, stderr=serr, preexec_fn=setSigPipe, close_fds=True)
 
         # close files if we opened them
         if isinstance(stdin, str):
@@ -307,3 +309,5 @@ class Pipeline(Procline):
             self.wait()
         if self.failExcept != None:
             raise failExcept
+
+__all__ = [Proc.__name__, Pipeline.__name__]

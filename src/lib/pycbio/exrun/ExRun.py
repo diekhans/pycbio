@@ -19,6 +19,7 @@ os.stat_float_times(True) # very, very gross
 # FIXME: need tracing of what is out of date
 # FIXME: Cmd should allow a Cmd as a command in the pipeline, which would
 #        allow all redirection in a subcommand (Pipeline enhancement).
+# FIXME: implement targets
 
 class Verb(object):
     "Verbose tracing, bases on a set of flags."
@@ -91,7 +92,7 @@ class ExRun(object):
         in the same directory.  The file extensions will be maintained, to
         allow recognition of file types, etc. """
         return os.path.join(os.path.dirname(path),
-                            "tmp." + self.getUniqId() + os.path.basename(path))
+                            "tmp." + self.getUniqId() + "." + os.path.basename(path))
 
     def _addNode(self, node):
         "add a new node"

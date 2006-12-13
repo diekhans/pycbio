@@ -6,9 +6,11 @@ from pycbio.exrun import ExRunException
 from pycbio.exrun.Graph import Production,Rule
 from pycbio.sys.Pipeline import Pipeline,Procline
 
-# FIXME: Auto decompressions is not supported, as many programs handle reading
-# compressed files and the use of the /proc/ files to get pipe handles causes
-# file type issues.
+# FIXME: Auto decompression is not supported, as many programs handle reading
+# compressed files and the use of the /proc/ files to get pipe paths causes
+# file extension issues.
+
+# FIXME: could dynamic properties replace getOut(), etc???
 
 class FileOutRef(object):
     """Object used to specified a output file name argument to a command

@@ -101,7 +101,7 @@ def prRowv(fh, *objs):
     fh.write("\n")
 
 def readFileLines(fname):
-    "read lines from a file, removing the newlines"
+    "read lines from a file into a list, removing the newlines"
     fh = file(fname)
     lines = []
     for l in fh:
