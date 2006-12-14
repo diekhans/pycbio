@@ -1,12 +1,9 @@
 "File-like object to create and manage a pipeline of subprocesses"
 
-# FIXME: should use mixins!!
-# FIXME: why the seperate Procline class?? (doc why)
-# FIXME: should Proc.wait throw on failure?
+# FIXME: should use mixins to!!
 
 import os, subprocess, signal
 from pycbio.sys import strOps
-import sys # FIXME: debug
 
 def hasWhiteSpace(word):
     "check if a string contains any whitespace"
@@ -20,6 +17,14 @@ def setSigPipe():
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
     if signal.getsignal(signal.SIGPIPE) != signal.SIG_DFL:
         raise Exception("SIGPIPE could not be set to SIG_DLF")
+
+def getSigName(num):
+    "get name for a signal number"
+    # find name in signal namespace
+    for key in signal.__dict__.iterkeys():
+        if (signal.__dict__[key] == num) and key.startswith("SIG") and (key.find("_") < 0):
+            return key
+    return "signal"+str(num)
     
 class Proc(subprocess.Popen):
     """A process in the pipeline.  This extends subprocess.Popen(),
@@ -68,24 +73,42 @@ class Proc(subprocess.Popen):
         return " ".join(strs)
 
     def _saveFailExcept(self):
-        self.failExcept = OSError(("process exited with %d: \"%s\" in pipeline \"%s\""
-                                   % (self.returncode, self.getDesc(), self.pipeline.getDesc())))
+        if (self.returncode < 0):
+            self.failExcept = OSError(("process signaled %s: \"%s\" in pipeline \"%s\""
+                                       % (getSigName(-self.returncode), self.getDesc(), self.pipeline.getDesc())))
+        else:
+            self.failExcept = OSError(("process exited with %d: \"%s\" in pipeline \"%s\""
+                                       % (self.returncode, self.getDesc(), self.pipeline.getDesc())))
 
-    def poll(self):
-        """check if process has completed, return True if it has.  Calle
-        failed() to see if it failed."""
-        if super(Proc, self).poll() != 0:
+    def _handleExit(self):
+        if not ((self.returncode == 0) or (self.returncode == -signal.SIGPIPE)):
             self._saveFailExcept()
+            
+    def poll(self, noError=False):
+        """Check if the process has completed.  Return True if it has, False
+        if it hasn't.  If it completed and exited non-zero or signaled, raise
+        an exception unless noError is set.  In which case, True is return and
+        failed() must be checked to see if it failed"""
+        if super(Proc, self).poll() == None:
             return False
         else:
-            return True
+            self._handleExit()
+            if (self.failExcept != None) and (not noError):
+                raise self.failExcept
+            else:
+                return True
 
-    def wait(self):
-        """wait for process to complete, set failExcept and return False if
-        error occured"""
-        if super(Proc, self).wait() != 0:
-            self._saveFailExcept()
-            return False
+    def wait(self, noError=False):
+        """Wait for the process to complete. Generate an exception if it exits
+        non-zero or signals. If noError is True, then return True if the
+        process succeded, False on a error."""
+        super(Proc, self).wait()
+        self._handleExit()
+        if (self.failExcept != None):
+            if not noError:
+                raise self.failExcept
+            else:
+                return False
         else:
             return True
 
@@ -114,33 +137,42 @@ class Procline(object):
 
         if isinstance(cmds[0], str):
             cmds = [cmds]  # one-process pipeline
+        prevProc = None
+        lastCmd = cmds[len(cmds)-1]
         for cmd in cmds:
-            self._createProc(cmd, cmds, stdin, stdout, stderr)
+            prevProc = self._createProc(cmd, prevProc, (cmd==lastCmd), stdin, stdout, stderr)
         
-    def _createProc(self, cmd, cmds, stdinFirst, stdoutLast, stderr):
+    def _createProc(self, cmd, prevProc, isLastCmd, stdinFirst, stdoutLast, stderr):
         """create one process"""
-        if (cmd == cmds[0]):
+        if (prevProc == None):
             stdin = stdinFirst  # first process in pipeline
         else:
-            stdin = self.procs[len(self.procs)-1].stdout
-        if (cmd == cmds[len(cmds)-1]):
+            stdin = prevProc.stdout
+        if (isLastCmd):
             stdout = stdoutLast # last process in pipeline
         else:
             stdout = subprocess.PIPE
-        p = Proc(self, cmd, stdin=stdin, stdout=stdout, stderr=stderr)
-        self.procs.append(p)
+        proc = Proc(self, cmd, stdin=stdin, stdout=stdout, stderr=stderr)
+        self.procs.append(proc)
 
+        # this isn't handled by subprocess
+        if (prevProc != None):
+            # close intermediate output pipes
+            prevProc.stdout.close()
+            prevProc.stdout = None
+        return proc
+            
     def _getIoDesc(self):
         "generate shell-like string describing I/O redirections"
         desc = ""
-        if self.stdin != None:
+        if (self.stdin != None):
             desc += " <" + str(self.stdin)
         if (self.stdout != None) and (self.stderr == self.stdout):
             desc += " >&" + str(self.stdout)
         else:
-            if self.stdout != None:
+            if (self.stdout != None):
                 desc += " >" + str(self.stdout)
-            if self.stderr != None:
+            if (self.stderr != None):
                 desc += " 2>" + str(self.stderr)
         return desc
 
@@ -157,14 +189,14 @@ class Procline(object):
             p.kill(sig)
         
     def wait(self, noError=False):
-        """wait to for processes to complete, generate an exception if one exits
-        no-zero, unless noError is True, in which care return the exit code of the
-        first process that failed"""
+        """Wait for the processes to complete. Generate an exception if one
+        exits non-zero or signals, unless noError is True, in which case
+        return True if the process succeded, False on a error."""
 
         # wait on processes
         firstFail = None
         for p in self.procs:
-            if not p.wait():
+            if not p.wait(noError=True):
                 if firstFail == None:
                     firstFail = p
 
@@ -174,9 +206,9 @@ class Procline(object):
             if not noError:
                 raise self.failExcept
             else:
-                return firstFail.returncode
+                return False
         else:
-            return 0
+            return True
 
 class Pipeline(Procline):
     """File-like object to create and manage a pipeline of subprocesses.
@@ -296,7 +328,7 @@ class Pipeline(Procline):
         if self.mode == 'w':
             self.fh.close()
         try:
-            code = Procline.wait(self, noError)
+            code = Procline.wait(self, noError=True)
         finally:
             # must close after waits for input pipeline
             if self.mode == 'r':

@@ -97,12 +97,12 @@ class PipelineTests(TestCaseBase):
 
     def testExitCode(self):
         p = Pipeline(("false",))
-        ec = p.wait(noError=True)
-        self.failUnless(ec == 1)
+        self.failUnless(not p.wait(noError=True))
+        self.failUnless(p.procs[0].returncode == 1)
 
     def testSigPipe(self):
         "test not reading all of pipe output"
-        pl = Pipeline([("cat", "/dev/zero"), ("true",)], "r")
+        pl = Pipeline([("yes",), ("true",)], "r")
         pl.wait()
         
 def suite():
