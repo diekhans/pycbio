@@ -222,6 +222,14 @@ class CmdCompressTests(TestCaseBase):
         if ex == None:
             self.fail("expected OSError exception")
             
+    def testCmdSigPipe(self):
+        "test command recieving SIGPIPE with no error"
+        er = ExRun()
+        ofp = er.getFile(self.getOutputFile(".txt"))
+        er.addCmd((["yes"], ["true"]), stdout=ofp.getOut())
+        ex = None
+        er.run()
+            
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(CmdSuppliedTests))
