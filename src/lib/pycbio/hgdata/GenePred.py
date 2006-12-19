@@ -1,5 +1,6 @@
 import string
 from pycbio.tsv.TabFile import TabFile
+from pycbio.sys import fileOps
 from pycbio.hgdata.AutoSql import intArraySplit, intArrayJoin
 from pycbio.sys.Enumeration import Enumeration
 
@@ -296,8 +297,7 @@ class GenePred(object):
         fh.write("\n")
         
 class GenePredTbl(TabFile):
-    """Table of GenePred objects loaded from a tab-file
-    """
+    """Table of GenePred objects loaded from a tab-file"""
     # FIXME: two index flags is a hack
     def __init__(self, fileName, buildIdx=False, buildUniqIdx=False, buildRangeIdx=False):
         TabFile.__init__(self, fileName, rowClass=GenePred)
@@ -325,3 +325,22 @@ class GenePredTbl(TabFile):
     def getGeneSet(self):
         "get a set of all of the genes in the table"
         return set(self)
+
+# FIXME: hacked in, above should use this
+
+class GenePredReader(object):
+    """Read genePreds from a tab file"""
+    def __init__(self, fileName):
+        self.fh = fileOps.opengz(fileName)
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        "GPR next"
+        line = self.fh.readline()
+        if (line == ""):
+            self.fh.close();
+            raise StopIteration
+        line = line[0:-1]  # drop newline
+        return GenePred(line.split("\t"))

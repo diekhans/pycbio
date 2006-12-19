@@ -29,7 +29,7 @@ class TabFile(list):
         """
         self.fileName = fileName
         self.rowClass = rowClass
-        inFh = fileOps.opengz(fileName, "r")
+        inFh = fileOps.opengz(fileName)
         try:
             self._read(inFh)
         finally:

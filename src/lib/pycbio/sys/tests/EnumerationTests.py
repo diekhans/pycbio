@@ -5,6 +5,7 @@ from pycbio.sys.Enumeration import Enumeration
 from pycbio.sys.TestCaseBase import TestCaseBase
 
 class EnumerationTests(TestCaseBase):
+
     def testBasics(self):
         Colors = Enumeration("Colors", ["red", "green", "blue"])
         self.failUnlessEqual(Colors.red.name, "red")
@@ -62,7 +63,12 @@ class EnumerationTests(TestCaseBase):
         self.failUnless(vals[0] is Stat.okay)
         self.failUnless(vals[1] is Stat.bad_5_splice)
 
-        
+    def testSetOps(self):
+        Colors = Enumeration("Colors", ["red", "green", "blue"])
+        colSet = set([Colors.blue, Colors.green])
+        self.failUnless(Colors.green in colSet)
+        self.failIf(Colors.red in colSet)
+
     def testErrors(self):
         Colors = Enumeration("Colors", ["red", "green", "blue"])
         # check if immutable
