@@ -64,7 +64,10 @@ class BatchStats(object):
 
     def hasParasolErrs(self):
         return self.subErrors or self.queueErrors or self.trackingErrors or self.paraResultsErrors
-
+    
+    def succeeded(self):
+        return (not hasParasolErrs()) and (self.runOk == self.totalJobs)
+        
 class Para(object):
     "interface to the parasol para command"
     def __init__(self, paraHost, paraDir, jobFile=None):
@@ -90,6 +93,10 @@ class Para(object):
     def make(self):
         "run para make"
         self._para("make", self.jobFile)
+
+    def shove(self):
+        "run para make"
+        self._para("shove")
 
     def check(self):
         "run para check and return statistics"
