@@ -2,7 +2,7 @@
 import os.path,sys,socket
 from pycbio.exrun.Graph import *
 from pycbio.sys import typeOps
-from pycbio.exrun import ExRunException
+from pycbio.exrun import ExRunException,Verb
 from pycbio.exrun.CmdRule import CmdRule, Cmd, File
 
 os.stat_float_times(True) # very, very gross
@@ -20,56 +20,6 @@ os.stat_float_times(True) # very, very gross
 # FIXME: Cmd should allow a Cmd as a command in the pipeline, which would
 #        allow all redirection in a subcommand (Pipeline enhancement).
 # FIXME: implement targets
-
-class Verb(object):
-    "Verbose tracing, bases on a set of flags."
-    
-    # flag values
-    error = intern("error")     # output erors
-    trace = intern("trace")     # basic tracing
-    details = intern("details") # detailed tracing
-    graph = intern("graph")     # dump graph at the start
-
-    def __init__(self, fh=sys.stderr):
-        self.fh = fh
-        #self.flags = set([Verb.error, Verb.trace, Verb.graph])
-        self.flags = set([Verb.error, Verb.trace])
-        self.indent = 0
-
-    def enabled(self, flag):
-        """determine if tracing is enabled for the specified flag, flag can be either a single flag or a set"""
-        if isinstance(flag, set):
-            return (flag and self.flags)
-        else:
-            return (flag in self.flags)
-
-    def _prIndent(self, msg):
-        self.fh.write(("%*s" % (2*self.indent, "")))
-        for m in msg:
-            self.fh.write(str(m))
-        self.fh.write("\n")
-        self.fh.flush()
-
-    def prall(self, *msg):
-        "unconditionall print a message with indentation"
-        self._prIndent(msg)
-
-    def pr(self, flag, *msg):
-        "print a message with indentation if flag indicates enabled"
-        if self.enabled(flag):
-            self._prIndent(msg)
-
-    def enter(self, flag=None, *msg):
-        "increment indent count, first optionally output a trace message"
-        if self.enabled(flag) and (len(msg) > 0):
-            self._prIndent(msg)
-        self.indent += 1
-
-    def leave(self, flag=None, *msg):
-        "decrement indent count, then optionally outputing a trace message "
-        self.indent -= 1
-        if self.enabled(flag) and (len(msg) > 0):
-            self._prIndent(msg)
 
 class ExRun(object):
     "object that defines and runs an experiment"

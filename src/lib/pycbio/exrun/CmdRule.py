@@ -1,16 +1,24 @@
 "Classes used to implement rules that execute commands and produce files"
 
-import os.path
+import os.path,sys
 from pycbio.sys import typeOps,fileOps
-from pycbio.exrun import ExRunException
+from pycbio.exrun import ExRunException,Verb
 from pycbio.exrun.Graph import Production,Rule
 from pycbio.sys.Pipeline import Pipeline,Procline
+
+# FIXME: want to print traceback in verb, but it gets change by continuing execution
+import traceback
 
 # FIXME: Auto decompression is not supported, as many programs handle reading
 # compressed files and the use of the /proc/ files to get pipe paths causes
 # file extension issues.
+# FIXME: seems like install could be generalized to any rule, Could the make
+# CmdRule only need for a supplied list of commands
 
 # FIXME: could dynamic properties replace getOut(), etc???
+
+# FIXME: the number of different get{In,Out} functions is confusing, and can causes
+# errors if the wrong one is used
 
 class FileOutRef(object):
     """Object used to specified a output file name argument to a command
@@ -96,6 +104,17 @@ class File(Production):
         else:
             return ""
 
+    def _setupOut(self, autoCompress=True):
+        "setup output file or pipe"
+        if self.installed:
+            raise ExRunException("output file already installed: " + self.path)
+        if self.newPath == None:
+            fileOps.ensureFileDir(self.path)
+            self.newPath = self.exRun.getTmpPath(self.path)
+        if self.isCompressed() and autoCompress:
+            if self.compPipe == None:
+                self.compPipe = Pipeline([self.getCompressCmd()], "w", otherEnd=self.newPath)
+        
     def getOut(self, prefix=None, autoCompress=True):
         """Returns an object that causes the output file path to be substituted
         when str() is call on it.  CmdRule also adds this File as a produces
@@ -109,18 +128,21 @@ class File(Production):
         """Get the output name for the file, which is newPath until the rule
         terminates. This will also create the output directory for the file,
         if it does not exist.  Normally one wants to use getOut() to define
-        a command argument"""
-        if self.installed:
-            raise ExRunException("output file already installed: " + self.path)
-        if self.newPath == None:
-            fileOps.ensureFileDir(self.path)
-            self.newPath = self.exRun.getTmpPath(self.path)
-        if self.isCompressed() and autoCompress:
-            if self.compPipe == None:
-                self.compPipe = Pipeline([self.getCompressCmd()], "w", otherEnd=self.newPath)
+        a command argument.  This should not be used to get the path to a file
+        to be opened in the current process, use openOut() instead."""
+        self._setupOut(autoCompress)
+        if self.compPipe != None:
             return self.compPipe.pipepath()
         else:
             return self.newPath
+
+    def openOut(self):
+        """open the output file for writing from the ExRun process"""
+        self._setupOut()
+        if self.compPipe != None:
+            return self.compPipe
+        else:
+            return open(self.newPath, "w")
 
     def _compressWait(self):
         self.compPipe.wait()
@@ -136,10 +158,11 @@ class File(Production):
         return FileInRef(self, prefix)
 
     def getInPath(self):
-        """Get the input path name of the file.  If a new file has been defined
-        using getOutPath(), but has not been installed, it's path is return,
-        otherwise path is returned.  Normally one wants to use getIn()
-        to define a command argument."""
+        """Get the input path name of the file.  If a new file has been
+        defined using getOutPath(), but has not been installed, it's path is
+        return, otherwise path is returned.  Normally one wants to use getIn()
+        to define a command argument.  This should not be used to get the path
+        to a file to be opened in the ExRun process, use openIn() instead. """
         if self.compPipe != None:
             self._compressWait()  # wait for initial compress
         if self.newPath != None:
@@ -147,6 +170,11 @@ class File(Production):
         else:
             return self.path
 
+    def openIn(self):
+        """open the input file for reading in the current process"""
+        # FIXME: not implemented
+        assert(False)
+        
     def getCatCmd(self):
         "return get the command name to use to cat the file, considering compression"
         if self.path.endswith(".Z") or self.path.endswith(".gz"):
@@ -235,8 +263,8 @@ class Cmd(list):
     def call(self, verb):
         "run command, with tracing"
         pl = Procline(self, self._getInput(self.stdin), self._getOutput(self.stdout), self._getOutput(self.stderr))
-        if verb.enabled(verb.trace):
-            verb.pr(verb.trace, pl.getDesc())
+        if verb.enabled(Verb.trace):
+            verb.pr(Verb.trace, pl.getDesc())
         pl.wait()
 
 class CmdRule(Rule):
@@ -367,6 +395,8 @@ class CmdRule(Rule):
         try:
             self.run()
             self._succeedFinishFiles()
-        finally:
+        except Exception, ex:
+            self.verb.pr(Verb.error, "Exception: ", ex, traceback.format_tb(sys.exc_info()[2]))
             self._failFinishFiles()
+        finally:
             self.verb.leave()

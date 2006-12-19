@@ -6,23 +6,27 @@
 
 import subprocess
 
-def procErr(cmd, code, err=None):
-    "handle an error from subprocess.communicate"
-    if (code < 0):
-        msg = "process signaled " + str(-code)
-    else:
-        msg = "process error"
-    msg += ": \"" + " ".join(cmd) + "\""
-    if (err != None) and (len(err) != 0):
-        msg += ": " + err
-    raise Exception(msg)
+class ProcException(Exception):
+    "process error exception"
+    def __init__(self, cmd, returncode, stderr=None):
+        self.returncode = returncode
+        self.stderr = stderr
+        if (returncode < 0):
+            msg = "process signaled " + str(-returncode)
+        else:
+            msg = "process error:" + ": \"" + " ".join(cmd) + "\""
+            if (stderr != None) and (len(stderr) != 0):
+                msg += ": " + stderr
+            else:
+                msg += ": exit code: " + str(returncode)
+        Exception.__init__(self, msg)
 
 def callProc(cmd, keepLastNewLine=False):
     "call a process and return stdout, exception with stderr in message"
     p = subprocess.Popen(cmd, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = p.communicate()
     if (p.returncode != 0):
-        procErr(cmd, p.returncode, err)
+        raise ProcException(cmd, p.returncode, err)
     if (not keepLastNewLine) and (len(out) > 0) and (out[-1] == "\n"):
         out = out[0:-1]
     return out
@@ -50,5 +54,7 @@ def runProc(cmd, stdin="/dev/null", stdout=None, stderr=None, noError=False):
     p = subprocess.Popen(cmd, stdin=_getStdFile(stdin, "r"), stdout=_getStdFile(stdout, "w"), stderr=_getStdFile(stderr, "w"))
     p.communicate()
     if ((p.returncode != 0) and not noError):
-        procErr(cmd, p.returncode)
+        raise ProcException(cmd, p.returncode)
     return p.returncode
+
+__all__ = (ProcException.__name__, callProc.__name__, callProcLines.__name__, runProc.__name__)

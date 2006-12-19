@@ -75,8 +75,12 @@ typeMap = {
     "cdsGap": int,
     "cdsMult3Gap": int,
     "utrGap": int,
-    "cdsSplice": int,
-    "utrSplice": int,
+    "cdsUnknownSplice": int,
+    "utrUnknownSplice": int,
+    "cdsNonCanonSplice": int,
+    "utrNonCanonSplice": int,
+    "cdsSplice": int,   # old column
+    "utrSplice": int,   # old column
     "numExons": int,
     "numCds": int,
     "numUtr5": int,

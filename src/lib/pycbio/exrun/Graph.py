@@ -2,7 +2,6 @@
 import os.path
 from pycbio.sys import typeOps
 from pycbio.exrun import ExRunException
-import sys # FIXME: tmp
 
 posInf = float("inf")
 negInf = float("-inf")

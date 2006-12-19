@@ -138,4 +138,3 @@ def iterRows(fspec):
         if isinstance(fspec, str):
             fh.close()
 
-    

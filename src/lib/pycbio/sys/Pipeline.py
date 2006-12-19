@@ -1,6 +1,7 @@
 "File-like object to create and manage a pipeline of subprocesses"
 
 # FIXME: should use mixins to!!
+# FIXME: should move procOps exception to here, have option to throw stderr
 
 import os, subprocess, signal
 from pycbio.sys import strOps
@@ -196,7 +197,7 @@ class Procline(object):
         # wait on processes
         firstFail = None
         for p in self.procs:
-            if not p.wait(noError=True):
+            if not p.wait(noError):
                 if firstFail == None:
                     firstFail = p
 
@@ -328,7 +329,7 @@ class Pipeline(Procline):
         if self.mode == 'w':
             self.fh.close()
         try:
-            code = Procline.wait(self, noError=True)
+            code = Procline.wait(self, noError)
         finally:
             # must close after waits for input pipeline
             if self.mode == 'r':
