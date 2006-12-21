@@ -120,6 +120,22 @@ def readLine(fh):
         l = l[:-1]
     return l
 
+def iterLines(fspec):
+    """generator over lines in file, dropping newlines.  If fspec is a string,
+    open the file and close at end. Otherwise it is file-like object and will
+    not be closed."""
+    if isinstance(fspec, str):
+        fh = opengz(fspec)
+    else:
+        fh = fspec
+    try:
+        cnt = 0
+        for line in fh:
+            yield line[0:-1]
+    finally:
+        if isinstance(fspec, str):
+            fh.close()
+
 def iterRows(fspec):
     """generator over rows in a tab-separated file.  Each line of the file is
     parsed, split into columns and returned.  If fspec is a string, open the
@@ -138,3 +154,23 @@ def iterRows(fspec):
         if isinstance(fspec, str):
             fh.close()
 
+def atomicInstall(tmpPath, finalPath):
+    "atomic install of tmpPath as finalPath"
+    if os.path.exists(finalPath):
+        os.unlink(finalPath)
+    os.rename(tmpPath, finalPath)
+    
+def uncompressedBase(path):
+    "return the file path, removing a compression extension if it exists"
+    if path.endswith(".gz") or path.endswith(".bz2") or path.endswith(".Z"):
+        return os.path.splitext(path)[0]
+    else:
+        return path
+
+_devNullFh = None
+def getDevNull():
+    "get a file object open to /dev/null, caching only one instance"
+    global _devNullFh
+    if _devNullFh == None:
+        _devNullFh = open("/dev/null", "r+")
+    return _devNullFh

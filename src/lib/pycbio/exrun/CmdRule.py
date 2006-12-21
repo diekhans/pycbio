@@ -110,7 +110,7 @@ class File(Production):
             raise ExRunException("output file already installed: " + self.path)
         if self.newPath == None:
             fileOps.ensureFileDir(self.path)
-            self.newPath = self.exRun.getTmpPath(self.path)
+            self.newPath = self.exrun.getTmpPath(self.path)
         if self.isCompressed() and autoCompress:
             if self.compPipe == None:
                 self.compPipe = Pipeline([self.getCompressCmd()], "w", otherEnd=self.newPath)
@@ -204,9 +204,7 @@ class File(Production):
             raise ExRunException("getOutPath() never called for: " + self.path)
         if not os.path.exists(self.newPath):
             raise ExRunException("output file as not created: " + self.newPath)
-        if os.path.exists(self.path):
-            os.unlink(self.path)
-        os.rename(self.newPath, self.path)
+        fileOps.atomicInstall(self.newPath, self.path)
         self.installed = True
         self.newPath = None
 
@@ -377,7 +375,8 @@ class CmdRule(Rule):
         try:
             p.finish()
         except Exception, ex:
-            self.exRun.verb.prall("Error closing pipe after rule error: ", str(ex))
+            self.exrun.verb.prall("Error closing pipe after rule error: ", str(ex))
+            raise
         
     def _failFinishFiles(self):
         """finish up finish up requires/produces on failure, will log errors,
@@ -396,7 +395,8 @@ class CmdRule(Rule):
             self.run()
             self._succeedFinishFiles()
         except Exception, ex:
-            self.verb.pr(Verb.error, "Exception: ", ex, traceback.format_tb(sys.exc_info()[2]))
+            self.verb.pr(Verb.error, "Exception: ", ex)
             self._failFinishFiles()
+            raise
         finally:
             self.verb.leave()

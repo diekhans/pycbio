@@ -20,7 +20,7 @@ class Node(object):
         """Produces are incoming edges from nodes requiring this node,
         requires are outgoing edges to nodes that this node requires.
         Name is used in error messages"""
-        self.exRun = None  # set when added to ExRun object
+        self.exrun = None  # set when added to ExRun object
         self.name = name
         self.requires = set()  # next
         self.produces = set()  # prev

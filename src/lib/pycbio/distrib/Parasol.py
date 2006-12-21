@@ -1,9 +1,12 @@
 """classes for interacting with parasol batch system"""
-from pycbio.sys import procOps
+import sys, os.path
+from pycbio.sys import procOps,fileOps
 
 # FIXME: shell has multiple quoting hell issues; maybe something like 
 # fsh (http://www.lysator.liu.se/fsh/) would fix this, and make it faster.
 # or maybe netpipes, or libssh
+
+# FIXME: need to figure out verbose stuff with indentation
 
 class BatchStats(object):
     "statistics on jobs in the current batch"
@@ -57,24 +60,32 @@ class BatchStats(object):
         self.hung = 0
         self.failed = 0
 
+        # parse lines, skiping empty lines
         for line in lines:
-            words = line.split(":")
-            if (len(words) < 2) || not self._parseLine(words):
-                raise Exception("don't know how to parse para check output line: "+line)
+            line = line.strip()
+            if len(line) > 0:
+                words = line.split(":")
+                if (len(words) < 2) or not self._parseLine(words):
+                    raise Exception("don't know how to parse para check output line: "+line)
 
     def hasParasolErrs(self):
         return self.subErrors or self.queueErrors or self.trackingErrors or self.paraResultsErrors
     
     def succeeded(self):
-        return (not hasParasolErrs()) and (self.runOk == self.totalJobs)
+        return (not self.hasParasolErrs()) and (self.ranOk == self.totalJobs)
         
 class Para(object):
     "interface to the parasol para command"
     def __init__(self, paraHost, paraDir, jobFile=None):
         "job file should be relative to paraDir"
         self.paraHost = paraHost
-        self.paraDir = paraDir
+        self.paraDir = os.path.abspath(paraDir)
         self.jobFile = jobFile
+
+    def close(self):
+        "close up para connection"
+        # might do something one data if we keep ssh open
+        pass
 
     def _para(self, *paraArgs):
         """ssh to the remote machine and run the para command.  paraArgs are
@@ -82,7 +93,7 @@ class Para(object):
         lines, stderr in ProcException if the remote program encouners an
         error. There is a possibility for quoting hell here."""
         remCmd = "cd " + self.paraDir + "; para " + " ".join(paraArgs)
-        self.verb.pr(verb.trace, "ssh ", self.paraHost, " ", remCmd)
+        fileOps.prLine(sys.stderr, "ssh ", self.paraHost, " ", remCmd)
         return procOps.callProcLines(["ssh", "-o", "ClearAllForwardings=yes", self.paraHost, remCmd])
 
     def wasStarted(self):
@@ -102,5 +113,10 @@ class Para(object):
         "run para check and return statistics"
         lines = self._para("make", self.jobFile)
         return BatchStats(lines)
+
+    def time(self):
+        "run para check and return statistics as a list of lines"
+        lines = self._para("time")
+        return lines
 
 __all__ = [BatchStats.__name__, Para.__name__]

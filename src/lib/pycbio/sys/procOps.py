@@ -4,7 +4,8 @@
 # also see stderr changes in genbank copy of this file
 # FIXME: names are a bit too verbose (callLines instead of callProcLines)
 
-import subprocess
+import subprocess,os, os.path
+from pycbio.sys import fileOps
 
 class ProcException(Exception):
     "process error exception"
@@ -23,7 +24,7 @@ class ProcException(Exception):
 
 def callProc(cmd, keepLastNewLine=False):
     "call a process and return stdout, exception with stderr in message"
-    p = subprocess.Popen(cmd, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(cmd, stdin=fileOps.getDevNull(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = p.communicate()
     if (p.returncode != 0):
         raise ProcException(cmd, p.returncode, err)
@@ -57,4 +58,19 @@ def runProc(cmd, stdin="/dev/null", stdout=None, stderr=None, noError=False):
         raise ProcException(cmd, p.returncode)
     return p.returncode
 
-__all__ = (ProcException.__name__, callProc.__name__, callProcLines.__name__, runProc.__name__)
+def which(prog, makeAbs=False):
+    "search PATH for prog, optionally generating an absolute path.  Exception if not found."
+    for d in os.environ["PATH"].split(":"):
+        if d == "":
+            d = "."
+        f = d + "/" + prog
+        if os.access(f, os.X_OK):
+            if (makeAbs):
+                return os.path.abspath(f)
+            else:
+                return f
+    raise Exception("Can't find program \"" + prog + "\" on path \"" + os.environ["PATH"] + "\"")
+    
+
+__all__ = (ProcException.__name__, callProc.__name__, callProcLines.__name__, runProc.__name__, which.__name__)
+

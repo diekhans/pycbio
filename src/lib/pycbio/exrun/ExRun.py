@@ -47,7 +47,7 @@ class ExRun(object):
     def _addNode(self, node):
         "add a new node"
         self.graph.addNode(node)
-        node.exRun = self
+        node.exrun = self
         return node
 
     def getFile(self, path):
@@ -82,7 +82,7 @@ class ExRun(object):
     def addRule(self, rule):
         "add a new rule"
         self._addNode(rule)
-        rule.exRun = self
+        rule.exrun = self
         rule.verb = self.verb
 
     def addCmd(self, cmd, name=None, requires=None, produces=None, stdin=None, stdout=None, stderr=None):
