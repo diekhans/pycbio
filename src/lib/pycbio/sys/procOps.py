@@ -15,7 +15,7 @@ class ProcException(Exception):
         if (returncode < 0):
             msg = "process signaled " + str(-returncode)
         else:
-            msg = "process error:" + ": \"" + " ".join(cmd) + "\""
+            msg = "process error: \"" + " ".join(cmd) + "\""
             if (stderr != None) and (len(stderr) != 0):
                 msg += ": " + stderr
             else:
