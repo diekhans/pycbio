@@ -1,7 +1,14 @@
 """Miscellaneous file operations"""
 
-import os,os.path,errno,sys,stat
-from pycbio.sys.Pipeline import Pipeline
+import os, errno, sys, stat, fcntl
+
+_pipelineMod = None
+def _getPipelineClass():
+    """To avoid mutual import issues, we get the Pipeline class dynamically on
+    first user"""
+    if _pipelineMod == None:
+        _pipelineMod = __import__("pycbio.sys.Pipeline")
+    return _pipelineMod.Pipeline
 
 def ensureDir(dir):
     """Ensure that a directory exists, creating it (and parents) if needed."""
@@ -51,7 +58,7 @@ def opengz(file, mode="r"):
             cat = "bzcat"
         else:
             cat = "zcat"
-        return Pipeline([cat,file])
+        return _getPipelineClass()([cat,file])
     else:
         return open(file, mode)
 
@@ -174,3 +181,15 @@ def getDevNull():
     if _devNullFh == None:
         _devNullFh = open("/dev/null", "r+")
     return _devNullFh
+
+def fifoOpen(path, mode):
+    "open a FIFO without blocking during open"
+    omode = os.O_RDONLY if (mode == "r") else os.O_WRONLY
+    fh = os.fdopen(os.open(path, omode|os.O_NONBLOCK), mode)
+    try:
+        fcntl.fcntl(fh, fcntl.F_SETFL, omode) # clear O_NONBLOCK
+    except:
+        fh.close()
+        raise
+    return fh
+

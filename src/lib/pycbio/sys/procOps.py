@@ -4,7 +4,7 @@
 # also see stderr changes in genbank copy of this file
 # FIXME: names are a bit too verbose (callLines instead of callProcLines)
 
-import subprocess,os, os.path
+import subprocess, os, stat
 from pycbio.sys import fileOps
 
 class ProcException(Exception):
@@ -40,13 +40,17 @@ def callProcLines(cmd):
 def _getStdFile(spec, mode):
     if (spec == None) or (type(spec) == int):
         return spec
-    if type(spec) == str:
-        return file(spec, mode)
-    if type(spec) == file:
+    elif type(spec) == str:
+        if os.path.exists(spec) and stat.S_ISFIFO(os.stat(spec).st_mode):
+            return fileOps.fifoOpen(spec, mode)
+        else:
+            return file(spec, mode)
+    elif isinstance(spec, file):
         if mode == "w":
             spec.flush()
         return spec
-    raise Exception("don't know how to deal with stdio file of type " + type(spec))
+    else:
+        raise Exception("don't know how to deal with stdio file of type " + type(spec))
 
 def runProc(cmd, stdin="/dev/null", stdout=None, stderr=None, noError=False):
     """run a process, with I/O redirection to specified file paths or open

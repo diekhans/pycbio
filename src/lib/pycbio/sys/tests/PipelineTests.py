@@ -10,7 +10,7 @@ class PipelineTests(TestCaseBase):
         inFile = self.getInputFile(inName)
         fh = open(inFile)
         for line in fh:
-            pl.fh.write(line)
+            pl.write(line)
         fh.close()
     
     def testWrite(self):
@@ -41,7 +41,7 @@ class PipelineTests(TestCaseBase):
     def cpPlToFile(self, pl, outExt):
         outFile = self.getOutputFile(outExt)
         fh = open(outFile, "w")
-        for line in pl.fh:
+        for line in pl:
             fh.write(line)
         fh.close()
     
@@ -72,25 +72,27 @@ class PipelineTests(TestCaseBase):
         self.diffExpected(".wc")
 
     def testPassRead(self):
-        "using /proc fs to pass pipe to another process for reading"
+        "using FIFO to pass pipe to another process for reading"
         inFile = self.getInputFile("simple1.txt")
         inFileGz = self.getOutputFile(".txt.gz")
         cpOut = self.getOutputFile(".out")
         procOps.runProc(("gzip", "-c", inFile), stdout=inFileGz)
 
-        pl = Pipeline(("gzip", "-dc"), "r", otherEnd=inFileGz)
-        procOps.runProc(["cat"],  stdin=pl.pipepath(), stdout=cpOut)
+        pipePath = self.getOutputFile(".fifo")
+        pl = Pipeline(("gzip", "-dc"), "r", otherEnd=inFileGz, pipePath=pipePath)
+        procOps.runProc(["cat"],  stdin=pl.pipePath, stdout=cpOut)
         pl.wait()
 
         self.diffExpected(".out")
 
     def testPassWrite(self):
-        "using /proc fs to pass pipe to another process for writing"
+        "using FIFO to pass pipe to another process for writing"
         inFile = self.getInputFile("simple1.txt")
         outFile = self.getOutputFile(".out")
+        pipePath = self.getOutputFile(".fifo")
 
-        pl = Pipeline(("sort", "-r"), "w", otherEnd=outFile)
-        procOps.runProc(["cat"],  stdin=inFile, stdout=pl.pipepath())
+        pl = Pipeline(("sort", "-r"), "w", otherEnd=outFile, pipePath=pipePath)
+        procOps.runProc(["cat"],  stdin=inFile, stdout=pl.pipePath)
         pl.wait()
 
         self.diffExpected(".out")

@@ -113,7 +113,8 @@ class File(Production):
             self.newPath = self.exrun.getTmpPath(self.path)
         if self.isCompressed() and autoCompress:
             if self.compPipe == None:
-                self.compPipe = Pipeline([self.getCompressCmd()], "w", otherEnd=self.newPath)
+                self.compPipe = Pipeline([self.getCompressCmd()], "w", otherEnd=self.newPath,
+                                         pipePath = self.exrun.getTmpPath(self.path, "tmpfifo"))
         
     def getOut(self, prefix=None, autoCompress=True):
         """Returns an object that causes the output file path to be substituted
@@ -132,7 +133,7 @@ class File(Production):
         to be opened in the current process, use openOut() instead."""
         self._setupOut(autoCompress)
         if self.compPipe != None:
-            return self.compPipe.pipepath()
+            return self.compPipe.pipePath
         else:
             return self.newPath
 
@@ -145,7 +146,14 @@ class File(Production):
             return open(self.newPath, "w")
 
     def _compressWait(self):
-        self.compPipe.wait()
+        try:
+            self.compPipe.wait()
+        finally:
+            if (self.compPipe.pipePath != None):
+                try:
+                    os.unlink(self.compPipe.pipePath)
+                except:
+                    pass
         self.compPipe = None
 
     def getIn(self, prefix=None):
