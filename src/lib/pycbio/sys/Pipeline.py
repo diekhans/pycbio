@@ -3,8 +3,8 @@
 # FIXME: should use mixins to!!
 # FIXME: should move procOps exception to here, have option to throw stderr
 
-import os, subprocess, signal
-from pycbio.sys import strOps
+import os, stat, subprocess, signal
+from pycbio.sys import strOps, fileOps
 
 def hasWhiteSpace(word):
     "check if a string contains any whitespace"
@@ -216,7 +216,7 @@ class Pipeline(Procline):
 
     procs - an ordered list of Proc objects that compose the pipeine"""
 
-    def __init__(self, cmds, mode='r', otherEnd=None):
+    def __init__(self, cmds, mode='r', otherEnd=None, pipePath=None):
         """cmds is either a list of arguments for a single process, or
         a list of such lists for a pipeline.  Mode is 'r' for a pipeline
         who's output will be read, or 'w' for a pipeline to that is to
@@ -231,53 +231,77 @@ class Pipeline(Procline):
           fh --> cmd[0] --> ... --> cmd[n] --> otherEnd
 
         The field fh is the file object used to access the pipeline.
+        If pipePath is specified, then a fifo with this path is used
+        instead of creating an unnamed pipe.  This is useful if the
+        pipeline needs to be passed to another process by name.  The
+        fifo is created if it doesn't exist.
         """
         if (mode == "r") and (mode == "w"):
             raise IOError('invalid mode "' + mode + '"')
         self.mode = mode
         self.closed = False
-        self._pipePath = None # created on first call to pipepath
+        self.otherEnd = otherEnd
+        self.pipePath = pipePath
 
-        (firstIn, lastOut, otherFh) = self._setupEnds(otherEnd)
+        (otherFh, closeOther) = self._getOtherFh()
+        (ourRdFh, ourWrFh) = self._getOurFh()
+        if mode == "r":
+            firstIn = otherFh if (otherFh != None) else 0
+            lastOut = ourWrFh
+        else:
+            lastOut = otherFh if (otherFh != None) else 1
+            firstIn = ourRdFh
         Procline.__init__(self, cmds, stdin=firstIn, stdout=lastOut)
 
         # set file obj to or from pipeline
         if mode == "r":
-            self.fh = self.procs[len(self.procs)-1].stdout
+            if (ourRdFh == subprocess.PIPE):
+                self.fh = self.procs[len(self.procs)-1].stdout
+            else:
+                self.fh = ourRdFh
+                ourWrFh.close()
         else:
-            self.fh = self.procs[0].stdin
-        if otherFh != None:
+            if (ourWrFh == subprocess.PIPE):
+                self.fh = self.procs[0].stdin
+            else:
+                self.fh = ourWrFh
+                ourRdFh.close()
+        if closeOther:
             otherFh.close()
 
-    def _setupEnds(self, otherEnd):
-        """set files at ends of a pipeline, returns (firstIn, lastOut, otherFh),
-        with otherFh being None if a file was not opened for otherEnd, and hence should
-        not be closed"""
-
-        # setup other end of pipeline
-        otherFhRet = None
-        if otherEnd != None:
-            if isinstance(otherEnd, str):
-                otherFhRet = otherFh = file(otherEnd, self.mode)
-            else:
-                otherFh = otherEnd
-            if self.mode == "r":
-                firstIn = otherFh
-            else:
-                lastOut = otherFh
-        else:
+    def _getOtherFh(self):
+        """get the other end of the pipeline, return (otherFh, closeOther), with otherFh
+        being None if the other end was not opened"""
+        if self.otherEnd == None:
             otherFh = None
-            if self.mode == "r":
-                firstIn = 0
-            else:
-                lastOut = 1
-
-        # setup this end of pipe
-        if self.mode == "r":
-            lastOut = subprocess.PIPE
+            closeOther = False
+        elif isinstance(self.otherEnd, str):
+            otherFh = file(self.otherEnd, self.mode)
+            closeOther = True
         else:
-            firstIn = subprocess.PIPE
-        return (firstIn, lastOut, otherFhRet)
+            otherFh = self.otherEnd
+            closeOther = False
+        return (otherFh, closeOther)
+        
+    def _getOurFh(self):
+        """get our end of the pipeline, return (rdFh, wrFh),
+        with both values PIPE if a subprocess pipe should be used"""
+        
+        if self.pipePath != None:
+            return self._openFifo()
+        else:
+            return (subprocess.PIPE, subprocess.PIPE)
+
+    def _openFifo(self):
+        "open both ends of pipePath, creating if it doesn't exist"
+        if os.path.exists(self.pipePath):
+            if not stat.S_ISFIFO(os.stat(self.pipePath).st_mode):
+                raise Exception("pipePath is not a FIFO: " + self.pipePath)
+        else:
+            os.mkfifo(self.pipePath, 0600)
+        rdFh = fileOps.fifoOpen(self.pipePath, "r")
+        wrFh = fileOps.fifoOpen(self.pipePath, "w")
+        return (rdFh, wrFh)
 
     def __iter__(self):
         "iter over contents of file"
@@ -293,12 +317,6 @@ class Pipeline(Procline):
     def fileno(self):
         "get the integer OS-dependent file handle"
         return self.fh.fileno()
-  
-    def pipepath(self):
-        """get a file system path for the pipe, which can be passed to another process"""
-        if self._pipePath == None:
-            self._pipePath = "/proc/" + str(os.getpid()) + "/fd/" + str(self.fh.fileno())
-        return self._pipePath
   
     def write(self, str):
         "Write string str to file."
@@ -343,4 +361,4 @@ class Pipeline(Procline):
         if self.failExcept != None:
             raise failExcept
 
-__all__ = [Proc.__name__, Pipeline.__name__]
+__all__ = [Proc.__name__, Procline.__name__, Pipeline.__name__]

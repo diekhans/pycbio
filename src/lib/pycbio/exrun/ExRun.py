@@ -37,12 +37,12 @@ class ExRun(object):
         self.uniqIdCnt += 1
         return id
 
-    def getTmpPath(self, path):
+    def getTmpPath(self, path, namePrefix="tmp"):
         """generate a unique temporary file path from path, the file will be
         in the same directory.  The file extensions will be maintained, to
         allow recognition of file types, etc. """
         return os.path.join(os.path.dirname(path),
-                            "tmp." + self.getUniqId() + "." + os.path.basename(path))
+                            namePrefix + "." + self.getUniqId() + "." + os.path.basename(path))
 
     def _addNode(self, node):
         "add a new node"
