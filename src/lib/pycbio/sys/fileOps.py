@@ -5,9 +5,10 @@ import os, errno, sys, stat, fcntl
 _pipelineMod = None
 def _getPipelineClass():
     """To avoid mutual import issues, we get the Pipeline class dynamically on
-    first user"""
+    first use"""
+    global _pipelineMod
     if _pipelineMod == None:
-        _pipelineMod = __import__("pycbio.sys.Pipeline")
+        _pipelineMod = __import__("pycbio.sys.Pipeline", fromlist=["pycbio.sys.Pipeline"])
     return _pipelineMod.Pipeline
 
 def ensureDir(dir):

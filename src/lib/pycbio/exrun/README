@@ -1,0 +1,8 @@
+
+
+
+
+Issues with make that inspired this package:
+
+    - make doesn't support multiple output files for a single execution of a
+      rule
