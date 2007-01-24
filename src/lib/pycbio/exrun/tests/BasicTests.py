@@ -1,11 +1,12 @@
 "tests of basic functionality"
 
-import unittest, sys, os
+import unittest, sys, os, time
 if __name__ == '__main__':
     sys.path.append("../../..")
 from pycbio.sys import fileOps
 from pycbio.sys.TestCaseBase import TestCaseBase
-from pycbio.exrun import ExRun, File, Rule
+from pycbio.exrun import ExRun, File, Rule, Production
+from pycbio.exrun.Graph import RuleState
 
 class ProdSet(object):
     "set of file productions and contents; deletes files if they exist"
@@ -76,7 +77,7 @@ class TouchTests(TestCaseBase):
         pset.check()
 
     def testTwoLevel(self):
-        "two levels of requirements "
+        "two levels of requirements"
 
         er = ExRun()
 
@@ -100,9 +101,38 @@ class TouchTests(TestCaseBase):
         self.failUnlessEqual(topRule.touchCnt, 3)
         topPset.check()
 
+
+class CurrentProd(Production):
+    "production that is always up-to-date"
+    def __init__(self, name):
+        Production.__init__(self, name)
+    def getTime(self):
+        "always returns current time"
+        return time.time()
+
+class NeverRunRule(Rule):
+    "rule that generates an error if it's run"
+    def __init__(self, name, requires=None, produces=None):
+        Rule.__init__(self, name, requires=requires, produces=produces)
+
+    def execute(self):
+        raise ExRunException("rule should never have been run")
+
+class MiscTests(TestCaseBase):
+    def testUptodateProd(self):
+        "check that a rule is not run for a current production"
+        er = ExRun()
+        prod = CurrentProd("neverRunProd")
+        er.addNode(prod)
+        rule = NeverRunRule("neverRunRule", produces=prod)
+        er.addRule(rule)
+        er.run()
+        self.failIf(rule.state != RuleState.new)
+
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TouchTests))
+    suite.addTest(unittest.makeSuite(MiscTests))
     return suite
 
 if __name__ == '__main__':

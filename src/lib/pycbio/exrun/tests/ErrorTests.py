@@ -67,7 +67,7 @@ class ErrorTests(TestCaseBase):
             er.addRule(ErrorRule("cycle3", f3, f2))
             er.run()
         except ExRunException, ex:
-            self.failUnlessEqual(str(ex), "Production ErrorTests.ErrorTests.testCycle.file2 already linked to it's produces, attempt to add: cycle3")
+            self.failUnlessEqual(str(ex), "Production ErrorTests.ErrorTests.testCycle.file2 producedBy link already set")
         if ex == None:
             self.fail("expected ExRunException")
 
