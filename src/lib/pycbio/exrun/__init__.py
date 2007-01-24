@@ -1,6 +1,7 @@
 """Experiment running module"""
 
 import sys,traceback,types
+from pycbio.sys import typeOps
 
 class ExRunException(Exception):
     "Exceptions thrown by exrun module derive from this object" 
@@ -25,9 +26,13 @@ class Verb(object):
         self.indent = 0
 
     def enabled(self, flag):
-        """determine if tracing is enabled for the specified flag, flag can be either a single flag or a set"""
-        if isinstance(flag, set):
-            return (flag and self.flags)
+        """determine if tracing is enabled for the specified flag, flag can be
+        either a single flag or sequence of flags"""
+        if typeOps.isListLike(flag):
+            for f in flag:
+                if f in self.flags:
+                    return True
+            return False
         else:
             return (flag in self.flags)
 
@@ -63,7 +68,12 @@ class Verb(object):
         if self.enabled(flag) and (len(msg) > 0):
             self._prIndent(msg)
 
+# make classes commonly used externally part of top module
+from pycbio.exrun.Graph import Production, Rule
+from pycbio.exrun.CmdRule import CmdRule, Cmd, File
+from pycbio.exrun.ExRun import ExRun
 
-##__all__ = (ExRunException.__name__)
 
-
+__all__ = (ExRunException.__name__, Verb.__name__, Production.__name__,
+           Rule.__name__, CmdRule.__name__, Cmd.__name__, File.__name__,
+           ExRun.__name__)

@@ -63,6 +63,20 @@ class Production(Node):
         if len(self.requires) > 0:
             raise ExRunException("Production " + str(self) + " already linked to it's produces, attempt to add: " + str(node))
 
+    def finishSucceed(self):
+        "called when the rule to create this production finishes successfuly"
+        pass
+
+    def finishFail(self):
+        "called when the rule to create this production fails"
+        pass
+
+    def finishRequire(self):
+        """Called when the rule that requires this production finishes. A
+        requirement should never be modified, however this is useful for
+        cleaning up things like decompress pipelines"""
+        pass
+
     def getTime(self):
         """Get the modification time of this Production as a floating point number.
         If the object do not exist, return -1.0.  This is not recurisve, it is
@@ -93,7 +107,9 @@ class Rule(Node):
         self._checkLinkType(node)
     
     def execute(self):
-        """Execute the rule, must be implemented by derived class"""
+        """Execute the rule, must be implemented by derived class.  ExRun will
+        call the approriate finish*() methods on the produces and requires,
+        they should not be run by the derived rule class"""
         raise ExRunException("execute() not implemented for " + str(type(self)))
     
     def isOutdated(self):
@@ -147,6 +163,20 @@ class Rule(Node):
             if pOldest < r.getTime() :
                 return True
         return False
+
+class Target(Production):
+    """A target is a production that doesn't have any real output, it is just
+    and explicty entry point into a graph.  It's time is set to the current
+    time when it is run."""
+
+    def __init__(self, name):
+        Production.__init__(self, name)
+        self.time = -1.0
+    
+    def getTime(self):
+        """Get the time this target's rule completed as a floating point number,
+        or -1.0 if it hasn't completed."""
+        self.time
         
 class Graph(object):
     """Graph of productions and rules"""
