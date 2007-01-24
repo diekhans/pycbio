@@ -134,7 +134,6 @@ class ExRun(object):
         "evaulate a rule"
         assert(isinstance(rule, Rule))
         self.verb.enter(Verb.trace, "eval rule: ", rule)
-        isOk = False
         try:
             self._preEvalRuleCheck(rule)
             self.verb.pr(Verb.details, "run: ", rule)
@@ -143,15 +142,11 @@ class ExRun(object):
             self._finishSucceed(rule)
             if rule.isOutdated():
                 raise ExRunException("rule didn't update all productions: " + ", ".join([str(p) for p in rule.getOutdated()]))
-            isOk = True
+            self.verb.leave(Verb.trace, "done rule: ", rule)
         except Exception, ex:
             self._finishFail(rule)
+            self.verb.leave((Verb.trace,Verb.error), "fail rule: ", rule, ": ", ex)
             raise
-        finally:
-            if isOk:
-                self.verb.leave(Verb.trace, "done rule: ", rule)
-            else:
-                self.verb.leave((Verb.trace,Verb.error), "fail rule: ", rule)
 
     def _buildRule(self, rule):
         "recursively build a rule"
