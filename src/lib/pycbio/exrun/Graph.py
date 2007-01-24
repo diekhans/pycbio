@@ -1,6 +1,7 @@
 """Graph (DAG) of productions and rules"""
 import os.path
 from pycbio.sys import typeOps
+from pycbio.sys.Enumeration import Enumeration
 from pycbio.exrun import ExRunException
 
 posInf = float("inf")
@@ -14,54 +15,59 @@ class CycleException(ExRunException):
             desc.append("  " + str(n) + " ->")
         ExRunException.__init__(self, "cycle detected:\n" + "\n".join(desc))
 
-class Node(object):
-    """Base class for node objects (targets and rules)"""
-    def __init__(self, name):
-        """Produces are incoming edges from nodes requiring this node,
-        requires are outgoing edges to nodes that this node requires.
-        Name is used in error messages"""
-        self.exrun = None  # set when added to ExRun object
-        self.name = name
-        self.requires = set()  # next
-        self.produces = set()  # prev
+# state of a rule
+RuleState = Enumeration("RuleState",
+                        ("new", "running", "success", "failed"))
 
-    def linkRequires(self, requires):
-        "can be single nodes, or lists or sets of nodes, reverse links are created"
-        for r in typeOps.mkiter(requires):
-            self.checkRequires(r)
-            r.checkProduces(self)
-            self.requires.add(r)
-            r.produces.add(self)
-            
-    def linkProduces(self, produces):
-        "can be single nodes, or lists or sets of nodes, reverse links are created"
-        for p in typeOps.mkiter(produces):
-            self.checkProduces(p)
-            p.checkRequires(self)
-            self.produces.add(p)
-            p.requires.add(self)
+class Node(object):
+    """Base object for all entries in graph. Derived object define generators
+    prevNodes() and nextNodes() for traversing tree."""
+    def __init__(self, name):
+        self.name = name
+        # these set when added to ExRun object
+        self.exrun = None
+        self.verb = None
 
     def __str__(self):
         return self.name
 
 class Production(Node):
-    """base class for a production, can only have one requires (produced by) link"""
+    """Base class for a production. It can only have one requires (produced by)
+    link.  When a production is being create by a rule, it is single threaded.
+    Once the rule is creating a production has finished, access to it is
+    multi-threaded when used as a required."""
     def __init__(self, name):
-        Node.__init__(self, name)
+        Node.__init__(self, name);
+        self.producedBy = None
+        self.requiredBy = set()
 
-    def _checkLinkType(self, node):
-        if not isinstance(node, Rule):
-            raise ExRunException("Production " + str(self) + " can only be linked to a Rule, attempt to link to: " + str(node))
+    def nextNodes(self):
+        "generator for traversing tree"
+        if self.producedBy != None:
+            yield self.producedBy
 
-    def checkProduces(self, node):
-        "check if node can be linked as a produces node"
-        self._checkLinkType(node)
+    def prevNodes(self):
+        "generator for traversing tree"
+        for r in self.requiredBy:
+            yield r
 
-    def checkRequires(self, node):
-        "check if node can be linked as a requires node"
-        self._checkLinkType(node)
-        if len(self.requires) > 0:
-            raise ExRunException("Production " + str(self) + " already linked to it's produces, attempt to add: " + str(node))
+    def linkProducedBy(self, producedBy):
+        "set producedBy link, and link back to this object"
+        if self.producedBy != None:
+            raise ExRunException("Production " + str(self) + " producedBy link already set")
+        if not isinstance(producedBy, Rule):
+            raise ExRunException("Production " + str(self) + " producedBy can only be linked to a Rule, attempt to link to: " + str(producedBy))
+        self.producedBy = producedBy
+        producedBy.produces.add(self)
+
+    def linkRequiredBy(self, requiredBy):
+        """link to rules that require production, can be single rule, lists or
+        sets of rules, reverse links are created"""
+        for r in typeOps.mkiter(requiredBy):
+            if not isinstance(r, Rule):
+                raise ExRunException("Production " + str(self) + " requiredBy can only be linked to a Rule, attempt to link to: " + str(r))
+            self.requiredBy.add(r)
+            r.requires.add(self);
 
     def finishSucceed(self):
         "called when the rule to create this production finishes successfuly"
@@ -74,38 +80,56 @@ class Production(Node):
     def finishRequire(self):
         """Called when the rule that requires this production finishes. A
         requirement should never be modified, however this is useful for
-        cleaning up things like decompress pipelines"""
+        cleaning up things like decompress pipelines.  Must be thread-safe."""
         pass
 
     def getTime(self):
         """Get the modification time of this Production as a floating point number.
         If the object do not exist, return -1.0.  This is not recurisve, it is
-        simply the time associated with the production"""
+        simply the time associated with the production.   Must be thread-safe."""
         raise ExRunException("getTime() not implemented for Production " + str(type(self)))
     
 class Rule(Node):
-    "base class for a rule"
+    """Base class for a rule.  A rule is single threaded."""
     def __init__(self, name, requires=None, produces=None):
-        Node.__init__(self, name)
-        self.executed = False
-        self.verb = None # set when added to ExRun object
+        Node.__init__(self, name);
+        self.state = RuleState.new
+        self.requires = set()
+        self.produces = set()
         if requires != None:
             self.linkRequires(requires)
         if produces != None:
             self.linkProduces(produces)
 
-    def _checkLinkType(self, node):
-        if not isinstance(node, Production):
-            raise ExRunException("Rule " + str(self) + " can only be linked to a Production, attempt to link to: " + str(node))
+    def __str__(self):
+        return self.name
 
-    def checkProduces(self, node):
-        "check if node can be linked as a produces node"
-        self._checkLinkType(node)
+    def nextNodes(self):
+        "generator for traversing tree"
+        for r in self.requires:
+            yield r
 
-    def checkRequires(self, node):
-        "check if node can be linked as a requires node"
-        self._checkLinkType(node)
-    
+    def prevNodes(self):
+        "generator for traversing tree"
+        for p in self.produces:
+            yield p
+
+    def linkRequires(self, requires):
+        """link in productions required by this node. Can be single nodes, or
+        lists or sets of nodes, reverse links are created"""
+        for r in typeOps.mkiter(requires):
+            if not isinstance(r, Production):
+                raise ExRunException("Rule " + str(self) + " requires can only be linked to a Production, attempt to link to: " + str(r))
+            r.linkRequiredBy(self)
+            
+    def linkProduces(self, produces):
+        """link in productions produced by this node. Can be single nodes, or
+        lists or sets of nodes, reverse links are created"""
+        for p in typeOps.mkiter(produces):
+            if not isinstance(p, Production):
+                raise ExRunException("Rule " + str(self) + " produces can only be linked to a Production, attempt to link to: " + str(p))
+            p.linkProducedBy(self)
+
     def execute(self):
         """Execute the rule, must be implemented by derived class.  ExRun will
         call the approriate finish*() methods on the produces and requires,
@@ -179,40 +203,29 @@ class Target(Production):
         self.time
         
 class Graph(object):
-    """Graph of productions and rules"""
+    """Graph of productions and rules.  Once create, the topology of the graph
+    is fixed and hence all methods are thread safe.  The contents of nodes
+    maye require additional synchronization."""
     def __init__(self):
-        self.nodes = set() # set of nodes
+        self.nodes = set()
+        self.productions = set()
+        self.rules = set()
 
     def addNode(self, node):
         "add a node to the graph"
         self.nodes.add(node)
+        if isinstance(node, Production):
+            self.productions.add(node)
+        else:
+            self.rules.add(node)
 
-    def getEntryNodes(self):
-        """Get entry nodes of the graph; that is those having no productions"""
-        entries = [n for n in self.nodes if (len(n.produces) == 0)]
+    def getEntryProductions(self):
+        """Get entry productions of the graph; that is those having no requireBy"""
+        entries = [p for p in self.productions if (len(p.requiredBy) == 0)]
         # sorted by names so that test produce consistent results
         entries.sort(lambda a,b:cmp(a.name,b.name))
         return entries
 
-    def getNodes(self):
-        "get all nodes, sorted by name for consistent test results"
-        nodes = list(self.nodes)
-        nodes.sort(lambda a,b:cmp(a.name,b.name))
-        return nodes
-
-    def _inGraphCheck(self, node):
-        "check if a node has been added to the graph"
-        if not node in self.nodes:
-            raise ExRunException("node linked to graph, but was not added to graph: " + node.name)
-
-    def inGraphCheck(self):
-        "check that all nodes linked to the graph have been correctly added to the graph"
-        for node in self.nodes:
-            for r in node.requires:
-                self._inGraphCheck(r)
-            for p in node.produces:
-                self._inGraphCheck(p)
-        
     def _cycleCheck(self, visited, node):
         """check for cycles, once a visited node is found, return list of
         nodes in cycle, throwing an exception when returns to start of
@@ -222,8 +235,8 @@ class Graph(object):
             return [node]  # cycle detected
         visited.add(node)
 
-        for r in node.requires:
-            cycle = self._cycleCheck(visited, r)
+        for n in node.nextNodes():
+            cycle = self._cycleCheck(visited, n)
             if cycle != None:
                 if node == cycle[0]:
                     # back at start of cycle
@@ -236,33 +249,69 @@ class Graph(object):
 
     def cycleCheck(self):
         """check for cycles in graph """
-
-        entries = self.getEntryNodes()
+        entries = self.getEntryProductions()
         if len(entries) == 0:
             # no entry nodes, either empty or completely connected, just pick one
-            entries = self.getNodes()[0:1]
+            for p in self.productions:
+                entries.append(p)
+                break
         for node in entries:
             self._cycleCheck(set(), node)
 
+    def productionCheck(self):
+        """check that all productions with exist or have a rule to build them.
+        By check this up front, it prevents file from being created as
+        side-affects that are not encoded in the graph"""
+        noRuleFor = set()
+        for prod in self.productions:
+            if (prod.producedBy == None) and (prod.getTime() < 0.0):
+                noRuleFor.add(prod)
+        if (len(noRuleFor) > 0):
+            raise ExRunException("No rule to build production(s): " + ", ".join([str(r) for r in noRuleFor]))
+
+    def ruleCheck(self):
+        "check that there are no loose rules without productions"
+        noProdFor = set()
+        for rule in self.rules:
+            if len(rule.produces) == 0:
+                noProdFor.add(rule)
+        if (len(noProdFor) > 0):
+            raise ExRunException("Loose rules without production(s): " + ", ".join([str(p) for p in noProdFor]))
+
+    def _inGraphCheck(self, node):
+        "check if a node has been added to the graph"
+        if not node in self.nodes:
+            raise ExRunException("node linked to graph, but was not added to graph: " + node.name)
+
+    def inGraphCheck(self):
+        "check that all nodes linked to the graph have been correctly added to the graph"
+        for node in self.nodes:
+            for n in node.prevNodes():
+                self._inGraphCheck(n)
+            for n in node.nextNodes():
+                self._inGraphCheck(n)
+        
     def check(self):
-        "check the graph for problems"
+        "check graph"
         self.inGraphCheck()
         self.cycleCheck()
+        self.productionCheck()
+        self.ruleCheck()
 
     def bfs(self):
       "BFS generator for graph"
       # initialize queue
-      queue = self.getEntryNodes()
+      queue = self.getEntryProductions()
       visited = set(queue)
       while len(queue) > 0:
           node = queue.pop()
           yield node
-          for r in node.requires:
-              if not r in visited:
-                  visited.add(r)
-                  queue.append(r)
+          for n in node.nextNodes():
+              if not n in visited:
+                  visited.add(n)
+                  queue.append(n)
       # if not all nodes were visited, something is linked by not in nodes
       if len(visited) != len(self.nodes):
           self.inGraphCheck()
 
-__all__ = (CycleException.__name__, Production.__name__, Rule.__name__, Graph.__name__, )
+__all__ = (CycleException.__name__, Production.__name__, Rule.__name__, Graph.__name__, "RuleState")

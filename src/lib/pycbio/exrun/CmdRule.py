@@ -66,6 +66,11 @@ class File(Production):
     output.  This is the default behavior, unless overridden by specifying the
     autoCompress=False option the output functions. """
 
+    # no locking is currently required.  If a file has not been installed,
+    # then is is only accessed in the rule by a single thread.  Since auto
+    # decompressing isn't currently implemented, there is no state to modify
+    # once the file has been installed.
+
     def __init__(self, path, realPath):
         "realPath is use to detect files accessed from different paths"
         Production.__init__(self, path)
@@ -144,15 +149,16 @@ class File(Production):
             return open(self.newPath, "w")
 
     def _compressWait(self):
-        try:
-            self.compPipe.wait()
-        finally:
-            if (self.compPipe.pipePath != None):
+        "Wait form compressing process to finish."
+        if self.compPipe != None:
+            try:
+                self.compPipe.wait()
+            finally:
                 try:
-                    os.unlink(self.compPipe.pipePath)
+                    self.compPipe.unlinkPipe()
                 except:
                     pass
-        self.compPipe = None
+                self.compPipe = None
 
     def getIn(self, prefix=None):
         """Returns an object that causes the input file path to be substituted
@@ -224,7 +230,7 @@ class File(Production):
     def finishRequire(self):
         """Called when the rule that requires this production finishes
         to clean up decompression pipes"""
-        pass
+        pass  # decompression not implemented
 
 class Cmd(list):
     """A command in a CmdRule. An instance can either be a simple command,
