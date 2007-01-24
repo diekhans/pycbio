@@ -5,9 +5,7 @@ if __name__ == '__main__':
     sys.path.append("../../..")
 from pycbio.sys.fileOps import ensureFileDir, rmFiles
 from pycbio.sys.TestCaseBase import TestCaseBase
-from pycbio.exrun import ExRunException
-from pycbio.exrun.ExRun import ExRun
-from pycbio.exrun.CmdRule import CmdRule, Cmd, File
+from pycbio.exrun import ExRunException, ExRun, CmdRule, Cmd, File
 
 def rmOutput(*files):
     "delete output files, which can be specified as strings or File objects"

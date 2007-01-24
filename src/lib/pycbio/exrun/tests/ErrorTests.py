@@ -4,8 +4,8 @@ import unittest, sys, os
 if __name__ == '__main__':
     sys.path.append("../../..")
 from pycbio.sys.TestCaseBase import TestCaseBase
-from pycbio.exrun.ExRun import ExRun,ExRunException
-from pycbio.exrun.Graph import Rule, CycleException
+from pycbio.exrun import ExRun, ExRunException, Rule
+from pycbio.exrun.Graph import CycleException
 from pycbio.sys import fileOps
 
 # FIXME add:

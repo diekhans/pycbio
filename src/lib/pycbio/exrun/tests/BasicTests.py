@@ -3,11 +3,9 @@
 import unittest, sys, os
 if __name__ == '__main__':
     sys.path.append("../../..")
-from pycbio.sys.fileOps import ensureFileDir, rmFiles, prLine
+from pycbio.sys import fileOps
 from pycbio.sys.TestCaseBase import TestCaseBase
-from pycbio.exrun.ExRun import ExRun
-from pycbio.exrun.CmdRule import File
-from pycbio.exrun.Graph import Rule
+from pycbio.exrun import ExRun, File, Rule
 
 class ProdSet(object):
     "set of file productions and contents; deletes files if they exist"
@@ -18,7 +16,7 @@ class ProdSet(object):
         self.contents = {}
         for ext in exts:
             fp = exRun.getFile(self.tester.getOutputFile(ext))
-            rmFiles(fp.path)
+            fileOps.rmFiles(fp.path)
             self.fps.append(fp)
             self.contents[fp] = ext
 
@@ -36,13 +34,22 @@ class TouchRule(Rule):
         self.pset = pset
         self.touchCnt = 0
 
-    def execute(self):
-        "create file product"
-        for fp in self.produces:
-            self.tester.failUnless(isinstance(fp, File))
-            ext = os.path.splitext(fp.path)[1]
-            self.tester.createOutputFile(ext, self.pset.contents.get(fp))
+    def _touch(self, fp):
+        "create a file product"
+        self.tester.failUnless(isinstance(fp, File))
+        ext = os.path.splitext(fp.path)[1]
+        fileOps.ensureFileDir(fp.getOutPath())
+        fh = open(fp.getOutPath(), "w")
+        try:
+            fh.write(self.pset.contents.get(fp))
+        finally:
+            fh.close()
             self.touchCnt += 1
+
+    def execute(self):
+        "create file products"
+        for fp in self.produces:
+            self._touch(fp)
 
 class TouchTests(TestCaseBase):
     def checkContents(self, fp, contents={}):

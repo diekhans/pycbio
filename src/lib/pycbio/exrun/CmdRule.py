@@ -6,12 +6,10 @@ from pycbio.exrun import ExRunException,Verb
 from pycbio.exrun.Graph import Production,Rule
 from pycbio.sys.Pipeline import Pipeline,Procline
 
-# FIXME: want to print traceback in verb, but it gets change by continuing execution
-import traceback
-
 # FIXME: Auto decompression is not supported, as many programs handle reading
 # compressed files and the use of the /proc/ files to get pipe paths causes
 # file extension issues.
+
 # FIXME: seems like install could be generalized to any rule, Could the make
 # CmdRule only need for a supplied list of commands
 
@@ -203,11 +201,12 @@ class File(Production):
         else:
             return None
 
-    def install(self):
-        "atomic install of new output file as actual file"
+    def finishSucceed(self):
+        "finish production with atomic install of new output file as actual file"
         if self.installed:
             raise ExRunException("output file already installed: " + self.path)
-        self.finish()
+        if self.compPipe != None:
+            self._compressWait()
         if self.newPath == None:
             raise ExRunException("getOutPath() never called for: " + self.path)
         if not os.path.exists(self.newPath):
@@ -216,11 +215,16 @@ class File(Production):
         self.installed = True
         self.newPath = None
 
-    def finish(self):
-        """Called when command is finish to cleanup any process.  This must be
-        called, even on error, unless install() is called"""
+    def finishFail(self):
+        """called when rule failed, waits for pipe completion, but doesn't
+        install files"""
         if self.compPipe != None:
             self._compressWait()
+
+    def finishRequire(self):
+        """Called when the rule that requires this production finishes
+        to clean up decompression pipes"""
+        pass
 
 class Cmd(list):
     """A command in a CmdRule. An instance can either be a simple command,
@@ -370,41 +374,13 @@ class CmdRule(Rule):
         commands specified at construction, overrider this for a derived class"""
         self.runCmds()
 
-    def _succeedFinishFiles(self):
-        "finish up finish up requires/produces on success"
-        for p in self.produces:
-            if isinstance(p, File):
-                p.install()
-        for r in self.requires:
-            if isinstance(r, File):
-                r.finish()
-
-    def _finishNoRaise(self, p):
-        try:
-            p.finish()
-        except Exception, ex:
-            self.exrun.verb.prall("Error closing pipe after rule error: ", str(ex))
-            raise
-        
-    def _failFinishFiles(self):
-        """finish up finish up requires/produces on failure, will log errors,
-        but not fail so original error is not lost"""
-        for p in self.produces:
-            if isinstance(p, File):
-                self._finishNoRaise(p)
-        for r in self.requires:
-            if isinstance(r, File):
-                self._finishNoRaise(r)
-
     def execute(self):
         "execute the rule"
         self.verb.enter()
         try:
             self.run()
-            self._succeedFinishFiles()
         except Exception, ex:
             self.verb.pr(Verb.error, "Exception: ", ex)
-            self._failFinishFiles()
             raise
         finally:
             self.verb.leave()

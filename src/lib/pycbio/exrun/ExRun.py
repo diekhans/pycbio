@@ -21,6 +21,7 @@ os.stat_float_times(True) # very, very gross
 #        allow all redirection in a subcommand (Pipeline enhancement).
 # FIXME: implement targets
 
+
 class ExRun(object):
     "object that defines and runs an experiment"
     def __init__(self):
@@ -106,6 +107,28 @@ class ExRun(object):
         for r in rule.requires:
             if r.getTime() < 0.0:
                 raise ExRunException("require should have been built:" + str(r))
+
+    def _finishSucceed(self, rule):
+        """finish up finish up requires/produces on success, failures here
+        cause the rule to fail"""
+        for p in rule.produces:
+            p.finishSucceed()
+        for r in rule.requires:
+            r.finishRequire()
+
+    def _finishFail(self, rule):
+        """finish up finish up requires/produces on failure, will log errors,
+        but not fail so original error is not lost"""
+        for p in rule.produces:
+            try:
+                p.finishFail()
+            except Exception, ex:
+                self.exrun.verb.prall("Error in Production.finishFail() for " + p.name + ": " + str(ex))
+        for r in rule.requires:
+            try:
+                r.finishRequire()
+            except Exception, ex:
+                self.exrun.verb.prall("Error in Production.finishRequire() for " + r.name + ": " + str(ex))
         
     def _evalRule(self, rule):
         "evaulate a rule"
@@ -117,15 +140,18 @@ class ExRun(object):
             self.verb.pr(Verb.details, "run: ", rule)
             rule.executed = True  # before actually executing
             rule.execute()
+            self._finishSucceed(rule)
             if rule.isOutdated():
                 raise ExRunException("rule didn't update all productions: " + ", ".join([str(p) for p in rule.getOutdated()]))
             isOk = True
+        except Exception, ex:
+            self._finishFail(rule)
+            raise
         finally:
             if isOk:
                 self.verb.leave(Verb.trace, "done rule: ", rule)
             else:
-                # FIXME: should also happen on trace?
-                self.verb.leave(Verb.error, "fail rule: ", rule)
+                self.verb.leave((Verb.trace,Verb.error), "fail rule: ", rule)
 
     def _buildRule(self, rule):
         "recursively build a rule"
