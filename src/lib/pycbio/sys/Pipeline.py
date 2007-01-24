@@ -303,6 +303,12 @@ class Pipeline(Procline):
         wrFh = fileOps.fifoOpen(self.pipePath, "w")
         return (rdFh, wrFh)
 
+    def unlinkPipe(self):
+        "unlink pipe fifo, if it exists"
+        if self.pipePath == None:
+            os.unlink(self.pipePath)
+            pipePath = None
+        
     def __iter__(self):
         "iter over contents of file"
         return self.fh.__iter__()
