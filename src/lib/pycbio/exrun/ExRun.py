@@ -19,6 +19,10 @@ os.stat_float_times(True) # very, very gross
 #        allow all redirection in a subcommand (Pipeline enhancement).
 # FIXME: implement targets
 
+# NOTES:
+#  - thread schedule should be based on load level; setup of a cluster job
+#    adds a big load, running cluster jobs doesn't.
+
 
 class ExRun(object):
     "object that defines and runs an experiment"
@@ -163,14 +167,15 @@ class ExRun(object):
             self._buildRule(prod.producedBy)
         if prod.getTime() < 0.0:
             if (prod.producedBy == None):
-                raise ExRunException("No rule to build: " + prod.name)
+                raise ExRunException("No rule to build: " + str(prod))
             else:
-                raise ExRunException("Product not built: " + prod.name)
+                raise ExRunException("Product not built: " + str(prod))
 
-    def _getRunnableRules(self):
+     def _getRunnableRules(self, entries):
         """get list of rules that need to be run and are runnable (all
-        required current)"""
-        pass
+        required are current), starting with the specified list of
+        entry productions"""
+        rules = []
 
     def run(self):
         "run the experiment"

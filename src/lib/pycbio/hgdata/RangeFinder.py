@@ -1,6 +1,10 @@
-"""Container index by sequence id, range, and optionally strand that efficiently
-searches for overlapping entries."""
+"""Container index by sequence id, range, and optionally strand that
+efficiently searches for overlapping entries."""
 
+##
+# This code is a python reimplementation of binRange.{h,c}, written by
+# Jim Kent.
+##
 
 # There's a bin for each 128k (1<<17) segment. The next coarsest is 8x as big
 # (1<<13).  That is for each 1M segment, for each 8M segment, for each 64M
