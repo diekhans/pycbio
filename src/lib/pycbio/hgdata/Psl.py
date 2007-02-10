@@ -1,3 +1,4 @@
+import copy
 from pycbio.tsv.TabFile import TabFile
 from pycbio.hgdata.AutoSql import intArraySplit, intArrayJoin
 
@@ -6,7 +7,7 @@ from pycbio.hgdata.AutoSql import intArraySplit, intArrayJoin
 class Psl(object):
     """Object wrapper for a parsing a PSL record"""
 
-    def __init__(self, row):
+    def _parse(self, row):
         self.match = int(row[0])
         self.misMatch = int(row[1])
         self.repMatch = int(row[2])
@@ -28,6 +29,44 @@ class Psl(object):
         self.blockSizes = intArraySplit(row[18])
         self.qStarts = intArraySplit(row[19])
         self.tStarts = intArraySplit(row[20])
+
+    def _empty(self, row):
+        self.match = 0
+        self.misMatch = 0
+        self.repMatch = 0
+        self.nCount = 0
+        self.qNumInsert = 0
+        self.qBaseInsert = 0
+        self.tNumInsert = 0
+        self.tBaseInsert = 0
+        self.strand = None
+        self.qName = None
+        self.qSize = 0
+        self.qStart = 0
+        self.qEnd = 0
+        self.tName = None
+        self.tSize = 0
+        self.tStart = 0
+        self.tEnd = 0
+        self.blockCount = 0
+        self.blockSizes = None
+        self.qStarts = []
+        self.tStarts = []
+
+    def __init__(self, row=None):
+        "construct a new PSL, either parsing a row, or creating an empty one"
+        if row != None:
+            self._parse(row)
+        else:
+            self._empty()
+
+    def getQEnd(self, iBlk):
+        "compute qEnd for a block"
+        return self.qStarts[iBlk]+self.blockSizes[iBlk]
+
+    def getTEnd(self, iBlk):
+        "compute tEnd for a block"
+        return self.tStarts[iBlk]+self.blockSizes[iBlk]
 
     def __str__(self):
         "return psl as a tab-separated string"
@@ -105,6 +144,20 @@ class Psl(object):
 
     def covereage(self):
         return float(self.match + self.misMatch + self.repMatch)/float(self.qSize)
+
+    def reverseComplement(self):
+        "create a new PSL that is reverse complemented"
+        rc = copy.deepcopy(self)
+        rc.strand = ('-' if self.strand[0] != '+' else '+') \
+                    + ('-' if (len(self.strand) < 2) or (self.strand[1] != '+') else '+')
+        j = 0
+        for i in xrange(self.blockCount-1,-1,-1):
+            bs = self.blockSizes[i]
+            rc.qStarts[j] = (self.qSize - (self.qStarts[i]+bs))
+            rc.tStarts[j] = (self.tSize - (self.tStarts[i]+bs))
+            rc.blockSizes[j] = bs
+            j += 1
+        return rc
 
 class PslTbl(TabFile):
     """Table of PSL objects loaded from a tab-file
