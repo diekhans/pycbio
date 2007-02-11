@@ -13,22 +13,24 @@ class TabFile(list):
         lineNum = 0
         try:
             for line in inFh:
-                line=line[0:-1]
-                row = line.split("\t")
-                if self.rowClass:
-                    self.append(self.rowClass(row))
-                else:
-                    self.append(row)
-                lineNum += 1
+                if not (self.hashAreComments and line.startswith('#')):
+                    line=line[0:-1]
+                    row = line.split("\t")
+                    if self.rowClass:
+                        self.append(self.rowClass(row))
+                    else:
+                        self.append(row)
+                    lineNum += 1
         except Exception, e:
             # FIXME: loses traceback
             raise ValueError(inFh.name + ":" + str(lineNum) + ": " + str(e), e)
 
-    def __init__(self, fileName, rowClass=None):
+    def __init__(self, fileName, rowClass=None, hashAreComments=False):
         """Read tab file into the object
         """
         self.fileName = fileName
         self.rowClass = rowClass
+        self.hashAreComments = hashAreComments
         inFh = fileOps.opengz(fileName)
         try:
             self._read(inFh)

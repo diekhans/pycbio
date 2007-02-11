@@ -167,7 +167,7 @@ class GenePred(object):
         self.txEnd = None
         self.cdsStart = None
         self.cdsEnd = None
-        self.id = None
+        self.id = 0
         self.name2 = None
         self.cdsStartStat = None
         self.cdsEndStat = None
