@@ -338,9 +338,11 @@ class GenePredReader(object):
 
     def next(self):
         "GPR next"
-        line = self.fh.readline()
-        if (line == ""):
-            self.fh.close();
-            raise StopIteration
-        line = line[0:-1]  # drop newline
-        return GenePred(line.split("\t"))
+        while True:
+            line = self.fh.readline()
+            if (line == ""):
+                self.fh.close();
+                raise StopIteration
+            if not ((len(line) == 1) or line.startswith('#')):
+                line = line[0:-1]  # drop newline
+                return GenePred(line.split("\t"))
