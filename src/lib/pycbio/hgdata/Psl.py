@@ -180,7 +180,7 @@ class PslTbl(TabFile):
                 self.qNameMap[psl.qName] = psl
 
     def __init__(self, fileName, qNameIdx=False):
-        TabFile.__init__(self, fileName, rowClass=Psl)
+        TabFile.__init__(self, fileName, rowClass=Psl, hashAreComments=True)
         self.qNameMap = None
         if qNameIdx:
             self._mkQNameIdx()
