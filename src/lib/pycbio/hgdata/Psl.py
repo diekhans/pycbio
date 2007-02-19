@@ -1,6 +1,8 @@
 import copy
 from pycbio.tsv.TabFile import TabFile
-from pycbio.hgdata.AutoSql import intArraySplit, intArrayJoin
+from pycbio.hgdata.AutoSql import intArraySplit, intArrayJoin, strArraySplit, strArrayJoin
+from pycbio.sys import fileOps
+from Bio.Seq import reverse_complement
 
 # FIXME: create a block object, build on TSV
 
@@ -29,6 +31,12 @@ class Psl(object):
         self.blockSizes = intArraySplit(row[18])
         self.qStarts = intArraySplit(row[19])
         self.tStarts = intArraySplit(row[20])
+        if len(row) > 21:
+            self.qSeqs = strArraySplit(row[21])
+            self.tSeqs = strArraySplit(row[22])
+        else:
+            self.qSeqs = None
+            self.tSeqs = None
 
     def _empty(self, row):
         self.match = 0
@@ -52,6 +60,8 @@ class Psl(object):
         self.blockSizes = None
         self.qStarts = []
         self.tStarts = []
+        self.qSeqs = None
+        self.tSeqs = None
 
     def __init__(self, row=None):
         "construct a new PSL, either parsing a row, or creating an empty one"
@@ -91,6 +101,9 @@ class Psl(object):
                intArrayJoin(self.blockSizes),
                intArrayJoin(self.qStarts),
                intArrayJoin(self.tStarts)]
+        if self.qSeqs != None:
+            row.append(strArrayJoin(self.qSeqs))
+            row.append(strArrayJoin(self.tSeqs))
         return str.join("\t", row)
         
     def write(self, fh):
@@ -156,8 +169,33 @@ class Psl(object):
             rc.qStarts[j] = (self.qSize - (self.qStarts[i]+bs))
             rc.tStarts[j] = (self.tSize - (self.tStarts[i]+bs))
             rc.blockSizes[j] = bs
+            if self.qSeqs != None:
+                rc.qSeqs[j] = reverse_complement(self.qSeqs[i])
+                rc.tSeqs[j] = reverse_complement(self.tSeqs[i])
             j += 1
         return rc
+
+class PslReader(object):
+    """Read PSLs from a tab file"""
+
+    def __init__(self, fileName):
+        self.fh = fileOps.opengz(fileName)
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        "read next PSL"
+        while True:
+            line = self.fh.readline()
+            if (line == ""):
+                self.fh.close();
+                raise StopIteration
+            if not ((len(line) == 1) or line.startswith('#')):
+                line = line[0:-1]  # drop newline
+                return Psl(line.split("\t"))
+
+# FIXME: need to unify PslTbl/PslReader (add TabFileReader)
 
 class PslTbl(TabFile):
     """Table of PSL objects loaded from a tab-file
