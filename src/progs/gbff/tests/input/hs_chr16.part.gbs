@@ -1,0 +1,52 @@
+LOCUS       NT_026437           88290585 bp    DNA     linear   CON 29-AUG-2006
+DEFINITION  Homo sapiens chromosome 14 genomic contig, reference assembly.
+ACCESSION   NT_026437 NT_010002 NT_010019 NT_010028 NT_010108 NT_010113
+VERSION     NT_026437.11  GI:51493278
+KEYWORDS    .
+SOURCE      Homo sapiens
+  ORGANISM  Homo sapiens
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+            Mammalia; Eutheria; Primates; Catarrhini; Hominidae; Homo.
+FEATURES             Location/Qualifiers
+     source          1..88290585
+                     /organism="Homo sapiens"
+                     /mol_type="genomic DNA"
+                     /db_xref="taxon:9606"
+                     /chromosome="14"
+     gene            complement(87135521..87137421)
+                     /gene="IGHGP"
+                     /note="synonym: IGHGP1"
+                     /pseudo
+                     /db_xref="GeneID:3505"
+                     /db_xref="HGNC:5529"
+                     /db_xref="IMGT/GENE-DB:IGHGP"
+     CDS             complement(join(87135630..87135947,87136045..87136374,
+                     87136493..87136543,87136933..87137421))
+                     /gene="IGHGP"
+                     /pseudo
+                     /codon_start=1
+                     /db_xref="GeneID:3505"
+                     /db_xref="HGNC:5529"
+                     /db_xref="IMGT/GENE-DB:IGHGP"
+     C_region        complement(join(87135630..87135947,87136045..87136374,
+                     87136493..87136543,87136933..87137421))
+                     /gene="IGHGP"
+                     /standard_name="immunoglobulin heavy constant gamma P"
+                     /pseudo
+                     /db_xref="GeneID:3505"
+     CDS             complement(join(87174550..87174944,87175167..87175526,
+                     87175741..87176046))
+                     /gene="IGHA1"
+                     /exception="rearrangement required for product"
+                     /codon_start=3
+                     /db_xref="GeneID:3493"
+                     /db_xref="HGNC:5478"
+                     /db_xref="IMGT/GENE-DB:IGHA1"
+                     /db_xref="MIM:146900"
+     C_region        complement(join(87174550..87174944,87175167..87175526,
+                     87175741..87176046))
+                     /gene="IGHA1"
+                     /standard_name="immunoglobulin heavy constant alpha 1"
+                     /db_xref="GeneID:3493"
+                     /db_xref="MIM:146900"
+//

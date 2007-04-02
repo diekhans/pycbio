@@ -15,7 +15,7 @@ geneTest: mkdirs
 	diff expected/$@.gp output/$@.gp
 
 pseudoIgTest: mkdirs
-	${BIN_DIR}/gbffGenesToGenePred --pseudogenes --immunoglobulins input/hs_chr22.part.gbs output/$@.gp
+	${BIN_DIR}/gbffGenesToGenePred --pseudoimmunos input/hs_chr22.part.gbs output/$@.gp
 	genePredCheck output/$@.gp
 	diff expected/$@.gp output/$@.gp
 

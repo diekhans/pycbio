@@ -26,15 +26,21 @@ Retrieve files with:
 """
     def __init__(self):
         parser = OptionParser(usage=CmdOpts.usage)
+        parser.add_option("--genes", dest="genes", action="store_true",
+                          default=False,
+                          help="extract gene annotations, default if no other get options are specified ")
         parser.add_option("--pseudogenes", dest="pseudogenes", action="store_true",
                           default=False,
                           help="extract pseudogene annotations")
+        parser.add_option("--immunoglobulins", dest="immunoglobulins", action="store_true",
+                          default=False,
+                          help="get immunoglobulins genes")
+        parser.add_option("--pseudoimmunos", dest="pseudoimmunos", action="store_true",
+                          default=False,
+                          help="get immunoglobulin pseudogenes")
         parser.add_option("--verbose", dest="verbose", action="store_true",
                           default=False,
                           help="enable additional tracing")
-        parser.add_option("--immunoglobulins", dest="immunoglobulins", action="store_true",
-                          default=False,
-                          help="get immunoglobulins genes or pseudogenes")
         parser.add_option("--noPsycho", dest="usePsycho", action="store_false",
                           default=True,
                           help="disable pyscho compiler")
@@ -43,6 +49,8 @@ Retrieve files with:
             parser.error("wrong number of arguments")
         (self.gbff, self.genePredFile) = args
         self.__dict__.update(opts.__dict__)
+        if not (self.pseudogenes or self.immunoglobulins or self.pseudoimmunos):
+            self.genes = True
 
 class GbffExcept(Exception):
     pass
@@ -334,7 +342,7 @@ class GeneFeatures(object):
             # FIXME" don't know how to handle multiple CDS for one mRNA record, just drop
             # for now
             if self.iCds >= len(self.mrnaTrans):
-                print "Note: more CDS features than mRNA features for ", self.geneId
+                print >>sys.stderr, "Note: more CDS features than mRNA features for ", self.geneId
                 return
             trans = self.mrnaTrans[self.iCds]
             self.iCds += 1
@@ -581,8 +589,16 @@ class GbffToGenes(object):
             cmds.append(["cat", opts.gbff])
         self.gbPl = Pipeline(cmds)
 
+    def _shouldConvert(self, gene):
+        if gene.immunoglobulin:
+            return ((self.opts.immunoglobulins and not gene.pseudo)
+                    or (self.opts.pseudoimmunos and gene.pseudo))
+        else:
+            return ((self.opts.genes and not gene.pseudo)
+                    or (self.opts.pseudogenes and gene.pseudo))
+        
     def _procGene(self, gene):
-        if (gene.pseudo == self.opts.pseudogenes) and (gene.immunoglobulin == self.opts.immunoglobulins):
+        if self._shouldConvert(gene):
             if self.opts.verbose:
                 print >>sys.stderr, "converting gene:", gene.geneSym
             cnv = GeneConverter(gene)
