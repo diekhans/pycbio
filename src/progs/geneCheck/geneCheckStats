@@ -12,6 +12,7 @@ ProbType = Enumeration("ProbType",
                        ("ok", "any", "start", "stop", "orfStop",
                         "cdsGap","cdsMult3Gap","utrGap",
                         "cdsUnknownSplice", "utrUnknownSplice",
+                        "cdsNonCanonSplice", "utrNonCanonSplice",
                         "frameBad", "frameMismatch", "noCDS"))
 def fmtRate(cnt, tot):
     if (tot == 0):
@@ -69,6 +70,10 @@ class CountChks(object):
             self._cnt(ProbType.cdsUnknownSplice, gene.cdsUnknownSplice)
         if gene.utrUnknownSplice > 0:
             self._cnt(ProbType.utrUnknownSplice, gene.utrUnknownSplice)
+        if gene.cdsNonCanonSplice > 0:
+            self._cnt(ProbType.cdsNonCanonSplice, gene.cdsNonCanonSplice)
+        if gene.utrNonCanonSplice > 0:
+            self._cnt(ProbType.utrNonCanonSplice, gene.utrNonCanonSplice)
         if gene.frame == GeneCheck.Frame.bad:
             self._cnt(ProbType.frameBad, 1)
         elif gene.frame == GeneCheck.Frame.mismatch:
@@ -80,7 +85,7 @@ class CountChks(object):
         for gene in self.chks:
             self.countGene(gene)
         outFh = open(statsOut, "w")
-        prRowv(outFh, "cat", "gene", "rate", "probs")
+        prRowv(outFh, "probCat", "gene", "rate", "numProbs")
         prRowv(outFh, "total", self.cnt, "1.0", self.cnt)
         for v in ProbType.values:
             prRowv(outFh, v, self.probGeneCnts[v], fmtRate(self.probGeneCnts[v], self.cnt),

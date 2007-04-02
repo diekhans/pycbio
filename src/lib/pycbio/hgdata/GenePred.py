@@ -167,7 +167,7 @@ class GenePred(object):
         self.txEnd = None
         self.cdsStart = None
         self.cdsEnd = None
-        self.id = 0
+        self.id = None
         self.name2 = None
         self.cdsStartStat = None
         self.cdsEndStat = None
@@ -267,17 +267,30 @@ class GenePred(object):
         row.append(intArrayJoin(starts))
         row.append(intArrayJoin(ends))
 
+        hasExt = (self.id != None) or (self.name2 != None) or (self.cdsStartStat != None) or self.hasExonFrames
+
         if self.id != None:
             row.append(str(self.id))
+        elif hasExt:
+            row.append("0");
         if self.name2 != None:
             row.append(self.name2)
+        elif hasExt:
+            row.append("");
         if self.cdsStartStat != None:
             row.append(str(self.cdsStartStat))
             row.append(str(self.cdsEndStat))
-        if self.hasExonFrames:
+        elif hasExt:
+            row.append(str(CdsStat.unknown))
+            row.append(str(CdsStat.unknown))
+        if self.hasExonFrames or  hasExt:
             frames = []
-            for e in self.exons:
-                frames.append(e.frame)
+            if self.hasExonFrames:
+                for e in self.exons:
+                    frames.append(e.frame)
+            else:
+                for e in self.exons:
+                    frames.append(-1)
             row.append(intArrayJoin(frames))
         return row
 

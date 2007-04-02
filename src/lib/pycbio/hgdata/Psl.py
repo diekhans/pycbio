@@ -78,6 +78,9 @@ class Psl(object):
         "compute tEnd for a block"
         return self.tStarts[iBlk]+self.blockSizes[iBlk]
 
+    def getTStrand(self):
+        return (self.strand[1] if len(self.strand) > 1 else "+")
+
     def __str__(self):
         "return psl as a tab-separated string"
         row = [str(self.match),
