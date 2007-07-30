@@ -21,6 +21,8 @@ def cgBoolFormat(val):
         raise ValueError("expected bool type, got: " + type(val))
 cgBoolSpec = (cgBoolParse, cgBoolFormat)
 
+#cluster	table	gene	chrom	txStart	txEnd	strand	hasExonConflicts	hasCdsConflicts	exonConflicts	cdsConflicts
+#cluster	table	gene	chrom	txStart	txEnd	strand
 typeMap = {
     "cluster": int,
     "chrom": intern,

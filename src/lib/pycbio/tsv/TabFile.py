@@ -11,9 +11,8 @@ class TabFile(list):
    # FIXME add try and error msg with file/line num, move to row reader class; see fileOps.iterRows
     def _read(self, inFh):
         lineNum = 0
-        try:
-            for line in inFh:
-                if not (self.hashAreComments and line.startswith('#')):
+        for line in inFh:
+            if not (self.hashAreComments and line.startswith('#')):
                     line=line[0:-1]
                     row = line.split("\t")
                     if self.rowClass:
@@ -21,22 +20,18 @@ class TabFile(list):
                     else:
                         self.append(row)
                     lineNum += 1
-        except Exception, e:
-            # FIXME: loses traceback
-            raise ValueError(inFh.name + ":" + str(lineNum) + ": " + str(e), e)
 
     def __init__(self, fileName, rowClass=None, hashAreComments=False):
         """Read tab file into the object
         """
         self.fileName = fileName
         self.rowClass = rowClass
-        self.hashAreComments = hashAreComments
-        inFh = fileOps.opengz(fileName)
-        try:
-            self._read(inFh)
-        finally:
-            inFh.close();
-
+        reader = TabFileReader(self.fileName, hashAreComments)
+        for row in reader:
+            if self.rowClass:
+                self.append(self.rowClass(row))
+            else:
+                self.append(row)
 
     def write(fh, row):
         """print a row (list or tuple) to a tab file."""
@@ -48,3 +43,35 @@ class TabFile(list):
             cnt += 1
         fh.write("\n")
     write = staticmethod(write)
+
+class TabFileReader(object):
+    def __init__(self, tabFile, hashAreComments=False):
+        self.fh = fileOps.opengz(tabFile)
+        self.hashAreComments = hashAreComments
+        self.lineNum = 0
+
+    def _readLine(self):
+        try:
+            self.lineNum += 1
+            line = self.fh.readline()
+            if (line == ""):
+                return None
+            else:
+                line = line[0:-1]  # drop newline
+                return line
+        except Exception, e:
+            # FIXME: loses traceback, need to close
+            raise ValueError(self.fh.name + ":" + str(self.lineNum) + ": " + str(e), e)
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        while True:
+            line = self._readLine()
+            if line == None:
+                self.fh.close();
+                raise StopIteration
+            if not (self.hashAreComments and line.startswith("#")):
+                row = line.split("\t")
+                return row

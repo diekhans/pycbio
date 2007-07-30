@@ -33,5 +33,24 @@ def mkset(item):
     else:
         return set([item])
 
-__all__ = (isListLike.__name__, isIterable.__name__, mkiter.__name__, mkset.__name__)
+def noneOrZero(v):
+    "test if a value is either None or len of zero"
+    return (v == None) or (len(v) == 0)
+
+def addUniq(d, k, v):
+    "add to a dict, generating an error if the item already exists"
+    if k in d:
+        raise Exception("item \"" + str(k) + "\" already in dict")
+    d[k] = v
+
+def sortedKeys(d, sortFunc=cmp):
+    "return of keys for dict d, sort by sortFunc, if d is None, return an empty list"
+    if d == None:
+        return []
+    else:
+        keys = list(d.iterkeys())
+        keys.sort(sortFunc)
+        return keys
+
+__all__ = (isListLike.__name__, isIterable.__name__, mkiter.__name__, mkset.__name__, noneOrZero.__name__, addUniq.__name__, sortedKeys.__name__)
 

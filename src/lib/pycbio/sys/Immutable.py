@@ -1,9 +1,9 @@
 
-# FIXME: __new__ maybe helpful in defining immutables
+# FIXME: __new__ maybe helpful in defining immutables, should at least use a slot.
 
 class Immutable(object):
     """Base class to make an object instance immutable.  Call makeImmutable
-    after construction/"""
+    after construction"""
     
     def makeImmutable(self):
         self.immutable = True

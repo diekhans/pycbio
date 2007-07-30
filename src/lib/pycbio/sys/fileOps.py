@@ -76,9 +76,29 @@ def prOut(*objs):
     sys.stdout.write("\n")
 
 def prErr(*objs):
-    "write each str(obj) to stdout followed by a newline"
+    "write each str(obj) to stderr followed by a newline"
     for o in objs:
         sys.stderr.write(str(o))
+    sys.stderr.write("\n")
+
+def prsOut(*objs):
+    "write each str(obj) to stdout, separating with spaces and followed by a newline"
+    n = 0
+    for o in objs:
+        if n > 0:
+            sys.stdout.write(' ')
+        sys.stdout.write(str(o))
+        n += 1
+    sys.stdout.write("\n")
+
+def prsErr(*objs):
+    "write each str(obj) to stderr, separating with spaces and followed by a newline"
+    n = 0
+    for o in objs:
+        if n > 0:
+            sys.stderr.write(' ')
+        sys.stderr.write(str(o))
+        n += 1
     sys.stderr.write("\n")
 
 def prStrs(fh, *objs):

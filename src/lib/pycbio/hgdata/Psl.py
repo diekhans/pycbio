@@ -132,9 +132,10 @@ class Psl(object):
                 cmp = psl1.tEmd - psl2.tEnd
         return cmp
 
-    def __eq__(self, other):
+    def sameAlign(self, other):
         "compare for equality of alignment.  The stats fields are not compared."
-        if ((self.strand != other.strand)
+        if ((other == None) 
+            or (self.strand != other.strand)
             or (self.qName != other.qName)
             or (self.qSize != other.qSize)
             or (self.qStart != other.qStart)

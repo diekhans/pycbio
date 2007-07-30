@@ -4,6 +4,8 @@ from pycbio.sys import fileOps
 from pycbio.tsv.TSVRow import TSVRow
 from pycbio.tsv.TSVError import TSVError
 
+# FIXME: base on new std python cvs module
+
 # FIXME:  pass owndership of row to Row instead of having Row inherit from list
 # FIXME: create error with file name/line number
 # FIMXE: carefully consider naming of functions in Row, as they could
@@ -13,6 +15,8 @@ from pycbio.tsv.TSVError import TSVError
 # FIXME: is colMap needed any more???
 # FIXME: need to add write stuff. (see GeneCheck), where str() is called on
 #        alfor all column ty
+#
+# rename  typeMap -> colTypes
 
 class TSVReader(object):
     """Class for reading TSV files.  Reads header and builds column name to
@@ -57,7 +61,7 @@ class TSVReader(object):
                 self.colTypes.append(defaultColType)
 
     def __init__(self, fileName, rowClass=None, typeMap=None, defaultColType=None, isRdb=False,
-                 columns=None, ignoreExtraCols=False):
+                 columns=None, ignoreExtraCols=False, inFh=None):
         """Open TSV file and read header intp object.  Removes leading # from
         UCSC header.
 
@@ -69,6 +73,8 @@ class TSVReader(object):
         defaultColType - if specified, type of unspecified columns
         columns - if specified, the column names to use.  The header
             should not be in the file.
+        inFh - If not None, this is used as the open file, rather than
+          opening it.
         """
         self.fileName = fileName
         self.lineNum = 0
@@ -78,7 +84,10 @@ class TSVReader(object):
         self.isRdb = isRdb
         self.colTypes = None
         self.ignoreExtraCols = ignoreExtraCols
-        self.inFh = fileOps.opengz(fileName, "r")
+        if inFh != None:
+            self.inFh = inFh
+        else:
+            self.inFh = fileOps.opengz(fileName, "r")
         try:
             if columns:
                 self._setupColumns(columns)
@@ -109,7 +118,7 @@ class TSVReader(object):
         row = line.split("\t")
         if ((self.ignoreExtraCols and (len(row) < len(self.columns)))
             or ((not self.ignoreExtraCols) and (len(row) != len(self.columns)))):
-            self.close()
+            # FIXME: will hang: self.close()
             raise TSVError("row has %d columns, expected %d" %
                            (len(row), len(self.columns)),
                            reader=self)

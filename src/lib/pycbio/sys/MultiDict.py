@@ -33,5 +33,4 @@ class MultiDict(dict):
     def iterentries(self):
         """get iter over entries for each key """
         for key in self.iterkeys():
-            vals = self.get(key)
-            yield vals
+            yield self.get(key)
