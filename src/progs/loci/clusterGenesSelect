@@ -13,16 +13,30 @@ class CmdOpts(object):
     Select clusters based on the criteria specified by the options.
     By default, output a clusterGenes file with just the selected
     records.  If multiple select criteria are specified, they all
-    must be true to select the loci."""
+    must be true to select the loci.
+
+    Somes options take track sets, which are comma seperated sets
+    of track names.
+"""
 
     def __init__(self):
         parser = OptionParser(usage=CmdOpts.usage)
-        parser.add_option("--onlyInTrackSets",
-                          action="append", dest="onlyInTrackSets", default=None,
-                          help="""argument is one or more track names, seperated by commas'.
-                          This selects loci that have genes from all of the specified tracks.  If this
-                          argument is specified multiple times, loci are selected if they match
-                          on of the sets of tracks.""")
+        parser.add_option("--trackSet",
+                          action="append", dest="trackSet", default=None,
+                          help="""selects loci that have at least the specified set of tracks.
+                                  Maybe specified multiple times.""")
+        parser.add_option("--notTrackSet",
+                          action="append", dest="notTrackSet", default=None,
+                          help="""selects loci that don't have any of the specified set of tracks.
+                                  Maybe specified multiple times.""")
+        parser.add_option("--onlyTrackSet",
+                          action="append", dest="onlyTrackSet", default=None,
+                          help="""This selects loci that only the specified set of tracks.
+                                  Maybe specified multiple times.""")
+        parser.add_option("--notOnlyTrackSet",
+                          action="append", dest="notOnlyTrackSet", default=None,
+                          help="""This selects loci that don't have only the specified set of tracks.
+                                  Maybe specified multiple times.""")
         parser.add_option("--geneIds", action="append", dest="geneIdFiles", default=None,
                           help="""select loci containing these gene ids""")
         parser.add_option("--geneIdBedOut", action="store_true", dest="geneIdBedOut", default=False,
@@ -34,24 +48,23 @@ class CmdOpts(object):
         self.__dict__.update(opts.__dict__)
 
 class ClusterSelect(object):
-
     def __init__(self, opts):
         self.clusters = ClusterGenes(opts.clusterFile)
-        self.trackSetsLst = None
-        if opts.onlyInTrackSets != None:
-            self.trackSetsLst = self._buildTrackSetLst(opts.onlyInTrackSets)
-        self.geneIds = None
-        if opts.geneIdFiles != None:
-            self.geneIds = self._loadIdFiles(opts.geneIdFiles)
+
+        self.trackSets = self._parseTrackSetList(opts.trackSet) if (opts.trackSet != None) else None
+        self.notTrackSets = self._parseTrackSetList(opts.notTrackSet) if (opts.notTrackSet != None) else None
+        self.onlyTrackSets = self._parseTrackSetList(opts.onlyTrackSet) if (opts.onlyTrackSet != None) else None
+        self.notOnlyTrackSets = self._parseTrackSetList(opts.notOnlyTrackSet) if (opts.notOnlyTrackSet != None) else None
+        self.geneIds = self._loadIdFiles(opts.geneIdFiles) if (opts.geneIdFiles != None) else None
             
-    def _buildTrackSetLst(self, onlyInTrackSets):
-        trackSetsLst = []
-        for ts in onlyInTrackSets:
+    def _parseTrackSetList(self, specs):
+        trackSetList = []
+        for ts in specs:
             selSet = set()
             for tr in ts.split(","):
                 selSet.add(intern(tr))
-            trackSetsLst.append(selSet)
-        return trackSetsLst
+            trackSetList.append(selSet)
+        return trackSetList
 
     def _loadIdFiles(self, idFiles):
         ids = set()
@@ -61,7 +74,25 @@ class ClusterSelect(object):
         return ids
 
     def _selectedByTrackSets(self, cl):
-        for ts in self.trackSetsLst:
+        for ts in self.trackSets:
+            if ts & cl.tableSet:
+                return True
+        return False
+
+    def _rejectedByNotTrackSets(self, cl):
+        for ts in self.notTrackSets:
+            if ts & cl.tableSet:
+                return True
+        return False
+
+    def _selectedByOnlyTrackSets(self, cl):
+        for ts in self.onlyTrackSets:
+            if ts == cl.tableSet:
+                return True
+        return False
+
+    def _rejectedByNotOnlyTrackSets(self, cl):
+        for ts in self.notOnlyTrackSets:
             if ts == cl.tableSet:
                 return True
         return False
@@ -73,7 +104,13 @@ class ClusterSelect(object):
         return False
 
     def _selected(self, cl):
-        if (self.trackSetsLst != None) and not self._selectedByTrackSets(cl):
+        if (self.trackSets != None) and not self._selectedByTrackSets(cl):
+            return False
+        if (self.notTrackSets != None) and self._rejectedByTrackSets(cl):
+            return False
+        if (self.onlyTrackSets != None) and not self._selectedByOnlyTrackSets(cl):
+            return False
+        if (self.notOnlyTrackSets != None) and self._rejectedByNotOnlyTrackSets(cl):
             return False
         if (self.geneIds != None) and not self._selectedByGeneId(cl):
             return False

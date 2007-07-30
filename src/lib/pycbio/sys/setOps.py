@@ -1,5 +1,8 @@
 """Miscellaneous operations on sets"""
 
+# FIXME: should need `set' as part of function names, since qualified by
+# module
+
 def setJoin(s, sep=" "):
     "join a set into a sorted string, converting each element to a string"
     l = []

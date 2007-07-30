@@ -53,7 +53,7 @@ class Exon(object):
 
     def __str__(self):
         s = str(self.start) + "-" + str(self.end)
-        if self.frame:
+        if self.frame != None:
             s += "/" + str(frame)
         return s
 
@@ -112,7 +112,18 @@ class Exon(object):
                 feats.utr5 = Range(start, self.end)
 
         return feats
-        
+
+    def contains(self, pos):
+        "does exon contain pos?"
+        return (self.start <= pos) and (pos < self.end)
+
+    def overlaps(self, start, end):
+        "does exon overlap range?"
+        return (self.start < end) and (self.end > start)
+
+    def size(self):
+        "size of the exon"
+        return self.end-self.start
 
 class GenePred(object):
     """Object wrapper for a genePred"""
@@ -155,7 +166,7 @@ class GenePred(object):
         self.cdsStartIExon = None
         self.cdsEndIExon = None
         for i in xrange(len(exonStarts)):
-            if exonFrames:
+            if exonFrames != None:
                 frame = exonFrames[i]
             self.addExon(exonStarts[i], exonEnds[i], frame)
 
@@ -189,7 +200,7 @@ class GenePred(object):
         "add an exon; which must be done in assending order"
         i = len(self.exons)
         self.exons.append(Exon(self, i, exonStart, exonEnd, frame))
-        if (exonStart < self.cdsEnd) and (exonEnd > self.cdsStart):
+        if (self.cdsStart < self.cdsEnd) and (exonStart < self.cdsEnd) and (exonEnd > self.cdsStart):
             if self.cdsStartIExon == None:
                 self.cdsStartIExon = i
             self.cdsEndIExon = i
@@ -301,6 +312,13 @@ class GenePred(object):
         for e in self.exons:
             feats.append(e.featureSplit())
         return feats
+
+    def findContainingExon(self, pos):
+        "find the exon contain pos, or None"
+        for exon in self:
+            if exon.contains(pos):
+                return exon
+        return None
 
     def __str__(self):
         return string.join(self.getRow(), "\t")
