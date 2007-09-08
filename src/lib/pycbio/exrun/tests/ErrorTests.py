@@ -31,6 +31,12 @@ class TouchRule(Rule):
             fileOps.ensureFileDir(fp.path)
             open(fp.path, "w").close()
 
+def _sortMsg(msg):
+    "turn multi-line message into a sort list of lines"
+    ml = msg.split("\n")
+    ml.sort()
+    return ml
+
 class ErrorTests(TestCaseBase):
     def testCycleAll(self):
         "all nodes in a cycle (no entry)"
@@ -47,7 +53,9 @@ class ErrorTests(TestCaseBase):
             er.addRule(ErrorRule("cycleAll3", f3, f1))
             er.run()
         except CycleException, ex:
-            self.failUnlessEqual(str(ex), "cycle detected:\n  cycleAll3 ->\n  ErrorTests.ErrorTests.testCycleAll.file3 ->\n  cycleAll2 ->\n  ErrorTests.ErrorTests.testCycleAll.file2 ->\n  cycleAll1 ->\n  ErrorTests.ErrorTests.testCycleAll.file1 ->")
+            # order is not predictable
+            expect = "cycle detected:\n  cycleAll3 ->\n  ErrorTests.ErrorTests.testCycleAll.file3 ->\n  cycleAll2 ->\n  ErrorTests.ErrorTests.testCycleAll.file2 ->\n  cycleAll1 ->\n  ErrorTests.ErrorTests.testCycleAll.file1 ->"
+            self.failUnlessEqual(_sortMsg(str(ex)), _sortMsg(expect))
         if ex == None:
             self.fail("expected CycleException")
         
