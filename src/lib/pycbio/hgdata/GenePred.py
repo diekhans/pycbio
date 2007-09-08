@@ -85,10 +85,7 @@ class Exon(object):
         # UTR before CDS in exon
         start = self.start
         if (start < self.gene.cdsStart):
-            if (self.end < self.gene.cdsStart):
-                end = self.end
-            else:
-                end = self.gene.cdsStart
+            end = min(self.end, self.gene.cdsStart)
             if (self.gene.strand == "+"):
                 feats.utr5 = Range(start, end)
             else:
@@ -97,10 +94,7 @@ class Exon(object):
 
         # CDS in exon
         if (start < self.end) and (start < self.gene.cdsEnd):
-            if (self.end < self.gene.cdsEnd):
-                end = self.end
-            else:
-                end = self.gene.cdsEnd
+            end = min(self.end, self.gene.cdsEnd)
             feats.cds = Range(start, end)
             start = end
 

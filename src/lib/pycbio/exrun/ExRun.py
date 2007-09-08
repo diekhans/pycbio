@@ -9,8 +9,8 @@ os.stat_float_times(True) # very, very gross
 
 # FIXME: should rules/prods automatically be added? ExRun object to constructor
 # would do the trick
-# FIXME: specification of cmd line with File object can be somewhat redundant, but
-#        how can one figure out input vs output??
+# FIXME: How about object wrappers for File for input and output?? instead of getIn or getOut?
+# FIXME: Dir object that is just as a base for File objects.
 # FIXME: error output is really hard to read, especially when executing a non-existant program
 #        just get `OSError: [Errno 2] No such file or directory', not much help
 # FIXME: need to improve graph dump
@@ -171,7 +171,7 @@ class ExRun(object):
             else:
                 raise ExRunException("Product not built: " + str(prod))
 
-     def _getRunnableRules(self, entries):
+    def _getRunnableRules(self, entries):
         """get list of rules that need to be run and are runnable (all
         required are current), starting with the specified list of
         entry productions"""
