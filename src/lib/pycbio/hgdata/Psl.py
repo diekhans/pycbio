@@ -81,6 +81,44 @@ class Psl(object):
     def getTStrand(self):
         return (self.strand[1] if len(self.strand) > 1 else "+")
 
+    def getQStartPos(self, iBlk):
+        "get qStart for a block on positive strand"
+        if self.strand[0] == '+':
+            return self.qStarts[iBlk]
+        else:
+            return self.qSize - (self.qStarts[iBlk]+self.blockSizes[iBlk])
+
+    def getQEndPos(self, iBlk):
+        "get qEnd for a block on positive strand"
+        if self.strand[0] == '+':
+            return self.qStarts[iBlk]+self.blockSizes[iBlk]
+        else:
+            return self.qSize - self.qStarts[iBlk]
+
+    def getTStartPos(self, iBlk):
+        "get tStart for a block on positive strand"
+        if self.getTStrand() == '+':
+            return self.tStarts[iBlk]
+        else:
+            return self.tSize - (self.tStarts[iBlk]+self.blockSizes[iBlk])
+
+    def getTEndPos(self, iBlk):
+        "get tEnd for a block on positive strand"
+        if self.getTStrand() == '+':
+            return self.tStarts[iblk]+self.blockSizes[iBlk]
+        else:
+            return self.tSize - self.tStarts[iBlk]
+
+    def isProtein(self):
+        lastBlock = self.blockCount - 1
+        if len(self.strand) < 2:
+            return False
+        return (((self.strand[1] == '+' ) and
+                 (self.tEnd == self.tStarts[lastBlock] + 3*self.blockSizes[lastBlock]))
+                or
+                ((self.strand[1] == '-') and
+                 (self.tStart == (self.tSize-(self.tStarts[lastBlock] + 3*self.blockSizes[lastBlock])))))
+
     def __str__(self):
         "return psl as a tab-separated string"
         row = [str(self.match),
