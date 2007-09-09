@@ -1,9 +1,17 @@
-"""Scheduling of threads to run rules.
+"""
+Scheduling of threads to run tasks (normally rules).  Task scheduling is
+non-preemptive.  With task running to completion once started.  Since tasks
+usually run one external processes at a time, the number of concurent tasks
+controls the number of process executing on a host.  A scheduling group is
+associated with a host.  While all threads are on the local host, groups are
+used for tasks that start threads on remote hosts.  The motivating goal is to
+be able to run multiple cluster batches concurently.  This allows rules to
+create batches naturally and still maximize the number of jobs running in
+parallel.
+
 """
 import threading
 from pycbio.sys.Enumeration import Enumeration
-
-State = Enumeration("State", ("idle", "ready", "run"))
 
 groupLocal = "localhost"
 
@@ -14,45 +22,55 @@ class Task(object):
         self.runFunc = runFunc
         self.pri = pri  # smaller is higher
         self.group =  None
-        self.state = None
+        self.running = False
         self.error = None
+
+    def run(self):
+        "run the task"
+        self.running = True
+        try:
+            self.runFunc()
+        except e:
+            self.error = e
+        self.running = False
 
     def __cmp__(self, other):
         "compare by priority"
         return other.pri - self.pri
 
+class Thread(threading.Thread):
+    "Thread in a group"
+    def __init__(self, group):
+        self.group = group
+        self.event = threading.Event()
+
+    def run(self):
+        "Run loop for thread"
+        while not self.group.stop:
+            task = self.group.allocTask()
+            task.run()
+            self.group.finshedTask(task)
+            self.event.wait()
+
 class Group(object):
-    """Scheduling group, normally associated with a host.  Tasks can move
-    between groups."""
+    """Scheduling group, normally associated with a host."""
 
     def __init__(self, name, maxConcurrent=1):
         self.lock = threading.RLock()
         self.name = name
         self.maxConcurrent = maxConcurrent
+        self.runThreads = []
+        self.idleThreads = []
         self.runQ = []      # running tasks, with threads
         self.readyQ = []    # task ready to run, sorted by priority
-        self.idleQ = []     # not in runQ or readyQ
-        self.done = threading.Event()
+        self.stop = False
 
-    def assocTask(self, task):
-        "associate a task"
+    def addTask(self, task):
+        "add a task to queue"
         assert(task.group == None)
-        self.lock.acquired()
-        self.readyQ.append(task)
-        task.group = self
-        ### start here??
-        self.lock.release()
-
-    def disassocTask(self, task):
-        "disassociate a task"
-        assert(task.group == self)
-        assert(task in self.runQ)
-        self.lock.acquired()
-        self.runQ.remove(task)
-        task.group = None
-        self.lock.release()
-        
-
+        with self.lock:
+            self.readyQ.append(task)
+            task.group = self
 
 class Sched(object):
     "object that schedules threads to tasks"
