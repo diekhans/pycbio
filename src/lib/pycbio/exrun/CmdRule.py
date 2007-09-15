@@ -18,17 +18,60 @@ from pycbio.sys.Pipeline import Pipeline,Procline
 # FIXME: the number of different get{In,Out} functions is confusing, and can causes
 # errors if the wrong one is used
 
-class OFileRef(object):
-    """
+class FileIn(object):
+    """Object used to specified an input File as an argument to a command.  Using
+    an instance of this object in a command line automatically adds it as a
+    requirement.  It also support automatic compression of the file.
 
-Object used to specified a output file name argument to a command
-    that is expanded just before the command is executed."""
+    The prefix attribute is used in construction arguments when an
+    option-equals is prepended to the file (--in=fname).  The prefix
+    can be specified as an option to the constructor, or in a string concatination
+    ("--in="+FileIn(f))."""
     __slots__ = ["file", "prefix", "autoCompress"]
 
     def __init__(self, file, prefix=None, autoCompress=True):
         self.file = file
         self.prefix = prefix
         self.autoCompress = autoCompress
+
+    def __radd__(self, prefix):
+        "string concatiation operator that sets the prefix"
+        self.prefix = prefix
+        return self
+
+    def __str__(self):
+        """return input file argument"""
+        if self.prefix == None:
+            return self.file.getInPath(self.autoCompress)
+        else:
+            return self.prefix + self.file.getInPath(self.autoCompress)
+
+    def getInPath(self): 
+        # FIXME: needed??
+        "return File.getInPath() for referenced file"
+        return self.file.getInPath(self.autoCompress)
+
+class FileOut(object):
+    """Object used to specified an output File as an argument to a command.  Using
+    an instance of this object in a command line automatically adds it as a
+    production.  It also support automatic compression of the file.
+
+    The prefix attribute is used in construction arguments when an
+    option-equals is prepended to the file (--out=fname).  The prefix
+    can be specified as an option to the constructor, or in a string concatination
+    ("--out="+FileOut(f)).
+    """
+    __slots__ = ["file", "prefix", "autoCompress"]
+
+    def __init__(self, file, prefix=None, autoCompress=True):
+        self.file = file
+        self.prefix = prefix
+        self.autoCompress = autoCompress
+
+    def __radd__(self, prefix):
+        "string concatiation operator that sets the prefix"
+        self.prefix = prefix
+        return self
 
     def __str__(self):
         """return input file argument"""
@@ -40,26 +83,6 @@ Object used to specified a output file name argument to a command
     def getOutPath(self):
         "return File.getOutPath() for referenced file"
         return self.file.getOutPath(self.autoCompress)
-
-class IFileRef(object):
-    """Object used to specified a input file name argument to a command
-    that is expanded just before the command is executed. """
-    __slots__ = ["file", "prefix"]
-
-    def __init__(self, file, prefix=None):
-        self.file = file
-        self.prefix = prefix
-
-    def __str__(self):
-        """return input file argument"""
-        if self.prefix == None:
-            return self.file.getInPath()
-        else:
-            return self.prefix + self.file.getInPath()
-
-    def getInPath(self):
-        "return File.getInPath() for referenced file"
-        return self.file.getInPath()
 
 class File(Production):
     """Object representing a file production. This handles atomic file
@@ -121,15 +144,6 @@ class File(Production):
                 self.compPipe = Pipeline([self.getCompressCmd()], "w", otherEnd=self.newPath,
                                          pipePath = self.exrun.getTmpPath(self.path, "tmpfifo"))
         
-    def getOut(self, prefix=None, autoCompress=True):
-        """Returns an object that causes the output file path to be substituted
-        when str() is call on it.  CmdRule also adds this File as a produces
-        when it is in a command specified at construction time.  If prefix is
-        specified, it is added before the file name. This allows adding
-        options like --foo=filepath.
-        """
-        return OFileRef(self, prefix, autoCompress)
-
     def getOutPath(self, autoCompress=True):
         """Get the output name for the file, which is newPath until the rule
         terminates. This will also create the output directory for the file,
@@ -162,19 +176,10 @@ class File(Production):
                     pass
                 self.compPipe = None
 
-    def getIn(self, prefix=None):
-        """Returns an object that causes the input file path to be substituted
-        when str() is call on it.  CmdRule also adds this File as a requires
-        when it is in a command specified at construction time.  If prefix is
-        specified, it is added before the file name. This allows adding
-        options like --foo=filepath.
-        """
-        return IFileRef(self, prefix)
-
-    def getInPath(self):
+    def getInPath(self, autoCompress=True):
         """Get the input path name of the file.  If a new file has been
         defined using getOutPath(), but has not been installed, it's path is
-        return, otherwise path is returned.  Normally one wants to use getIn()
+        return, otherwise path is returned.  Normally one wants to use FileIn()
         to define a command argument.  This should not be used to get the path
         to a file to be opened in the ExRun process, use openIn() instead. """
         if self.compPipe != None:
@@ -264,7 +269,7 @@ class Cmd(list):
         "get an input file, if fspec is a file object, return getInPath(), fspec string"
         if fspec == None:
             return None
-        elif isinstance(fspec, File) or isinstance(fspec, IFileRef):
+        elif isinstance(fspec, File) or isinstance(fspec, FileIn):
             return fspec.getInPath()
         else:
             return str(fspec)
@@ -273,7 +278,7 @@ class Cmd(list):
         "get an output file, if fspec is a file object, return getOutPath(), fspec string"
         if fspec == None:
             return None
-        elif isinstance(fspec, File) or isinstance(fspec, OFileRef):
+        elif isinstance(fspec, File) or isinstance(fspec, FileOut):
             return fspec.getOutPath()
         else:
             return str(fspec)
@@ -350,21 +355,21 @@ class CmdRule(Rule):
     def _addCmdStdio(self, fspecs, specSet, exclude=None):
         "add None, a single or a list of file specs as requires or produces links"
         for fspec in typeOps.mkiter(fspecs):
-            if  (isinstance(fspec, IFileRef) or isinstance(fspec, OFileRef)):
+            if  (isinstance(fspec, FileIn) or isinstance(fspec, FileOut)):
                 fspec = fspec.file  # get File object for reference
             if (isinstance(fspec, File) and ((exclude == None) or (fspec not in exclude))):
                 specSet.add(fspec)
 
     def _addCmdArgFiles(self, cmd, requires, produces):
-        """scan a command's arguments for IFileRef and OFileRef object and add these to
+        """scan a command's arguments for FileIn and FileOut object and add these to
         requires or produces"""
         for a in cmd:
-            if isinstance(a, IFileRef):
+            if isinstance(a, FileIn):
                 requires.add(a.file)
-            elif isinstance(a, OFileRef):
+            elif isinstance(a, FileOut):
                 produces.add(a.file)
             elif isinstance(a, File):
-                raise ExRunException("can't use File object in command argument, use getIn() or getOut() to generate a reference object")
+                raise ExRunException("can't use File object in command argument, use FileIn() or FileOut() to generate a reference object")
 
     def call(self, cmd):
         "run a commands with optional tracing"

@@ -70,10 +70,10 @@ class Verb(object):
 
 # make classes commonly used externally part of top module
 from pycbio.exrun.Graph import Production, Rule
-from pycbio.exrun.CmdRule import CmdRule, Cmd, File
+from pycbio.exrun.CmdRule import CmdRule, Cmd, File, FileIn, FileOut
 from pycbio.exrun.ExRun import ExRun
 
 
 __all__ = (ExRunException.__name__, Verb.__name__, Production.__name__,
            Rule.__name__, CmdRule.__name__, Cmd.__name__, File.__name__,
-           ExRun.__name__)
+           FileIn.__name__, FileOut.__name__, ExRun.__name__)
