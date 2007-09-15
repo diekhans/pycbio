@@ -4,8 +4,9 @@ import unittest, sys, os, re
 if __name__ == '__main__':
     sys.path.append("../../..")
 from pycbio.sys.fileOps import ensureFileDir, rmFiles
+from pycbio.sys.Pipeline import ProcException
 from pycbio.sys.TestCaseBase import TestCaseBase
-from pycbio.exrun import ExRunException, ExRun, CmdRule, Cmd, File
+from pycbio.exrun import ExRunException, ExRun, CmdRule, Cmd, File, FileIn, FileOut
 
 def rmOutput(*files):
     "delete output files, which can be specified as strings or File objects"
@@ -36,7 +37,7 @@ class CmdSuppliedTests(TestCaseBase):
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp = er.getFile(self.getOutputFile(".txt"))
         rmOutput(ofp)
-        c = Cmd((("sort", "-r", ifp.getIn()), ("sort", "-nr")), stdout=ofp)
+        c = Cmd((("sort", "-r", FileIn(ifp)), ("sort", "-nr")), stdout=ofp)
         er.addRule(CmdRule(c, requires=ifp, produces=ofp))
         er.run()
         self.diffExpected(".txt")
@@ -48,7 +49,7 @@ class CmdSuppliedTests(TestCaseBase):
         ofp1 = er.getFile(self.getOutputFile(".txt"))
         ofp2 = er.getFile(self.getOutputFile(".linecnt"))
         rmOutput(ofp1, ofp2)
-        c1 = Cmd((("sort", "-r", ifp.getIn()), ("sort", "-nr")), stdout=ofp1)
+        c1 = Cmd((("sort", "-r", FileIn(ifp)), ("sort", "-nr")), stdout=ofp1)
         c2 = Cmd((("wc", "-l"), ("sed", "-e", "s/ //g")), stdin=ofp1, stdout=ofp2)
         er.addRule(CmdRule((c1, c2), requires=ifp))
         er.run()
@@ -62,7 +63,7 @@ class CmdSuppliedTests(TestCaseBase):
         ofp1 = er.getFile(self.getOutputFile(".txt"))
         ofp2 = er.getFile(self.getOutputFile(".linecnt"))
         rmOutput(ofp1, ofp2)
-        c1 = Cmd((("sort", "-r", ifp.getIn()), ("sort", "-nr")), stdout=ofp1)
+        c1 = Cmd((("sort", "-r", FileIn(ifp)), ("sort", "-nr")), stdout=ofp1)
         c2 = Cmd((("wc", "-l"), ("sed", "-e", "s/ //g")), stdin=ofp1, stdout=ofp2)
         er.addRule(CmdRule(c2))
         er.addRule(CmdRule(c1, requires=ifp))
@@ -77,13 +78,24 @@ class CmdSuppliedTests(TestCaseBase):
         ofp1 = er.getFile(self.getOutputFile(".txt"))
         ofp2 = er.getFile(self.getOutputFile(".linecnt"))
         rmOutput(ofp1, ofp2)
-        c1 = Cmd((("sort", "-r", ifp.getIn()), ("sort", "-nr"), ("tee", ofp1.getOut())), stdout="/dev/null")
-        c2 = Cmd((("cat", ofp1.getIn()), ("wc", "-l"), ("sed", "-e", "s/ //g"), ("tee", ofp2.getOut())), stdout="/dev/null")
+        c1 = Cmd((("sort", "-r", FileIn(ifp)), ("sort", "-nr"), ("tee", FileOut(ofp1))), stdout="/dev/null")
+        c2 = Cmd((("cat", FileIn(ofp1)), ("wc", "-l"), ("sed", "-e", "s/ //g"), ("tee", FileOut(ofp2))), stdout="/dev/null")
         er.addRule(CmdRule(c2))
         er.addRule(CmdRule(c1))
         er.run()
         self.diffExpected(".txt")
         self.diffExpected(".linecnt")
+
+    def testFilePrefix(self):
+        "test prefixes to FileIn/FileOut"
+        er = ExRun()
+        ifp = er.getFile(self.getInputFile("numbers.txt"))
+        ofp = er.getFile(self.getOutputFile(".txt"))
+        rmOutput(ofp)
+        c = Cmd(("dd", "if="+FileIn(ifp), "of="+FileOut(ofp)))
+        er.addRule(CmdRule(c))
+        er.run()
+        self.diffExpected(".txt")
 
 class CmdSubclassTests(TestCaseBase):
     "tests of CmdRule with subclassing"
@@ -188,7 +200,7 @@ class CmdCompressTests(TestCaseBase):
         ofp1 = er.getFile(self.getOutputFile(".txt.gz"))
         ofp2 = er.getFile(self.getOutputFile(".txt"))
         er.addCmd(["sort", "-r"], stdin=ifp, stdout=ofp1)
-        er.addCmd(([ofp1.getCatCmd(), ofp1.getIn()], ["sed", "-e", "s/^/= /"]), stdout=ofp2)
+        er.addCmd(([ofp1.getCatCmd(), FileIn(ofp1)], ["sed", "-e", "s/^/= /"]), stdout=ofp2)
         er.run()
         self.diffExpected(".txt")
         
@@ -197,8 +209,8 @@ class CmdCompressTests(TestCaseBase):
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp1 = er.getFile(self.getOutputFile(".txt.gz"))
         ofp2 = er.getFile(self.getOutputFile(".txt"))
-        er.addCmd((["sort", "-r", ifp.getIn()], ["tee", ofp1.getOut()]), stdout="/dev/null")
-        er.addCmd(([ofp1.getCatCmd(), ofp1.getIn()], ["sed", "-e", "s/^/= /"]), stdout=ofp2.getOut())
+        er.addCmd((["sort", "-r", FileIn(ifp)], ["tee", FileOut(ofp1)]), stdout="/dev/null")
+        er.addCmd(([ofp1.getCatCmd(), FileIn(ofp1)], ["sed", "-e", "s/^/= /"]), stdout=FileOut(ofp2))
         er.run()
         self.diffExpected(".txt")
 
@@ -208,23 +220,23 @@ class CmdCompressTests(TestCaseBase):
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp1 = er.getFile(self.getOutputFile(".txt.gz"))
         ofp2 = er.getFile(self.getOutputFile(".txt"))
-        er.addCmd((["sort", "-r", ifp.getIn()], ["tee", ofp1.getOut()]), stdout="/dev/null")
-        er.addCmd(([ofp1.getCatCmd(), ofp1.getIn()], ["false"]), stdout=ofp2.getOut())
+        er.addCmd((["sort", "-r", FileIn(ifp)], ["tee", FileOut(ofp1)]), stdout="/dev/null")
+        er.addCmd(([ofp1.getCatCmd(), FileIn(ofp1)], ["false"]), stdout=FileOut(ofp2))
         ex = None
         try:
             er.run()
-        except OSError, ex:
-            exre = ".*process exited with 1: \"false\" in pipeline.*"
+        except ProcException, ex:
+            exre = "process exited 1: false"
             if not re.match(exre, str(ex)):
-                self.fail("expected OSError matching: \"" + exre + "\", got: \"" + str(ex) + "\"")
+                self.fail("expected ProcException matching: \"" + exre + "\", got: \"" + str(ex) + "\"")
         if ex == None:
-            self.fail("expected OSError exception")
+            self.fail("expected ProcException")
             
     def testCmdSigPipe(self):
         "test command recieving SIGPIPE with no error"
         er = ExRun()
         ofp = er.getFile(self.getOutputFile(".txt"))
-        er.addCmd((["yes"], ["true"]), stdout=ofp.getOut())
+        er.addCmd((["yes"], ["true"]), stdout=FileOut(ofp))
         ex = None
         er.run()
             

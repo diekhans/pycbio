@@ -6,6 +6,7 @@
 import os, stat, subprocess, signal
 from pycbio.sys import strOps, fileOps
 
+# FIXME: do with regexp
 def hasWhiteSpace(word):
     "check if a string contains any whitespace"
     for c in word:
@@ -26,7 +27,23 @@ def getSigName(num):
         if (signal.__dict__[key] == num) and key.startswith("SIG") and (key.find("_") < 0):
             return key
     return "signal"+str(num)
-    
+
+# FIXME: how to include stderr from Proc    
+class ProcException(Exception):
+    "process error exception"
+    def __init__(self, desc, returncode, stderr=None):
+        self.returncode = returncode
+        self.stderr = stderr
+        if (returncode < 0):
+            # FIXME: translate to string
+            msg = "process signaled: " + str(-returncode)
+        else:
+            msg = "process exited " + str(returncode)
+        msg += ": " + desc
+        if (stderr != None) and (len(stderr) != 0):
+            msg += ":\n" + stderr
+        Exception.__init__(self, msg)
+
 class Proc(subprocess.Popen):
     """A process in the pipeline.  This extends subprocess.Popen(),
     it also has the following members:
@@ -36,7 +53,7 @@ class Proc(subprocess.Popen):
 
     def __init__(self, pl, cmd, stdin, stdout, stderr):
         self.pipeline = pl
-        self.failExcept = None  # failure exception
+        self.exception = None  # failure exception
 
         # clone list, converting words to strings
         self.cmd = [str(w) for w in cmd]
@@ -73,17 +90,9 @@ class Proc(subprocess.Popen):
                 strs.append(w)
         return " ".join(strs)
 
-    def _saveFailExcept(self):
-        if (self.returncode < 0):
-            self.failExcept = OSError(("process signaled %s: \"%s\" in pipeline \"%s\""
-                                       % (getSigName(-self.returncode), self.getDesc(), self.pipeline.getDesc())))
-        else:
-            self.failExcept = OSError(("process exited with %d: \"%s\" in pipeline \"%s\""
-                                       % (self.returncode, self.getDesc(), self.pipeline.getDesc())))
-
     def _handleExit(self):
         if not ((self.returncode == 0) or (self.returncode == -signal.SIGPIPE)):
-            self._saveFailExcept()
+            self.exception = ProcException(self.getDesc(), self.returncode)
             
     def poll(self, noError=False):
         """Check if the process has completed.  Return True if it has, False
@@ -94,8 +103,8 @@ class Proc(subprocess.Popen):
             return False
         else:
             self._handleExit()
-            if (self.failExcept != None) and (not noError):
-                raise self.failExcept
+            if (self.exception != None) and (not noError):
+                raise self.exception
             else:
                 return True
 
@@ -105,9 +114,9 @@ class Proc(subprocess.Popen):
         process succeded, False on a error."""
         super(Proc, self).wait()
         self._handleExit()
-        if (self.failExcept != None):
+        if (self.exception != None):
             if not noError:
-                raise self.failExcept
+                raise self.exception
             else:
                 return False
         else:
@@ -115,7 +124,7 @@ class Proc(subprocess.Popen):
 
     def failed(self):
         "check if process failed, call after poll() or wait()"
-        return (self.failExcept != None)
+        return (self.exception != None)
 
     def kill(self, sig=signal.SIGTERM):
         "send a signal to the process"
@@ -131,7 +140,7 @@ class Procline(object):
         input to the first process, stdout is output to the last process and
         stderr is attached to all processed."""
         self.procs = []
-        self.failExcept = None
+        self.exception = None
         self.stdin = stdin
         self.stdout = stdout
         self.stderr = stderr
@@ -203,9 +212,9 @@ class Procline(object):
 
         # handle failures
         if firstFail != None:
-            self.failExcept = firstFail.failExcept
+            self.exception = firstFail.exception
             if not noError:
-                raise self.failExcept
+                raise self.exception
             else:
                 return False
         else:
@@ -364,7 +373,7 @@ class Pipeline(Procline):
         "wait for process to complete, with an error if it exited non-zero"
         if not self.closed:
             self.wait()
-        if self.failExcept != None:
-            raise failExcept
+        if self.exception != None:
+            raise exception
 
-__all__ = [Proc.__name__, Procline.__name__, Pipeline.__name__]
+__all__ = [ProcException.__name__, Proc.__name__, Procline.__name__, Pipeline.__name__]
