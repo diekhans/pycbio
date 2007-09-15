@@ -1,0 +1,21 @@
+--- simplify
+IFile
+OFile
+IOFile
+
+
+
+this hangs:
+
+# blastp scores for augustus
+blastpRawOuts = er.getFiles(glob.glob("/cluster/store4/mario/hg17/predictions/TERX.hmRNA.hsEST.browser/prioritylist/blastp/results/res*.blast"))
+blastpScores = er.getFile(dataDir+"/augustusHints.blastpscores.bz2")
+er.addCmd([(["cat"] + [s.getIn() for s in blastpRawOuts]),
+           ("blastToPsl", blastpScores.getOut("-scores="), "stdin", "/dev/null")])
+
+
+- parallel process and cluster job batch control
+  - allow deleting intermediate files
+    - dynamic subgraphs
+  - 
+

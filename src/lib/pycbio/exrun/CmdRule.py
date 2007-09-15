@@ -18,8 +18,10 @@ from pycbio.sys.Pipeline import Pipeline,Procline
 # FIXME: the number of different get{In,Out} functions is confusing, and can causes
 # errors if the wrong one is used
 
-class FileOutRef(object):
-    """Object used to specified a output file name argument to a command
+class OFileRef(object):
+    """
+
+Object used to specified a output file name argument to a command
     that is expanded just before the command is executed."""
     __slots__ = ["file", "prefix", "autoCompress"]
 
@@ -36,10 +38,10 @@ class FileOutRef(object):
             return self.prefix + self.file.getOutPath(self.autoCompress)
 
     def getOutPath(self):
-        "return File.getInPath() for referenced file"
+        "return File.getOutPath() for referenced file"
         return self.file.getOutPath(self.autoCompress)
 
-class FileInRef(object):
+class IFileRef(object):
     """Object used to specified a input file name argument to a command
     that is expanded just before the command is executed. """
     __slots__ = ["file", "prefix"]
@@ -126,7 +128,7 @@ class File(Production):
         specified, it is added before the file name. This allows adding
         options like --foo=filepath.
         """
-        return FileOutRef(self, prefix, autoCompress)
+        return OFileRef(self, prefix, autoCompress)
 
     def getOutPath(self, autoCompress=True):
         """Get the output name for the file, which is newPath until the rule
@@ -167,7 +169,7 @@ class File(Production):
         specified, it is added before the file name. This allows adding
         options like --foo=filepath.
         """
-        return FileInRef(self, prefix)
+        return IFileRef(self, prefix)
 
     def getInPath(self):
         """Get the input path name of the file.  If a new file has been
@@ -262,7 +264,7 @@ class Cmd(list):
         "get an input file, if fspec is a file object, return getInPath(), fspec string"
         if fspec == None:
             return None
-        elif isinstance(fspec, File) or isinstance(fspec, FileInRef):
+        elif isinstance(fspec, File) or isinstance(fspec, IFileRef):
             return fspec.getInPath()
         else:
             return str(fspec)
@@ -271,7 +273,7 @@ class Cmd(list):
         "get an output file, if fspec is a file object, return getOutPath(), fspec string"
         if fspec == None:
             return None
-        elif isinstance(fspec, File) or isinstance(fspec, FileOutRef):
+        elif isinstance(fspec, File) or isinstance(fspec, OFileRef):
             return fspec.getOutPath()
         else:
             return str(fspec)
@@ -348,18 +350,18 @@ class CmdRule(Rule):
     def _addCmdStdio(self, fspecs, specSet, exclude=None):
         "add None, a single or a list of file specs as requires or produces links"
         for fspec in typeOps.mkiter(fspecs):
-            if  (isinstance(fspec, FileInRef) or isinstance(fspec, FileOutRef)):
+            if  (isinstance(fspec, IFileRef) or isinstance(fspec, OFileRef)):
                 fspec = fspec.file  # get File object for reference
             if (isinstance(fspec, File) and ((exclude == None) or (fspec not in exclude))):
                 specSet.add(fspec)
 
     def _addCmdArgFiles(self, cmd, requires, produces):
-        """scan a command's arguments for FileInRef and FileOutRef object and add these to
+        """scan a command's arguments for IFileRef and OFileRef object and add these to
         requires or produces"""
         for a in cmd:
-            if isinstance(a, FileInRef):
+            if isinstance(a, IFileRef):
                 requires.add(a.file)
-            elif isinstance(a, FileOutRef):
+            elif isinstance(a, OFileRef):
                 produces.add(a.file)
             elif isinstance(a, File):
                 raise ExRunException("can't use File object in command argument, use getIn() or getOut() to generate a reference object")
