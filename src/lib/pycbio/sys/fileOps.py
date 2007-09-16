@@ -47,19 +47,39 @@ def rmTree(root):
             os.unlink(dir + "/" + f)
         os.rmdir(dir)
 
+def isCompressed(path):
+    "determine if a file appears to be compressed by extension"
+    return path.endswith(".gz") or path.endswith(".bz2") or path.endswith(".Z")
+
+def compressCmd(path):
+    "return get the command to compress the path, or None if not compressed"
+    if path.endswith(".Z"):
+        raise Exception("writing compress .Z files not supported")
+    elif path.endswith(".gz"):
+        return "gzip"
+    elif path.endswith(".bz2"):
+        return "bzip2"
+    else:
+        return None
+
+def decompressCmd(path):
+    "return the command to decompress the file to stdout, or None if not compressed"
+    if path.endswith(".Z") or path.endswith(".gz"):
+        return "zcat"
+    elif path.endswith(".bz2"):
+        return "bzcat"
+    else:
+        return None
+
 def opengz(file, mode="r"):
     """open a file, if it ends in an extension indicating compression, open
     with a decompression pipe.  Only reading is currently supported"""
-    ext = os.path.splitext(file)[1]
     if (mode != "r"):
         raise Exception("opengz only supports read access: " + file)
-    if (ext == ".gz") or (ext == ".Z") or (ext == ".bz2"):
+    decompCmd = decompressCmd(file)
+    if decompCmd != None:
         open(file).close()  # ensure it exists
-        if ext == ".bz2":
-            cat = "bzcat"
-        else:
-            cat = "zcat"
-        return _getPipelineClass()([cat,file])
+        return _getPipelineClass()([decompCmd, file])
     else:
         return open(file, mode)
 

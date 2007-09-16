@@ -1,7 +1,6 @@
 "File-like object to create and manage a pipeline of subprocesses"
 
 # FIXME: should use mixins to!!
-# FIXME: should move procOps exception to here, have option to throw stderr
 
 import os, stat, subprocess, signal
 from pycbio.sys import strOps, fileOps
@@ -314,7 +313,7 @@ class Pipeline(Procline):
 
     def unlinkPipe(self):
         "unlink pipe fifo, if it exists"
-        if self.pipePath == None:
+        if self.pipePath != None:
             os.unlink(self.pipePath)
             pipePath = None
         

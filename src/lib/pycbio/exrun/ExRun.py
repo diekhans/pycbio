@@ -125,12 +125,14 @@ class ExRun(object):
             try:
                 p.finishFail()
             except Exception, ex:
-                self.exrun.verb.prall("Error in Production.finishFail() for " + p.name + ": " + str(ex))
+                self.verb.prall("Error in Production.finishFail() for ", p.name, ": ", ex)
+                self.verb.pr(Verb.error, "\t", sys.exc_info()[2])
         for r in rule.requires:
             try:
                 r.finishRequire()
             except Exception, ex:
-                self.exrun.verb.prall("Error in Production.finishRequire() for " + r.name + ": " + str(ex))
+                self.verb.prall("Error in Production.finishRequire() for ", r.name, ": ", ex)
+                self.verb.pr(Verb.error, "\t", sys.exc_info()[2])
         
     def _evalRule(self, rule):
         "evaulate a rule"
