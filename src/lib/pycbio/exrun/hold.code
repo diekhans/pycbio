@@ -46,3 +46,16 @@ class File(Production):
         if ex == None:
             self.fail("expected ExRunException")
 
+
+class ActiveOut(object):
+    "object used to manage an output file while rules is active"
+    def __init__(self):
+        pass
+
+    def getUncompressName(self):
+        "get the file name without a .gz/.bz2/.Z"
+        if self.isCompressed():
+            return os.path.splitext(self.path)[0]
+        else:
+            return self.path
+

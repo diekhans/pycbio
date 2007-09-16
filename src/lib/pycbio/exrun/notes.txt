@@ -19,3 +19,6 @@ er.addCmd([(["cat"] + [s.getIn() for s in blastpRawOuts]),
     - dynamic subgraphs
   - 
 
+- *** Need to cleanup all output files before tests
+
+- return list of errors

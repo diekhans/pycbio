@@ -37,11 +37,11 @@ class Verb(object):
             return (flag in self.flags)
 
     def _prIndent(self, msg):
-        self.fh.write(("%*s" % (2*self.indent, "")))
+        ind = ("%*s" % (2*self.indent, ""))
+        self.fh.write(ind)
         for m in msg:
-            # FIXME: this doesn't work anyway, as object changes; see CmdTrace
-            if type(m) == types.TracebackType:
-                self.fh.write(traceback.format_tb(m)[0])
+            if isinstance(m, types.TracebackType):
+                self.fh.write(ind.join(traceback.format_tb(m)))
             else:
                 self.fh.write(str(m))
         self.fh.write("\n")
