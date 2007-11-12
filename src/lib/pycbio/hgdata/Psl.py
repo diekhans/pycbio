@@ -2,6 +2,7 @@ import copy
 from pycbio.tsv.TabFile import TabFile
 from pycbio.hgdata.AutoSql import intArraySplit, intArrayJoin, strArraySplit, strArrayJoin
 from pycbio.sys import fileOps
+from pycbio.sys.MultiDict import MultiDict
 from Bio.Seq import reverse_complement
 
 # FIXME: create a block object, build on TSV
@@ -77,6 +78,9 @@ class Psl(object):
     def getTEnd(self, iBlk):
         "compute tEnd for a block"
         return self.tStarts[iBlk]+self.blockSizes[iBlk]
+
+    def getQStrand(self):
+        return self.strand[0]
 
     def getTStrand(self):
         return (self.strand[1] if len(self.strand) > 1 else "+")
@@ -244,20 +248,9 @@ class PslTbl(TabFile):
     """
 
     def _mkQNameIdx(self):
-        self.qNameMap = {}
-        # single occurances are store directly in map, multiple are saved as
-        # list in the map
+        self.qNameMap = MultiDict()
         for psl in self:
-            ent = self.qNameMap.get(psl.qName)
-            if ent != None:
-                if ent.__class__ is list:
-                    ent.append(psl)
-                else:
-                    # convert entry to list
-                    self.qNameMap[psl.qName] = [ent, psl]  
-
-            else:
-                self.qNameMap[psl.qName] = psl
+            self.qNameMap.add(psl.qName, psl)
 
     def __init__(self, fileName, qNameIdx=False):
         TabFile.__init__(self, fileName, rowClass=Psl, hashAreComments=True)
@@ -281,17 +274,9 @@ class PslTbl(TabFile):
             else:
                 yield ent
 
-    def getQNameList(self, qName):
-        """get a list of PSL for qName"""
-        ent = self.qNameMap.get(qName)
-        if ent != None:
-            if not isinstance(ent, list):
-                ent = [ent]
-        return ent
-
     def havePsl(self, psl):
         "determine if the specified psl is already in the table (by comparison, not object id)"
-        for p in self.getByQName(psl.qName):
+        for p in self.qNameMap.get(psl.qName):
             if p == psl:
                 return True
         return False

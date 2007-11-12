@@ -49,6 +49,9 @@ suites.append(CmdTests.suite())
 from pycbio.exrun.tests import BasicTests
 suites.append(BasicTests.suite())
 
+# pycbio.align
+from pycbio.align.tests import PairAlignTest
+suites.append(PairAlignTest.suite())
 
 alltests = unittest.TestSuite(suites)
 runner = unittest.TextTestRunner(sys.stdout, verbosity=2)

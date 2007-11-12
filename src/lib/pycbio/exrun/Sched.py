@@ -16,14 +16,15 @@ from pycbio.sys.Enumeration import Enumeration
 groupLocal = "localhost"
 
 class Task(object):
-    """A task, which is something to execute."""
+    """A task, which is something to execute. A tasks can be
+    moved between groups"""
     def __init__(self, runFunc, pri):
         self.thread = None
         self.runFunc = runFunc
         self.pri = pri  # smaller is higher
         self.group =  None
         self.running = False
-        self.error = None
+        self.error = None    # exception if there is an error
 
     def run(self):
         "run the task"
@@ -38,32 +39,17 @@ class Task(object):
         "compare by priority"
         return other.pri - self.pri
 
-class Thread(threading.Thread):
-    "Thread in a group"
-    def __init__(self, group):
-        self.group = group
-        self.event = threading.Event()
-
-    def run(self):
-        "Run loop for thread"
-        while not self.group.stop:
-            task = self.group.allocTask()
-            task.run()
-            self.group.finshedTask(task)
-            self.event.wait()
-
 class Group(object):
-    """Scheduling group, normally associated with a host."""
+    """Scheduling group, normally associated with a host,
+    contains a list of tasks"""
 
     def __init__(self, name, maxConcurrent=1):
         self.lock = threading.RLock()
         self.name = name
         self.maxConcurrent = maxConcurrent
-        self.runThreads = []
-        self.idleThreads = []
-        self.runQ = []      # running tasks, with threads
-        self.readyQ = []    # task ready to run, sorted by priority
-        self.stop = False
+        self.running = []   # running Tasks, with threads
+        self.readyQ = []    # ready to tasks to run, sorted by priority
+        self.chill = False  # set to prevent scheduling more threads
 
     def addTask(self, task):
         "add a task to queue"
@@ -77,7 +63,7 @@ class Sched(object):
 
     def __init__(self, maxConcurrent):
         self.lock = threading.RLock()
-        self.stop = False  # don't schedule more tasks
+        self.chill = False  # don't schedule more tasks
 
     def addTask(self, runFunc, pri):
         "add a new task"
@@ -89,11 +75,11 @@ class Sched(object):
         pass
 
     def run(self):
-        """run until all tasks are complete or stop is set.  This runs in
+        """run until all tasks are complete or chill is set.  This runs in
         the main thread and handles creating and displaching threads to
         process tasks.  New tasks maybe added by threads.
         """
         self.lock.acquired()
-        while (((len(self.readyQ) > 0) or (len(self.runQ) > 0)) and not self.stop:
+        while (((len(self.readyQ) > 0) or (len(self.runQ) > 0)) and not self.chill:
         self.runQ.sort()
         self.lock.release()

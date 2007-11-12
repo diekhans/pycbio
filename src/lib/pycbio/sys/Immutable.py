@@ -1,5 +1,6 @@
 
-# FIXME: __new__ maybe helpful in defining immutables, should at least use a slot.
+# FIXME: __new__ maybe helpful in defining immutables, should at least use a slot,
+# count redefine rather then override __setattr__, __delattr__
 
 class Immutable(object):
     """Base class to make an object instance immutable.  Call makeImmutable

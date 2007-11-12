@@ -19,9 +19,10 @@ class Verb(object):
     details = intern("details") # detailed tracing
     graph = intern("graph")     # dump graph at the start
 
-    def __init__(self, verbFlags=None, fh=sys.stderr):
+    def __init__(self, flags=None, fh=sys.stderr):
         self.fh = fh
-        if verbFlags == None:
+        self.flags = flags
+        if self.flags == None:
             self.flags = set([Verb.error, Verb.trace])
         self.indent = 0
 
@@ -70,10 +71,11 @@ class Verb(object):
 
 # make classes commonly used externally part of top module
 from pycbio.exrun.Graph import Production, Rule
-from pycbio.exrun.CmdRule import CmdRule, Cmd, File, FileIn, FileOut
+from pycbio.exrun.CmdRule import CmdRule, Cmd, OFileRef, IFileRef, FileIn, FileOut, File
 from pycbio.exrun.ExRun import ExRun
 
 
 __all__ = (ExRunException.__name__, Verb.__name__, Production.__name__,
-           Rule.__name__, CmdRule.__name__, Cmd.__name__, File.__name__,
+           Rule.__name__, CmdRule.__name__, Cmd.__name__, 
+           "OFileRef", "IFileRef", File.__name__,
            FileIn.__name__, FileOut.__name__, ExRun.__name__)

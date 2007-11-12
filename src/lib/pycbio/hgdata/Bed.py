@@ -1,5 +1,6 @@
 from pycbio.tsv.TabFile import TabFile
 from pycbio.hgdata.AutoSql import intArraySplit, intArrayJoin
+from pycbio.sys.MultiDict import MultiDict
 
 # FIXME: create a block object, build on TSV
 
@@ -71,7 +72,7 @@ class Bed(object):
         return str.join("\t", row)
         
     def write(self, fh):
-        """write psl to a tab-seperated file"""
+        """write BED to a tab-seperated file"""
         fh.write(str(self))
         fh.write('\n')        
 
@@ -80,55 +81,14 @@ class BedTbl(TabFile):
     """Table of BED objects loaded from a tab-file
     """
 
-    def _mkQNameIdx(self):
-        self.qNameMap = {}
-        # single occurances are store directly in map, multiple are saved as
-        # list in the map
-        for psl in self:
-            ent = self.qNameMap.get(psl.qName)
-            if ent != None:
-                if ent.__class__ is list:
-                    ent.append(psl)
-                else:
-                    # convert entry to list
-                    self.qNameMap[psl.qName] = [ent, psl]  
+    def _mkNameIdx(self):
+        self.nameMap = MultiDict()
+        for bed in self:
+            self.nameMap.add(bed.name, bed)
 
-            else:
-                self.qNameMap[psl.qName] = psl
+    def __init__(self, fileName, nameIdx=False):
+        TabFile.__init__(self, fileName, rowClass=Bed, hashAreComments=True)
+        self.nameMap = None
+        if nameIdx:
+            self._nameIdx()
 
-    def __init__(self, fileName, qNameIdx=False):
-        TabFile.__init__(self, fileName, rowClass=Psl)
-        self.qNameMap = None
-        if qNameIdx:
-            self._mkQNameIdx()
-
-    def getQNameIter(self):
-        return self.qNameMap.iterkeys()
-
-    def haveQName(self, qName):
-        return (self.qNameMap.get(qName) != None)
-        
-    def getByQName(self, qName):
-        """generator to get all PSL with a give qName"""
-        ent = self.qNameMap.get(qName)
-        if ent != None:
-            if isinstance(ent, list):
-                for psl in ent:
-                    yield psl
-            else:
-                yield ent
-
-    def getQNameList(self, qName):
-        """get a list of PSL for qName"""
-        ent = self.qNameMap.get(qName)
-        if ent != None:
-            if not isinstance(ent, list):
-                ent = [ent]
-        return ent
-
-    def havePsl(self, psl):
-        "determine if the specified psl is already in the table (by comparison, not object id)"
-        for p in self.getByQName(psl.qName):
-            if p == psl:
-                return True
-        return False

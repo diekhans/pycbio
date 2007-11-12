@@ -69,7 +69,7 @@ class TSVTable(list):
 
     def __init__(self, fileName, uniqKeyCols=None, multiKeyCols=None,
                  rowClass=None, typeMap=None, defaultColType=None, isRdb=False,
-                 columns=None, ignoreExtraCols=False):
+                 columns=None, ignoreExtraCols=False, inFh=None):
         """Read TSV file into the object
         
         uniqKeyCols - name or names of columns to index with uniq keys,
@@ -83,8 +83,10 @@ class TSVTable(list):
             str() is used to convert to a printable value.
         defaultColType - if specified, type of unspecified columns
         isRdb - true if this is an RDB file.
+        inFh - If not None, this is used as the open file, rather than
+          opening it.
         """
-        reader = TSVReader(fileName, rowClass=rowClass, typeMap=typeMap, defaultColType=defaultColType, isRdb=isRdb, columns=columns, ignoreExtraCols=ignoreExtraCols)
+        reader = TSVReader(fileName, rowClass=rowClass, typeMap=typeMap, defaultColType=defaultColType, isRdb=isRdb, columns=columns, ignoreExtraCols=ignoreExtraCols, inFh=inFh)
         try:
             self.columns = reader.columns
             self.colTypes = reader.colTypes
