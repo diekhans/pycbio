@@ -1,5 +1,7 @@
 """Miscellaneous type operations"""
 
+# FIXME: move to other modules
+
 def isListLike(v):
     "is variable a list or tuple?"
     return isinstance(v, list) or isinstance(v, tuple)
@@ -27,6 +29,7 @@ def mkiter(item):
     else:
         return iter([item])
 
+# FIXME: move to setOps
 def mkset(item):
     """create a set from item.  If it's None, return an empty set, if it's
     iterable, convert to a set, if it's a single item, make a set of it,

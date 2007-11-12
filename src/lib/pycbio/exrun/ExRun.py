@@ -3,7 +3,7 @@ import os.path,sys,socket
 from pycbio.exrun.Graph import *
 from pycbio.sys import typeOps
 from pycbio.exrun import ExRunException,Verb
-from pycbio.exrun.CmdRule import CmdRule, Cmd, File
+from pycbio.exrun.CmdRule import CmdRule, Cmd, File, IFileRef, OFileRef
 
 os.stat_float_times(True) # very, very gross
 
@@ -49,6 +49,7 @@ class ExRun(object):
         """generate a unique temporary file path from path, the file will be
         in the same directory.  The file extensions will be maintained, to
         allow recognition of file types, etc. """
+        # FIXME: better name than tmp, check for non-existance
         return os.path.join(os.path.dirname(path),
                             namePrefix + "." + self.getUniqId() + "." + os.path.basename(path))
 
