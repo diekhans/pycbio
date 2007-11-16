@@ -189,7 +189,7 @@ class ExRun(object):
         for prod in self.graph.getEntryProductions():
             self._buildProd(prod)
 
-    def _dumpRule(self, rule):
+    def _dumpRule(self, rule, fh=None):
         self.verb.prall("Rule: ", str(rule))
         self.verb.enter()
         pre = "prd: "
@@ -208,7 +208,10 @@ class ExRun(object):
         self.verb.prall("producedBy: ", str(prod.producedBy))
         self.verb.leave()
         
-    def dumpGraph(self):
+    def dumpGraph(self, fh=None):
+        if fh != None:  # FIXME: kind of hacky
+            holdFh = self.verb.fh
+            self.verb.fh = fh
         self.verb.prall("graph dump:")
         self.verb.enter()
         for node in self.graph.bfs():
@@ -217,5 +220,7 @@ class ExRun(object):
             else:
                 self._dumpProduction(node)
         self.verb.leave()
+        if fh != None:
+            self.verb.fh = holdFh
 
 __all__ = (ExRun.__name__)
