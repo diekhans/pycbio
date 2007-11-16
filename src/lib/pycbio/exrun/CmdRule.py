@@ -165,7 +165,6 @@ class ActiveOut(object):
                 except:
                     pass
                 self.pipe = None
-            
 
 class File(Production):
     """Object representing a file production. This handles atomic file
