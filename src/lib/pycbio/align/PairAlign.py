@@ -1,5 +1,6 @@
 """
-Pairwise alignment or an annotation
+Pairwise alignment.  All coordinates are strand-specific
+
 """
 import sys,copy,re
 from pycbio.sys.Enumeration import Enumeration
@@ -54,6 +55,12 @@ class SubSeq(object):
     def __len__(self):
         "get sequence length"
         return self.end-self.start
+
+    def overlaps(self, start, end):
+        "determine if subseqs overlap"
+        maxStart = max(self.start, start)
+        minEnd = min(self.end, end)
+        return (maxStart < minEnd)
     
 class Cds(object):
     "range or subrange of CDS"
@@ -81,6 +88,10 @@ class Block(object):
         self.q = q
         self.t = t
 
+    def isAligned(self):
+        "is this block aligned?"
+        return (self.q != None) and (self.t != None)
+
     def dump(self, fh):
         "print content to file"
         prLine(fh, "\tquery:  ", self.q)
@@ -107,6 +118,27 @@ class PairAlign(list):
             aln.addBlk((None if (blk.q == None) else blk.q.revCmpl(qseq)),
                        (None if (blk.t == None) else blk.t.revCmpl(tseq)))
         return aln
+
+    def anyTOverlap(self, other):
+        "determine if the any target blocks overlap"
+        if (self.tseq.name != other.tseq.name) or (self.tseq.strand != other.tseq.strand):
+            return False
+        oi = 0
+        ol = len(other)
+        for blk in self:
+            if blk.isAligned():
+                while oi < ol:
+                    oblk = other[oi]
+                    if oblk.isAligned():
+                        if oblk.t.end <= blk.start:
+                            oi += 1
+                        elif blk.t.overlaps(oblk.t.start, oblk.t.end):
+                            return True
+                    else:
+                        oi += 1 # not aligned
+                if oi == ol:
+                    return False
+        return False
 
     def dump(self, fh):
         "print content to file"
