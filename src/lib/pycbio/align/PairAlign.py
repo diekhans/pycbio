@@ -47,6 +47,10 @@ class SubSeq(object):
         return str(self.start) + "-" + str(self.end) \
             + ((" cds: " + str(self.cds)) if (self.cds != None) else "")
 
+    def locStr(self):
+        "get string describing location"
+        return self.seq.id + ":" + str(self.start) + "-" + str(self.end)
+        
     def revCmpl(self, revSeq):
         "return a reverse complment of this object for revSeq"
         cds = self.cds.revCmpl(revSeq.size) if self.cds != None else None
@@ -81,16 +85,35 @@ class Cds(object):
         return self.end-self.start
     
 class Block(object):
-    "block in alignment, query or target SubSeq can be None "
-    __slots__ = ("q", "t")
-    def __init__(self, q, t):
+    """Block in alignment, query or target SubSeq can be None.  Links allow
+    for simple traversing"""
+    __slots__ = ("aln", "q", "t", "idx", "prev", "next")
+    def __init__(self, aln, q, t, idx):
         assert((q == None) or (t == None) or (len(q) == len(t)))
+        self.aln = aln
         self.q = q
         self.t = t
+        self.idx = idx
+        self.prev = self.next = None
 
-    def isAligned(self):
+    def __len__(self):
+        "length of block"
+        return len(self.q) if (self.q != None) else len(self.t)
+
+    def __str__(self):
+        return str(self.q) + " <=> " + str(self.t)
+
+    def isAln(self):
         "is this block aligned?"
         return (self.q != None) and (self.t != None)
+
+    def isQIns(self):
+        "is this block a query insert?"
+        return (self.q != None) and (self.t == None)
+
+    def isTIns(self):
+        "is this block a target insert?"
+        return (self.q == None) and (self.t != None)
 
     def dump(self, fh):
         "print content to file"
@@ -104,7 +127,10 @@ class PairAlign(list):
         self.tseq = tseq
 
     def addBlk(self, q, t):
-        blk = Block(q, t)
+        blk = Block(self, q, t, len(self))
+        if len(self) > 0:
+            self[-1].next = blk
+            blk.prev = self[-1]
         self.append(blk)
         return blk
 
@@ -121,23 +147,20 @@ class PairAlign(list):
 
     def anyTOverlap(self, other):
         "determine if the any target blocks overlap"
-        if (self.tseq.name != other.tseq.name) or (self.tseq.strand != other.tseq.strand):
+        if (self.tseq.id != other.tseq.id) or (self.tseq.strand != other.tseq.strand):
             return False
-        oi = 0
-        ol = len(other)
+        oblk = other[0]
         for blk in self:
-            if blk.isAligned():
-                while oi < ol:
-                    oblk = other[oi]
-                    if oblk.isAligned():
-                        if oblk.t.end <= blk.start:
-                            oi += 1
+            if blk.isAln():
+                while oblk != None:
+                    if oblk.isAln():
+                        if oblk.t.start > blk.t.end:
+                            return False
                         elif blk.t.overlaps(oblk.t.start, oblk.t.end):
                             return True
-                    else:
-                        oi += 1 # not aligned
-                if oi == ol:
-                    return False
+                    oblk = oblk.next
+            if oblk == None:
+                break
         return False
 
     def dump(self, fh):
@@ -147,12 +170,6 @@ class PairAlign(list):
         for blk in self:
             blk.dump(fh)
 
-def _pslSeq(name, start, end, size, strand, cds=None):
-    "make a seq from a PSL, reversing range is neg strand"
-    if strand == '-':
-        return Seq(name, size-end, size-start, size, strand, cds)
-    else:
-        return Seq(name, start, end, size, strand, cds)
 
 def _getCds(cdsRange, strand, size):
     if cdsRange == None:
@@ -171,17 +188,42 @@ def  _getCdsSub(cds, sub):
     else:
         return None
 
-def fromPsl(psl, qCdsRange=None):
-    "generate a PairAlign from a PSL. cdsRange is None or a tuple"
+def _mkPslSeq(name, start, end, size, strand, cds=None):
+    "make a seq from a PSL q or t, reversing range is neg strand"
+    if strand == '-':
+        return Seq(name, size-end, size-start, size, strand, cds)
+    else:
+        return Seq(name, start, end, size, strand, cds)
+
+def _addPslBlk(psl, aln, qCds, i, prevBlk, inclUnaln):
+    """add an aligned block, and optionally preceeding unaligned blocks"""
+    qStart = psl.qStarts[i]
+    qEnd = psl.getQEnd(i)
+    tStart = psl.tStarts[i]
+    tEnd = psl.getTEnd(i)
+    if inclUnaln and (i > 0):
+        if qStart > prevBlk.q.end:
+            blk = aln.addBlk(SubSeq(aln.qseq, prevBlk.q.end, qStart), None)
+            if qCds != None:
+                blk.q.cds = _getCdsSub(qCds, blk.q)
+        if tStart > prevBlk.t.end:
+            blk = aln.addBlk(None, SubSeq(aln.tseq, prevBlk.t.end, tStart))
+    blk = aln.addBlk(SubSeq(aln.qseq, qStart, qEnd),
+                     SubSeq(aln.tseq, tStart, tEnd))
+    if qCds != None:
+        blk.q.cds = _getCdsSub(qCds, blk.q)
+    return blk
+
+def fromPsl(psl, qCdsRange=None, inclUnaln=False):
+    """generate a PairAlign from a PSL. cdsRange is None or a tuple. In
+    inclUnaln is True, then include Block objects for unaligned regions"""
     qCds = _getCds(qCdsRange, psl.getQStrand(), psl.qSize)
-    qseq = _pslSeq(psl.qName, psl.qStart, psl.qEnd, psl.qSize, psl.getQStrand(), qCds)
-    tseq = _pslSeq(psl.tName, psl.tStart, psl.tEnd, psl.tSize, psl.getTStrand())
+    qseq = _mkPslSeq(psl.qName, psl.qStart, psl.qEnd, psl.qSize, psl.getQStrand(), qCds)
+    tseq = _mkPslSeq(psl.tName, psl.tStart, psl.tEnd, psl.tSize, psl.getTStrand())
     aln = PairAlign(qseq, tseq)
+    prevBlk = None
     for i in xrange(psl.blockCount):
-        blk = aln.addBlk(SubSeq(qseq, psl.qStarts[i], psl.getQEnd(i)),
-                         SubSeq(tseq, psl.tStarts[i], psl.getTEnd(i)))
-        if qCds != None:
-            blk.q.cds = _getCdsSub(qCds, blk.q)
+        prevBlk = _addPslBlk(psl, aln, qCds, i, prevBlk, inclUnaln)
     return aln
 
 class CdsTable(dict):
@@ -203,10 +245,10 @@ class CdsTable(dict):
         en = int(m.group(3))-1
         self[m.group(1)] = (st, en)
 
-def loadPslFile(pslFile, cdsFile=None):
+def loadPslFile(pslFile, cdsFile=None, inclUnaln=False):
     "build list of PairAlign from a PSL file and optional CDS file"
     cdsTbl = CdsTable(cdsFile) if (cdsFile != None) else {}
     alns = []
     for psl in PslReader(pslFile):
-        alns.append(fromPsl(psl, cdsTbl.get(psl.qName)))
+        alns.append(fromPsl(psl, cdsTbl.get(psl.qName), inclUnaln))
     return alns
