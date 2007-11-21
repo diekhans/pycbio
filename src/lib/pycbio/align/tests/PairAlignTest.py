@@ -29,6 +29,16 @@ class PairAlignPsl(TestCaseBase):
         self.diffExpected(".rout")
         self.diffExpected(".rrout")
 
+    def testLoadUnaln(self):
+        pairAlns = loadPslFile(self.getInputFile("hsRefSeq.psl"),
+                               self.getInputFile("hsRefSeq.cds"),
+                               inclUnaln=True)
+        fh = open(self.getOutputFile(".out"), "w")
+        for pa in pairAlns:
+            pa.dump(fh)
+        fh.close()
+        self.diffExpected(".out")
+
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(PairAlignPsl))
