@@ -7,7 +7,6 @@ from pycbio.sys.Enumeration import Enumeration
 from pycbio.hgdata.Psl import PslReader
 from pycbio.hgdata.Frame import frameIncr,frameToPhase
 from pycbio.sys.fileOps import prLine,iterLines
-#from Bio.Seq import reverse_complement,translate
 
 class Seq(object):
     "Sequence in an alignment, coordinates are strand-specific"
@@ -114,6 +113,16 @@ class Block(object):
     def isTIns(self):
         "is this block a target insert?"
         return (self.q == None) and (self.t != None)
+
+    def __subToRow(self, seq, sub):
+        if sub != None:
+            return [seq.id, sub.start, sub.end]
+        else:
+            return [seq.id, None, None]
+
+    def toRow(self):
+        "convert to list of query and target coords"
+        return  self.__subToRow(self.aln.qseq, self.q) + self.__subToRow(self.aln.tseq, self.t)
 
     def dump(self, fh):
         "print content to file"
