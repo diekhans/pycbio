@@ -138,13 +138,12 @@ class Cds(object):
 class Block(object):
     """Block in alignment, query or target SubSeq can be None.  Links allow
     for simple traversing"""
-    __slots__ = ("aln", "q", "t", "idx", "prev", "next")
-    def __init__(self, aln, q, t, idx=None):
+    __slots__ = ("aln", "q", "t", "prev", "next")
+    def __init__(self, aln, q, t):
         assert((q == None) or (t == None) or (len(q) == len(t)))
         self.aln = aln
         self.q = q
         self.t = t
-        self.idx = idx  # FIXME: really needed?
         # FIXME: remove???
         self.prev = self.next = None
 
@@ -192,7 +191,7 @@ class PairAlign(list):
         self.tSubSeqs = SubSeqs(tSeq)
 
     def addBlk(self, q, t):
-        blk = Block(self, q, t, len(self))
+        blk = Block(self, q, t)
         if len(self) > 0:
             self[-1].next = blk
             blk.prev = self[-1]
