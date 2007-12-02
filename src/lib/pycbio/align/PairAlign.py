@@ -8,6 +8,8 @@ from pycbio.hgdata.Psl import PslReader
 from pycbio.hgdata.Frame import frameIncr,frameToPhase
 from pycbio.sys.fileOps import prLine,iterLines
 
+# FIXME: need range/overlap operatores
+
 class Seq(object):
     """Sequence in an alignment, coordinates are strand-specific."""
 
@@ -97,8 +99,8 @@ class SubSeq(object):
         if self.cds == None:
             self.cds = Cds(cdsStart, cdsEnd)
         else:
-            self.cds.cdsStart = min(self.cds.cdsStart, cdsStart)
-            self.cds.cdsEnd = max(self.cds.cdsSEnd, cdsEnd)
+            self.cds.start = min(self.cds.start, cdsStart)
+            self.cds.end = max(self.cds.end, cdsEnd)
 
         self.seq.updateCds(self.cds.start, self.cds.end)
 
@@ -120,6 +122,7 @@ class Cds(object):
     "range or subrange of CDS"
     __slots__ = ("start", "end")
     def __init__(self, start, end):
+        print start,end
         assert(start < end)
         self.start = start
         self.end = end
@@ -248,6 +251,13 @@ class PairAlign(list):
         for i in xrange(len(srcSubSeqs)):
             PairAlign.__projectBlkCds(srcSubSeqs[i], destSubSeqs[i])
 
+    def targetOverlap(self, o):
+        "do the target ranges overlap"
+        return ((self.tSeq.id == o.tSeq.id)
+                and (self.tSeq.strand == o.tSeq.strand)
+                and (self.tSeq.start < o.tSeq.end)
+                and (self.tSeq.end > o.tSeq.start))
+
     def projectCdsToTarget(self):
         "project CDS from query to target"
         PairAlign.__projectCds(self.qSubSeqs, self.tSubSeqs)
@@ -256,28 +266,45 @@ class PairAlign(list):
         "project CDS from target to query"
         PairAlign.__projectCds(self.tSubSeqs, self.qSubSeqs)
 
+    def __getSubseq(self, seq):
+        "find the corresponding subSeq array"
+        if seq == self.qSeq:
+            return self.qSubSeqs
+        elif seq == self.tSeq:
+            return self.tSubSeqs
+        else:
+            raise Exception("seq is not part of this alignment")
+
     @staticmethod
-    def __mapCdsToSubSet(destSs, srcSubSeqs, si):
+    def __mapCdsToSubSeq(destSs, srcSubSeqs, si):
         "find overlapping src blks and assign cds, incrementing si as needed"
         sl = len(srcSubSeqs)
+        lastSi = si
         while si < sl:
             srcSs = srcSubSeqs[si]
             if srcSs != None:
-                if srcSs.overlaps(destSs) and srcSs.cds != None:
-                    destSss.updateCds(srcSs.cds.start, srcSs.cds.end)
-            else:
-                si += 1
+                if (srcSs.cds != None) and destSs.overlaps(srcSs.cds.start, srcSs.cds.end) :
+                    print "__mapCdsToSubSeq: @2", str(srcSs.start)+"-"+str(srcSs.end), str(srcSs.cds.start)+"-"+str(srcSs.cds.end), str(destSs.start)+"-"+str(destSs.end),srcSs.overlaps(destSs.start, destSs.end),  (srcSs.cds != None)
+                    destSs.updateCds(srcSs.cds.start, srcSs.cds.end)
+                elif destSs.start > srcSs.end:
+                    break
+            lastSi = si
+            si += 1
+        return lastSi
 
-    def mapCds(self, srcSeq, srcSubSeqs, destSeq, destSubSeqs):
+    def mapCds(self, srcAln, srcSeq, destSeq):
         "map CDS from one alignment to this one via a comman sequence"
         assert((destSeq == self.qSeq) or (destSeq == self.tSeq))
         assert((srcSeq.id == destSeq.id) and (srcSeq.strand == destSeq.strand))
+        srcSubSeqs = srcAln.__getSubseq(srcSeq)
+        destSubSeqs = self.__getSubseq(destSeq)
         si = di = 0
         sl = len(srcSubSeqs)
         dl = len(destSubSeqs)
         while (si < sl) and (di < dl):
+            print "@1 si=",si," di=",di
             if destSubSeqs[di] != None:
-                si = PairAlign.__mapCdsToBlk(destSubSeqs[di], srcSubSeqs, si)
+                si = PairAlign.__mapCdsToSubSeq(destSubSeqs[di], srcSubSeqs, si)
             di += 1
 
     def dump(self, fh):
@@ -318,7 +345,7 @@ def _addPslBlk(psl, aln, i, prevBlk, inclUnaln):
                      aln.tSeq.mkSubSeq(tStart, tEnd))
     return blk
 
-def fromPsl(psl, qCdsRange=None, inclUnaln=False):
+def fromPsl(psl, qCdsRange=None, inclUnaln=False, projectCds=False):
     """generate a PairAlign from a PSL. cdsRange is None or a tuple. In
     inclUnaln is True, then include Block objects for unaligned regions"""
     qCds = _getCds(qCdsRange, psl.getQStrand(), psl.qSize)
@@ -328,6 +355,8 @@ def fromPsl(psl, qCdsRange=None, inclUnaln=False):
     prevBlk = None
     for i in xrange(psl.blockCount):
         prevBlk = _addPslBlk(psl, aln, i, prevBlk, inclUnaln)
+    if projectCds and (aln.qSeq.cds != None):
+        aln.projectCdsToTarget()
     return aln
 
 class CdsTable(dict):
@@ -349,10 +378,10 @@ class CdsTable(dict):
         en = int(m.group(3))-1
         self[m.group(1)] = (st, en)
 
-def loadPslFile(pslFile, cdsFile=None, inclUnaln=False):
+def loadPslFile(pslFile, cdsFile=None, inclUnaln=False, projectCds=False):
     "build list of PairAlign from a PSL file and optional CDS file"
     cdsTbl = CdsTable(cdsFile) if (cdsFile != None) else {}
     alns = []
     for psl in PslReader(pslFile):
-        alns.append(fromPsl(psl, cdsTbl.get(psl.qName), inclUnaln))
+        alns.append(fromPsl(psl, cdsTbl.get(psl.qName), inclUnaln, projectCds))
     return alns
