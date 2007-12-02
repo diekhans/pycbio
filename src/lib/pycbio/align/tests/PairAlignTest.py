@@ -50,6 +50,37 @@ class PairAlignPsl(TestCaseBase):
         self.__dumpNDiff(alns, ".tout")
         self.__dumpNDiff(alns, ".qout")
 
+    def testProjectCds(self):
+        alns = loadPslFile(self.getInputFile("hsRefSeq.psl"),
+                           self.getInputFile("hsRefSeq.cds"),
+                           inclUnaln=True)
+        qalns = []
+        for pa in alns:
+            pa.projectCdsToTarget()
+            # project back
+            qpa = copy.deepcopy(pa)
+            qpa.qSubSeqs.clearCds()
+            qpa.projectCdsToQuery()
+            qalns.append(qpa)
+        self.__dumpNDiff(alns, ".tout")
+        self.__dumpNDiff(alns, ".qout")
+
+
+    def testMapCds(self):
+        destAlns = loadPslFile(self.getInputFile("clonesWeird.psl"),
+                               inclUnaln=True)
+        srcAlns = loadPslFile(self.getInputFile("refseqWeird.psl"),
+                              self.getInputFile("refseqWeird.cds"),
+                              inclUnaln=True)
+        mappedAlns = []
+        for destAln in destAlns:
+            for srcAln in srcAlns:
+                if srcAln.targetOverlap(destAln):
+                    ma = copy.deepcopy(destAln)
+                    ma.mapCds(srcAln, srcAln.tSeq, ma.tSeq)
+                    mappedAlns.append(ma)
+        self.__dumpNDiff(mappedAlns, ".out")
+
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(PairAlignPsl))
