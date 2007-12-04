@@ -22,6 +22,10 @@ class Seq(object):
         self.strand = strand
         self.cds = cds
 
+    def copy(self):
+        "make a copy"
+        return copy.deepcopy(self)
+
     def mkSubSeq(self, start, end):
         "create a subsequence"
         assert((start >= self.start) and (end <= self.end))
@@ -57,7 +61,6 @@ class Seq(object):
             self.cds.start = min(self.cds.start, cdsStart)
             self.cds.end = max(self.cds.end, cdsEnd)
     
-
 class SubSeq(object):
     "subsequence in alignment"
     __slots__ = ("seq", "start", "end", "cds")
@@ -66,6 +69,11 @@ class SubSeq(object):
         self.start = start
         self.end = end
         self.cds = cds
+
+    def copy(self, destSeq):
+        "create a copy, associating with new Seq object"
+        return SubSeq(destSeq, self.start, self.end,
+                      copy.copy(self.cds))
 
     def __str__(self):
         return str(self.start) + "-" + str(self.end) \
@@ -118,11 +126,24 @@ class SubSeqs(list):
             if ss != None:
                 ss.cds = None
 
+    def findFirstCdsIdx(self):
+        "find index of first SubSeq with CDS"
+        for i in xrange(len(self)):
+            if (self[i] != None) and (self[i].cds != None):
+                return i
+        return None
+
+    def findLastCdsIdx(self):
+        "find index of first SubSeq with CDS"
+        for i in xrange(len(self)-1, -1, -1):
+            if (self[i] != None) and (self[i].cds != None):
+                return i
+        return None
+
 class Cds(object):
     "range or subrange of CDS"
     __slots__ = ("start", "end")
     def __init__(self, start, end):
-        print start,end
         assert(start < end)
         self.start = start
         self.end = end
@@ -187,12 +208,22 @@ class Block(object):
 class PairAlign(list):
     """List of alignment blocks"""
     __slots__ = ("qSeq", "tSeq", "qSubSeqs", "tSubSeqs")
-    def __init__(self, qSeq, tSeq, cds=None):
+    def __init__(self, qSeq, tSeq):
         self.qSeq = qSeq
         self.tSeq = tSeq
         self.qSubSeqs = SubSeqs(qSeq)
         self.tSubSeqs = SubSeqs(tSeq)
 
+    def copy(self):
+        "make a deep copy of this object"
+        # N.B. can't use copy.deepcopy for whole object, since there are
+        # circular links
+        daln = PairAlign(self.qSeq.copy(), self.tSeq.copy())
+        for sblk in self:
+            daln.addBlk(sblk.q.copy(daln.qSeq) if (sblk.q != None) else None,
+                        sblk.t.copy(daln.tSeq) if (sblk.t != None) else None)
+        return daln
+        
     def addBlk(self, q, t):
         blk = Block(self, q, t)
         if len(self) > 0:
@@ -233,23 +264,23 @@ class PairAlign(list):
         return False
 
     @staticmethod
-    def __projectBlkCds(srcSs, destSs):
+    def __projectBlkCds(srcSs, destSs, contained):
         "project CDS from one subseq to another"
         if destSs != None:
             if (srcSs != None) and (srcSs.cds != None):
                 start = destSs.start+(srcSs.cds.start-srcSs.start)
                 end = destSs.start+(srcSs.cds.end-srcSs.start)
                 destSs.updateCds(start, end)
-            else:
-                destSs.cds = None
+            elif contained:
+                destSs.updateCds(destSs.start, destSs.end)
 
     @staticmethod
-    def __projectCds(srcSubSeqs, destSubSeqs):
+    def __projectCds(srcSubSeqs, destSubSeqs, contained):
         "project CDS from one alignment side to the other"
         assert(srcSubSeqs.seq.cds != None)
         destSubSeqs.clearCds()
-        for i in xrange(len(srcSubSeqs)):
-            PairAlign.__projectBlkCds(srcSubSeqs[i], destSubSeqs[i])
+        for i in xrange(srcSubSeqs.findFirstCdsIdx(), srcSubSeqs.findLastCdsIdx()+1, 1):
+            PairAlign.__projectBlkCds(srcSubSeqs[i], destSubSeqs[i], contained)
 
     def targetOverlap(self, o):
         "do the target ranges overlap"
@@ -258,13 +289,15 @@ class PairAlign(list):
                 and (self.tSeq.start < o.tSeq.end)
                 and (self.tSeq.end > o.tSeq.start))
 
-    def projectCdsToTarget(self):
-        "project CDS from query to target"
-        PairAlign.__projectCds(self.qSubSeqs, self.tSubSeqs)
+    def projectCdsToTarget(self, contained=False):
+        """project CDS from query to target. If contained is True, assign CDS
+        to subseqs between beginning and end of projected CDS"""
+        PairAlign.__projectCds(self.qSubSeqs, self.tSubSeqs, contained)
 
-    def projectCdsToQuery(self):
-        "project CDS from target to query"
-        PairAlign.__projectCds(self.tSubSeqs, self.qSubSeqs)
+    def projectCdsToQuery(self, contained=False):
+        """project CDS from target to query If contained is True, assign CDS
+        to subseqs between beginning and end of projected CDS"""
+        PairAlign.__projectCds(self.tSubSeqs, self.qSubSeqs, contained)
 
     def __getSubseq(self, seq):
         "find the corresponding subSeq array"
@@ -284,7 +317,6 @@ class PairAlign(list):
             srcSs = srcSubSeqs[si]
             if srcSs != None:
                 if (srcSs.cds != None) and destSs.overlaps(srcSs.cds.start, srcSs.cds.end) :
-                    print "__mapCdsToSubSeq: @2", str(srcSs.start)+"-"+str(srcSs.end), str(srcSs.cds.start)+"-"+str(srcSs.cds.end), str(destSs.start)+"-"+str(destSs.end),srcSs.overlaps(destSs.start, destSs.end),  (srcSs.cds != None)
                     destSs.updateCds(srcSs.cds.start, srcSs.cds.end)
                 elif destSs.start > srcSs.end:
                     break
@@ -292,20 +324,41 @@ class PairAlign(list):
             si += 1
         return lastSi
 
-    def mapCds(self, srcAln, srcSeq, destSeq):
-        "map CDS from one alignment to this one via a comman sequence"
-        assert((destSeq == self.qSeq) or (destSeq == self.tSeq))
-        assert((srcSeq.id == destSeq.id) and (srcSeq.strand == destSeq.strand))
-        srcSubSeqs = srcAln.__getSubseq(srcSeq)
-        destSubSeqs = self.__getSubseq(destSeq)
+    @staticmethod
+    def __mapCdsForOverlap(srcSubSeqs, destSubSeqs):
+        "map CDS only to block overlapping src in common sequence"
         si = di = 0
         sl = len(srcSubSeqs)
         dl = len(destSubSeqs)
         while (si < sl) and (di < dl):
-            print "@1 si=",si," di=",di
             if destSubSeqs[di] != None:
                 si = PairAlign.__mapCdsToSubSeq(destSubSeqs[di], srcSubSeqs, si)
             di += 1
+
+    @staticmethod
+    def __mapCdsForContained(srcSubSeqs, destSubSeqs):
+        "assign CDS for all blks contained in srcSubSeq CDS range"
+        cdsStart = srcSubSeqs[PairAlign.__findFirstCds(srcSubSeqs)].cds.start
+        cdsEnd = srcSubSeqs[PairAlign.__findLastCds(srcSubSeqs)].cds.end
+        for destSs in destSubSeqs:
+            if (destSs != None) and destSs.overlaps(cdsStart, cdsEnd):
+                destSs.updateCds(max(cdsStart, destSs.start),
+                                 min(cdsEnd, destSs.end))
+
+    def mapCds(self, srcAln, srcSeq, destSeq, contained=False):
+        """map CDS from one alignment to this one via a comman sequence.
+        If contained is True, assign CDS to subseqs between beginning and
+        end of mapped CDS"""
+        assert(srcSeq.cds != None)
+        assert((destSeq == self.qSeq) or (destSeq == self.tSeq))
+        assert((srcSeq.id == destSeq.id) and (srcSeq.strand == destSeq.strand))
+        srcSubSeqs = srcAln.__getSubseq(srcSeq)
+        destSubSeqs = self.__getSubseq(destSeq)
+        destSubSeqs.clearCds()
+        if contained:
+            PairAlign.__mapCdsForOverlap(srcSubSeqs, destSubSeqs)
+        else:
+            PairAlign.__mapCdsForOverlap(srcSubSeqs, destSubSeqs)
 
     def dump(self, fh):
         "print content to file"
@@ -364,6 +417,7 @@ class CdsTable(dict):
     Load from CDS seperated file in form:
        cds start..end
     """
+
     def __init__(self, cdsFile):
         for line in iterLines(cdsFile):
             if not line.startswith('#'):
