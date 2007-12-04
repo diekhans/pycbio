@@ -2,7 +2,19 @@ import unittest, sys, copy
 if __name__ == '__main__':
     sys.path.append("../../..")
 from pycbio.sys.TestCaseBase import TestCaseBase
+from pycbio.sys.fileOps import prRowv
 from pycbio.align.PairAlign import loadPslFile
+
+class WithSrcCds(object):
+    "container for map CDS results"
+    def __init__(self, srcAln, destAln):
+        self.srcAln = srcAln
+        self.destAln = destAln
+
+    def dump(self, fh):
+        prRowv(fh, "srcQCds: ", self.srcAln.qSeq)
+        prRowv(fh, "srcTCds: ", self.srcAln.tSeq)
+        self.destAln.dump(fh)
 
 class PairAlignPsl(TestCaseBase):
     def __dumpNDiff(self, alns, suffix):
@@ -35,51 +47,53 @@ class PairAlignPsl(TestCaseBase):
                            inclUnaln=True)
         self.__dumpNDiff(alns, ".out")
 
-    def testProjectCds(self):
-        alns = loadPslFile(self.getInputFile("hsRefSeq.psl"),
-                           self.getInputFile("hsRefSeq.cds"),
+
+    def doTestProjectCds(self, contained):
+        alns = loadPslFile(self.getInputFile("refseqWeird.psl"),
+                           self.getInputFile("refseqWeird.cds"),
                            inclUnaln=True)
         qalns = []
         for pa in alns:
-            pa.projectCdsToTarget()
+            pa.projectCdsToTarget(contained=contained)
             # project back
-            qpa = copy.deepcopy(pa)
+            qpa = pa.copy()
             qpa.qSubSeqs.clearCds()
-            qpa.projectCdsToQuery()
+            qpa.projectCdsToQuery(contained=contained)
             qalns.append(qpa)
         self.__dumpNDiff(alns, ".tout")
-        self.__dumpNDiff(alns, ".qout")
+        self.__dumpNDiff(qalns, ".qout")
 
     def testProjectCds(self):
-        alns = loadPslFile(self.getInputFile("hsRefSeq.psl"),
-                           self.getInputFile("hsRefSeq.cds"),
-                           inclUnaln=True)
-        qalns = []
-        for pa in alns:
-            pa.projectCdsToTarget()
-            # project back
-            qpa = copy.deepcopy(pa)
-            qpa.qSubSeqs.clearCds()
-            qpa.projectCdsToQuery()
-            qalns.append(qpa)
-        self.__dumpNDiff(alns, ".tout")
-        self.__dumpNDiff(alns, ".qout")
+        self.doTestProjectCds(False)
 
+    def testProjectCdsContained(self):
+        self.doTestProjectCds(True)
 
-    def testMapCds(self):
+    def doTestMapCds(self, contained):
         destAlns = loadPslFile(self.getInputFile("clonesWeird.psl"),
                                inclUnaln=True)
         srcAlns = loadPslFile(self.getInputFile("refseqWeird.psl"),
                               self.getInputFile("refseqWeird.cds"),
-                              inclUnaln=True)
+                              inclUnaln=True,
+                              projectCds=True)
         mappedAlns = []
         for destAln in destAlns:
             for srcAln in srcAlns:
+                if srcAln.qSeq.cds == None:
+                    raise Exception("no qCDS: " + srcAln.qSeq.id + " <=> " + srcAln.tSeq.id)
+                if srcAln.tSeq.cds == None:
+                    raise Exception("no tCDS: " + srcAln.qSeq.id + " <=> " + srcAln.tSeq.id)
                 if srcAln.targetOverlap(destAln):
-                    ma = copy.deepcopy(destAln)
-                    ma.mapCds(srcAln, srcAln.tSeq, ma.tSeq)
-                    mappedAlns.append(ma)
+                    ma = destAln.copy()
+                    ma.mapCds(srcAln, srcAln.tSeq, ma.tSeq, contained=contained)
+                    mappedAlns.append(WithSrcCds(srcAln, ma))
         self.__dumpNDiff(mappedAlns, ".out")
+
+    def testMapCds(self):
+        self.doTestMapCds(contained=False)
+
+    def testMapCdsContained(self):
+        self.doTestMapCds(contained=True)
 
 def suite():
     suite = unittest.TestSuite()
