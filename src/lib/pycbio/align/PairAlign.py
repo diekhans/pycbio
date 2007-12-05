@@ -10,17 +10,74 @@ from pycbio.sys.fileOps import prLine,iterLines
 
 # FIXME: need range/overlap operatores
 
-class Seq(object):
-    """Sequence in an alignment, coordinates are strand-specific."""
+_otherStrand = {"+": "-", "-": "+"}
 
-    __slots__ = ("id", "start", "end", "size", "strand", "cds")
-    def __init__(self, id, start, end, size, strand, cds=None):
+class Coord(object):
+    """A coordinate, which can be either absolute or relative to start of strand.
+    """
+    __slots__ = ("id", "start", "end", "size", "strand", "isAbs")
+    def __init__(self, id, start, end, size, strand, isAbs):
+        assert((start <= end) and (start <= size) and (end <= size))
+        assert(strand in ("+", "-"))
         self.id = id
         self.start = start
         self.end = end
         self.size = size
         self.strand = strand
+        self.isAbs = isAbs
+
+    def __str__(self):
+        return self.id + ":" + str(self.start) + "-" + str(self.end) + "(" \
+            + self.strand + ("a" if self.isAbs else "r") + ")"
+
+    def __getstate__(self):
+        return (self.id, self.start, self.end, self.size, self.strand, self.isAbs)
+
+    def __setstate__(self, st):
+        (self.id, self.start, self.end, self.size, self.strand, self.isAbs) = st
+
+    def toAbs(self):
+        """create a new coord object that is in absolute coordinates.  Does not change the
+        strand"""
+        if self.isAbs or (self.strand == "+"):
+            return Coord(self.id, self.start, self.end, self.size, self.strand, True)
+        else:
+            return Coord(self.id, (self.size - self.end), (self.size - self.start), self.size, self.strand, True)
+
+    def toRel(self):
+        """create a new coord object that is in relative coordinates.  Does not change the
+        strand"""
+        if (not self.isAbs) or (self.strand == "+"):
+            return Coord(self.id, self.start, self.end, self.size, self.strand, False)
+        else:
+            return Coord(self.id, (self.size - self.end), (self.size - self.start), self.size, self.strand, False)
+
+    def toRev(self):
+        """create a new coord object that is on the opposite strand, does not change
+        coordinate system"""
+        if self.isAbs:
+            return Coord(self.id, self.start, self.end, self.size, self.strand, True)
+        else:
+            return Coord(self.id, (self.size - self.end), (self.size - self.start), self.size, _otherStrand[self.strand], False)
+
+    def getRange(self, start, end):
+        "generate a coord object the same sequence, only using start/end as the bounds"
+        return Coord(self.id, start, end, self.size, self.strand, self.isAbs)
+
+class Seq(Coord):
+    """Sequence in an alignment, coordinates are relative."""
+
+    __slots__ = ("id", "start", "end", "size", "strand", "cds")
+    def __init__(self, id, start, end, size, strand, cds=None):
+        Coord.__init__(self, id, start, end, size, strand, True)
         self.cds = cds
+
+    def __getstate__(self):
+        return (Coord.__getstate__(self), self.cds)
+
+    def __setstate__(self, st):
+        Coord.__setstate__(self, st[0])
+        self.cds = st[1]
 
     def copy(self):
         "make a copy"
@@ -69,6 +126,12 @@ class SubSeq(object):
         self.start = start
         self.end = end
         self.cds = cds
+
+    def __getstate__(self):
+        return (self.seq, self.start, self.end, self.cds)
+
+    def __setstate__(self, st):
+        (self.seq, self.start, self.end, self.cds) = st
 
     def copy(self, destSeq):
         "create a copy, associating with new Seq object"
@@ -119,6 +182,12 @@ class SubSeqs(list):
     def __init__(self, seq):
         self.seq = seq
 
+    def __getstate__(self):
+        return (self.seq,)
+
+    def __setstate__(self, st):
+        (self.seq,) = st
+
     def clearCds(self):
         "clear CDS in sequences and subseqs"
         self.seq.cds = None
@@ -148,6 +217,12 @@ class Cds(object):
         self.start = start
         self.end = end
 
+    def __getstate__(self):
+        return (self.start, self.end)
+
+    def __setstate__(self, st):
+        (self.start, self.end) = st
+
     def revCmpl(self, psize):
         "return a reverse complment of this object, given parent seq or subseq size"
         return Cds(psize-self.end, psize-self.start)
@@ -170,6 +245,12 @@ class Block(object):
         self.t = t
         # FIXME: remove???
         self.prev = self.next = None
+
+    def __getstate__(self):
+        return (self.aln, self.q, self.t, self.prev, self.next)
+
+    def __setstate__(self, st):
+        (self.aln, self.q, self.t, self.prev, self.next)= st
 
     def __len__(self):
         "length of block"
@@ -213,6 +294,13 @@ class PairAlign(list):
         self.tSeq = tSeq
         self.qSubSeqs = SubSeqs(qSeq)
         self.tSubSeqs = SubSeqs(tSeq)
+
+    def __getstate__(self):
+        return (self.qSeq, self.tSeq, self.qSubSeqs, self.tSubSeqs)
+
+    def __setstate__(self, st):
+        (self.qSeq, self.tSeq, self.qSubSeqs, self.tSubSeqs) = st
+        self._qLociId = None
 
     def copy(self):
         "make a deep copy of this object"
@@ -420,6 +508,7 @@ class CdsTable(dict):
 
     def __init__(self, cdsFile):
         for line in iterLines(cdsFile):
+            print "line=",line
             if not line.startswith('#'):
                 self.__parseCds(line)
     
