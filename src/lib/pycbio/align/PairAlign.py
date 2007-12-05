@@ -26,15 +26,15 @@ class Coord(object):
         self.strand = strand
         self.isAbs = isAbs
 
-    def __str__(self):
-        return self.id + ":" + str(self.start) + "-" + str(self.end) + "(" \
-            + self.strand + ("a" if self.isAbs else "r") + ")"
-
     def __getstate__(self):
         return (self.id, self.start, self.end, self.size, self.strand, self.isAbs)
 
     def __setstate__(self, st):
         (self.id, self.start, self.end, self.size, self.strand, self.isAbs) = st
+
+    def __str__(self):
+        return self.id + ":" + str(self.start) + "-" + str(self.end) + "(" \
+            + self.strand + ("a" if self.isAbs else "r") + ")"
 
     def toAbs(self):
         """create a new coord object that is in absolute coordinates.  Does not change the
@@ -64,10 +64,35 @@ class Coord(object):
         "generate a coord object the same sequence, only using start/end as the bounds"
         return Coord(self.id, start, end, self.size, self.strand, self.isAbs)
 
+    def overlaps(self, start, end):
+        "determine if a range overlaps"
+        maxStart = max(self.start, start)
+        minEnd = min(self.end, end)
+        return (maxStart < minEnd)
+
+    def coordOver(self, coord):
+        "does another coordinate overlap this one"
+        if coord.id != self.id:
+            return False
+        elif (self.isAbs or (self.strand == '+')) and (coord.isAbs or (coord.strand == '+')):
+            # can compare directly
+            return self.overlaps(coord.start, coord.end)
+        elif (not self.isAbs) and (not coord.isAbs):
+            # both relative
+            return (self.strand == coord.strand) and self.overlaps(coord.start, coord.end)
+        elif self.isAbs:
+            assert(not coord.isAbs)
+            coord = coord.toAbs()
+            return (self.strand == coord.strand) and self.overlaps(coord.start, coord.end)
+        else:
+            assert(not self.isAbs)
+            aself = self.toAbs()
+            return (aself.strand == coord.strand) and aself.overlaps(coord.start, coord.end)
+
 class Seq(Coord):
     """Sequence in an alignment, coordinates are relative."""
 
-    __slots__ = ("id", "start", "end", "size", "strand", "cds")
+    __slots__ = ("cds")
     def __init__(self, id, start, end, size, strand, cds=None):
         Coord.__init__(self, id, start, end, size, strand, True)
         self.cds = cds
@@ -76,6 +101,7 @@ class Seq(Coord):
         return (Coord.__getstate__(self), self.cds)
 
     def __setstate__(self, st):
+        assert(len(st) == 2)
         Coord.__setstate__(self, st[0])
         self.cds = st[1]
 
@@ -300,7 +326,6 @@ class PairAlign(list):
 
     def __setstate__(self, st):
         (self.qSeq, self.tSeq, self.qSubSeqs, self.tSubSeqs) = st
-        self._qLociId = None
 
     def copy(self):
         "make a deep copy of this object"
@@ -448,6 +473,15 @@ class PairAlign(list):
         else:
             PairAlign.__mapCdsForOverlap(srcSubSeqs, destSubSeqs)
 
+    def clearCds(self):
+        "clear both query and target CDS, if any"
+        if self.qSeq.cds != None:
+            self.qSubSeqs.clearCds()
+            self.qSeq.cds = None
+        if self.tSeq.cds != None:
+            self.tSubSeqs.clearCds()
+            self.tSeq.cds = None
+
     def dump(self, fh):
         "print content to file"
         prLine(fh, "query:  ", self.qSeq)
@@ -486,7 +520,7 @@ def _addPslBlk(psl, aln, i, prevBlk, inclUnaln):
                      aln.tSeq.mkSubSeq(tStart, tEnd))
     return blk
 
-def fromPsl(psl, qCdsRange=None, inclUnaln=False, projectCds=False):
+def fromPsl(psl, qCdsRange=None, inclUnaln=False, projectCds=False, contained=False):
     """generate a PairAlign from a PSL. cdsRange is None or a tuple. In
     inclUnaln is True, then include Block objects for unaligned regions"""
     qCds = _getCds(qCdsRange, psl.getQStrand(), psl.qSize)
@@ -497,7 +531,7 @@ def fromPsl(psl, qCdsRange=None, inclUnaln=False, projectCds=False):
     for i in xrange(psl.blockCount):
         prevBlk = _addPslBlk(psl, aln, i, prevBlk, inclUnaln)
     if projectCds and (aln.qSeq.cds != None):
-        aln.projectCdsToTarget()
+        aln.projectCdsToTarget(contained)
     return aln
 
 class CdsTable(dict):
@@ -508,7 +542,6 @@ class CdsTable(dict):
 
     def __init__(self, cdsFile):
         for line in iterLines(cdsFile):
-            print "line=",line
             if not line.startswith('#'):
                 self.__parseCds(line)
     
@@ -521,10 +554,10 @@ class CdsTable(dict):
         en = int(m.group(3))-1
         self[m.group(1)] = (st, en)
 
-def loadPslFile(pslFile, cdsFile=None, inclUnaln=False, projectCds=False):
+def loadPslFile(pslFile, cdsFile=None, inclUnaln=False, projectCds=False, contained=False):
     "build list of PairAlign from a PSL file and optional CDS file"
     cdsTbl = CdsTable(cdsFile) if (cdsFile != None) else {}
     alns = []
     for psl in PslReader(pslFile):
-        alns.append(fromPsl(psl, cdsTbl.get(psl.qName), inclUnaln, projectCds))
+        alns.append(fromPsl(psl, cdsTbl.get(psl.qName), inclUnaln, projectCds, contained))
     return alns

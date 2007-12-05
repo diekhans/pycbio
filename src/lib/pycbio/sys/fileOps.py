@@ -177,9 +177,8 @@ def iterLines(fspec):
     else:
         fh = fspec
     try:
-        cnt = 0
         for line in fh:
-            yield line[0:-1]
+            yield line[:-1]
     finally:
         if isinstance(fspec, str):
             fh.close()
