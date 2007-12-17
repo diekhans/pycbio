@@ -110,6 +110,7 @@ class ActiveIn(object):
 
     def done(self):
         "complete use of file when a command completes.  This does not install newPath"
+        print "DONE: ", self.inPath, self.pipe
         if self.fh != None:
             self.fh.close()
             self.fh = None
@@ -153,6 +154,7 @@ class ActiveOut(object):
 
     def done(self):
         "complete use of file when a command completes.  This does not install outPath"
+        print "DONE: ", self.outPath, self.pipe
         if self.fh != None:
             self.fh.close()
             self.fh = None
@@ -244,10 +246,13 @@ class File(Production):
 
     def done(self):
         "called when command completes, waits for pipes but doesn't install output"
+        print "FILE.DONE",self.path
         if self.activeOut != None:
+            print "   FILE.DONE activeOut"
             self.activeOut.done()
             self.activeOut = None
         elif self.activeIns != None:
+            print "   FILE.DONE activeIn",len(self.activeIns)
             firstEx = None
             for ai in self.activeIns:
                 try:
@@ -372,7 +377,8 @@ class Cmd(list):
         if verb.enabled(Verb.trace):
             verb.pr(Verb.trace, self.__getDesc())
         pl = Procline(self, self._getInput(self.stdin), self._getOutput(self.stdout), self._getOutput(self.stderr))
-        # FIXME: doesn't print on hang/except
+        # FIXME: doesn't print on hang/except; delayed start will allow using
+        #  one desc function
         #if verb.enabled(Verb.trace):
         #    verb.pr(Verb.trace, pl.getDesc())
         pl.wait()
