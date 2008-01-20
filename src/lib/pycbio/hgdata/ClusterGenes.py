@@ -77,9 +77,11 @@ class Cluster(list):
                 genes.append(g)
         return genes
 
-    def write(self, fh):
+    def write(self, fh, trackSet=None):
+        "if trackSet is specified, only output genes in this set"
         for gene in self:
-            gene.write(fh)
+            if (trackSet == None) or (gene.table in trackSet):
+                gene.write(fh)
 
 class ClusterGenes(list):
     """Object to access output of ClusterGenes.  List of Cluster objects,
