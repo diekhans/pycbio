@@ -41,6 +41,8 @@ class CmdOpts(object):
                           help="""select loci containing these gene ids""")
         parser.add_option("--geneIdBedOut", action="store_true", dest="geneIdBedOut", default=False,
                           help="""Output loci bed for each gene in --geneIds with name column being the gene id""")
+        parser.add_option("--trackFilter", action="store", dest="trackFilterSet", default=None,
+                          help="""Only output tracks in this set.  Loci that don't contain any of these tracks are dropped""")
         (opts, args) = parser.parse_args()
         if len(args) != 2:
             parser.error("wrong number of arguments")
@@ -56,14 +58,18 @@ class ClusterSelect(object):
         self.onlyTrackSets = self._parseTrackSetList(opts.onlyTrackSet) if (opts.onlyTrackSet != None) else None
         self.notOnlyTrackSets = self._parseTrackSetList(opts.notOnlyTrackSet) if (opts.notOnlyTrackSet != None) else None
         self.geneIds = self._loadIdFiles(opts.geneIdFiles) if (opts.geneIdFiles != None) else None
-            
+        self.trackFilterSet = self._parseTrackSet(opts.trackFilterSet) if (opts.trackFilterSet != None) else None
+
+    def _parseTrackSet(self, spec):
+        selSet = set()
+        for tr in spec.split(","):
+            selSet.add(intern(tr))
+        return selSet
+
     def _parseTrackSetList(self, specs):
         trackSetList = []
-        for ts in specs:
-            selSet = set()
-            for tr in ts.split(","):
-                selSet.add(intern(tr))
-            trackSetList.append(selSet)
+        for spec in specs:
+            trackSetList.append(self._parseTrackSet(spec))
         return trackSetList
 
     def _loadIdFiles(self, idFiles):
@@ -114,6 +120,8 @@ class ClusterSelect(object):
             return False
         if (self.geneIds != None) and not self._selectedByGeneId(cl):
             return False
+        if (self.trackFilterSet != None) and not (self.trackFilterSet & cl.tableSet):
+            return False
         return True
 
     def outClusters(self, outFile):
@@ -123,12 +131,16 @@ class ClusterSelect(object):
         
         for cl in self.clusters:
             if self._selected(cl):
-                cl.write(outFh)
+                cl.write(outFh, self.trackFilterSet)
         outFh.close()
+
+    def _geneSelected(self, gene):
+        return (((self.geneIds == None) or (gene.gene in self.geneIds))
+                and ((self.trackFilterSet == None) or (gene.table in self.trackFilterSet)))
 
     def _writeGeneIdBed(self, outFh, cl):
         for gene in cl:
-            if gene.gene in self.geneIds:
+            if self._geneSelected(gene):
                 prRowv(outFh, cl.chrom, cl.start, cl.end, gene.gene)
 
     def outGeneIdBed(self, outFile):
