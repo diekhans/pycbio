@@ -58,7 +58,8 @@ class TSVTable(list):
         for i in xrange(len(row)):
             if colDictTbl[i] != None:
                 self._indexCol(i, colDictTbl[i], row[i], row)
-        
+
+    # FIXME: need add row function, but colDict stuff conflicts, make member
     def _readBody(self, reader):
         colDictTbl = self._buildColDictTbl()
         for row in reader:

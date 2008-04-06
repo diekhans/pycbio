@@ -23,7 +23,18 @@ class Range(object):
         return (other != None) and (self.start == other.start) and (self.end == other.end)
 
     def __ne__(self, other):
-        return  (other == None) or (self.start != other.start) or (self.end != other.end)
+        return (other == None) or (self.start != other.start) or (self.end != other.end)
+
+    def size(self):
+        return  self.end - self.start
+
+    def overlapAmt(self, other):
+        maxStart = max(self.start, other.start)
+        minEnd = min(self.end, other.end)
+        if maxStart >= minEnd:
+            return 0
+        else:
+            return (minEnd - maxStart)
 
     def __str__(self):
         return str(self.start) + ".." + str(self.end)
@@ -222,11 +233,14 @@ class GenePred(object):
             return False
 
         # check each exon
+        checkFrame = self.hasExonFrames and gene2.hasExonFrames
         iCds2 = 0
         for iCds1 in xrange(nCds1):
             exon1 = self.getCdsExon(iCds1)
             exon2 = gene2.getCdsExon(iCds2)
-            if (exon1.getCds() != exon2.getCds()) or (exon1.frame != exon2.frame):
+            if exon1.getCds() != exon2.getCds():
+                return False
+            if checkFrame and (exon1.frame != exon2.frame):
                 return False
             iCds2 += 1
         return True
@@ -313,6 +327,29 @@ class GenePred(object):
             if exon.contains(pos):
                 return exon
         return None
+
+    def cdsSimilarity(self, gp2):
+        "compute similariy of CDS of two genes"
+        if (self.chrom != gp2.chrom) or (self.strand != gp2.strand):
+            return 0.0
+        feats2 = gp2.getFeatures()
+        total = 0
+        same = 0
+        for e1 in self.exons:
+            f1 = e1.featureSplit()
+            if f1.cds != None:
+                total += f1.cds.size()
+                for f2 in feats2:
+                    if f2.cds != None:
+                        same += f1.cds.overlapAmt(f2.cds)
+        # count gp2 cds
+        for f2 in feats2:
+            if f2.cds != None:
+                total += f2.cds.size()
+        if total == 0:
+            return 0.0
+        else:
+            return float(2*same)/float(total)
 
     def __str__(self):
         return string.join(self.getRow(), "\t")
