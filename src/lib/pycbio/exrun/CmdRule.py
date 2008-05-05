@@ -16,7 +16,13 @@ from pycbio.sys.Pipeline import Pipeline,Procline
 # FIXME: the number of different get{In,Out} functions is confusing, and can causes
 # errors if the wrong one is used
 
-# FIXME: tmp hack
+# FIXME: in transMap run compressed data files got corrupted near
+# the start of the *file*. very weird, so we hacked this so compression
+# is done after the fact, not on the fifo!.
+
+COMPRESS_BUG = True
+if COMPRESS_BUG:
+    import socket
 
 def getTmpFifo(exrun, path):
     return exrun.getTmpPath("/var/tmp/"+os.path.basename(path), "tmpfifo")
@@ -110,7 +116,6 @@ class ActiveIn(object):
 
     def done(self):
         "complete use of file when a command completes.  This does not install newPath"
-        print "DONE: ", self.inPath, self.pipe
         if self.fh != None:
             self.fh.close()
             self.fh = None
@@ -135,13 +140,20 @@ class ActiveOut(object):
         self.fh = None
         fileOps.ensureFileDir(path)
         if fileOps.isCompressed(path) and autoCompress:
-            self.pipe = Pipeline([fileOps.compressCmd(path)], "w", otherEnd=self.outPath,
-                                 pipePath=getTmpFifo(exrun, self.path))
+            if COMPRESS_BUG:
+                self.pipe = outPath + "." + socket.gethostname() + "." +str(os.getpid())+".uncmp.tmp"
+                self.fh = open(self.pipe, "w")
+            else:
+                self.pipe = Pipeline([fileOps.compressCmd(path)], "w", otherEnd=self.outPath,
+                                     pipePath=getTmpFifo(exrun, self.path))
             
     def open(self):
         """open the output file for writing from the ExRun process"""
         if self.pipe != None:
-            return self.pipe
+            if COMPRESS_BUG:
+                return self.fh
+            else:
+                return self.pipe
         elif self.fh != None:
             raise ExRunException("output file already opened: " + self.outPath)
         else:
@@ -150,7 +162,10 @@ class ActiveOut(object):
 
     def getOutPath(self):
         "get output path to use, either pipe or tmp file"
-        return self.pipe.pipePath if self.pipe != None else self.outPath
+        if COMPRESS_BUG:
+            return self.pipe if self.pipe != None else self.outPath
+        else:
+            return self.pipe.pipePath if self.pipe != None else self.outPath
 
     def done(self):
         "complete use of file when a command completes.  This does not install outPath"
@@ -159,14 +174,22 @@ class ActiveOut(object):
             self.fh.close()
             self.fh = None
         if self.pipe != None:
-            try:
-                self.pipe.wait()
-            finally:
-                try:
-                    self.pipe.unlinkPipe()
-                except:
-                    pass
+            if COMPRESS_BUG:
+                tmpCmp = self.outPath + "." + socket.gethostname() + "." +str(os.getpid())+".cmp.tmp"
+                pl = Procline([fileOps.compressCmd(self.outPath)], stdin=self.pipe, stdout=tmpCmp)
+                pl.wait()
+                fileOps.atomicInstall(tmpCmp, self.outPath)
+                os.unlink(self.pipe)
                 self.pipe = None
+            else:
+                try:
+                    self.pipe.wait()
+                finally:
+                    try:
+                        self.pipe.unlinkPipe()
+                    except:
+                        pass
+                    self.pipe = None
 
 class File(Production):
     """Object representing a file production. This handles atomic file
