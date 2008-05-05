@@ -14,7 +14,7 @@ class Verb(object):
     """
     
     # flag values
-    error = intern("error")     # output erors
+    error = intern("error")     # output errors
     trace = intern("trace")     # basic tracing
     details = intern("details") # detailed tracing
     graph = intern("graph")     # dump graph at the start
