@@ -7,8 +7,8 @@ Currently only string comparisons are supported.
 """
 
 import sys, os
-myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
-sys.path.append(myBinDir + "/../lib")
+myBinDir = os.path.dirname(os.path.realpath(sys.argv[0]))
+sys.path.insert(0, myBinDir + "/../lib")
 from optparse import OptionParser
 from pycbio.sys import fileOps
 from pycbio.tsv.TSVReader import TSVReader

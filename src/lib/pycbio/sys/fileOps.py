@@ -74,6 +74,7 @@ def decompressCmd(path):
 def opengz(file, mode="r"):
     """open a file, if it ends in an extension indicating compression, open
     with a decompression pipe.  Only reading is currently supported"""
+    # FIXME: implement write
     if (mode != "r"):
         raise Exception("opengz only supports read access: " + file)
     decompCmd = decompressCmd(file)
@@ -150,7 +151,7 @@ def prRowv(fh, *objs):
 
 def readFileLines(fname):
     "read lines from a file into a list, removing the newlines"
-    fh = file(fname)
+    fh = opengz(fname)
     lines = []
     for l in fh:
         if l[-1:] == "\n":

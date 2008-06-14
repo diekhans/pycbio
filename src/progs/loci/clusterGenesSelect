@@ -112,7 +112,7 @@ class ClusterSelect(object):
     def _selected(self, cl):
         if (self.trackSets != None) and not self._selectedByTrackSets(cl):
             return False
-        if (self.notTrackSets != None) and self._rejectedByTrackSets(cl):
+        if (self.notTrackSets != None) and self._rejectedByNotTrackSets(cl):
             return False
         if (self.onlyTrackSets != None) and not self._selectedByOnlyTrackSets(cl):
             return False

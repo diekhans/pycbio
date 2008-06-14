@@ -75,3 +75,8 @@ class TabFileReader(object):
             if not (self.hashAreComments and line.startswith("#")):
                 row = line.split("\t")
                 return row
+
+    def close(self):
+        "early close"
+        self.fh.close()
+        self.fh = None
