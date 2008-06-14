@@ -1,8 +1,10 @@
 from pycbio.sys.Immutable import Immutable
 
-# FIXME: could have user add value object direcrly instead of complex
-# value typles
-# should be iterable
+# FIXME: 
+# - could have user add value object direcrly instead of complex value tuples
+# - should be iterable
+# - need to be able to pickle objects contains EnumValue and then
+#   compare then with code constants after load
 
 class EnumValue(Immutable):
     """A value of an enumeration.  The object id (address) is the
@@ -100,6 +102,8 @@ class Enumeration(Immutable):
 
     def __setstate__(self, st):
         (self.name, self.aliases, self.values, self.maxNumValue) = st
+        for val in self.values:
+            self.__dict__[val.name] = val
         self.makeImmutable();
 
     def lookup(self, name):

@@ -62,7 +62,7 @@ class TSVReader(object):
 
     def __init__(self, fileName, rowClass=None, typeMap=None, defaultColType=None, isRdb=False,
                  columns=None, ignoreExtraCols=False, inFh=None):
-        """Open TSV file and read header intp object.  Removes leading # from
+        """Open TSV file and read header into object.  Removes leading # from
         UCSC header.
 
         typeMap - if specified, it maps column names to the type objects to

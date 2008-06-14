@@ -5,7 +5,7 @@
 class MultiDict(dict):
     """Dictionary which allows multiple values"""
 
-    def acquire(self, key):
+    def obtain(self, key):
         """get the values for key, creating an empty entry if key is not in
         object"""
         if self.has_key(key):
@@ -14,6 +14,8 @@ class MultiDict(dict):
             vals = []
             dict.__setitem__(self, key,  vals)
         return vals
+
+    acquire = obtain # FIXME: old name
 
     def add(self, key, val):
         """Add a new entry"""

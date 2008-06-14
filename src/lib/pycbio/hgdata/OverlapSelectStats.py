@@ -1,10 +1,11 @@
 from pycbio.tsv.TSVTable import TSVTable
 from pycbio.tsv.TSVReader import TSVReader
-#inId	selectId	inOverlap	selectOverlap	overBases
+#inId	selectId	inOverlap	selectOverlap	overBases	similarity
 typeMap =  {
     "inOverlap": float,
     "selectOverlap": float,
-    "overBases": int
+    "overBases": int,
+    "similarity": float
     }
 
 class OverlapSelectStatsReader(TSVReader):

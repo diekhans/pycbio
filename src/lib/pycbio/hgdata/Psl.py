@@ -198,10 +198,17 @@ class Psl(object):
     def __hash__(self):
         return hash(self.tName) + hash(self.tStart)
 
-    def covered(self):
+    def identity(self):
+        aligned = float(self.match + self.misMatch + self.repMatch)
+        if aligned == 0.0:
+            return 0.0
+        else:
+            return float(self.match + self.repMatch)/aligned
+
+    def basesAligned(self):
         return self.match + self.misMatch + self.repMatch
 
-    def covereage(self):
+    def queryAligned(self):
         return float(self.match + self.misMatch + self.repMatch)/float(self.qSize)
 
     def reverseComplement(self):
