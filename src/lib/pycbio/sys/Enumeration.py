@@ -5,13 +5,23 @@ from pycbio.sys.Immutable import Immutable
 # - should be iterable
 # - need to be able to pickle objects contains EnumValue and then
 #   compare then with code constants after load
+# - should really be a tuple instead of values field
+# FIXME: should really use meta classes; some enumeration stuff:
+#
+# http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/67107
+# http://pytable.sourceforge.net/pydoc/basictypes.enumeration.html
+# http://www.bgb.cc/garrett/originals/
+# http://www.python.org/doc/essays/metaclasses/Enum.py
+#   http://svn.python.org/projects/python/trunk/Demo/newmetaclasses/Enum.py
+# http://www.python.org/cgi-bin/moinmoin/EnumerationProgramming
 
 class EnumValue(Immutable):
     """A value of an enumeration.  The object id (address) is the
     unique value, with an associated display string and numeric value
     """
     __slots__ = ["name", "numValue", "strValue"]
-    def __init__(self, name, numValue, strValue=None):
+    def __init__(self, enum, name, numValue, strValue=None):
+        self.enum = enum
         self.name = name
         self.numValue = numValue
         if strValue == None:
@@ -22,10 +32,10 @@ class EnumValue(Immutable):
 
     def __getstate__(self):
         # optimize strValue if same as name
-        return (self.name, self.numValue, (None if self.strValue == self.name else self.strValue))
+        return (self.enum, self.name, self.numValue, (None if self.strValue == self.name else self.strValue))
 
     def __setstate__(self, st):
-        (self.name, self.numValue, self.strValue) = st
+        (self.enum,  self.name, self.numValue, self.strValue) = st
         if self.strValue == None:
             self.strValue = self.name
         self.makeImmutable();
@@ -39,11 +49,22 @@ class EnumValue(Immutable):
     def __int__(self):
         return self.numValue
 
+    def __hash__(self):
+        # FIXME: attempt to work around enum pickle problem in GenomeDefs.
+        return hash(self.enum.name) + self.numValue
+
     def __cmp__(self, otherVal):
+        # FIXME: attempt to work around enum pickle problem in GenomeDefs, compare names rather than
+        # class objects.  Below should test be: not (isinstance(otherVal, EnumValue) and (otherVal.enum == self.enum)):
         if otherVal == None:
             return -1
         elif type(otherVal) == int:
             return cmp(self.numValue, otherVal)
+        elif not isinstance(otherVal, EnumValue):
+            raise TypeError("can't compare enumeration to type: " + str(type(otherVal)))
+        elif otherVal.enum.name != self.enum.name:
+            raise TypeError("can't compare enumerations of different types: "
+                            + otherVal.enum.name + " and " + self.enum.name)
         else:
             return cmp(self.numValue, otherVal.numValue)
 
@@ -78,7 +99,7 @@ class Enumeration(Immutable):
         self.makeImmutable();
 
     def _createValue(self, valueClass, name, numValue, strValue):
-        val = valueClass(name, numValue, strValue)
+        val = valueClass(self, name, numValue, strValue)
         self.__dict__[name] = val
         self.aliases[name] = val
         if strValue != None:
@@ -128,15 +149,3 @@ class Enumeration(Immutable):
     # FIXME: emulates meta class new
     def __call__(self, name):
         return self.lookup(name)
-
-
-
-# FIXME: should really use meta classes; some enumeration stuff:
-#
-# http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/67107
-# http://pytable.sourceforge.net/pydoc/basictypes.enumeration.html
-# http://www.bgb.cc/garrett/originals/
-# http://www.python.org/doc/essays/metaclasses/Enum.py
-# http://www.python.org/cgi-bin/moinmoin/EnumerationProgramming
-
-# FIXME: should really be a tuple instead of values field

@@ -15,11 +15,9 @@ class MultiDict(dict):
             dict.__setitem__(self, key,  vals)
         return vals
 
-    acquire = obtain # FIXME: old name
-
     def add(self, key, val):
         """Add a new entry"""
-        self.acquire(key).append(val)
+        self.obtain(key).append(val)
 
     def __setitem__(self, key, val):
         self.add(key, val)
