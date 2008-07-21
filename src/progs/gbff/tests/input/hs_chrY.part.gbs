@@ -1,0 +1,144 @@
+LOCUS       NT_113819             554624 bp    DNA     linear   CON 29-FEB-2008
+DEFINITION  Homo sapiens chromosome Y genomic contig, reference assembly.
+ACCESSION   NT_113819
+VERSION     NT_113819.1  GI:89061331
+KEYWORDS    .
+SOURCE      Homo sapiens
+  ORGANISM  Homo sapiens
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+            Mammalia; Eutheria; Primates; Catarrhini; Hominidae; Homo.
+FEATURES             Location/Qualifiers
+     gene            975114..1004969
+                     /gene="TTTY15"
+                     /note="Derived by automated computational analysis using
+                     gene prediction method: BestRefseq. Supporting evidence
+                     includes similarity to: 1 mRNA"
+                     /db_xref="GeneID:64595"
+                     /db_xref="HGNC:18567"
+     misc_RNA        join(975114..975453,977387..977433,999258..999351,
+                     1000209..1004969)
+                     /gene="TTTY15"
+                     /product="testis-specific transcript, Y-linked 15"
+                     /exception="unclassified transcription discrepancy"
+                     /note="Derived by automated computational analysis using
+                     gene prediction method: BestRefseq. Supporting evidence
+                     includes similarity to: 1 mRNA"
+                     /transcript_id="NR_001545.2"
+                     /db_xref="GI:142379120"
+                     /db_xref="GeneID:64595"
+                     /db_xref="HGNC:18567"
+     gene            complement(7245395..7390112)
+                     /gene="TTTY14"
+                     /note="Derived by automated computational analysis using
+                     gene prediction method: BestRefseq. Supporting evidence
+                     includes similarity to: 1 mRNA"
+                     /db_xref="GeneID:83869"
+                     /db_xref="HGNC:18495"
+     misc_RNA        complement(join(7245395..7245537,7389741..7390112))
+                     /gene="TTTY14"
+                     /product="testis-specific transcript, Y-linked 14"
+                     /exception="mismatches in transcription"
+                     /note="Derived by automated computational analysis using
+                     gene prediction method: BestRefseq. Supporting evidence
+                     includes similarity to: 1 mRNA"
+                     /transcript_id="NR_001543.1"
+                     /db_xref="GI:32563545"
+                     /db_xref="GeneID:83869"
+                     /db_xref="HGNC:18495"
+     STS             7264627..7264714
+                     /standard_name="G66379"
+                     /db_xref="UniSTS:230366"
+     gene            complement(7303321..7305515)
+                     /gene="CD24L4"
+                     /note="CD24 molecule-like 4"
+                     /pseudo
+                     /db_xref="GeneID:938"
+                     /db_xref="HGNC:1649"
+     gene            1013976..1173584
+                     /gene="USP9Y"
+                     /note="Derived by automated computational analysis using
+                     gene prediction method: BestRefseq. Supporting evidence
+                     includes similarity to: 1 mRNA"
+                     /db_xref="GeneID:8287"
+                     /db_xref="HGNC:12633"
+                     /db_xref="MIM:400005"
+     mRNA            join(1013976..1014800,1021383..1021442,1022137..1022292,
+                     1033338..1033486,1034857..1034936,1037862..1037974,
+                     1039324..1039542,1048362..1048477,1048748..1048999,
+                     1049161..1049299,1050907..1051059,1052275..1052379,
+                     1069938..1070144,1071252..1071388,1073230..1073363,
+                     1083818..1083905,1086333..1086675,1088221..1088316,
+                     1089399..1089610,1090769..1091009,1091356..1091505,
+                     1092276..1092396,1098953..1099083,1099271..1099549,
+                     1103156..1103281,1104248..1104373,1105781..1105950,
+                     1122930..1123038,1123423..1123569,1124386..1124532,
+                     1125581..1125803,1128875..1129095,1131171..1131361,
+                     1146430..1146603,1150653..1150794,1152606..1153356,
+                     1153752..1153875,1154982..1155207,1155805..1155934,
+                     1159074..1159259,1159674..1159894,1159980..1160068,
+                     1169081..1169237,1169374..1169586,1170307..1170402,
+                     1172020..1173584)
+                     /gene="USP9Y"
+                     /product="ubiquitin specific peptidase 9, Y-linked (fat
+                     facets-like, Drosophila)"
+                     /exception="unclassified transcription discrepancy"
+                     /note="Derived by automated computational analysis using
+                     gene prediction method: BestRefseq. Supporting evidence
+                     includes similarity to: 1 mRNA"
+                     /transcript_id="NM_004654.3"
+                     /db_xref="GI:74319832"
+                     /db_xref="GeneID:8287"
+                     /db_xref="HGNC:12633"
+                     /db_xref="MIM:400005"
+     CDS             join(1022197..1022292,1033338..1033486,1034857..1034936,
+                     1037862..1037974,1039324..1039542,1048362..1048477,
+                     1048748..1048999,1049161..1049299,1050907..1051059,
+                     1052275..1052379,1069938..1070144,1071252..1071388,
+                     1073230..1073363,1083818..1083905,1086333..1086675,
+                     1088221..1088316,1089399..1089610,1090769..1091009,
+                     1091356..1091505,1092276..1092396,1098953..1099083,
+                     1099271..1099549,1103156..1103281,1104248..1104373,
+                     1105781..1105950,1122930..1123038,1123423..1123569,
+                     1124386..1124532,1125581..1125803,1128875..1129095,
+                     1131171..1131361,1146430..1146603,1150653..1150794,
+                     1152606..1153356,1153752..1153875,1154982..1155207,
+                     1155805..1155934,1159074..1159259,1159674..1159894,
+                     1159980..1160068,1169081..1169237,1169374..1169586,
+                     1170307..1170402,1172020..1172157)
+                     /gene="USP9Y"
+                     /EC_number="3.1.2.15"
+                     /GO_function="calcium ion binding [GO ID 0005509]
+                     [Evidence IEA]"
+                     /GO_function="ubiquitin thiolesterase activity [GO ID
+                     0004221] [Evidence IEA]"
+                     /GO_function="cysteine-type endopeptidase activity [GO ID
+                     0004197] [Evidence IEA]"
+                     /GO_function="calcium-dependent phospholipid binding [GO
+                     ID 0005544] [Evidence IEA]"
+                     /GO_process="spermatogenesis [GO ID 0007283] [Evidence
+                     TAS] [PMID 9384609]"
+                     /GO_process="ubiquitin-dependent protein catabolism [GO ID
+                     0006511] [Evidence IEA]"
+                     /note="fat facets protein related, Y-linked; ubiquitin
+                     thiolesterase FAF-Y; ubiquitin-specific processing
+                     protease FAF-Y; deubiquitinating enzyme FAF-Y; fat
+                     facets-like; ubiquitin specific protease 9, Y-linked (fat
+                     facets-like, Drosophila); ubiquitin specific protease 9, Y
+                     chromosome (fat facets-like Drosophila); azoospermia
+                     factor 1"
+                     /codon_start=1
+                     /product="ubiquitin specific protease 9, Y-linked"
+                     /protein_id="NP_004645.2"
+                     /db_xref="GI:74319833"
+                     /db_xref="CCDS:CCDS14781.1"
+                     /db_xref="GeneID:8287"
+                     /db_xref="HGNC:12633"
+                     /db_xref="MIM:400005"
+     gene            complement(1113899..1116828)
+                     /gene="CDY4P"
+                     /note="chromodomain protein, Y-linked 4 pseudogene"
+                     /pseudo
+                     /db_xref="GeneID:386729"
+                     /db_xref="HGNC:23872"
+CONTIG      join(complement(AC025226.4:101674..168066))
+//

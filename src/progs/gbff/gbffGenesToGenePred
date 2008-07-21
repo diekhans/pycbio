@@ -2,16 +2,27 @@
 
 # FIXME: Required biopython with bug #1758 fixed (genbank parser chokes on /transl_except)
 
-import sys, os
+import sys, os, traceback
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, myBinDir + "/../lib")
 
 from Bio.GenBank import Iterator, RecordParser, LocationParser
 from optparse import OptionParser
-from pycbio.sys import fileOps, Pipeline
+from pycbio.sys import fileOps, setOps, typeOps
 from pycbio.sys.Pipeline import Pipeline
+from pycbio.sys.Enumeration import Enumeration
 from pycbio.sys.fileOps import prLine
 from pycbio.hgdata.GenePred import GenePred
+
+# FIXME: too many special cases in code, simplify.  Making library
+# objects for analyzing genes in annotation
+
+GeneType = Enumeration("GeneType",
+                       ("unknown", "protGene", "rnaGene", "immunoglobulin", "other"),
+                       bitSetValues=True)
+ActiveType = Enumeration("ActiveType",
+                         ("unknown", "live", "pseudo"),
+                         bitSetValues=True)
 
 class CmdOpts(object):
     usage = """%prog [options] gbff genePred
@@ -26,21 +37,29 @@ Retrieve files with:
 """
     def __init__(self):
         parser = OptionParser(usage=CmdOpts.usage)
-        parser.add_option("--genes", dest="genes", action="store_true",
+        parser.add_option("--protGenes", dest="protGenes", action="store_true",
                           default=False,
-                          help="extract gene annotations, default if no other get options are specified ")
-        parser.add_option("--pseudogenes", dest="pseudogenes", action="store_true",
+                          help="extract protein coding gene annotations, default if no other get options are specified")
+        parser.add_option("--rnaGenes", dest="rnaGenes", action="store_true",
                           default=False,
-                          help="extract pseudogene annotations")
+                          help="extract non-protein coding gene annotations")
+        parser.add_option("--otherGenes", dest="otherGenes", action="store_true",
+                          default=False,
+                          help="extract gene annotations where type is undetermined")
         parser.add_option("--immunoglobulins", dest="immunoglobulins", action="store_true",
                           default=False,
                           help="get immunoglobulins genes")
-        parser.add_option("--pseudoimmunos", dest="pseudoimmunos", action="store_true",
+        parser.add_option("--allGenes", dest="allGenes", action="store_true",
                           default=False,
-                          help="get immunoglobulin pseudogenes")
-        parser.add_option("--verbose", dest="verbose", action="store_true",
+                          help="extra all genes, and immunoglobulins, both pseudo and live")
+        parser.add_option("--pseudo", dest="pseudo", action="store_true",
                           default=False,
-                          help="enable additional tracing")
+                          help="extract  pseudogenes, either immunoglobulin or assumed protein coding (since type not annotated)")
+        parser.add_option("--live", dest="live", action="store_true",
+                          default=False,
+                          help="extract  live gene annotations; default if --pseudo is not specified")
+        parser.add_option("--verbose", dest="verbose", action="store", type="int", default=0,
+                          help="set verbosity level")
         parser.add_option("--noPsycho", dest="usePsycho", action="store_false",
                           default=True,
                           help="disable pyscho compiler")
@@ -49,11 +68,44 @@ Retrieve files with:
             parser.error("wrong number of arguments")
         (self.gbff, self.genePredFile) = args
         self.__dict__.update(opts.__dict__)
-        if not (self.pseudogenes or self.immunoglobulins or self.pseudoimmunos):
-            self.genes = True
+        if self.allGenes:
+            self.protGenes = self.rnaGenes = self.other = self.immunoglobulins = True
+        elif not (self.protGenes or self.rnaGenes or self.otherGenes or self.immunoglobulins):
+            self.protGenes = True
+        if not self.pseudo:
+            self.alive = True
+        self.selected = set()
+        if self.protGenes:
+            self.selected.add(GeneType.protGene)
+        if self.rnaGenes:
+            self.selected.add(GeneType.rnaGene)
+        if self.otherGenes:
+            self.selected.add(GeneType.otherGene)
+        if self.immunoglobulins:
+            self.selected.add(GeneType.immunoglobulin)
+        self.active = set()
+        if self.live:
+            self.active.add(ActiveType.live)
+        if self.pseudo:
+            self.active.add(ActiveType.pseudo)
+        if len(self.active) == 0:
+            self.active.add(ActiveType.live)
+        if self.verbose > 0:
+            prLine(sys.stderr, "selecting: genes: ", 
+                   setOps.setJoin(self.selected), "  ",
+                   setOps.setJoin(self.active))
 
 class GbffExcept(Exception):
     pass
+
+def prWarn(*objs):
+    "print warning, a space is added between each arg"
+    fh = sys.stderr
+    fh.write("Warning:")
+    for o in objs:
+        fh.write(' ')
+        fh.write(str(o))
+    fh.write("\n")
 
 def featFindQual(feat, key):
     "get the specified qualifier, or None"
@@ -70,6 +122,10 @@ def qualTrimVal(qual):
         val = val[1:-1]
     return val
 
+def featHaveQual(feat, key):
+    "does a feature have a qualifier?"
+    return (featFindQual(feat, key) != None)
+
 def featGetQual(feat, key):
     "get the specified qualifier value, or None if not found.  Remove quotes if present"
     qual = featFindQual(feat, key)
@@ -84,6 +140,21 @@ def featMustGetQual(feat, key):
     val = featGetQual(feat, key)
     if val == None:
         raise GbffExcept("qualifier \""+key+"\" not found in feature: " + str(feat))
+    return val
+
+def featGetQualByKeys(feat, keys):
+    "get feature based on first matching key"
+    for key in keys:
+        val = featGetQual(feat, key)
+        if val != None:
+            return val
+    return None
+    
+def featMustGetQualByKeys(feat, keys):
+    "get feature based on first matching key, or error"
+    val = featGetQualByKeys(feat, keys)
+    if val == None:
+        featRaiseNeedAQual(feat, keys)
     return val
 
 def featRaiseNeedAQual(feat, keys):
@@ -119,39 +190,121 @@ def featMustGetGeneId(feat):
     if val == None:
         val = featGetLocusId(feat)
         if val != None:
-            print >>sys.stderr, "Warning: /db_xref GeneID not found in feature, using LocusID: " + str(feat)
+            prWarn("/db_xref GeneID not found in feature, using LocusID:", feat)
             val = "GeneID:" + val.split(":")[1]  # fake it
     if val == None:
         raise GbffExcept("/db_xref GeneID not found in feature: " + str(feat))
     return val
 
-def featHaveQual(feat, key):
-    "does a feature have a qualifier?"
-    return (featFindQual(feat, key) != None)
+def featGetCdsId(feat):
+    "get a CDS identifier from qualifier, or None"
+    return featGetQualByKeys(feat, ("/protein_id=", "/standard_name="))
 
-def coordsRange(coords):
-    """get range covered by a list of coordinate tuples (start, end strand);
-    if coords is None, None is returned"""
-    if coords == None:
+class Coord(object):
+    "[0..n) coord"
+    __slots__ = ("start", "end", "strand")
+    def __init__(self, start, end, strand):
+        self.start = start
+        self.end = end
+        self.strand = strand
+
+    def __str__(self):
+        return str(self.start) + ".." + str(self.end) + "/"+str(self.strand)
+
+    def size(self):
+        return self.end-self.start
+
+    def __cmp__(self, other):
+        if not isinstance(other, Coord):
+            return -1
+        else:
+            d = cmp(self.strand, other.strand)
+            if d == 0:
+                d = cmp(self.start, other.start)
+                if d == 0:
+                    d = cmp(self.end, other.end)
+            return d
+
+    def overlaps(self, other):
+        return (self.start < other.end) and (self.end > other.start) and (self.strand == other.strand)
+
+class Coords(list):
+    "List of Coord objects"
+
+    def __init__(self, init=None):
+        if init != None:
+            list.__init__(self, init)
+            assert((len(self)==0) or isinstance(self[0], Coord))
+        else:
+            list.__init__(self)
+
+    def __str__(self):
+        strs = []
+        for c in self:
+            strs.append(str(c))
+        return ",".join(strs)
+
+    def size(self):
+        s = 0
+        for c in self:
+            s += c.size()
+        return s
+
+    def getRange(self):
+        """get Coord covered by this object, which must be sorted"""
+        if len(self) == 0:
+            return None
+        else:
+            return Coord(self[0].start, self[-1].end, self[0].strand)
+
+    def findOverlap(self, coord):
+        "find index of first range overlapping coord, or None"
+        for i in xrange(len(self)):
+            if self[i].overlaps(coord):
+                return i
         return None
-    else:
-        return (coords[0][0], coords[len(coords)-1][1], coords[0][2])
 
-def coordsCoverRange(coords1, coords2):
-    """return the maximum range covered by two coordinates, either of which maybe None"""
-    if coords1 == None:
-        return coords2
-    if coords2 == None:
-        return coords1
-    if coords1[2] != coords2[2]:
-        raise GbffExcept("coordinates don't have the strand: " + str(coords1) + " and " + str(coords2))
-    return (min(coords1[0], coords2[0]), max(coords1[1], coords2[1]), coords1[2])
+    def isSubrange(self, other):
+        """is other a sub-range of this object. That is, the this
+        object is that same as other, with-in the bounds of other."""
+        sLen = len(self)
+        oLen = len(other)
 
+        # initial block
+        oi = 0
+        si = self.findOverlap(other[0])
+        if si == None:
+            return False
+        if (sLen-si) < oLen:
+            return False # not enough left to cover
 
-class LocationConvert(object):
-    "convert genbank location specs"
+        # internal blocks
+        if oLen > 1:
+            if other[0].end != self[si].end:
+                return False  # initial end mismatch
+            si += 1
+            oi += 1
+            while (si < sLen-1) and (oi < oLen-1):
+                if other[oi] != self[si]:
+                    return False
+                si += 1
+                oi += 1
+            if other[oi].start != self[si].start:
+                return False  # final start mismatch
 
-    def _getPos(posObj):
+        # final block
+        if other[oi].end > self[si].end:
+            return False
+        return True
+
+    @staticmethod
+    def fromLocation(locSpec):
+        """Convert Genbank location spec to Coords"""
+        loc = LocationParser.parse(LocationParser.scan(locSpec))
+        return Coords(Coords.__cnvLoc(loc))
+            
+    @staticmethod
+    def __getPos(posObj):
         if isinstance(posObj, LocationParser.HighBound) or isinstance(posObj, LocationParser.LowBound):
             val = posObj.base
         else:
@@ -159,56 +312,40 @@ class LocationConvert(object):
         if isinstance(val, LocationParser.Integer):
             val = val.val
         return val
-    _getPos = staticmethod(_getPos)
 
-    def _cnvAbs(loc, strand):
+    @staticmethod
+    def __cnvAbs(loc, strand):
         if loc.path != None:
             raise GbffExcept("don't know how to handel non-null path in: "+str(loc))
         # dig out start and end based on location class
         if isinstance(loc.local_location, LocationParser.Range):
-            start = LocationConvert._getPos(loc.local_location.low)-1
-            end = LocationConvert._getPos(loc.local_location.high)
+            start = Coords.__getPos(loc.local_location.low)-1
+            end = Coords.__getPos(loc.local_location.high)
         elif isinstance(loc.local_location, LocationParser.Integer):
             # single location
             start = start = loc.local_location.val-1
             end = start+1
         else:
-            raise GbffExcept("_cnvAbs can't handle location class: " + str(loc.__class__))
+            raise GbffExcept("__cnvAbs can't handle location class: " + str(loc.__class__))
+        return Coord(start, end, strand)
 
-        return (start, end, strand)
-    _cnvAbs = staticmethod(_cnvAbs)
-
-    def _cnvLoc(loc, strand='+'):
+    @staticmethod
+    def __cnvLoc(loc, strand='+'):
+        "convert to a list of Coord objects"
         if isinstance(loc, LocationParser.AbsoluteLocation):
-            return [LocationConvert._cnvAbs(loc, strand)]
+            return [Coords.__cnvAbs(loc, strand)]
         elif isinstance(loc, LocationParser.Function):
             if loc.name == "complement":
-                return LocationConvert._cnvLoc(loc.args, '-')
+                return Coords.__cnvLoc(loc.args, '-')
             if loc.name == "join":
-                return LocationConvert._cnvLoc(loc.args, strand)
+                return Coords.__cnvLoc(loc.args, strand)
         elif isinstance(loc, list):
             coords = []
             for l in loc:
-                coords.extend(LocationConvert._cnvLoc(l, strand))
+                coords.extend(Coords.__cnvLoc(l, strand))
             return coords
         else:
             raise GbffExcept("don't not how to convert location: " + str(loc))
-    _cnvLoc = staticmethod(_cnvLoc)
-
-    def convert(locSpec):
-        """convert to coords in the form [(start1, end1, strand), (start2, end2, strand), ...]
-        in ucsc style coordinates.  All strands will be the same."""
-        loc = LocationParser.parse(LocationParser.scan(locSpec))
-        return LocationConvert._cnvLoc(loc)
-    convert = staticmethod(convert)
-            
-    def convert1(locSpec):
-        """convert to a single coord in the form (start1, end1, strand)"""
-        locs = LocationConvert.convert(locSpec)
-        if len(locs) > 1:
-            raise GbffExcept("too many locations: " + str(locSpec))
-        return locs[0]
-    convert1 = staticmethod(convert1)
 
 class TransFeatures(object):
     "object that holds features"
@@ -218,10 +355,15 @@ class TransFeatures(object):
         self.transId = transId  # maybe None
         self.cdsFt = None
         self.cdsCoords = None
-        self.mrnaFt = None
+        self.mrnaFt = None     # either mrna or *segment features
         self.mrnaCoords = None
+        self.miscRnaFt = None
+        self.miscRnaCoords = None
         self.exonFts = None
         self.exonCoords = None
+
+    def __str__(self):
+        return self.getTransId()
 
     def getTransId(self):
         "get transcript id, or gene id if transcript id is None"
@@ -238,8 +380,19 @@ class TransFeatures(object):
     def getMRnaCoords(self):
         "get mRNA coordinates, or None"
         if (self.mrnaFt != None) and (self.mrnaCoords == None):
-            self.mrnaCoords = LocationConvert.convert(self.mrnaFt.location)
+            self.mrnaCoords = Coords.fromLocation(self.mrnaFt.location)
         return self.mrnaCoords
+
+    def addMiscRna(self, rnaFt):
+        if self.miscRnaFt != None:
+            raise GbffExcept("transcript already has misc RNA: " + get.getTransId())
+        self.miscRnaFt = rnaFt
+
+    def getMiscRnaCoords(self):
+        "get misc RNA coordinates, or None"
+        if (self.miscRnaFt != None) and (self.miscRnaCoords == None):
+            self.miscRnaCoords = Coords.fromLocation(self.miscRnaFt.location)
+        return self.miscRnaCoords
 
     def addCds(self, cdsFt):
         if self.cdsFt != None:
@@ -249,7 +402,7 @@ class TransFeatures(object):
     def getCdsCoords(self):
         "get coordindates defined by CDS feature, or none"
         if (self.cdsFt != None) and (self.cdsCoords == None):
-            self.cdsCoords = LocationConvert.convert(self.cdsFt.location)
+            self.cdsCoords = Coords.fromLocation(self.cdsFt.location)
         return self.cdsCoords
 
     def addExon(self, exonFt):
@@ -260,9 +413,10 @@ class TransFeatures(object):
     def getExonCoords(self):
         "get exon coordinates, or None"
         if (self.exonFts != None) and (self.exonCoords == None):
-            self.exonCoords = []
+            self.exonCoords = Coords()
             for ef in self.exonFts:
-                self.exonCoords.extend(LocationConvert.convert(ef.location))
+                self.exonCoords.extend(Coords.fromLocation(ef.location))
+            self.exonCoords.sort()
         return self.exonCoords
 
     def dump(self):
@@ -270,8 +424,8 @@ class TransFeatures(object):
                " gene: ", self.gene.geneSym)
         prLine(sys.stderr, "\t   cds: ", self.cdsFt)
         prLine(sys.stderr, "\t  mRNA: ", self.mrnaFt)
+        prLine(sys.stderr, "\t  RNA:  ", self.miscRnaFt)
         prLine(sys.stderr, "\t exons: ", self.exonFts)
-
 
 class GeneFeatures(object):
     """object for a gene and associated transcripts. This reduces gene
@@ -289,18 +443,108 @@ class GeneFeatures(object):
         self.geneFt = geneFt
         self.coords = None
         self.transTbl = dict()
-        self.mrnaTrans = []  # order list of transcripts from mRNA features
-        self.iCds = 0 # index of next CDS, used to find right transcript
-        self.pseudo = featHaveQual(geneFt, "/pseudo")
-        self.immunoglobulin = False
+        self.mrnaTrans = []  # ordered list of transcripts from mRNA or *segment features
+        self.cdsFts = []   # ordered list of CDS features
+        self.miscRnaTrans = [] # list of misc_rna transcripts
+        self.geneType = GeneType.unknown
+        self.activeType = ActiveType.live
+        self.__flagIfPseudoFt(geneFt)
+        self.cdsAssocProbs = False  # any problems associating CDS?
+        
+    def __str__(self):
+        return self.geneSym + " (" + self.geneId + ")"
 
+    def prTransCds(self, fh):
+        prLine(fh, "gene: ", self)
+        prLine(fh, "    mrnaTrans:")
+        for trans in self.mrnaTrans:
+            prLine(fh, "        ",trans.transId, " ", trans.getMRnaCoords())
+        prLine(fh, "    CDS:")
+        for cdsFt in self.cdsFts:
+            prLine(fh, "        ", featGetCdsId(cdsFt), " ", Coords.fromLocation(cdsFt.location))
+
+    def finish(self):
+        "finish construction"
+        # set type. since type for non-immunoglobulins pseudogenes is not
+        # explicit in annotation, assume they are protein coding
+        if self.geneType == GeneType.unknown:
+            if len(self.mrnaTrans) > 0:
+                 self.geneType = GeneType.protGene
+            elif len(self.miscRnaTrans) > 0:
+                self.geneType = GeneType.rnaGene
+            elif self.activeType == ActiveType.pseudo:
+                 self.geneType = GeneType.protGene
+            else:
+                self.geneType = GeneType.other
+        # other tasks
+        if len(self.cdsFts) > 0:
+            self.__assocCds()
+
+    def __assocCds(self):
+        "associate CDS features with mRNA features"
+        if len(self.mrnaTrans) != len(self.cdsFts):
+            # only a problem if there are some CDSs
+            prWarn("Number of CDS features ("+str(len(self.cdsFts))+") doesn't match number of mRNA features ("+str(len(self.mrnaTrans))+") gene:",self)
+            self.cdsAssocProbs = True
+
+        # FIXME
+        self.__matchAssocCds(self.mrnaTrans)
+        return
+
+        probTrans = self.__pairedAssocCds()
+        if probTrans != None:
+            prWarn("mRNA and CDS features not paired, attempting to match for gene:",self)
+            self.cdsAssocProbs = True
+            self.__matchAssocCds(probTrans)
+
+    def __pairedAssocCds(self):
+        """normal case, mRNAs/CDSs are paired.  If pairing fails, return list
+        of unprocessed mRNAs"""
+        numMRna = len(self.mrnaTrans)
+        numCds = len(self.cdsFts)
+        probTrans = None
+        for i in xrange(min(numMRna, numCds)):
+            if GeneFeatures.__cdsMatches(self.mrnaTrans[i], self.cdsFts[i]):
+                self.mrnaTrans[i].addCds(self.cdsFts[i])
+            else:
+                probTrans = typeOps.listAppend(probTrans, self.mrnaTrans[i])
+        if numMRna > numCds:
+            probTrans = typeOps.listExtend(probTrans, self.mrnaTrans[numCds:])
+        return probTrans
+
+    def __matchAssocCds(self, probTrans):
+        """fall-back case; attempt to associate CDS with transcripts via longest matched"""
+        for trans in probTrans:
+            cdsFt = self.__findLongestCdsMatch(trans)
+            if cdsFt == None:
+                prWarn("can't match CDS to mRNA for:", trans.transId, "gene:",self)
+            else:
+                trans.addCds(cdsFt)
+
+    def __findLongestCdsMatch(self, trans):
+        "find longest CDS matching a transcript, or None if no match"
+        bestSize = 0
+        bestCds = None
+        for cdsFt in self.cdsFts:
+            if GeneFeatures.__cdsMatches(trans, cdsFt):
+                cdsCoord = Coords.fromLocation(cdsFt.location)
+                sz = cdsCoord.size()
+                if sz > bestSize:
+                    bestSize = sz
+                    bestCds = cdsFt
+        return bestCds
+
+    @staticmethod
+    def __cdsMatches(trans, cdsFt):
+        return trans.getMRnaCoords().isSubrange(Coords.fromLocation(cdsFt.location))
+    
     def getCoords(self):
         if self.coords == None:
-            self.coords = LocationConvert.convert(self.geneFt.location)
+            self.coords = Coords.fromLocation(self.geneFt.location)
         return self.coords
 
     def getTrans(self, transId):
-        "transId maybe None"
+        "get transcript by id, create new one if needed.  transId maybe none "
         trans = self.transTbl.get(transId)
         if trans == None:
             trans = TransFeatures(self, transId)
@@ -317,49 +561,63 @@ class GeneFeatures(object):
         transIds.sort()
         return transIds
 
-    def _flagIfPseudoFt(self, feat):
+    def __flagIfPseudoFt(self, feat):
         if featHaveQual(feat, "/pseudo"):
-            self.pseudo = True
+            self.activeType = ActiveType.pseudo
 
-    def _getFtTrans(self, feat, required=True):
+    def __getFtTrans(self, feat, required=True):
         if required:
             return self.getTrans(featMustGetQual(feat, "/transcript_id="))
         else:
             return self.getTrans(featGetQual(feat, "/transcript_id="))
 
     def addMRna(self, mrnaFt):
-        trans = self._getFtTrans(mrnaFt)
+        trans = self.__getFtTrans(mrnaFt)
         trans.addMRna(mrnaFt)
-        self._flagIfPseudoFt(mrnaFt)
+        self.__flagIfPseudoFt(mrnaFt)
 
         # keep ordered list for CDS additions
         self.mrnaTrans.append(trans)
+        if len(self.miscRnaTrans) > 0:
+            raise GbffExcept("both mRNA and misc_rna transcripts for " + str(self))
+
+    def __getFtIg(self, feat, required=True):
+        if required:
+            return featMustGetQualByKeys(feat, ("/gene=", "/standard_name="))
+        else:
+            return featGetQualByKeys(feat, ("/gene=", "/standard_name="))
+
+    def addIg(self, igFt):
+        trans = self.getTrans(self.__getFtIg(igFt))
+        trans.addMRna(igFt)
+        self.__flagIfPseudoFt(igFt)
+
+        # keep ordered list for CDS additions
+        self.mrnaTrans.append(trans)
+        if len(self.miscRnaTrans) > 0:
+            raise GbffExcept("both IG and misc_rna transcripts for " + str(self))
 
     def addCds(self, cdsFt):
-        # if there are previous mRNA records, associate with approriate one
-        # base on order, otherwise, associated with the default transcript
-        if len(self.mrnaTrans):
-            # FIXME" don't know how to handle multiple CDS for one mRNA record, just drop
-            # for now
-            if self.iCds >= len(self.mrnaTrans):
-                print >>sys.stderr, "Note: more CDS features than mRNA features for ", self.geneId
-                return
-            trans = self.mrnaTrans[self.iCds]
-            self.iCds += 1
-        else:
-            trans = self.getTrans(None)
-        trans.addCds(cdsFt)
-        self._flagIfPseudoFt(cdsFt)
+        self.cdsFts.append(cdsFt)
+        self.__flagIfPseudoFt(cdsFt)
         
     def addExon(self, exonFt):
         # should always get the default transcript
-        trans = self._getFtTrans(exonFt, required=False)
+        trans = self.__getFtTrans(exonFt, required=False)
         assert(trans.transId == None)
         trans.addExon(exonFt)
-        self._flagIfPseudoFt(exonFt)
+        self.__flagIfPseudoFt(exonFt)
+
+    def addMiscRna(self, rnaFt):
+        trans = self.__getFtTrans(rnaFt)
+        trans.addMiscRna(rnaFt)
+        self.__flagIfPseudoFt(rnaFt)
+        self.miscRnaTrans.append(trans)
+        if len(self.mrnaTrans) > 0:
+            raise GbffExcept("both mRNA and misc_rna transcripts for " +  str(self))
 
     def flagImmunoglobulin(self):
-        self.immunoglobulin = True
+        self.geneType = GeneType.immunoglobulin
 
     def dump(self):
         prLine(sys.stderr, "gene:", self.geneSym)
@@ -372,48 +630,62 @@ class RecProcessor(object):
     def __init__(self, rec, opts):
         self.rec = rec
         self.opts = opts
-        # need to lookup both by id and sym, as sometimes mrna syms don't match gene
-        # and exons don't have syms.  Also, sometimes a feature proceeds the gene
-        # it references, so do this in two passes.
+        # need to lookup both by id and sym, as sometimes mrna syms don't
+        # match gene and exons don't have syms.  Also, sometimes a feature
+        # proceeds the gene it references, so do this in two passes.
+        self.genes = []
         self.genesById = dict()
         self.genesBySym = dict()
-        self._findGenes(rec)
-        self._findFeats(rec)
+        self.__findGenes(rec)
+        self.__findFeats(rec)
+        for gene in self.genes:
+            self.__finishGene(gene)
 
-    def _findGenes(self, rec):
+    def __finishGene(self, gene):
+        gene.finish()
+        if (self.opts.verbose > 1) and gene.cdsAssocProbs:
+            gene.prTransCds(sys.stderr)
+
+    def __findGenes(self, rec):
         for feat in rec.features:
             if feat.key == "gene":
-                self._procGeneFt(feat)
+                self.__procGeneFt(feat)
 
-    def _procFeat(self, feat):
+    def __procFeat(self, feat):
         if feat.key == "exon":
-            self._procExonFt(feat)
+            self.__procExonFt(feat)
         elif feat.key == "CDS":
-            self._procCdsFt(feat)
+            self.__procCdsFt(feat)
         elif feat.key == "mRNA":
-            self._procMRnaFt(feat)
+            self.__procMRnaFt(feat)
+        elif feat.key == "misc_RNA":
+            self.__procMiscRnaFt(feat)
         elif feat.key.endswith("_segment") or (feat.key == "C_region"):
-            self._procIGFeat(feat)
+            self.__procIGFeat(feat)
 
-    def _findFeats(self, rec):
+    def __findFeats(self, rec):
         for feat in rec.features:
             try:
-                self._procFeat(feat)
+                self.__procFeat(feat)
             except GbffExcept, ex:
-                print >>sys.stderr, "Warning: " + str(ex)
+                prWarn(ex)
+                if self.opts.verbose > 1:
+                    traceback.print_exc(None, sys.stderr)
+                    prLine(sys.stderr)
 
-    def _procGeneFt(self, geneFt):
+    def __procGeneFt(self, geneFt):
         geneId = featMustGetGeneId(geneFt)
         if geneId in self.genesById:
             raise GbffExcept("duplicate gene: " + geneId)
         geneSym = featMustGetQual(geneFt, "/gene=")
         gene = GeneFeatures(self.rec, geneFt)
+        self.genes.append(gene)
         self.genesById[geneId] = gene
         self.genesBySym[geneSym] = gene
-        if self.opts.verbose:
-            print >>sys.stderr, "parsing gene:",gene.geneSym, gene.geneId
+        if self.opts.verbose > 1:
+            prLine(sys.stderr, "parsing gene: ", str(gene))
 
-    def _getGeneObjById(self, feat, required=True):
+    def __getGeneObjById(self, feat, required=True):
         if required:
             geneId = featMustGetGeneId(feat)
         else:
@@ -422,10 +694,10 @@ class RecProcessor(object):
                 return None
         gene = self.genesById.get(geneId)
         if (gene == None):
-            raise GbffExcept("no gene for GeneID:28436, referenced by " + str(feat))
+            raise GbffExcept("no gene for " + geneId + ", referenced by " + str(feat))
         return gene
             
-    def _getGeneObjBySym(self, feat, required=True, qualName="/gene="):
+    def __getGeneObjBySym(self, feat, required=True, qualName="/gene="):
         if required:
             self.genesBySym[featMustGetQual(feat, qualName)]
         else:
@@ -435,103 +707,91 @@ class RecProcessor(object):
             else:
                 return None
 
-    def _procExonFt(self, exonFt):
-        gene = self._getGeneObjBySym(exonFt, required=False)
+    def __procExonFt(self, exonFt):
+        gene = self.__getGeneObjBySym(exonFt, required=False)
         if gene != None:
             gene.addExon(exonFt)
 
-    def _procCdsFt(self, cdsFt):
-        gene = self._getGeneObjById(cdsFt)
+    def __procCdsFt(self, cdsFt):
+        gene = self.__getGeneObjById(cdsFt)
         gene.addCds(cdsFt)
 
-    def _procMRnaFt(self, mrnaFt):
+    def __getRnaGene(self, rnaFt):
         # generally by transcript id, but also try gene
-        gene = self._getGeneObjById(mrnaFt, required=False)
+        gene = self.__getGeneObjById(rnaFt, required=False)
         if (gene == None):
-            gene = self._getGeneObjBySym(mrnaFt, qualName="/gene=", required=False)
+            gene = self.__getGeneObjBySym(rnaFt, qualName="/gene=", required=False)
         if (gene == None):
-            featRaiseNeedAQual(mrnaFt, ("/transcript_id=", "/standard_name="))
-        gene.addMRna(mrnaFt)
+            featRaiseNeedAQual(rnaFt, ("/transcript_id=", "/gene="))
+        return gene
 
-    def _procIGFeat(self, igFt):
+    def __procMRnaFt(self, mrnaFt):
+        self.__getRnaGene(mrnaFt).addMRna(mrnaFt)
+
+    def __procMiscRnaFt(self, rnaFt):
+        self.__getRnaGene(rnaFt).addMiscRna(rnaFt)
+
+    def __procIGFeat(self, igFt):
         # some V_segment have /standard_name= to reference gene sym
         # instead of /gene=, try both
-        gene = self._getGeneObjBySym(igFt, qualName="/gene=", required=False)
+        gene = self.__getGeneObjBySym(igFt, qualName="/gene=", required=False)
         if gene == None:
-            gene = self._getGeneObjBySym(igFt, qualName="/standard_name=", required=False)
+            gene = self.__getGeneObjBySym(igFt, qualName="/standard_name=", required=False)
         if gene == None:
             featRaiseNeedAQual(igFt, ("/gene=", "/standard_name="))
+        gene.addIg(igFt)
         gene.flagImmunoglobulin()
 
 class GenePredBuilder(object):
     "object to build a genePred"
     
-    def __init__(self, transId, locus, coords):
+    def __init__(self, transId, locus):
         self.gp = GenePred()
         self.gp.name = transId
         self.gp.chrom = locus
-        self.gp.strand = coords[2]
-        self.gp.txStart = coords[0]
-        self.gp.txEnd = coords[1]
-        # default no CDS
-        self.gp.cdsStart = self.gp.txEnd
-        self.gp.cdsEnd = self.gp.txEnd
+        self.gp.strand = None
+        self.gp.txStart = None
+        self.gp.txEnd = None
+        self.gp.cdsStart = None
+        self.gp.cdsEnd = None
 
-    def setCds(self, coords):
-        "CDS coords is tuple of (start, end, strand)"
+    def finish(self):
+        if self.gp.cdsStart == None:
+            self.gp.cdsStart = self.gp.cdsEnd = self.gp.txEnd
+
+    def setCds(self, coord):
+        "CDS coords is Coord object"
         assert(len(self.gp.exons) > 0)
-
-        start = coords[0]
-        end = coords[1]
-        
-        # move into exons, if necessary, move start forward, end backward
-        for i in xrange(len(self.gp.exons)):
-            ex = self.gp.exons[i]
-            if (start >= ex.start) and (start < ex.end):
-                break  # in this exon
-            elif start < ex.start:
-                # start in intron before this exon, move it
-                start = ex.start
-                break
-
-        for i in xrange(len(self.gp.exons)-1, -1, -1):
-            ex = self.gp.exons[i]
-            if (end > ex.start) and (end <= ex.end):
-                break  # in this exon
-            elif end > ex.end:
-                # end in intron after this exon, move it
-                end = ex.end
-                break
-        
-        self.gp.cdsStart = start
-        self.gp.cdsEnd = end
-
-    def setSingleExon(self):
-        "make this a single-exon gene"
-        self.gp.addExon(self.gp.txStart, self.gp.txEnd)
-
+        if not ((coord.start < self.gp.txEnd) and (coord.end >self.gp.txStart)):
+            prWarn("CDS doesn't overlap transcript:", self.gp.name)
+        else:
+            self.gp.cdsStart = coord.start
+            self.gp.cdsEnd = coord.end
+            
     def addExons(self, coords):
-        """add exons, given a list of converted coordiante tuples, making ajustmants
+        """add exons, given a list of converted coordiante tuples, making adjustments
         to prevent overlapping exons or gaps between tx bounds and exons"""
         prevStart = None
         prevEnd = None
-        for exon in coords:
-            st = exon[0]
-            en = exon[1]
-            # adjust first or last exon to cover tx range
-            if (exon == coords[0]) and (st != self.gp.txStart):
-                st = self.gp.txStart
-            if (exon == coords[len(coords)-1]) and (en != self.gp.txEnd):
-                en = self.gp.txEnd
+        for e in coords:
+            assert(e.start < e.end)
+            # adjust tx range to contain exon
+            if self.gp.txStart == None:
+                self.gp.txStart = e.start
+                self.gp.txEnd = e.end
+                self.gp.strand = e.strand
+            else:
+                self.gp.txStart = min(self.gp.txStart, e.start)
+                self.gp.txEnd = max(self.gp.txEnd, e.end)
             
-            if (prevStart != None) and (st <= prevEnd):
+            if (prevStart != None) and (e.start <= prevEnd):
                 # merge adjacent or overlapping exons
-                prevEnd = en
+                prevEnd = max(prevEnd, e.end)
             else:
                 if prevStart != None:
                     self.gp.addExon(prevStart, prevEnd)
-                prevStart = st
-                prevEnd = en
+                prevStart = e.start
+                prevEnd = e.end
 
         # last exon
         if prevStart != None:
@@ -546,16 +806,10 @@ class GeneConverter(object):
         self.gene = gene
         self.outFh = None
 
-    def _convertTrans(self, trans):
+    def __convertTrans(self, trans):
         "convert a transcript to a genePred"
 
-        # may or may not have CDS, mRNA, or exon features get range covering all we have
-        range = coordsRange(trans.gene.getCoords())
-        range = coordsCoverRange(range, coordsRange(trans.getMRnaCoords()))
-        range = coordsCoverRange(range, coordsRange(trans.getCdsCoords()))
-        range = coordsCoverRange(range, coordsRange(trans.getExonCoords()))
-
-        gpb = GenePredBuilder(trans.getTransId(), self.gene.rec.locus, range)
+        gpb = GenePredBuilder(trans.getTransId(), self.gene.rec.locus)
 
         # get exons, from one of the sources
         if trans.mrnaFt != None:
@@ -564,11 +818,19 @@ class GeneConverter(object):
             gpb.addExons(trans.getExonCoords())
         elif trans.cdsFt != None:
             gpb.addExons(trans.getCdsCoords())
+        elif trans.gene != None:
+            gpb.addExons(trans.gene.getCoords())
         else:
-            gpb.setSingleExon()
-        cds = coordsRange(trans.getCdsCoords())
+            raise Exception("don't know how to convert: " + str(trans))
+        cds = None
+        if self.gene.geneType == GeneType.immunoglobulin:
+            if len(self.gene.cdsFts) > 0:
+                cds = Coords.fromLocation(self.gene.cdsFts[0].location)
+        else:
+            cds = trans.getCdsCoords()
         if cds != None:
-            gpb.setCds(cds)
+            gpb.setCds(cds.getRange())
+        gpb.finish()
         gpb.gp.write(self.outFh)
         
     def convert(self, outFh):
@@ -576,49 +838,45 @@ class GeneConverter(object):
         self.outFh = outFh
         # if no transcript info, there is a default transcript
         for transId in self.gene.getTransIds():
-            self._convertTrans(self.gene.transTbl[transId])
+            self.__convertTrans(self.gene.transTbl[transId])
 
 class GbffToGenes(object):
     "convert a genbank flat file object to genePreds"
     def __init__(self, opts):
         self.opts = opts
-        cmds = []
-        if opts.gbff.endswith(".gz"):
-            cmds.append(["zcat", opts.gbff])
-        else:
-            cmds.append(["cat", opts.gbff])
-        self.gbPl = Pipeline(cmds)
 
-    def _shouldConvert(self, gene):
-        if gene.immunoglobulin:
-            return ((self.opts.immunoglobulins and not gene.pseudo)
-                    or (self.opts.pseudoimmunos and gene.pseudo))
-        else:
-            return ((self.opts.genes and not gene.pseudo)
-                    or (self.opts.pseudogenes and gene.pseudo))
+    def __shouldConvert(self, gene):
+        return (gene.geneType in self.opts.selected) and (gene.activeType in self.opts.active)
         
-    def _procGene(self, gene):
-        if self._shouldConvert(gene):
-            if self.opts.verbose:
-                print >>sys.stderr, "converting gene:", gene.geneSym
+    def __procGene(self, gene):
+        keep = self.__shouldConvert(gene)
+        if self.opts.verbose > 0:
+            prLine(sys.stderr, ("converting" if keep else "skipping"),
+                   " gene: ", str(gene), " [", gene.geneType, ", ", gene.activeType, "]")
+            for transId in gene.getTransIds():
+                trans = gene.transTbl[transId]
+                prLine(sys.stderr, "    trans: ", trans.transId, " CDS: ",
+                       (featGetCdsId(trans.cdsFt) if trans.cdsFt != None else None))
+        if keep:
             cnv = GeneConverter(gene)
             cnv.convert(self.outFh)
 
-    def _procRec(self, rec):
-        if self.opts.verbose:
-            print >>sys.stderr,"converting rec:", rec.locus
+    def __procRec(self, rec):
+        if self.opts.verbose > 1:
+            prLine(sys.stderr, "parsing rec: ", rec.locus)
         recProc = RecProcessor(rec, self.opts)
         geneSyms = recProc.genesBySym.keys()
         geneSyms.sort()
         for geneSym in geneSyms:
-            self._procGene(recProc.genesBySym[geneSym])
+            self.__procGene(recProc.genesBySym[geneSym])
 
     def convert(self, genePredFile):
+        gbsFh = fileOps.opengz(self.opts.gbff)
         self.outFh = file(genePredFile, "w")
-        for rec in Iterator(self.gbPl.fh, RecordParser()):
-            self._procRec(rec)
+        for rec in Iterator(gbsFh, RecordParser()):
+            self.__procRec(rec)
         self.outFh.close()
-        self.gbPl.wait()
+        gbsFh.close()
 
 def main():
     opts = CmdOpts()
