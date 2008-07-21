@@ -13,6 +13,25 @@ def listInit(size, val):
         l.append(val)
     return l
 
+def listAppend(lst, item):
+    """if lst is None, create a new list with item, otherwise append item.
+    Returns list"""
+    if lst == None:
+        return [item]
+    else:
+        lst.append(item)
+    return lst
+
+def listExtend(lst, items):
+    """if lst is None, create a new list with items, otherwise extend with items.
+    Returns list"""
+    if lst == None:
+        return list(items)
+    else:
+        lst.extend(items)
+    return lst
+
+
 # FIXME: bad name, as strings are iterable
 def isIterable(v):
     "is variable a list, tuple, set, or hash? str doesn't count"
@@ -22,6 +41,7 @@ def mkiter(item):
     """create a iterator over item, if item is iterable, just return an iter,
     if item is not iterable or is a string, create an iterable to return just
     item, if item is none, return an empty iter"""
+    # FIXME: don't really need to construct a list
     if item == None:
         return iter([])
     elif isIterable(item):

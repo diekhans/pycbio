@@ -2,6 +2,8 @@
 
 from pycbio.sys.Immutable import Immutable
 
+# FIXME: support MAF db.chrom syntax, single base syntax, etc.
+
 class Coords(Immutable):
     """Browser coordinates
     Fields:

@@ -140,5 +140,84 @@ FEATURES             Location/Qualifiers
                      /pseudo
                      /db_xref="GeneID:386729"
                      /db_xref="HGNC:23872"
+     gene            2218747..2960745
+                     /gene="PCDH11Y"
+                     /db_xref="GeneID:83259"
+                     /db_xref="HGNC:15813"
+                     /db_xref="MIM:400022"
+     mRNA            join(2218747..2219126,2250427..2250532,2251191..2251249,
+                     2275410..2275980,2316736..2319228,2322865..2323965)
+                     /gene="PCDH11Y"
+                     /product="protocadherin 11 Y-linked"
+                     /transcript_id="NM_032971.1"
+                     /db_xref="GI:14589941"
+                     /db_xref="GeneID:83259"
+                     /db_xref="HGNC:15813"
+                     /db_xref="MIM:400022"
+     STS             2222615..2222915
+                     /gene="PCDH11Y"
+                     /standard_name="DYS254"
+                     /db_xref="UniSTS:34117"
+     STS             2228857..2228981
+                     /gene="PCDH11Y"
+                     /standard_name="DXS7616"
+                     /db_xref="UniSTS:9793"
+     STS             2250482..2250580
+                     /gene="PCDH11Y"
+                     /standard_name="G66089"
+                     /db_xref="UniSTS:230080"
+     CDS             join(2251218..2251249,2275410..2275980,2316736..2319228,
+                     2322865..2322882)
+                     /gene="PCDH11Y"
+                     /codon_start=1
+                     /product="protocadherin 11 Y-linked isoform a"
+                     /protein_id="NP_116753.1"
+                     /db_xref="GI:14589942"
+                     /db_xref="CCDS:CCDS14776.1"
+                     /db_xref="GeneID:83259"
+                     /db_xref="HGNC:15813"
+                     /db_xref="MIM:400022"
+     STS             2273604..2273807
+                     /gene="PCDH11Y"
+                     /standard_name="DXS7645"
+                     /db_xref="UniSTS:37174"
+     mRNA            join(2274611..2275980,2316736..2319228,2719578..2719776,
+                     2800296..2800319,2955793..2960745)
+                     /gene="PCDH11Y"
+                     /product="protocadherin 11 Y-linked"
+                     /exception="unclassified transcription discrepancy"
+                     /transcript_id="NM_032973.1"
+                     /db_xref="GI:14589945"
+                     /db_xref="GeneID:83259"
+                     /db_xref="HGNC:15813"
+                     /db_xref="MIM:400022"
+     mRNA            join(2274611..2275980,2316736..2319228,2322865..2323965)
+                     /gene="PCDH11Y"
+                     /product="protocadherin 11 Y-linked"
+                     /transcript_id="NM_032972.1"
+                     /db_xref="GI:14589943"
+                     /db_xref="GeneID:83259"
+                     /db_xref="HGNC:15813"
+                     /db_xref="MIM:400022"
+     CDS             join(2275345..2275980,2316736..2319228,2719578..2719776,
+                     2800296..2800319,2955793..2956463)
+                     /gene="PCDH11Y"
+                     /product="protocadherin 11 Y-linked isoform c"
+                     /protein_id="NP_116755.1"
+                     /db_xref="GI:14589946"
+                     /db_xref="GeneID:83259"
+                     /db_xref="HGNC:15813"
+                     /db_xref="MIM:400022"
+     CDS             join(2275345..2275980,2316736..2319228,2322865..2322882)
+                     /gene="PCDH11Y"
+                     /GO_component="membrane [GO ID 0016020] [Evidence IEA]"
+                     /codon_start=1
+                     /product="protocadherin 11 Y-linked isoform b"
+                     /protein_id="NP_116754.1"
+                     /db_xref="GI:14589944"
+                     /db_xref="CCDS:CCDS14777.1"
+                     /db_xref="GeneID:83259"
+                     /db_xref="HGNC:15813"
+                     /db_xref="MIM:400022"
 CONTIG      join(complement(AC025226.4:101674..168066))
 //

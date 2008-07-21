@@ -187,8 +187,6 @@ class GenePred(object):
         self.name2 = None
         self.cdsStartStat = None
         self.cdsEndStat = None
-        self.cdsStartStat = None
-        self.cdsEndStat = None
         self.hasExonFrames = False
         self.exons = []
         self.cdsStartIExon = None

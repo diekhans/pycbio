@@ -159,13 +159,8 @@ def featMustGetQualByKeys(feat, keys):
 
 def featRaiseNeedAQual(feat, keys):
    "raise error about one of the qualifiers not being found"
-   msg = "didn't find any of these qualifiers: "
-   for i in xrange(len(keys)):
-       if i > 0:
-           msg += ", "
-           msg += "\"" + keys[i] + "\""
-       msg += " in feature: " + str(feat)
-   raise GbffExcept(msg)
+   raise GbffExcept("didn't find any of these qualifiers: "
+                    + ", ".join(keys) + " in feature: " + str(feat))
 
 def featGetGeneId(feat):
     "get a db_ref qualifier for GeneID, or None"
@@ -228,6 +223,9 @@ class Coord(object):
     def overlaps(self, other):
         return (self.start < other.end) and (self.end > other.start) and (self.strand == other.strand)
 
+    def contains(self, other):
+        return (other.start >= self.start) and (other.end <= self.end) and (self.strand == other.strand)
+
 class Coords(list):
     "List of Coord objects"
 
@@ -257,10 +255,10 @@ class Coords(list):
         else:
             return Coord(self[0].start, self[-1].end, self[0].strand)
 
-    def findOverlap(self, coord):
-        "find index of first range overlapping coord, or None"
+    def findContained(self, coord):
+        "find index of first range containing coord, or None"
         for i in xrange(len(self)):
-            if self[i].overlaps(coord):
+            if self[i].contains(coord):
                 return i
         return None
 
@@ -272,7 +270,7 @@ class Coords(list):
 
         # initial block
         oi = 0
-        si = self.findOverlap(other[0])
+        si = self.findContained(other[0])
         if si == None:
             return False
         if (sLen-si) < oLen:
@@ -372,9 +370,12 @@ class TransFeatures(object):
         else:
             return self.gene.geneSym
 
+    def getCdsId(self):
+        return (featGetCdsId(self.cdsFt) if self.cdsFt != None else None)
+
     def addMRna(self, mrnaFt):
         if self.mrnaFt != None:
-            raise GbffExcept("transcript already has mRNA: " + get.getTransId())
+            raise GbffExcept("transcript already has mRNA: " + self.getTransId())
         self.mrnaFt = mrnaFt
 
     def getMRnaCoords(self):
@@ -454,6 +455,7 @@ class GeneFeatures(object):
     def __str__(self):
         return self.geneSym + " (" + self.geneId + ")"
 
+    # FIXME: mostly dup of this code in __procGene
     def prTransCds(self, fh):
         prLine(fh, "gene: ", self)
         prLine(fh, "    mrnaTrans:")
@@ -487,33 +489,10 @@ class GeneFeatures(object):
             prWarn("Number of CDS features ("+str(len(self.cdsFts))+") doesn't match number of mRNA features ("+str(len(self.mrnaTrans))+") gene:",self)
             self.cdsAssocProbs = True
 
-        # FIXME
         self.__matchAssocCds(self.mrnaTrans)
-        return
-
-        probTrans = self.__pairedAssocCds()
-        if probTrans != None:
-            prWarn("mRNA and CDS features not paired, attempting to match for gene:",self)
-            self.cdsAssocProbs = True
-            self.__matchAssocCds(probTrans)
-
-    def __pairedAssocCds(self):
-        """normal case, mRNAs/CDSs are paired.  If pairing fails, return list
-        of unprocessed mRNAs"""
-        numMRna = len(self.mrnaTrans)
-        numCds = len(self.cdsFts)
-        probTrans = None
-        for i in xrange(min(numMRna, numCds)):
-            if GeneFeatures.__cdsMatches(self.mrnaTrans[i], self.cdsFts[i]):
-                self.mrnaTrans[i].addCds(self.cdsFts[i])
-            else:
-                probTrans = typeOps.listAppend(probTrans, self.mrnaTrans[i])
-        if numMRna > numCds:
-            probTrans = typeOps.listExtend(probTrans, self.mrnaTrans[numCds:])
-        return probTrans
 
     def __matchAssocCds(self, probTrans):
-        """fall-back case; attempt to associate CDS with transcripts via longest matched"""
+        """ associate CDS with transcripts via longest matched"""
         for trans in probTrans:
             cdsFt = self.__findLongestCdsMatch(trans)
             if cdsFt == None:
@@ -694,7 +673,7 @@ class RecProcessor(object):
                 return None
         gene = self.genesById.get(geneId)
         if (gene == None):
-            raise GbffExcept("no gene for " + geneId + ", referenced by " + str(feat))
+            raise GbffExcept("no gene for " + geneId + ", referenced by " + feat.key + " " + feat.location)
         return gene
             
     def __getGeneObjBySym(self, feat, required=True, qualName="/gene="):
@@ -855,8 +834,13 @@ class GbffToGenes(object):
                    " gene: ", str(gene), " [", gene.geneType, ", ", gene.activeType, "]")
             for transId in gene.getTransIds():
                 trans = gene.transTbl[transId]
-                prLine(sys.stderr, "    trans: ", trans.transId, " CDS: ",
-                       (featGetCdsId(trans.cdsFt) if trans.cdsFt != None else None))
+                if self.opts.verbose > 1:
+                    prLine(sys.stderr, "    trans: ", trans.getTransId(), " ", 
+                           (trans.getMRnaCoords() if trans.mrnaFt != None else trans.getMiscRnaCoords()))
+                    prLine(sys.stderr, "    CDS:   ", trans.getCdsId(), " ", trans.getCdsCoords())
+                else:
+                    prLine(sys.stderr, "    trans: ", trans.getTransId(), " CDS: ", trans.getCdsId())
+                           
         if keep:
             cnv = GeneConverter(gene)
             cnv.convert(self.outFh)
