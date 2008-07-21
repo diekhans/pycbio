@@ -1,0 +1,69 @@
+LOCUS       NT_039573            8042341 bp    DNA     linear   CON 20-JUN-2007
+DEFINITION  Mus musculus chromosome 13 genomic contig, strain C57BL/6J.
+ACCESSION   NT_039573 NT_039574 NT_039575
+VERSION     NT_039573.7  GI:149263826
+KEYWORDS    .
+SOURCE      Mus musculus (house mouse)
+  ORGANISM  Mus musculus
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+            Mammalia; Eutheria; Rodentia; Sciurognathi; Muridae; Murinae; Mus.
+FEATURES             Location/Qualifiers
+     source          1..8042341
+                     /organism="Mus musculus"
+                     /mol_type="genomic DNA"
+                     /strain="C57BL/6J"
+                     /db_xref="taxon:10090"
+                     /chromosome="13"
+     gene            8629978..8644963
+                     /gene="Taf9"
+                     /db_xref="GeneID:108143"
+                     /db_xref="MGI:1888697"
+     mRNA            join(8629978..8630049,8632795..8632887,8633638..8634662)
+                     /gene="Taf9"
+                     /exception="unclassified transcription discrepancy"
+                     /transcript_id="NM_027139.4"
+                     /db_xref="GI:142373000"
+                     /db_xref="GeneID:108143"
+                     /db_xref="MGI:1888697"
+     mRNA            join(8629996..8630049,8632795..8632887,8642499..8642557,
+                     8642655..8642800,8644431..8644963)
+                     /gene="Taf9"
+                     /exception="unclassified transcription discrepancy"
+                     /transcript_id="NM_027592.1"
+                     /db_xref="GI:28076974"
+                     /db_xref="GeneID:108143"
+                     /db_xref="MGI:1888697"
+     CDS             join(8630022..8630049,8632795..8632887,8642499..8642557,
+                     8642655..8642800,8644431..8644623)
+                     /gene="Taf9"
+                     /codon_start=1
+                     /protein_id="NP_081868.1"
+                     /db_xref="GI:28076975"
+                     /db_xref="CCDS:CCDS26734.1"
+                     /db_xref="GeneID:108143"
+                     /db_xref="MGI:1888697"
+     mRNA            join(8630211..8630321,8632795..8632887,8633638..8634664)
+                     /gene="Taf9"
+                     /exception="mismatches in transcription"
+                     /transcript_id="NM_001015889.1"
+                     /db_xref="GI:62821771"
+                     /db_xref="GeneID:108143"
+                     /db_xref="MGI:1888697"
+     CDS             8633655..8634449
+                     /gene="Taf9"
+                     /codon_start=1
+                     /protein_id="NP_001015889.1"
+                     /db_xref="GI:62821772"
+                     /db_xref="CCDS:CCDS26735.1"
+                     /db_xref="GeneID:108143"
+                     /db_xref="MGI:1888697"
+     CDS             8633655..8634449
+                     /gene="Taf9"
+                     /codon_start=1
+                     /protein_id="NP_081415.1"
+                     /db_xref="GI:18079237"
+                     /db_xref="CCDS:CCDS26735.1"
+                     /db_xref="GeneID:108143"
+                     /db_xref="MGI:1888697"
+CONTIG      join(CAAA01224482.1:1..5991,AC165145.2:1..181942)
+//
