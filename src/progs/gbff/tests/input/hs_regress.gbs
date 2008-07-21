@@ -1,0 +1,17 @@
+LOCUS       NT_011516             234226 bp    DNA     linear   CON 20-AUG-2004
+DEFINITION  Homo sapiens chromosome mixed up genomic contig.
+ACCESSION   NT_011516
+VERSION     NT_011516.5  GI:14776721
+KEYWORDS    .
+SOURCE      Homo sapiens
+  ORGANISM  Homo sapiens
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+            Mammalia; Eutheria; Primates; Catarrhini; Hominidae; Homo.
+FEATURES             Location/Qualifiers
+     misc_RNA        1925600..1925682
+                     /product="microRNA:hsa-mir-1238"
+                     /note="Data source: miRBase"
+                     /db_xref="miRBase:MI0006328"
+CONTIG      join(AC069061.11:1..178558,complement(AC129926.4:1..130041),
+            complement(AC131056.5:1..167732))
+//

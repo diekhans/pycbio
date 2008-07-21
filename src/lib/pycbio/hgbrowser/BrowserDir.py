@@ -6,14 +6,14 @@ from pycbio.hgbrowser.Coords import Coords
 from pycbio.html.HtmlPage import HtmlPage
 from pycbio.sys import fileOps
 
-class Entry(list):
+class Entry(object):
     "entry in directory"
-    def __init__(self, coords, name, row):
-        """Entry in directory, coords and name are used for sorting, row has
-        formated cells"""
-        self.coords = coords
-        self.name = name
-        self.extend(row)
+    def __init__(self, row, key=None, cssClass=None):
+        """Entry in directory, key can be some value(s) used in sorting
+        The row should be HTML encoded """
+        self.row = list(row)
+        self.key = key
+        self.cssClass = cssClass
 
 class BrowserDir(object):
     """Create a frameset and collection of HTML pages that index one or more
@@ -23,7 +23,8 @@ class BrowserDir(object):
     def __init__(self, browserUrl, defaultDb, colNames=None, pageSize=50,
                  title=None, dirPercent=15, below=False, pageDesc=None,
                  initialTracks=None, style=None):
-        "initialTrack is a dict, or none"
+        """initialTracks is a dict, or none; pageSize of None creates a single
+        page"""
         self.browserUrl = browserUrl
         self.defaultDb = defaultDb
         self.colNames = colNames
@@ -35,12 +36,17 @@ class BrowserDir(object):
         self.entries = []
         self.initialTracksArgs = None
         if initialTracks != None:
-            l = ["&"]
-            for t in initialTracks:
-                l += t + "=" + initialTracks[t]
-            self.initialTracksArgs = "&" + "&".join(l)
+            self.initialTracksArgs = self.__mkTracksArgs(initialTracks)
+        else:
+            self.initialTracksArgs = None
         self.style = style
 
+    def __mkTracksArgs(self, initialTracks):
+        l = []
+        for t in initialTracks:
+            l.append(t + "=" + initialTracks[t])
+        return "&" + "&".join(l)
+        
     def mkDefaultUrl(self):
         return self.browserUrl + "/cgi-bin/hgTracks?db=" + self.defaultDb + "&position=default"
 
@@ -53,17 +59,26 @@ class BrowserDir(object):
         url += "&position=" + str(coords)
         return url
 
-    def mkAnchor(self, coords, text):
+    def mkAnchor(self, coords, text=None):
+        if text == None:
+            text = str(coords)
         return "<a href=\"" + self.mkUrl(coords) + "\" target=browser>" + text + "</a>"
         
-    def add(self, coords, name=None, row=None):
-        """add a row, linking to location, if row is None, construct one
-        with link labeled with name.  If name is None, it's the location """
+    def addRow(self, row, key=None, cssClass=None):
+        """add an encoded row """
+        self.entries.append(Entry(row, key, cssClass))
+
+    def add(self, coords, name=None):
+        """add a simple row, linking to location If name is None, it's the
+        location """
         if name == None:
             name = str(coords)
-        if row == None:
-            row = [self.mkAnchor(coords, name)]
-        self.entries.append(Entry(coords, name, row))
+        row = [self.mkAnchor(coords, name)]
+        self.addRow(row, key=coords)
+
+    def sort(self, cmpFunc=cmp):
+        "sort by the key"
+        self.sort(lambda a,b: cmpFunc(a.key, b.key))
 
     def _mkFrame(self, title=None, dirPercent=15, below=False):
         """create frameset as a HtmlPage object"""
@@ -106,7 +121,7 @@ class BrowserDir(object):
             html.append("next")
         return ", ".join(html)
 
-    def _writeDirPage(self, outDir, pgEntries, pageNum, numPages):
+    def _writeDirPage(self, outDir, beginRow, endRow, pageNum, numPages):
         title = "page %d" % pageNum
         if self.title:
             title += ": " + self.title
@@ -122,8 +137,8 @@ class BrowserDir(object):
         if self.colNames != None:
             pg.tableHeader(self.colNames)
         
-        for entry in pgEntries:
-            pg.tableRow(entry)
+        for i in xrange(beginRow, endRow):
+            pg.tableRow(self.entries[i].row)
         pg.tableEnd()
         pg.add(pageLinks)
 
@@ -131,17 +146,22 @@ class BrowserDir(object):
         pg.writeFile(dirFile)
 
     def _writeDirPages(self, outDir):
-        numPages = (len(self.entries)+self.pageSize-1)/self.pageSize
-
-        if numPages == 0:
+        if len(self.entries) == 0:
             # at least write an empty page
-            self._writeDirPage(outDir, [], 1, 0)
-            
-        for pageNum in xrange(1,numPages+1):
-            first = (pageNum-1) * self.pageSize
-            last = first+(self.pageSize-1)
-            pgEntries = self.entries[first:last]
-            self._writeDirPage(outDir, pgEntries, pageNum, numPages)
+            self._writeDirPage(outDir, 0, 0, 1, 0)
+        elif self.pageSize == None:
+            # single page
+            self._writeDirPage(outDir, 0, len(self.entries), 1, 1)
+        else:
+            # split
+            numPages = (len(self.entries)+self.pageSize-1)/self.pageSize
+            for pageNum in xrange(1,numPages+1):
+                start = (pageNum-1) * self.pageSize
+                end = start+self.pageSize
+                if end > len(self.entries):
+                    end = len(self.entries)
+                if start < end:
+                    self._writeDirPage(outDir, start, end, pageNum, numPages)
 
     def write(self, outDir):
         fileOps.ensureDir(outDir)

@@ -5484,6 +5484,67 @@ COMMENT     GENOME ANNOTATION REFSEQ:  Features on this sequence have been
             staff.
             COMPLETENESS: not full length.
 FEATURES             Location/Qualifiers
+     gene            6859384..6901659
+                     /gene="HSFY1"
+                     /note="heat shock transcription factor, Y-linked 1;
+                     synonyms: HSFY, HSF2L"
+                     /db_xref="GeneID:86614"
+                     /db_xref="HGNC:18568"
+                     /db_xref="MIM:400029"
+     mRNA            join(6859384..6859996,6860475..6861288)
+                     /gene="HSFY1"
+                     /product="heat shock transcription factor, Y-linked 1,
+                     transcript variant 1"
+                     /exception="unclassified transcription discrepancy"
+                     /transcript_id="NM_033108.2"
+                     /db_xref="GI:50312654"
+                     /db_xref="GeneID:86614"
+                     /db_xref="HGNC:18568"
+                     /db_xref="MIM:400029"
+     mRNA            join(6859387..6859996,6862810..6862919,6863479..6863565,
+                     6864613..6864767,6895369..6895454,6901232..6901659)
+                     /gene="HSFY1"
+                     /product="heat shock transcription factor, Y-linked 1,
+                     transcript variant 3"
+                     /transcript_id="NR_003510.1"
+                     /db_xref="GI:145701013"
+                     /db_xref="GeneID:86614"
+                     /db_xref="HGNC:18568"
+                     /db_xref="MIM:400029"
+     mRNA            join(6859387..6859996,6901232..6901657)
+                     /gene="HSFY1"
+                     /product="heat shock transcription factor, Y-linked 1,
+                     transcript variant 2"
+                     /exception="unclassified transcription discrepancy"
+                     /transcript_id="NM_152584.1"
+                     /db_xref="GI:24211016"
+                     /db_xref="GeneID:86614"
+                     /db_xref="HGNC:18568"
+                     /db_xref="MIM:400029"
+     CDS             join(6859484..6859996,6901232..6901330)
+                     /gene="HSFY1"
+                     /note="heat shock transcription factor 2-like"
+                     /codon_start=1
+                     /product="heat shock transcription factor, Y-linked 1
+                     isoform 2"
+                     /protein_id="NP_689797.1"
+                     /db_xref="GI:24211017"
+                     /db_xref="CCDS:CCDS14790.1"
+                     /db_xref="GeneID:86614"
+                     /db_xref="HGNC:18568"
+                     /db_xref="MIM:400029"
+     CDS             join(6859484..6859996,6860475..6861167)
+                     /gene="HSFY1"
+                     /note="heat shock transcription factor 2-like"
+                     /codon_start=1
+                     /product="heat shock transcription factor, Y-linked 1
+                     isoform 1"
+                     /protein_id="NP_149099.2"
+                     /db_xref="GI:50312655"
+                     /db_xref="CCDS:CCDS35475.1"
+                     /db_xref="GeneID:86614"
+                     /db_xref="HGNC:18568"
+                     /db_xref="MIM:400029"
      gene            complement(9047672..9065992)
                      /gene="CCL14-CCL15"
                      /note="chemokine ligand 14, chemokine ligand 15
