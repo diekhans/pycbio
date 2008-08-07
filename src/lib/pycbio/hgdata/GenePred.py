@@ -144,9 +144,9 @@ class GenePred(object):
         exonEnds = intArraySplit(row[9])
         iCol = 10
         numCols = len(row)
-        self.id = None
+        self.score = None
         if iCol < numCols:  # 10
-            self.id = int(row[iCol])
+            self.score = int(row[iCol])
             iCol = iCol+1
         self.name2 = None
         if iCol < numCols:  # 11
@@ -183,7 +183,7 @@ class GenePred(object):
         self.txEnd = None
         self.cdsStart = None
         self.cdsEnd = None
-        self.id = None
+        self.score = None
         self.name2 = None
         self.cdsStartStat = None
         self.cdsEndStat = None
@@ -207,6 +207,27 @@ class GenePred(object):
             if self.cdsStartIExon == None:
                 self.cdsStartIExon = i
             self.cdsEndIExon = i
+
+    def assignFrames(self):
+        "set frames on exons, assuming no frame shift"
+        if self.strand == "+":
+            iStart = 0
+            iEnd = len(self.exons)
+            iDir = 1
+        else:
+            iStart = len(self.exons)-1
+            iEnd = -1
+            iDir = -1
+        cdsOff = 0
+        for i in xrange(iStart, iEnd, iDir):
+            e = self.exons[i]
+            c = e.getCds()
+            if c != None:
+                e.frame = cdsOff%3
+                cdsOff += (c.end-c.start)
+            else:
+                e.frame = -1
+        self.hasExonFrames = True
 
     def inCds(self, pos):
         "test if a position is in the CDS"
@@ -284,10 +305,10 @@ class GenePred(object):
         row.append(intArrayJoin(starts))
         row.append(intArrayJoin(ends))
 
-        hasExt = (self.id != None) or (self.name2 != None) or (self.cdsStartStat != None) or self.hasExonFrames
+        hasExt = (self.score != None) or (self.name2 != None) or (self.cdsStartStat != None) or self.hasExonFrames
 
-        if self.id != None:
-            row.append(str(self.id))
+        if self.score != None:
+            row.append(str(self.score))
         elif hasExt:
             row.append("0");
         if self.name2 != None:

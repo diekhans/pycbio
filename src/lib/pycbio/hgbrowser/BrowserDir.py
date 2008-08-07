@@ -8,6 +8,8 @@ from pycbio.sys import fileOps
 
 class Entry(object):
     "entry in directory"
+    __slots__= ("row", "key", "cssClass")
+
     def __init__(self, row, key=None, cssClass=None):
         """Entry in directory, key can be some value(s) used in sorting
         The row should be HTML encoded """
@@ -22,10 +24,12 @@ class BrowserDir(object):
 
     def __init__(self, browserUrl, defaultDb, colNames=None, pageSize=50,
                  title=None, dirPercent=15, below=False, pageDesc=None,
-                 initialTracks=None, style=None):
-        """initialTracks is a dict, or none; pageSize of None creates a single
+                 tracks=None, style=None):
+        """tracks is a dict, or none; pageSize of None creates a single
         page"""
         self.browserUrl = browserUrl
+        if self.browserUrl.endswith("/"):
+            self.browserUrl = self.browserUrl[0:-1] # drop trailing `/', so we don't end up with '//'
         self.defaultDb = defaultDb
         self.colNames = colNames
         self.pageSize = pageSize
@@ -34,11 +38,11 @@ class BrowserDir(object):
         self.below = below
         self.pageDesc = pageDesc
         self.entries = []
-        self.initialTracksArgs = None
-        if initialTracks != None:
-            self.initialTracksArgs = self.__mkTracksArgs(initialTracks)
+        self.tracksArgs = None
+        if tracks != None:
+            self.tracksArgs = self.__mkTracksArgs(tracks)
         else:
-            self.initialTracksArgs = None
+            self.tracksArgs = ""
         self.style = style
 
     def __mkTracksArgs(self, initialTracks):
@@ -48,7 +52,7 @@ class BrowserDir(object):
         return "&" + "&".join(l)
         
     def mkDefaultUrl(self):
-        return self.browserUrl + "/cgi-bin/hgTracks?db=" + self.defaultDb + "&position=default"
+        return self.browserUrl + "/cgi-bin/hgTracks?db=" + self.defaultDb + "&position=default" + self.tracksArgs
 
     def mkUrl(self, coords):
         url = self.browserUrl + "/cgi-bin/hgTracks?db="
@@ -56,7 +60,7 @@ class BrowserDir(object):
             url += coords.db
         else:
             url += self.defaultDb
-        url += "&position=" + str(coords)
+        url += "&position=" + str(coords) + self.tracksArgs
         return url
 
     def mkAnchor(self, coords, text=None):
@@ -76,9 +80,9 @@ class BrowserDir(object):
         row = [self.mkAnchor(coords, name)]
         self.addRow(row, key=coords)
 
-    def sort(self, cmpFunc=cmp):
+    def sort(self, cmpFunc=cmp, reverse=False):
         "sort by the key"
-        self.sort(lambda a,b: cmpFunc(a.key, b.key))
+        self.entries.sort(lambda a,b: cmpFunc(a.key, b.key), reverse=reverse)
 
     def _mkFrame(self, title=None, dirPercent=15, below=False):
         """create frameset as a HtmlPage object"""
