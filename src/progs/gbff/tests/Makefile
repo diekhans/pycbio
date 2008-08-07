@@ -4,6 +4,8 @@ BIN_DIR = ../../../../bin
 # FIXME: exonsOnlyTest currently produces no results.  Would need to implement
 # a GeneFeatures object that isn't actually associated with a feature
 
+
+
 ##
 # - mmRegressTest 
 #   - NM_027592.1 has CDS records in weird order
@@ -12,25 +14,26 @@ BIN_DIR = ../../../../bin
 
 test: \
 	pseudoTest geneTest pseudoIgTest geneIgTest exonsOnlyTest \
-	hsRegressTest mmRegressTest rnaGeneTest
+	hsRegressTest mmRegressTest rnaGeneTest \
+	pseudoExtTest geneExtTest
 
 pseudoTest: mkdirs
-	${BIN_DIR}/gbffGenesToGenePred --pseudo input/hs_chr22.part.gbs output/$@.gp
+	${BIN_DIR}/gbffGenesToGenePred --pseudo --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp
 	genePredCheck output/$@.gp
 	diff expected/$@.gp output/$@.gp
 
 geneTest: mkdirs
-	${BIN_DIR}/gbffGenesToGenePred input/hs_chr22.part.gbs output/$@.gp
+	${BIN_DIR}/gbffGenesToGenePred --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp
 	genePredCheck output/$@.gp
 	diff expected/$@.gp output/$@.gp
 
 pseudoIgTest: mkdirs
-	${BIN_DIR}/gbffGenesToGenePred --immunoglobulins --pseudo input/hs_chr22.part.gbs output/$@.gp
+	${BIN_DIR}/gbffGenesToGenePred --immunoglobulins --pseudo --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp
 	genePredCheck output/$@.gp
 	diff expected/$@.gp output/$@.gp
 
 geneIgTest: mkdirs
-	${BIN_DIR}/gbffGenesToGenePred --immunoglobulins input/hs_chr22.part.gbs output/$@.gp
+	${BIN_DIR}/gbffGenesToGenePred --immunoglobulins --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp
 	genePredCheck output/$@.gp
 	diff expected/$@.gp output/$@.gp
 
@@ -45,14 +48,25 @@ hsRegressTest: mkdirs
 	diff expected/$@.gp output/$@.gp
 
 mmRegressTest: mkdirs
-	${BIN_DIR}/gbffGenesToGenePred input/mm_regress.gbs output/$@.gp
+	${BIN_DIR}/gbffGenesToGenePred --rnaq=input/mm_regress.q input/mm_regress.gbs output/$@.gp
 	genePredCheck output/$@.gp
 	diff expected/$@.gp output/$@.gp
 
 rnaGeneTest: mkdirs
-	${BIN_DIR}/gbffGenesToGenePred --rnaGenes input/hs_chrY.part.gbs output/$@.gp
+	${BIN_DIR}/gbffGenesToGenePred --rnaGenes --rnaq=input/hs_chrY.part.q input/hs_chrY.part.gbs output/$@.gp
 	genePredCheck output/$@.gp
 	diff expected/$@.gp output/$@.gp
+
+pseudoExtTest: mkdirs
+	${BIN_DIR}/gbffGenesToGenePred --pseudo --ext --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp
+	genePredCheck output/$@.gp
+	diff expected/$@.gp output/$@.gp
+
+geneExtTest: mkdirs
+	${BIN_DIR}/gbffGenesToGenePred --ext --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp
+	genePredCheck output/$@.gp
+	diff expected/$@.gp output/$@.gp
+
 
 mkdirs:
 	@mkdir -p output
