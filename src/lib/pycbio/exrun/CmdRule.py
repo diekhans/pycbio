@@ -1,10 +1,10 @@
 "Classes used to implement rules that execute commands and produce files"
 
 import os.path,sys
-from pycbio.sys import typeOps,fileOps,strOps
+from pycbio.sys import typeOps,fileOps
 from pycbio.exrun import ExRunException,Verb
 from pycbio.exrun.Graph import Production,Rule
-from pycbio.sys.Pipeline import Pipeline,Procline
+from pycbio.sys import Pipeline
 
 # FIXME: Auto decompression is not supported, as many programs handle reading
 # compressed files and the use of the /proc/ files to get pipe paths causes
@@ -16,45 +16,33 @@ from pycbio.sys.Pipeline import Pipeline,Procline
 # FIXME: the number of different get{In,Out} functions is confusing, and can causes
 # errors if the wrong one is used
 
-# FIXME: in transMap run compressed data files got corrupted near
-# the start of the *file*. very weird, so we hacked this so compression
-# is done after the fact, not on the fifo!.
-
-COMPRESS_BUG = True
-if COMPRESS_BUG:
-    import socket
-
-def getTmpFifo(exrun, path):
-    return exrun.getTmpPath("/var/tmp/"+os.path.basename(path), "tmpfifo")
-
 class FileIn(object):
-    """Object used to specified an input File as an argument to a command.  Using
-    an instance of this object in a command line automatically adds it as a
-    requirement.  It also support automatic compression of the file.
+    """Object used to specified an input File as an argument to a command.
+    Using an instance of this object in a command line automatically adds it
+    as a requirement.  It also support automatic decompression of the file.
 
     The prefix attribute is used in construction arguments when an
     option-equals is prepended to the file (--in=fname).  The prefix
     can be specified as an option to the constructor, or in a string concatination
     ("--in="+FileIn(f))."""
-    __slots__ = ["file", "argPrefix", "autoDecompress"]
+    __slots__ = ["file", "prefix", "autoDecompress"]
 
-    def __init__(self, file, argPrefix=None, autoDecompress=True):
-        autoDecompress = False # FIXME: doesn't work
+    def __init__(self, file, prefix=None, autoDecompress=True):
         self.file = file
-        self.argPrefix = argPrefix
+        self.prefix = prefix
         self.autoDecompress = autoDecompress
 
-    def __radd__(self, argPrefix):
-        "string concatiation operator that sets argPrefix"
-        self.argPrefix = argPrefix
+    def __radd__(self, prefix):
+        "string concatiation operator that sets the prefix"
+        self.prefix = prefix
         return self
 
     def __str__(self):
         """return input file argument"""
-        if self.argPrefix == None:
+        if self.prefix == None:
             return self.file.getInPath(self.autoDecompress)
         else:
-            return self.argPrefix + self.file.getInPath(self.autoDecompress)
+            return self.prefix + self.file.getInPath(self.autoDecompress)
 
 class FileOut(object):
     """Object used to specified an output File as an argument to a command.  Using
@@ -63,133 +51,27 @@ class FileOut(object):
 
     The prefix attribute is used in construction arguments when an
     option-equals is prepended to the file (--out=fname).  The prefix
-    can be specified as an option to the constructor, or in a string concatination
+    can be specified as an option to the constructor, or in a string concatenation
     ("--out="+FileOut(f)).
     """
-    __slots__ = ["file", "argPrefix", "autoCompress"]
+    __slots__ = ["file", "prefix", "autoCompress"]
 
-    def __init__(self, file, argPrefix=None, autoCompress=True):
+    def __init__(self, file, prefix=None, autoCompress=True):
         self.file = file
-        self.argPrefix = argPrefix
+        self.prefix = prefix
         self.autoCompress = autoCompress
 
-    def __radd__(self, argPrefix):
-        "string concatiation operator that sets argPrefix"
-        self.argPrefix = argPrefix
+    def __radd__(self, prefix):
+        "string concatiation operator that sets the prefix"
+        self.prefix = prefix
         return self
 
     def __str__(self):
         """return input file argument"""
-        if self.argPrefix == None:
+        if self.prefix == None:
             return self.file.getOutPath(self.autoCompress)
         else:
-            return self.argPrefix + self.file.getOutPath(self.autoCompress)
-
-# FIXME: tmp
-IFileRef = FileIn
-OFileRef = FileOut
-
-
-class ActiveIn(object):
-    "object used to manage an input file while a command is active"
-
-    def __init__(self, exrun, path, outPath, autoDecompress):
-        # outPath used if file has not been installed
-        self.inPath = path if outPath == None else outPath
-        self.pipe = None
-        self.fh = None
-        if fileOps.isCompressed(path) and autoDecompress:
-            self.pipe = Pipeline([fileOps.decompressCmd(path)], "r", otherEnd=self.inPath,
-                                     pipePath=getTmpFifo(exrun, self.inPath))
-
-    def open(self):
-        """open the output file for writing from the ExRun process"""
-        if self.pipe != None:
-            return self.pipe
-        else:
-            self.fh = open(self.inPath, "r")
-            return self.fh
-
-    def getInPath(self):
-        "get input path to use, either pipe or tmp file"
-        return self.pipe.pipePath if self.pipe != None else self.inPath
-
-    def done(self):
-        "complete use of file when a command completes.  This does not install newPath"
-        if self.fh != None:
-            self.fh.close()
-            self.fh = None
-        if self.pipe != None:
-            try:
-                self.pipe.wait()
-            finally:
-                try:
-                    self.pipe.unlinkPipe()
-                except:
-                    pass
-            self.pipe = None
-            
-
-class ActiveOut(object):
-    "object used to manage an output file while a command is active"
-
-    def __init__(self, exrun, path, outPath, autoCompress):
-        self.path = path
-        self.outPath = outPath
-        self.pipe = None
-        self.fh = None
-        fileOps.ensureFileDir(path)
-        if fileOps.isCompressed(path) and autoCompress:
-            if COMPRESS_BUG:
-                self.pipe = outPath + "." + socket.gethostname() + "." +str(os.getpid())+".uncmp.tmp"
-                self.fh = open(self.pipe, "w")
-            else:
-                self.pipe = Pipeline([fileOps.compressCmd(path)], "w", otherEnd=self.outPath,
-                                     pipePath=getTmpFifo(exrun, self.path))
-            
-    def open(self):
-        """open the output file for writing from the ExRun process"""
-        if self.pipe != None:
-            if COMPRESS_BUG:
-                return self.fh
-            else:
-                return self.pipe
-        elif self.fh != None:
-            raise ExRunException("output file already opened: " + self.outPath)
-        else:
-            self.fh = open(self.outPath, "w")
-            return self.fh
-
-    def getOutPath(self):
-        "get output path to use, either pipe or tmp file"
-        if COMPRESS_BUG:
-            return self.pipe if self.pipe != None else self.outPath
-        else:
-            return self.pipe.pipePath if self.pipe != None else self.outPath
-
-    def done(self):
-        "complete use of file when a command completes.  This does not install outPath"
-        print "DONE: ", self.outPath, self.pipe
-        if self.fh != None:
-            self.fh.close()
-            self.fh = None
-        if self.pipe != None:
-            if COMPRESS_BUG:
-                tmpCmp = self.outPath + "." + socket.gethostname() + "." +str(os.getpid())+".cmp.tmp"
-                pl = Procline([fileOps.compressCmd(self.outPath)], stdin=self.pipe, stdout=tmpCmp)
-                pl.wait()
-                fileOps.atomicInstall(tmpCmp, self.outPath)
-                os.unlink(self.pipe)
-                self.pipe = None
-            else:
-                try:
-                    self.pipe.wait()
-                finally:
-                    try:
-                        self.pipe.unlinkPipe()
-                    except:
-                        pass
-                    self.pipe = None
+            return self.prefix + self.file.getOutPath(self.autoCompress)
 
 class File(Production):
     """Object representing a file production. This handles atomic file
@@ -198,19 +80,19 @@ class File(Production):
     output.  This is the default behavior, unless overridden by specifying the
     autoCompress=False option the output functions. """
 
-    # FIXME:
-    ## no locking is currently required.  If a file has not been installed,
-    # then is is only accessed in the rule by a single thread.
+    # No locking is currently required.  If a file has not been installed,
+    # then is is only accessed in the rule by a single thread.  If it has been
+    # installed, the decompression pipes are private to a rule.
+    # FIXME: make sure the above works
 
     def __init__(self, path, realPath):
         "realPath is use to detect files accessed from different paths"
         Production.__init__(self, path)
         self.path = path
-        self.realPath = realPath
+        self.realPath = realPath # FIXME is this needed
         self.outPath = None
         self.installed = False
-        self.activeOut = None
-        self.activeIns = None
+        # FIXME: add failed flag
 
     def __str__(self):
         return self.path
@@ -222,70 +104,49 @@ class File(Production):
         else:
             return -1.0
 
-    def _setupOut(self, autoCompress):
-        "setup output file"
-        if self.installed:
-            raise ExRunException("output file already installed: " + self.path)
-        if self.outPath == None:
-            fileOps.ensureFileDir(self.path)
-            self.outPath = self.exrun.getTmpPath(self.path)
-        self.activeOut = ActiveOut(self.exrun, self.path, self.outPath, autoCompress)
-        
     def getOutPath(self, autoCompress=True):
         """Get the output name for the file, which is newPath until the rule
         terminates. This will also create the output directory for the file,
         if it does not exist.  One wants to use FileOut() to define
         a command argument.  This should not be used to get the path to a file
-        to be opened in the current process, use openOut() instead."""
-        self._setupOut(autoCompress)
-        return self.activeOut.getOutPath()
+        to be opened in the ExRun process, use openOut() instead."""
+        if self.installed:
+            raise ExRunException("output file already installed: " + self.path)
+        if self.outPath == None:
+            fileOps.ensureFileDir(self.path)
+            self.outPath = self.exrun.getTmpPath(self.path)
+        return self.outPath
 
-    def openOut(self, autoCompress=True):
-        """open the output file for writing from the ExRun process"""
-        self._setupOut(autoCompress)
-        return self.activeOut.open()
-
-    def _setupIn(self, autoDecompress):
-        "setup input file"
-        if self.activeIns == None:
-            self.activeIns = []
-        ai = ActiveIn(self.exrun, self.path, self.outPath, autoDecompress)
-        self.activeIns.append(ai)
-        return ai
-        
     def getInPath(self, autoDecompress=True):
         """Get the input path name of the file.  If a new file has been
         defined using getOutPath(), but has not been installed, it's path is
         return, otherwise path is returned.  One wants to use FileIn() to
         define a command argument.  This should not be used to get the path to
         a file to be opened in the ExRun process, use openIn() instead. """
-        ai = self._setupIn(autoDecompress)
-        return ai.getInPath()
+        if (not self.installed) and (self.outPath != None):
+            return self.outPath
+        else:
+            return self.path
 
+    def openOut(self, autoCompress=True):
+        """open the output file for writing from the ExRun process"""
+        path = self.__setupOut(autoCompress)
+        if fileOps.isCompressed(path) and autoCompress:
+            return fileOps.openz(path, "w")
+        else:
+            return open(path, "w")
+        
     def openIn(self, autoDecompress=True):
-        """open the input file for reading in the current process"""
-        ai = self._setupIn(autoDecompress)
-        return ai.open()
+        """open the input file for reading in the ExRun process"""
+        path = self.__setupIn()
+        if fileOps.isCompressed(path) and autoDecompress:
+            return fileOps.openz(path)
+        else:
+            return open(path)
 
     def done(self):
         "called when command completes, waits for pipes but doesn't install output"
-        print "FILE.DONE",self.path
-        if self.activeOut != None:
-            print "   FILE.DONE activeOut"
-            self.activeOut.done()
-            self.activeOut = None
-        elif self.activeIns != None:
-            print "   FILE.DONE activeIn",len(self.activeIns)
-            firstEx = None
-            for ai in self.activeIns:
-                try:
-                    ai.done()
-                except Exception, ex:
-                    if firstEx == None:
-                        firstEx = ex
-            self.activeIns = None
-            if firstEx != None:
-                raise firstEx
+        pass # FIXME
 
     def finishSucceed(self):
         "finish production with atomic install of new output file as actual file"
@@ -310,9 +171,9 @@ class File(Production):
         self.done()
 
 class Cmd(list):
-    """A command in a CmdRule. An instance can either be a simple command,
-    which is a list of words, or a command pipe line, which is a list of list
-    of words. The stdin,stdout, stderr arguments are used for redirect I/O.
+    """A command in a CmdRule. Contains a list of lists of command words,
+    which will either be any type of object or FileIn/FileOut objects.  
+    The stdin,stdout, stderr arguments are used for redirect I/O.
     stdin/out/err can be open files, strings, or File production objects.
     If they are File objects, the atomic file handling methods are used
     to get the path.
@@ -321,137 +182,109 @@ class Cmd(list):
     def __init__(self, cmd, stdin=None, stdout=None, stderr=None):
         """The str() function is called on each word when assembling arguments
         to a comand, so arguments do not need to be strings."""
-        # copy list(s)
-        if not typeOps.isListLike(cmd):
-            raise Exception("command must be a list or list of lists")
-        if isinstance(cmd[0], str):
-            self.append(tuple(cmd))
+        if isinstance(cmd[0], list) or isinstance(cmd[0], tuple):
+            for scmd in cmd:
+                self.__addSimple(scmd)
         else:
-            for c in cmd:
-                self.append(tuple(c))
+            self.__addSimple(cmd)
         self.stdin = stdin
         self.stdout = stdout
         self.stderr = stderr
+        self.prodToDev = None   # map of Production to Dev
 
-    # FIXME: getDesc* duplicated from pipeline, should be able to remove
-    # with delayed start
+    def __addSimple(self, scmd):
+        "add one simple command"
+        if not isinstance(scmd, tuple):
+            scmd = tuple(scmd)
+        self.append(scmd)
 
-    def __getCmdDesc(self, cmd):
-        """get command description, single quote white-space containing
-        arguments."""
-        strs = []
-        for w in cmd:
-            if isinstance(w, str) and strOps.hasSpaces(w):
-                strs.append("'" + w + "'")
+    def __getInput(self, pdag, fspec):
+        """Get an input file. If fspec can be None, File or FileIn, or any
+        object that can be converted to a string.  Return the appropriate PIn
+        object, None, or a string. Adds decompression process if needed."""
+        if fspec == None:
+            return None
+        if isinstance(fspec, File):
+            fspec = FileIn(fspec)
+        if not isinstance(fspec, FileIn):
+            return str(fspec)
+
+        # handle File object, include arg prefix
+        path = fspec.file.getInPath()
+        if fileOps.isCompressed(path) and fspec.autoDecompress:
+            pdev = Pipeline.Pipe()
+            pdag.create((fileOps.decompressCmd(path), path), stdout=pdev)
+            return Pipeline.PIn(pdev, fspec.prefix)
+        else:
+            return Pipeline.PIn(Pipeline.File(path), fspec.prefix)
+
+
+    def __getOutput(self, pdag, fspec):
+        """Get an output file. If fspec can be None, File or FileOut, or any
+        object that can be converted to a string.  Return the appropriate Pout
+        object, None, or a string. Adds compression process if needed."""
+        if fspec == None:
+            return None
+        if isinstance(fspec, File):
+            fspec = FileOut(fspec)
+        if not isinstance(fspec, FileOut):
+            return str(fspec)
+
+        # handle File object, include arg prefix
+        path = fspec.file.getOutPath()
+        if fileOps.isCompressed(path) and fspec.autoCompress:
+            pdev = Pipeline.Pipe()
+            pdag.create((fileOps.compressCmd(path),), stdin=pdev, stdout=path)
+            return Pipeline.POut(pdev, fspec.prefix)
+        else:
+            return Pipeline.POut(Pipeline.File(path), fspec.prefix)
+
+    def __createProc(self, pdag, scmd, stdin, stderr, isLast):
+        "define one process in the command, return stdout"
+        if isLast:
+            stdout = self.__getOutput(pdag, self.stdout)
+        else:
+            stdout = Pipeline.Pipe()
+        # convert arguments
+        pcmd = []
+        for a in scmd:
+            if isinstance(a, FileIn):
+                pcmd.append(self.__getInput(pdag, a))
+            elif isinstance(a, FileOut):
+                pcmd.append(self.__getOutput(pdag, a))
             else:
-                strs.append(str(w))
-        return " ".join(strs)
+                pcmd.append(str(a))
+        pdag.create(pcmd, stdin, stdout, stderr)
+        return stdout
 
-    def __getIoDesc(self):
-        "generate shell-like string describing I/O redirections"
-        desc = ""
-        if (self.stdin != None):
-            desc += " <" + str(self.stdin)
-        if (self.stdout != None) and (self.stderr == self.stdout):
-            desc += " >&" + str(self.stdout)
-        else:
-            if (self.stdout != None):
-                desc += " >" + str(self.stdout)
-            if (self.stderr != None):
-                desc += " 2>" + str(self.stderr)
-        return desc
-
-    def __getDesc(self):
-        strs = []
-        for cmd in self:
-            strs.append(self.__getCmdDesc(cmd))
-        return " | ".join(strs) + self.__getIoDesc()
-
-    def isPipe(self):
-        "determine if this command contains multiple processes"
-        return isinstance(self[0], list) or isinstance(self[0], tuple)
-        
-    def _getInput(self, fspec):
-        """get an input file, if fspec is a File or FileIn object, return getInPath(),
-        otherwise str(fspec)"""
-        if fspec == None:
-            return None
-        elif isinstance(fspec, File):
-            return fspec.getInPath()
-        elif isinstance(fspec, FileIn):
-            return fspec.file.getInPath()
-        else:
-            return str(fspec)
-
-    def _getOutput(self, fspec):
-        """get an output file, if fspec is a File or FileOut object, return getOutPath()
-        otherwise str(fspec)"""
-        if fspec == None:
-            return None
-        elif isinstance(fspec, File):
-            return fspec.getOutPath()
-        elif isinstance(fspec, FileOut):
-            return fspec.file.getOutPath()
-        else:
-            return str(fspec)
+    def __createProcDag(self):
+        "construct ProcDag for command"
+        pdag = Pipeline.ProcDag()
+        prevStdout = self.__getInput(pdag, self.stdin)
+        stderr = self.__getOutput(pdag, self.stderr)
+        last = self[-1]
+        for scmd in self:
+            prevStdout = self.__createProc(pdag, scmd, prevStdout, stderr, (scmd == last))
+        return pdag
 
     def call(self, verb):
         "run command, with tracing"
-        if verb.enabled(Verb.trace):
-            verb.pr(Verb.trace, self.__getDesc())
-        pl = Procline(self, self._getInput(self.stdin), self._getOutput(self.stdout), self._getOutput(self.stderr))
-        # FIXME: doesn't print on hang/except; delayed start will allow using
-        #  one desc function
-        #if verb.enabled(Verb.trace):
-        #    verb.pr(Verb.trace, pl.getDesc())
-        pl.wait()
-
-class TmpFile(object):
-    """Object representing a temporary file that is on a local file system,
-    has a unique name and only lasts the life of the life of a CmdRule. A path
-    is defined and it is uniquely create when str is called.  If argPrefix is
-    specified, it is added before the file name. This allows adding options
-    like --foo=filepath.  This can be done automatically with the __radd__
-    operator: "--foo="+TmpFile(rule)
-    """
-    tmpDir = "/scratch/tmp" # FIXME need a better way to get this
-    def __init__(self, rule, argPrefix=None, suffix="tmp"):
-        self.rule.tmpResources.append(self)
-        self.argPrefix = argPrefix
-        self.suffix = suffix
-        self.path = None
-
-    def __radd__(self, argPrefix):
-        "string concatiation operator that sets the argPrefix"
-        assert(self.argPrefix == None)
-        self.argPrefix = argPrefix
-        return self
-
-    def alloc(self):
-        "get the file name and setup the path, if it hasn't already been done"
-        if self.path == None:
-           self.path = fileOps.tmpFileGet(self.prefix, self.suffix)
-
-    def release(self):
-        "release tmp file, removing it"
-        if (self.path != None) and os.path.exists(self.path):
-            os.unlink(self.path)
-        self.path == None
-
-    def __str__(self):
-        if path == None:
-            self.alloc()
-        if self.argPrefix == None:
-            return self.path
-        else:
-            return self.argPrefix + self.path
-
-    def __del__(self):
-        self.release()
+        self.prodToDev = dict()
+        try:
+            pdag = self.__createProcDag()
+            if verb.enabled(Verb.trace):
+                verb.pr(Verb.trace, str(pdag))
+            pdag.wait()
+        finally:
+            self.prodToDev = None
 
 class CmdRule(Rule):
     """Rule to execute processes.  Automatically installs File producions after
-    completion.
+    completion.  A rule can containing multiple commands, represented as Cmd
+    objects, since can be single processes or complex pipelines.  Each Cmd
+    object is executed serially, with file products not installed until
+    the end.  Output file products can be used in subsequent rule steps,
+    being accessed under their temporary names.
 
     This can be used it two ways, either give a lists of commands which are
     executed, or a rule class can be derived from this that executes the
@@ -470,16 +303,16 @@ class CmdRule(Rule):
     Rule name is generated from productions if not specified.
     """
 
-    def _mkNamePart(prods):
+    @staticmethod
+    def __mkNamePart(prods):
         if typeOps.isIterable(prods):
             return ",".join(map(str, prods))
         else:
             return str(prods)
-    _mkNamePart = staticmethod(_mkNamePart)
 
-    def _mkName(requires, produces):
-        return "Rule["+ CmdRule._mkNamePart(requires) + "=>" + CmdRule._mkNamePart(produces)+"]"
-    _mkName = staticmethod(_mkName)
+    @staticmethod
+    def __mkName(requires, produces):
+        return "Rule["+ CmdRule.__mkNamePart(requires) + "=>" + CmdRule.__mkNamePart(produces)+"]"
 
     def __init__(self, cmds=None, name=None, requires=None, produces=None):
         requires = typeOps.mkset(requires)
@@ -491,28 +324,24 @@ class CmdRule(Rule):
         if cmds != None:
             self.cmds = []
             if isinstance(cmds, Cmd):
-                self._addCmd(cmds, requires, produces)
+                self.__addCmd(cmds, requires, produces)
             else:
                 for cmd in cmds:
-                    self._addCmd(cmd, requires, produces)
+                    self.__addCmd(cmd, requires, produces)
         if name == None:
-            name = CmdRule._mkName(requires, produces)
+            name = CmdRule.__mkName(requires, produces)
         Rule.__init__(self, name, requires, produces)
-        self.tmpResources = []
 
-    def _addCmd(self, cmd, requires, produces):
+    def __addCmd(self, cmd, requires, produces):
         assert(isinstance(cmd, Cmd))
-        self._addCmdStdio(cmd.stdin, requires, produces)
-        self._addCmdStdio(cmd.stdout, produces)
-        self._addCmdStdio(cmd.stderr, produces)
-        if cmd.isPipe():
-            for c in cmd:
-                self._addCmdArgFiles(c, requires, produces)
-        else:
-            self._addCmdArgFiles(c, requires, produces)
+        self.__addCmdStdio(cmd.stdin, requires, produces)
+        self.__addCmdStdio(cmd.stdout, produces)
+        self.__addCmdStdio(cmd.stderr, produces)
+        for scmd in cmd:
+            self.__addCmdArgFiles(scmd, requires, produces)
         self.cmds.append(cmd)
 
-    def _addCmdStdio(self, fspecs, specSet, exclude=None):
+    def __addCmdStdio(self, fspecs, specSet, exclude=None):
         "add None, a single or a list of file specs as requires or produces links"
         for fspec in typeOps.mkiter(fspecs):
             if  (isinstance(fspec, FileIn) or isinstance(fspec, FileOut)):
@@ -520,7 +349,7 @@ class CmdRule(Rule):
             if (isinstance(fspec, File) and ((exclude == None) or (fspec not in exclude))):
                 specSet.add(fspec)
 
-    def _addCmdArgFiles(self, cmd, requires, produces):
+    def __addCmdArgFiles(self, cmd, requires, produces):
         """scan a command's arguments for FileIn and FileOut object and add these to
         requires or produces"""
         for a in cmd:
@@ -531,7 +360,7 @@ class CmdRule(Rule):
             elif isinstance(a, File):
                 raise ExRunException("can't use File object in command argument, use FileIn() or FileOut() to generate a reference object")
 
-    def _callDone(self, file, firstEx):
+    def __callDone(self, file, firstEx):
         "call done function, if exception, set firstEx if it is None"
         try:
             file.done()
@@ -542,33 +371,24 @@ class CmdRule(Rule):
         return firstEx
 
     def call(self, cmd):
-        "run a command with optional tracing"
+        "run a commands with optional tracing"
         firstEx = None
         try:
             try:
                 cmd.call(self.verb)
             except Exception, ex:
-                self.verb.pr(Verb.error, "Exception: ", ex, sys.exc_info()[2])
+                self.verb.pr(Verb.error, "Exception: ", ex, "\n", sys.exc_info()[2])
                 firstEx = ex
         finally:
             # close compress pipes
             for r in self.requires:
                 if isinstance(r, File):
-                    firstEx = self._callDone(r, firstEx)
+                    firstEx = self.__callDone(r, firstEx)
             for p in self.produces:
                 if isinstance(p, File):
-                    firstEx = self._callDone(p, firstEx)
+                    firstEx = self.__callDone(p, firstEx)
         if firstEx != None:
             raise firstEx
-
-    def __relTmpResources(self):
-        "release any temporary resources"
-        for r in self.tmpResources:
-            try:
-                r.release()
-            except:
-                self.verb.pr(Verb.error, "releasing tmp resource (ignored): ", ex)
-        self.tmpResources.clear()
 
     def runCmds(self):
         "run commands supplied in the constructor"
@@ -588,7 +408,7 @@ class CmdRule(Rule):
         try:
             self.run()
         except Exception, ex:
-            self.verb.pr(Verb.error, "Exception: ", ex, sys.exc_info()[2])
+            self.verb.pr(Verb.error, "Exception: ", ex, "\n", sys.exc_info()[2])
             raise
         finally:
             self.verb.leave()

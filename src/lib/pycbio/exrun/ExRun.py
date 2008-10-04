@@ -3,7 +3,7 @@ import os.path,sys,socket
 from pycbio.exrun.Graph import *
 from pycbio.sys import typeOps
 from pycbio.exrun import ExRunException,Verb
-from pycbio.exrun.CmdRule import CmdRule, Cmd, File, IFileRef, OFileRef
+from pycbio.exrun.CmdRule import CmdRule, Cmd, File, FileIn, FileOut
 
 os.stat_float_times(True) # very, very gross
 
@@ -26,9 +26,9 @@ os.stat_float_times(True) # very, very gross
 
 class ExRun(object):
     "object that defines and runs an experiment"
-    def __init__(self):
+    def __init__(self, verbFlags=None):
         self.pending = None  # pending queue
-        self.verb = Verb()
+        self.verb = Verb(flags=verbFlags)
         self.graph = Graph()
         self.hostName = socket.gethostname()
         self.uniqIdCnt = 0

@@ -1,6 +1,6 @@
 """Miscellaneous file operations"""
 
-import os, errno, sys, stat, fcntl
+import os, errno, sys, stat, fcntl, socket
 
 _pipelineMod = None
 def _getPipelineClass():
@@ -101,6 +101,34 @@ def prErr(*objs):
     for o in objs:
         sys.stderr.write(str(o))
     sys.stderr.write("\n")
+
+def prsOut(*objs):
+    "write each str(obj) to stdout, separating with spaces and followed by a newline"
+    n = 0
+    for o in objs:
+        if n > 0:
+            sys.stdout.write(' ')
+        sys.stdout.write(str(o))
+        n += 1
+    sys.stdout.write("\n")
+
+def prsfErr(*objs):
+    "write each str(obj) to stderr, separating with spaces and followed by a newline and a flush"
+    n = 0
+    for o in objs:
+        if n > 0:
+            sys.stderr.write(' ')
+        sys.stderr.write(str(o))
+        n += 1
+    sys.stderr.write("\n")
+    sys.stderr.flush()
+
+def prfErr(*objs):
+    "write each str(obj) to stderr followed by a newline and a flush"
+    for o in objs:
+        sys.stderr.write(str(o))
+    sys.stderr.write("\n")
+    sys.stderr.flush()
 
 def prsOut(*objs):
     "write each str(obj) to stdout, separating with spaces and followed by a newline"
@@ -241,14 +269,58 @@ def getDevNull():
         _devNullFh = open("/dev/null", "r+")
     return _devNullFh
 
-def fifoOpen(path, mode):
-    "open a FIFO without blocking during open"
-    omode = os.O_RDONLY if (mode == "r") else os.O_WRONLY
-    fh = os.fdopen(os.open(path, omode|os.O_NONBLOCK), mode)
+def fifoOpenFd(path, mode):
+    "open a FIFO file descriptor without blocking during open"
+    # FIXME: O_NONBLOCK not right for write, maybe just drop this
+    omode = os.O_RDONLY if (mode.startswith("r")) else os.O_WRONLY
+    fd = os.open(path, omode|os.O_NONBLOCK)
     try:
-        fcntl.fcntl(fh, fcntl.F_SETFL, omode) # clear O_NONBLOCK
+        fcntl.fcntl(fd, fcntl.F_SETFL, omode) # clear O_NONBLOCK
     except:
-        fh.close()
+        try:
+            os.close(fd)
+        finally: pass
         raise
     return fh
+
+def fifoOpen(path, mode):
+    "open a FIFO without blocking during open"
+    # FIXME: delete, blocking behavior makes it not that useful
+    return os.fdopen(fifoOpenFd(path, mode), mode)
+
+def fifoMk(suffix="tmp", tmpDir=None):
+    "create a FIFO with a unique name in a tmp directory"
+    if tmpDir == None:
+        tmpDir = os.getenv("TMPDIR", "/var/tmp")
+    prefix = tmpDir + "/" + socket.gethostname() + "." + str(os.getpid())
+    maxTries=1000
+    unum = 0
+    while unum < maxTries:
+        path =  prefix + "." + str(unum) + "." + suffix
+        if _fifoMkAtomic(path):
+            return path
+        unum += 1
+    raise Exception("unable to create a unique FIFO name in the form \""
+                    + prefix + ".*." + suffix + "\" after " + str(maxTries)
+                    + " tries")
+
+def _checkFifo(path):
+    """check that fifo matches expected types and perms, catch security hold
+    were it could be replace with another file"""
+    pass # FIXME implement
+    
+    
+def _fifoMkAtomic(path):
+    "atomic create of a fifo, return false some file exists (might not be fifo)"
+    if os.path.exists(path):
+        return False
+    # atomic create
+    try:
+        os.mkfifo(path, 0600)
+    except OSError, e:
+        if e.errno == errno.EEXIST:
+            return False
+        raise
+    _checkFifo(path)
+    return True
 

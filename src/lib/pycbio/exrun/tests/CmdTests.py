@@ -6,7 +6,11 @@ if __name__ == '__main__':
 from pycbio.sys.fileOps import ensureFileDir, rmFiles
 from pycbio.sys.Pipeline import ProcException
 from pycbio.sys.TestCaseBase import TestCaseBase
-from pycbio.exrun import ExRunException, ExRun, CmdRule, Cmd, File, FileIn, FileOut
+from pycbio.exrun import ExRunException, ExRun, CmdRule, Cmd, File, FileIn, FileOut, Verb
+
+# change this for debugging:
+verbFlags=None
+#verbFlags=set((Verb.error, Verb.trace, Verb.details))
 
 def rmOutput(*files):
     "delete output files, which can be specified as strings or File objects"
@@ -21,7 +25,7 @@ class CmdSuppliedTests(TestCaseBase):
 
     def testSort1(self):
         "single command to sort a file"
-        er = ExRun()
+        er = ExRun(verbFlags=verbFlags)
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp = er.getFile(self.getOutputFile(".txt"))
         rmOutput(ofp)
@@ -33,7 +37,7 @@ class CmdSuppliedTests(TestCaseBase):
 
     def testSortPipe(self):
         "pipeline command to sort a file"
-        er = ExRun()
+        er = ExRun(verbFlags=verbFlags)
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp = er.getFile(self.getOutputFile(".txt"))
         rmOutput(ofp)
@@ -44,7 +48,7 @@ class CmdSuppliedTests(TestCaseBase):
 
     def testSort2(self):
         "two commands"
-        er = ExRun()
+        er = ExRun(verbFlags=verbFlags)
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp1 = er.getFile(self.getOutputFile(".txt"))
         ofp2 = er.getFile(self.getOutputFile(".linecnt"))
@@ -58,7 +62,7 @@ class CmdSuppliedTests(TestCaseBase):
 
     def testSort2Rules(self):
         "two commands in separate rules"
-        er = ExRun()
+        er = ExRun(verbFlags=verbFlags)
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp1 = er.getFile(self.getOutputFile(".txt"))
         ofp2 = er.getFile(self.getOutputFile(".linecnt"))
@@ -73,7 +77,7 @@ class CmdSuppliedTests(TestCaseBase):
 
     def testSort2RulesSub(self):
         "two commands in separate rules, with file ref subtitution"
-        er = ExRun()
+        er = ExRun(verbFlags=verbFlags)
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp1 = er.getFile(self.getOutputFile(".txt"))
         ofp2 = er.getFile(self.getOutputFile(".linecnt"))
@@ -88,7 +92,7 @@ class CmdSuppliedTests(TestCaseBase):
 
     def testFilePrefix(self):
         "test prefixes to FileIn/FileOut"
-        er = ExRun()
+        er = ExRun(verbFlags=verbFlags)
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp = er.getFile(self.getOutputFile(".txt"))
         rmOutput(ofp)
@@ -109,7 +113,7 @@ class CmdSubclassTests(TestCaseBase):
                 self.ofp = ofp
             def run(self):
                 self.call(Cmd(("sort", "-n", self.ifp.getInPath()), stdout=self.ofp))
-        er = ExRun()
+        er = ExRun(verbFlags=verbFlags)
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp = er.getFile(self.getOutputFile(".txt"))
         rmOutput(ofp)
@@ -128,7 +132,7 @@ class CmdSubclassTests(TestCaseBase):
             def run(self):
                 self.call(Cmd((("sort", "-n", self.ifp), ("sort", "-nr")),
                               stdout=self.ofp))
-        er = ExRun()
+        er = ExRun(verbFlags=verbFlags)
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp = er.getFile(self.getOutputFile(".txt"))
         rmOutput(ofp)
@@ -149,7 +153,7 @@ class CmdSubclassTests(TestCaseBase):
                 self.call(Cmd((("sort", "-r", self.ifp), ("sort", "-nr")), stdout=self.ofp1))
                 self.call(Cmd((("wc", "-l"), ("sed", "-e", "s/ //g")), stdin=self.ofp1, stdout=self.ofp2))
 
-        er = ExRun()
+        er = ExRun(verbFlags=verbFlags)
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp1 = er.getFile(self.getOutputFile(".txt"))
         ofp2 = er.getFile(self.getOutputFile(".linecnt"))
@@ -180,7 +184,7 @@ class CmdSubclassTests(TestCaseBase):
                               stdin=self.ifp, stdout=self.ofp))
 
         
-        er = ExRun()
+        er = ExRun(verbFlags=verbFlags)
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp1 = er.getFile(self.getOutputFile(".txt"))
         ofp2 = er.getFile(self.getOutputFile(".linecnt"))
@@ -195,7 +199,7 @@ class CmdCompressTests(TestCaseBase):
     "tests of CmdRule with automatic compression"
 
     def testStdio(self):
-        er = ExRun()
+        er = ExRun(verbFlags=verbFlags)
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp1 = er.getFile(self.getOutputFile(".txt.gz"))
         ofp2 = er.getFile(self.getOutputFile(".txt"))
@@ -204,9 +208,8 @@ class CmdCompressTests(TestCaseBase):
         er.run()
         self.diffExpected(".txt")
         
-    # FIXME:
-    def XXXtestArgs(self):
-        er = ExRun()
+    def testArgs(self):
+        er = ExRun(verbFlags=verbFlags)
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp1 = er.getFile(self.getOutputFile(".txt.gz"))
         ofp2 = er.getFile(self.getOutputFile(".txt"))
@@ -217,7 +220,7 @@ class CmdCompressTests(TestCaseBase):
 
     def testCmdErr(self):
         "test handling of pipes when process has error"
-        er = ExRun()
+        er = ExRun(verbFlags=set())
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp1 = er.getFile(self.getOutputFile(".txt.gz"))
         ofp2 = er.getFile(self.getOutputFile(".txt"))
@@ -227,7 +230,7 @@ class CmdCompressTests(TestCaseBase):
         try:
             er.run()
         except ProcException, ex:
-            exre = "process exited 1: false"
+            exre = "process exited 1:\nfalse"
             if not re.match(exre, str(ex)):
                 self.fail("expected ProcException matching: \"" + exre + "\", got: \"" + str(ex) + "\"")
         if ex == None:
@@ -235,7 +238,7 @@ class CmdCompressTests(TestCaseBase):
             
     def testCmdSigPipe(self):
         "test command recieving SIGPIPE with no error"
-        er = ExRun()
+        er = ExRun(verbFlags=verbFlags)
         ofp = er.getFile(self.getOutputFile(".txt"))
         er.addCmd((["yes"], ["true"]), stdout=FileOut(ofp))
         ex = None

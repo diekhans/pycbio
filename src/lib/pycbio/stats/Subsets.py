@@ -20,7 +20,8 @@ class Subsets(object):
         self.subsets = None
         self.inclusiveSubsets = None
 
-    def _subListCmp(sub1, sub2):
+    @staticmethod
+    def __subListCmp(sub1, sub2):
         "compare two subsets for sorting"
         # first by length
         diff = len(sub1).__cmp__(len(sub2))
@@ -37,9 +38,8 @@ class Subsets(object):
                     diff = 1
                 i += 1
         return diff
-    _subListCmp = staticmethod(_subListCmp)
 
-    def _makeSubset(self, bitSet, elements):
+    def __makeSubset(self, bitSet, elements):
         "generated a subset for a bit set of the elements in list"
         iBit = 0
         bits = bitSet
@@ -51,7 +51,7 @@ class Subsets(object):
             iBit += 1
         return frozenset(subset)
 
-    def _makeSubsets(self, elements):
+    def __makeSubsets(self, elements):
         "Build list of all of the possible subsets of a set using binary counting."
         # convert set input, as elements must be indexable for this algorithm
         if isinstance(elements, set) or isinstance(elements, frozenset):
@@ -61,32 +61,32 @@ class Subsets(object):
         nSubsets = (1 << len(elements))-1
         subsets = list()
         for bitSet in xrange(1, nSubsets+1):
-            subsets.append(self._makeSubset(bitSet, elements))
+            subsets.append(self.__makeSubset(bitSet, elements))
         # sort and constructs sets
-        subsets.sort(cmp=Subsets._subListCmp)
+        subsets.sort(cmp=Subsets.__subListCmp)
         return tuple(subsets)
 
     def getSubsets(self):
         "get the subsets, building if needed"
         if self.subsets == None:
-            self.subsets = self._makeSubsets(self.elements)
+            self.subsets = self.__makeSubsets(self.elements)
         return self.subsets
 
     def getSubset(self, wantSet):
         "search for the specified subset object, error if it doesn't exist"
         if self.subsets == None:
-            self.subsets = self._makeSubsets(self.elements)
+            self.subsets = self.__makeSubsets(self.elements)
         for ss in self.subsets:
             if ss == wantSet:
                 return ss
         raise Exception("not a valid subset: " + str(wantSet))
 
-    def _makeInclusiveSubset(self, subset):
+    def __makeInclusiveSubset(self, subset):
         "make an inclusive subset list for a subset"
         inclSubsets = []
-        for iss in self._makeSubsets(subset):
+        for iss in self.__makeSubsets(subset):
             inclSubsets.append(iss)
-        inclSubsets.sort(cmp=Subsets._subListCmp)
+        inclSubsets.sort(cmp=Subsets.__subListCmp)
         return tuple(inclSubsets)
 
 
@@ -97,6 +97,6 @@ class Subsets(object):
             self.inclusiveSubsets = dict()
         inclSubsets = self.inclusiveSubsets.get(subset)
         if inclSubsets == None:
-            inclSubsets = self._makeInclusiveSubset(subset)
+            inclSubsets = self.__makeInclusiveSubset(subset)
             self.inclusiveSubsets[subset] = inclSubsets
         return inclSubsets

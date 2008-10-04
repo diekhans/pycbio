@@ -1,0 +1,8 @@
+
+based on http://www.python.org/doc/essays/styleguide.html:
+
+    * _single_leading_underscore - module internal
+    * __double_leading_underscore - class-private names in Python 1.4.
+    * single_trailing_underscore - avoid conflicts with Python keyword
+    * __double_leading_and_trailing_underscore__ = "magic" objects or
+      attributes that live in user-controlled namespaces

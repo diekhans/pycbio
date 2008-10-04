@@ -86,7 +86,7 @@ class HtmlPage(list):
         if caption != None:
             self.append("<caption>"+ caption + "</caption>")
 
-    def _addTableRow(self, cell, row, hclasses=None, style=None):
+    def __addTableRow(self, cell, row, hclasses=None, style=None):
         """ add a table row
         - cell = th or td
         - row, substituting &nbsp; for empty of None.  If a cell is
@@ -119,10 +119,10 @@ class HtmlPage(list):
         self.add(hrow)
 
     def tableHeader(self, row, hclasses=None, style=None):
-        self._addTableRow("th", row, hclasses)
+        self.__addTableRow("th", row, hclasses)
 
     def tableRow(self, row, hclasses=None, style=None):
-       self._addTableRow("td", row, hclasses)
+       self.__addTableRow("td", row, hclasses)
 
     def tableEnd(self):
         self.append("</table>")
@@ -147,7 +147,7 @@ class HtmlPage(list):
                 self.tableRow(row)
         self.tableEnd()
 
-    def _pageClose(self):
+    def __pageClose(self):
         if self.frameSet:
             return "</frameset></html>"
         else:

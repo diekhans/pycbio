@@ -1,5 +1,11 @@
 from pycbio.sys import fileOps
-import os.path, sys, unittest, difflib
+import os, sys, unittest, difflib, threading, errno
+
+try:
+    MAXFD = os.sysconf("SC_OPEN_MAX")
+except:
+    MAXFD = 256
+
 
 class TestCaseBase(unittest.TestCase):
     """Base class for test case with various test support functions"""
@@ -74,7 +80,6 @@ class TestCaseBase(unittest.TestCase):
             print l,
             cnt += 1
         self.failUnless(cnt == 0)
-            
 
     def createOutputFile(self, ext, contents=""):
         """create an output file, filling it with contents."""
@@ -98,3 +103,44 @@ class TestCaseBase(unittest.TestCase):
         finally:
             fh.close()
         self.failUnlessEqual(got, expectContents)
+
+    @staticmethod
+    def numRunningThreads():
+        "get the number of threads that are running"
+        n = 0
+        for t in threading.enumerate():
+            if t.isAlive():
+                n += 1
+        return n
+
+    def failIfMultipleThreads(self):
+        "fail if more than one thread is running"
+        self.failUnlessEqual(self.numRunningThreads(), 1)
+
+    def failIfChildProcs(self):
+        "fail if there are any running or zombie child process"
+        e = None
+        try:
+            s = os.waitpid(0, os.WNOHANG)
+        except OSError, e:
+            if e.errno != errno.ECHILD:
+                raise
+        if e == None:
+            self.fail("pending child processes or zombies: " + str(s))
+
+    @staticmethod
+    def numOpenFiles():
+        "count the number of open files"
+        n = 0
+        for fd in xrange(0, MAXFD):
+            try:
+                os.fstat(fd)
+            except:
+                n += 1
+        return MAXFD-n
+
+    def failIfNumOpenFilesChanged(self, prevNumOpen):
+        "fail if the number of open files changed"
+        numOpen = self.numOpenFiles()
+        if numOpen != prevNumOpen:
+            self.fail("number of open files changed, was " + str(prevNumOpen) + ", now it's " + str(numOpen))

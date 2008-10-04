@@ -54,7 +54,7 @@ class Venn(object):
             self.itemToNames.add(item, setName)
         self.venn = None
 
-    def _buildVenn(self):
+    def __buildVenn(self):
         "build Venn table"
         self.venn = SetDict(self.subsets.getSubsets())
 
@@ -62,7 +62,7 @@ class Venn(object):
             nameSet = frozenset(self.itemToNames[item])
             self.venn.add(nameSet, item)
 
-    def _buildInclusive(self):
+    def __buildInclusive(self):
         "build as inclusive subsets"
         self.venn = SetDict(self.subsets.getSubsets())
 
@@ -71,17 +71,17 @@ class Venn(object):
             for iss in self.subsets.getInclusiveSubsets(setName):
                 self.venn.add(iss, item)
 
-    def _update(self):
+    def __update(self):
         "build venn or inclusive venn, if it doesn't exists"
         if self.venn == None:
             if self.isInclusive:
-                self._buildInclusive()
+                self.__buildInclusive()
             else:
-                self._buildVenn()
+                self.__buildVenn()
 
     def getSubsetIds(self, subset):
         "get ids for the specified subset"
-        self._update()
+        self.__update()
         ids = self.venn.get(subset)
         if ids == None:
             ids = []
