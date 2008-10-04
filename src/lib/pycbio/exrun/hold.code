@@ -59,3 +59,105 @@ class ActiveOut(object):
         else:
             return self.path
 
+---------------------------------------------------------------------------
+class ActiveIn(object):
+    "object used to manage an input file while a command is active"
+
+    def __init__(self, exrun, path, outPath, autoDecompress):
+        # outPath used if file has not been installed
+        self.inPath = path if outPath == None else outPath
+        self.pipe = None
+        self.fh = None
+        if fileOps.isCompressed(path) and autoDecompress:
+            self.pipe = Pipeline([fileOps.decompressCmd(path)], "r", otherEnd=self.inPath,
+                                     pipePath=exrun.getTmpPath(self.inPath, "tmpfifo"))
+        
+    def open(self):
+        """open the output file for writing from the ExRun process"""
+        if self.pipe != None:
+            return self.pipe
+        else:
+            self.fh = open(self.inPath, "r")
+            return self.fh
+
+    def getInPath(self):
+        "get input path to use, either pipe or tmp file"
+        return self.pipe.pipePath if self.pipe != None else self.inPath
+
+    def done(self):
+        "complete use of file when a command completes.  This does not install newPath"
+        if self.fh != None:
+            self.fh.close()
+            self.fh = None
+        if self.pipe != None:
+            try:
+                self.pipe.wait()
+            finally:
+                try:
+                    self.pipe.unlinkPipe()
+                except:
+                    pass
+            self.pipe = None
+            
+
+class ActiveOut(object):
+    "object used to manage an output file while a command is active"
+
+    def __init__(self, exrun, path, outPath, autoCompress):
+        self.path = path
+        self.outPath = outPath
+        self.pipe = None
+        self.fh = None
+        fileOps.ensureFileDir(path)
+        if fileOps.isCompressed(path) and autoCompress:
+            self.pipe = Pipeline([fileOps.compressCmd(path)], "w", otherEnd=self.outPath,
+                                     pipePath=exrun.getTmpPath(self.path, "tmpfifo"))
+        
+    def open(self):
+        """open the output file for writing from the ExRun process"""
+        if self.pipe != None:
+            return self.pipe
+        elif self.fh != None:
+            raise ExRunException("output file already opened: " + self.outPath)
+        else:
+            self.fh = open(self.outPath, "w")
+            return self.fh
+
+    def getOutPath(self):
+        "get output path to use, either pipe or tmp file"
+        return self.pipe.pipePath if self.pipe != None else self.outPath
+
+    def done(self):
+        "complete use of file when a command completes.  This does not install outPath"
+        if self.fh != None:
+            self.fh.close()
+            self.fh = None
+        if self.pipe != None:
+            try:
+                self.pipe.wait()
+            finally:
+                try:
+                    self.pipe.unlinkPipe()
+                except:
+                    pass
+                self.pipe = None
+            
+-------------------------------------------------------------------
+class File(Production):
+    def done(self):
+        "called when command completes, waits for pipes but doesn't install output"
+        if self.activeOut != None:
+            self.activeOut.done()
+            self.activeOut = None
+        elif self.activeIns != None:
+            firstEx = None
+            for ai in self.activeIns:
+                try:
+                    ai.done()
+                except Exception, ex:
+                    if firstEx == None:
+                        firstEx = ex
+            self.activeIns = None
+            if firstEx != None:
+                raise firstEx
+

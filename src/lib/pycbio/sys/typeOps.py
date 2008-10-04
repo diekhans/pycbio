@@ -31,7 +31,6 @@ def listExtend(lst, items):
         lst.extend(items)
     return lst
 
-
 # FIXME: bad name, as strings are iterable
 def isIterable(v):
     "is variable a list, tuple, set, or hash? str doesn't count"
@@ -82,5 +81,5 @@ def sortedKeys(d, sortFunc=cmp):
         keys.sort(sortFunc)
         return keys
 
-__all__ = (isListLike.__name__, listInit.__name__, isIterable.__name__, mkiter.__name__, mkset.__name__, noneOrZero.__name__, addUniq.__name__, sortedKeys.__name__)
+__all__ = (isListLike.__name__, listInit.__name__, listAppend.__name__, isIterable.__name__, mkiter.__name__, mkset.__name__, noneOrZero.__name__, addUniq.__name__, sortedKeys.__name__)
 

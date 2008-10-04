@@ -84,7 +84,7 @@ class BrowserDir(object):
         "sort by the key"
         self.entries.sort(lambda a,b: cmpFunc(a.key, b.key), reverse=reverse)
 
-    def _mkFrame(self, title=None, dirPercent=15, below=False):
+    def __mkFrame(self, title=None, dirPercent=15, below=False):
         """create frameset as a HtmlPage object"""
 
         if below:
@@ -103,7 +103,7 @@ class BrowserDir(object):
             pg.add(fbr)
         return pg
 
-    def _getPageLinks(self, pageNum, numPages):
+    def __getPageLinks(self, pageNum, numPages):
         html = []
         # prev link
         if pageNum > 1:
@@ -125,12 +125,12 @@ class BrowserDir(object):
             html.append("next")
         return ", ".join(html)
 
-    def _writeDirPage(self, outDir, beginRow, endRow, pageNum, numPages):
+    def __writeDirPage(self, outDir, pgEntries, pageNum, numPages):
         title = "page %d" % pageNum
         if self.title:
             title += ": " + self.title
         pg = HtmlPage(title=title, inStyle=self.style)
-        pageLinks = self._getPageLinks(pageNum, numPages)
+        pageLinks = self.__getPageLinks(pageNum, numPages)
         pg.h3(title)
         if self.pageDesc != None:
             pg.add(self.pageDesc)
@@ -149,26 +149,23 @@ class BrowserDir(object):
         dirFile = outDir + "/dir%d.html" % pageNum
         pg.writeFile(dirFile)
 
-    def _writeDirPages(self, outDir):
+    def __writeDirPages(self, outDir):
         if len(self.entries) == 0:
             # at least write an empty page
-            self._writeDirPage(outDir, 0, 0, 1, 0)
+            self.__writeDirPage(outDir, [], 1, 0)
         elif self.pageSize == None:
             # single page
-            self._writeDirPage(outDir, 0, len(self.entries), 1, 1)
+            self.__writeDirPage(outDir, self.entries, 1, 1)
         else:
             # split
-            numPages = (len(self.entries)+self.pageSize-1)/self.pageSize
             for pageNum in xrange(1,numPages+1):
-                start = (pageNum-1) * self.pageSize
-                end = start+self.pageSize
-                if end > len(self.entries):
-                    end = len(self.entries)
-                if start < end:
-                    self._writeDirPage(outDir, start, end, pageNum, numPages)
+                first = (pageNum-1) * self.pageSize
+                last = first+(self.pageSize-1)
+                pgEntries = self.entries[first:last]
+                self.__writeDirPage(outDir, pgEntries, pageNum, numPages)
 
     def write(self, outDir):
         fileOps.ensureDir(outDir)
-        frame = self._mkFrame(self.title, self.dirPercent, self.below)
+        frame = self.__mkFrame(self.title, self.dirPercent, self.below)
         frame.writeFile(outDir + "/index.html")
-        self._writeDirPages(outDir)
+        self.__writeDirPages(outDir)

@@ -2,3 +2,6 @@
 - TSV levels:
   - Row - container for a row
   - Reader -
+
+- document generators:
+  http://codespeak.net/~mwh/pydoctor/ - discussion of others

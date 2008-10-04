@@ -70,7 +70,7 @@ class ReadTests(TestCaseBase):
                   typeMap=typeMap, defaultColType=int)
         r = tsv.idx.qName["AK095183"]
         self.failUnlessEqual(r.tStart, 4222)
- 	self.failUnlessEqual(r.tEnd, 19206)
+        self.failUnlessEqual(r.tEnd, 19206)
         self.failUnlessEqual(r.tName, "chr1")
         self.failUnlessEqual(r.tStart, 4222)
 

@@ -24,6 +24,8 @@ class Verb(object):
         self.flags = flags
         if self.flags == None:
             self.flags = set([Verb.error, Verb.trace])
+        else:
+            self.flags = set(flags)
         self.indent = 0
 
     def enabled(self, flag):
@@ -37,7 +39,7 @@ class Verb(object):
         else:
             return (flag in self.flags)
 
-    def _prIndent(self, msg):
+    def __prIndent(self, msg):
         ind = ("%*s" % (2*self.indent, ""))
         self.fh.write(ind)
         for m in msg:
@@ -50,32 +52,31 @@ class Verb(object):
 
     def prall(self, *msg):
         "unconditionally print a message with indentation"
-        self._prIndent(msg)
+        self.__prIndent(msg)
 
     def pr(self, flag, *msg):
         "print a message with indentation if flag indicates enabled"
         if self.enabled(flag):
-            self._prIndent(msg)
+            self.__prIndent(msg)
 
     def enter(self, flag=None, *msg):
         "increment indent count, first optionally output a trace message"
         if self.enabled(flag) and (len(msg) > 0):
-            self._prIndent(msg)
+            self.__prIndent(msg)
         self.indent += 1
 
     def leave(self, flag=None, *msg):
         "decrement indent count, then optionally outputing a trace message "
         self.indent -= 1
         if self.enabled(flag) and (len(msg) > 0):
-            self._prIndent(msg)
+            self.__prIndent(msg)
 
 # make classes commonly used externally part of top module
 from pycbio.exrun.Graph import Production, Rule
-from pycbio.exrun.CmdRule import CmdRule, Cmd, OFileRef, IFileRef, FileIn, FileOut, File
+from pycbio.exrun.CmdRule import CmdRule, Cmd, FileOut, FileIn, FileOut, File
 from pycbio.exrun.ExRun import ExRun
 
 
 __all__ = (ExRunException.__name__, Verb.__name__, Production.__name__,
            Rule.__name__, CmdRule.__name__, Cmd.__name__, 
-           "OFileRef", "IFileRef", File.__name__,
-           FileIn.__name__, FileOut.__name__, ExRun.__name__)
+           File.__name__, FileIn.__name__, FileOut.__name__, ExRun.__name__)

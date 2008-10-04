@@ -33,6 +33,7 @@ class TabFile(list):
             else:
                 self.append(row)
 
+    @staticmethod
     def write(fh, row):
         """print a row (list or tuple) to a tab file."""
         cnt = 0;
@@ -42,7 +43,6 @@ class TabFile(list):
             fh.write(str(col))
             cnt += 1
         fh.write("\n")
-    write = staticmethod(write)
 
 class TabFileReader(object):
     def __init__(self, tabFile, hashAreComments=False):
