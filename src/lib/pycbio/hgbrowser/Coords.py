@@ -36,7 +36,7 @@ class Coords(Immutable):
         else:
             raise CoordsError("Coords() excepts either one or three arguments")
         self.db = opts.get("db")
-        self.makeImmutable()
+        Immutable.__init__(self)
 
     def __str__(self):
         return self.chr + ":" + str(self.start) + "-" + str(self.end)

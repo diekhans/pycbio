@@ -21,7 +21,7 @@ class Entry(Immutable):
         self.start = start
         self.end = end
         self.val = val
-        self.makeImmutable()
+        Immutable.__init__(self)
 
 class Node(object):
     "a node in the skip list.

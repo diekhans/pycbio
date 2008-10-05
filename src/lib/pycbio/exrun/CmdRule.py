@@ -25,7 +25,7 @@ class FileIn(object):
     option-equals is prepended to the file (--in=fname).  The prefix
     can be specified as an option to the constructor, or in a string concatination
     ("--in="+FileIn(f))."""
-    __slots__ = ["file", "prefix", "autoDecompress"]
+    __slots__ = ("file", "prefix", "autoDecompress")
 
     def __init__(self, file, prefix=None, autoDecompress=True):
         self.file = file
@@ -54,7 +54,7 @@ class FileOut(object):
     can be specified as an option to the constructor, or in a string concatenation
     ("--out="+FileOut(f)).
     """
-    __slots__ = ["file", "prefix", "autoCompress"]
+    __slots__ = ("file", "prefix", "autoCompress")
 
     def __init__(self, file, prefix=None, autoCompress=True):
         self.file = file
