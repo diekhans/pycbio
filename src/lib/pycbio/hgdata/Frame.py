@@ -27,11 +27,11 @@ class Frame(Immutable):
     """Immutable object the represents a frame, integer value of 0, 1, 2, or
     -1 for no frame."""
     
-    __slots__ = ["val"]
+    __slots__ = ("val",)
     def __init__(self, val=-1):
         assert((val >= -1) and (val <= 2))
         self.val = val
-        self.makeImmutable();
+        Immutable.__init__(self)
 
     def incr(self, amt):
         """increment frame by positive or negative amount, returning a new

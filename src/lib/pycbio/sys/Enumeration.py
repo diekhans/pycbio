@@ -19,7 +19,7 @@ class EnumValue(Immutable):
     """A value of an enumeration.  The object id (address) is the
     unique value, with an associated display string and numeric value
     """
-    __slots__ = ["name", "numValue", "strValue"]
+    __slots__ = ("enum", "name", "numValue", "strValue")
     def __init__(self, enum, name, numValue, strValue=None):
         self.enum = enum
         self.name = name
@@ -28,7 +28,7 @@ class EnumValue(Immutable):
             self.strValue = name
         else:
             self.strValue = strValue
-        self.makeImmutable();
+        Immutable.__init__(self)
 
     def __getstate__(self):
         # optimize strValue if same as name
@@ -38,7 +38,7 @@ class EnumValue(Immutable):
         (self.enum,  self.name, self.numValue, self.strValue) = st
         if self.strValue == None:
             self.strValue = self.name
-        self.makeImmutable();
+        Immutable.__init__(self)
 
     def __rept__(self):
         return self.name
@@ -72,8 +72,6 @@ class Enumeration(Immutable):
     """A class for creating enumeration objects.
     """
 
-    __slots__ = ("name", "aliases", "values", "maxNumValue")
-
     def __init__(self, name, valueDefs, valueClass=EnumValue, bitSetValues=False):
         """Name is the name of the enumeration. ValueDefs is an ordered list of
         string values.  If valueDefs contains a tuple, the first element is the
@@ -96,7 +94,7 @@ class Enumeration(Immutable):
             else:
                 numValue += 1
         self.values = tuple(self.values)
-        self.makeImmutable();
+        Immutable.__init__(self)
 
     def _createValue(self, valueClass, name, numValue, strValue):
         val = valueClass(self, name, numValue, strValue)
@@ -125,7 +123,7 @@ class Enumeration(Immutable):
         (self.name, self.aliases, self.values, self.maxNumValue) = st
         for val in self.values:
             self.__dict__[val.name] = val
-        self.makeImmutable();
+        Immutable.__init__(self)
 
     def lookup(self, name):
         """look up a value by name or aliases"""

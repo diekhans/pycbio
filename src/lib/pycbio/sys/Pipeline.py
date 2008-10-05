@@ -7,22 +7,6 @@ from pycbio.sys import strOps, Trace
 # FIXME:
 #    - need to close other files (optional)
 
-# Process graph creation
-#  - create ProcDag instance
-#  - specify processes and connections
-#  - start procDag
-#    - validate:
-#        - check for cycles, disconnect sub-graphs
-#        - unsupported connects (named to named)
-#    - Dev.preFork:
-#      - create all pipes
-#    - fork all processes
-#    - Proc.postForkChild
-#      - dup stdio connections
-#      - close other files
-#      - exec send message on failure
-#    - wait
-
 try:
     MAXFD = os.sysconf("SC_OPEN_MAX")
 except:
