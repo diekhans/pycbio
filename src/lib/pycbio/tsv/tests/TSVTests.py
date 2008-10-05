@@ -27,7 +27,7 @@ class ReadTests(TestCaseBase):
         self.failUnlessEqual(len(rows), 5)
         self.failUnlessEqual(rows[0].qName, "BC015400")
 
-    def testColType(self):
+    def doTestColType(self, inFile):
         def onOffParse(str):
             if str == "on":
                 return True
@@ -46,7 +46,7 @@ class ReadTests(TestCaseBase):
             
         typeMap = {"intCol": int, "floatCol": float, "onOffCol": (onOffParse, onOffFmt)}
 
-        tsv = TSVTable(self.getInputFile("types.tsv"), typeMap=typeMap)
+        tsv = TSVTable(self.getInputFile(inFile), typeMap=typeMap)
 
         r = tsv[0]
         self.failUnlessEqual(r.strCol, "name1")
@@ -59,6 +59,12 @@ class ReadTests(TestCaseBase):
         self.failUnlessEqual(r.intCol, 30)
         self.failUnlessEqual(r.floatCol, 30.555)
         self.failUnlessEqual(str(r), "name3\t30\t30.555\toff")
+
+    def testColType(self):
+        self.doTestColType("types.tsv")
+
+    def testColCommentType(self):
+        self.doTestColType("typesComment.tsv")
 
     def testColTypeDefault(self):
         # default to int type

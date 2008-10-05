@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# run all of the tests
+# run all of the tests 
 # 
 
 import unittest, sys
@@ -46,7 +46,9 @@ class DynTest(object):
 
 dt = DynTest()
 dt.add("pycbio.tsv.tests.TSVTests")
+dt.add("pycbio.tsv.tests.TabFileTests")
 dt.add("pycbio.sys.tests.EnumerationTests")
+dt.add("pycbio.sys.tests.ImmutableTests")
 dt.add("pycbio.sys.tests.ProcDagTests")
 dt.add("pycbio.sys.tests.PipelineTests")
 dt.add("pycbio.hgdata.tests.GenePredTests")
