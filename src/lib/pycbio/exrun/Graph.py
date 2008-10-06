@@ -226,7 +226,7 @@ class Graph(object):
         entries.sort(lambda a,b:cmp(a.name,b.name))
         return entries
 
-    def _cycleCheck(self, visited, node):
+    def __cycleCheck(self, visited, node):
         """check for cycles, once a visited node is found, return list of
         nodes in cycle, throwing an exception when returns to start of
         cycle. Also checks that nodes are in node set, which could occur
@@ -236,7 +236,7 @@ class Graph(object):
         visited.add(node)
 
         for n in node.nextNodes():
-            cycle = self._cycleCheck(visited, n)
+            cycle = self.__cycleCheck(visited, n)
             if cycle != None:
                 if node == cycle[0]:
                     # back at start of cycle
@@ -256,7 +256,7 @@ class Graph(object):
                 entries.append(p)
                 break
         for node in entries:
-            self._cycleCheck(set(), node)
+            self.__cycleCheck(set(), node)
 
     def productionCheck(self):
         """check that all productions with exist or have a rule to build them.
@@ -278,7 +278,7 @@ class Graph(object):
         if (len(noProdFor) > 0):
             raise ExRunException("Loose rules without production(s): " + ", ".join([str(p) for p in noProdFor]))
 
-    def _inGraphCheck(self, node):
+    def __inGraphCheck(self, node):
         "check if a node has been added to the graph"
         if not node in self.nodes:
             raise ExRunException("node linked to graph, but was not added to graph: " + node.name)
@@ -287,9 +287,9 @@ class Graph(object):
         "check that all nodes linked to the graph have been correctly added to the graph"
         for node in self.nodes:
             for n in node.prevNodes():
-                self._inGraphCheck(n)
+                self.__inGraphCheck(n)
             for n in node.nextNodes():
-                self._inGraphCheck(n)
+                self.__inGraphCheck(n)
         
     def check(self):
         "check graph"
