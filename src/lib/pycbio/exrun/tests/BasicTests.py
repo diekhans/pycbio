@@ -123,7 +123,7 @@ class MiscTests(TestCaseBase):
         "check that a rule is not run for a current production"
         er = ExRun()
         prod = CurrentProd("neverRunProd")
-        er.addNode(prod)
+        er.addProd(prod)
         rule = NeverRunRule("neverRunRule", produces=prod)
         er.addRule(rule)
         er.run()

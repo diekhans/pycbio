@@ -1,163 +1,33 @@
-class FileInRef(object):
-    """Object used to specified a input file name argument to a command
-    that is expanded just before the command is executed. """
-    __slots__ = ["file", "prefix", "autoDecompress"]
 
-    def __init__(self, file, prefix=None, autoDecompress=True):
-        self.file = file
-        self.prefix = prefix
-        self.autoDecompress = autoDecompress
+from pycbio.sys.Enumeration import Enumeration
 
-    def __str__(self):
-        """return input file argument"""
-        if self.prefix == None:
-            return self.file.getInPath(self.autoDecompress)
-        else:
-            return self.prefix + self.file.getInPath(self.autoDecompress)
+        self.event = threading.Event()
+        self.event.wait()  # wait to be scheduled
+        self.event.clear()
 
-    def getInPath(self):
-        "return File.getInPath() for referenced file"
-        return self.file.getInPath(self.autoDecompress)
+        self.chill = False  # don't schedule more tasks
 
 
-class File(Production):
-    """Object representing a file production. This handles atomic file
-    creation. CmdRule will install productions of this class after the
-    commands succesfully complete.  It also handles automatic compression
-    and decompression via pipes.  This is the default behavior, unless
-    overridden by specifying autoCompress=False or autoDecompress=False
-    to various access functions."""
+    # FIXME:
+    def removeTask(self, task):
+        "remove a task from the ready queue"
+        assert(task.group == self)
+        assert(not self.running)
+        with self.lock:
+            self.ready.remove(task)
+            task.group = self
 
+    def moveTask(self, task):
+        "move a task to this group"
 
-    def testDecompErr(self):
-        "test handling of pipes when decompression has error"
-        er = ExRun()
-        ifp = er.getFile(self.getInputFile("numbers.txt"))
-        ofp1 = er.getFile(self.getOutputFile(".txt.gz"))
-        ofp2 = er.getFile(self.getOutputFile(".txt"))
-        # don't really compressed
-        er.addCmd(["cat", ifp.getIn()], stdout=ofp1.getOut(autoCompress=False))
-        er.addCmd((["sed", "-e", "s/^/= /", ofp1.getIn()], ["tee", ofp2.getOut()]), stdout="/dev/null")
-        ex = None
-        try:
-            er.run()
-        except ExRunException, ex:
-            self.failUnlessEqual(str(ex), "")
-        if ex == None:
-            self.fail("expected ExRunException")
-
-
-class ActiveOut(object):
-    "object used to manage an output file while rules is active"
-    def __init__(self):
-        pass
-
-    def getUncompressName(self):
-        "get the file name without a .gz/.bz2/.Z"
-        if self.isCompressed():
-            return os.path.splitext(self.path)[0]
-        else:
-            return self.path
-
----------------------------------------------------------------------------
-class ActiveIn(object):
-    "object used to manage an input file while a command is active"
-
-    def __init__(self, exrun, path, outPath, autoDecompress):
-        # outPath used if file has not been installed
-        self.inPath = path if outPath == None else outPath
-        self.pipe = None
-        self.fh = None
-        if fileOps.isCompressed(path) and autoDecompress:
-            self.pipe = Pipeline([fileOps.decompressCmd(path)], "r", otherEnd=self.inPath,
-                                     pipePath=exrun.getTmpPath(self.inPath, "tmpfifo"))
         
-    def open(self):
-        """open the output file for writing from the ExRun process"""
-        if self.pipe != None:
-            return self.pipe
+
+    def removeTask(self, task):
+        "remove a task from this group"
+        if task in self.running:
+            self.running.remove(task)
+        elif task in self.ready:
+            self.ready.remove(task)
         else:
-            self.fh = open(self.inPath, "r")
-            return self.fh
-
-    def getInPath(self):
-        "get input path to use, either pipe or tmp file"
-        return self.pipe.pipePath if self.pipe != None else self.inPath
-
-    def done(self):
-        "complete use of file when a command completes.  This does not install newPath"
-        if self.fh != None:
-            self.fh.close()
-            self.fh = None
-        if self.pipe != None:
-            try:
-                self.pipe.wait()
-            finally:
-                try:
-                    self.pipe.unlinkPipe()
-                except:
-                    pass
-            self.pipe = None
-            
-
-class ActiveOut(object):
-    "object used to manage an output file while a command is active"
-
-    def __init__(self, exrun, path, outPath, autoCompress):
-        self.path = path
-        self.outPath = outPath
-        self.pipe = None
-        self.fh = None
-        fileOps.ensureFileDir(path)
-        if fileOps.isCompressed(path) and autoCompress:
-            self.pipe = Pipeline([fileOps.compressCmd(path)], "w", otherEnd=self.outPath,
-                                     pipePath=exrun.getTmpPath(self.path, "tmpfifo"))
-        
-    def open(self):
-        """open the output file for writing from the ExRun process"""
-        if self.pipe != None:
-            return self.pipe
-        elif self.fh != None:
-            raise ExRunException("output file already opened: " + self.outPath)
-        else:
-            self.fh = open(self.outPath, "w")
-            return self.fh
-
-    def getOutPath(self):
-        "get output path to use, either pipe or tmp file"
-        return self.pipe.pipePath if self.pipe != None else self.outPath
-
-    def done(self):
-        "complete use of file when a command completes.  This does not install outPath"
-        if self.fh != None:
-            self.fh.close()
-            self.fh = None
-        if self.pipe != None:
-            try:
-                self.pipe.wait()
-            finally:
-                try:
-                    self.pipe.unlinkPipe()
-                except:
-                    pass
-                self.pipe = None
-            
--------------------------------------------------------------------
-class File(Production):
-    def done(self):
-        "called when command completes, waits for pipes but doesn't install output"
-        if self.activeOut != None:
-            self.activeOut.done()
-            self.activeOut = None
-        elif self.activeIns != None:
-            firstEx = None
-            for ai in self.activeIns:
-                try:
-                    ai.done()
-                except Exception, ex:
-                    if firstEx == None:
-                        firstEx = ex
-            self.activeIns = None
-            if firstEx != None:
-                raise firstEx
+            raise Exception("task not in group") # FIXME: specific except?
 

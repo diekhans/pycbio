@@ -11,7 +11,7 @@ os.stat_float_times(True) # very, very gross
 # would do the trick
 # FIXME: How about object wrappers for File for input and output?? instead of getIn or getOut?
 # FIXME: Dir object that is just as a base for File objects.
-# FIXME: error output is really hard to read, especially when executing a non-existant program
+# FIXME: error output is really hard to read, especially when executing a non-existent program
 #        just get `OSError: [Errno 2] No such file or directory', not much help
 # FIXME: need to improve graph dump
 # FIXME: need tracing of what is out of date
@@ -35,7 +35,7 @@ class ExRun(object):
         self.files = {}
         self.running = False
 
-    def _modGraphErr(self):
+    def __modGraphErr(self):
         "generate error on attempt to modify graph after started running"
         raise ExRunException("attempt to modify graph once running")
 
@@ -49,21 +49,27 @@ class ExRun(object):
         """generate a unique temporary file path from path, the file will be
         in the same directory.  The file extensions will be maintained, to
         allow recognition of file types, etc. """
-        # FIXME: better name than tmp, check for non-existance
+        # FIXME: better name than tmp, check for non-existence
         return os.path.join(os.path.dirname(path),
                             namePrefix + "." + self.getUniqId() + "." + os.path.basename(path))
 
-    def addNode(self, node):
+    def __addNode(self, node):
         "add a new node"
         if self.running:
-            self._modGraphErr()
+            self.__modGraphErr()
         self.graph.addNode(node)
         node.exrun = self
         node.verb = self.verb
 
     def addRule(self, rule):
         "add a new rule"
-        self.addNode(rule)
+        assert(isinstance(rule, Rule))
+        self.__addNode(rule)
+
+    def addProd(self, prod):
+        "add a new Production"
+        assert(isinstance(prod, Production))
+        self.__addNode(prod)
 
     def getFile(self, path):
         """get a file production, creating if it doesn't exist, if path is already
@@ -74,9 +80,9 @@ class ExRun(object):
         fprod = self.files.get(realPath)
         if fprod == None:
             if self.running:
-                self._modGraphErr()
+                self.__modGraphErr()
             fprod = File(path, realPath)
-            self.addNode(fprod)
+            self.__addNode(fprod)
             self.files[realPath] = fprod
         return fprod
 
@@ -94,24 +100,24 @@ class ExRun(object):
         n = self._getNode(id, Target)
         if n == None:
             if self.running:
-                self._modGraphErr()
-            n = self.addNode(Target(id))
+                self.__modGraphErr()
+            n = self.__addNode(Target(id))
         return n
 
     def addCmd(self, cmd, name=None, requires=None, produces=None, stdin=None, stdout=None, stderr=None):
         """add a command rule with a single command or pipeline, this is a
         shortcut for addRule(CmdRule(Cmd(....),...)"""
         if self.running:
-            self._modGraphErr()
+            self.__modGraphErr()
         return self.addRule(CmdRule(Cmd(cmd, stdin=stdin, stdout=stdout, stderr=stderr), name=name, requires=requires, produces=produces))
 
-    def _preEvalRuleCheck(self, rule):
+    def __preEvalRuleCheck(self, rule):
         "Sanity check before a rule is run"
         for r in rule.requires:
             if r.getTime() < 0.0:
                 raise ExRunException("require should have been built:" + str(r))
 
-    def _finishSucceed(self, rule):
+    def __finishSucceed(self, rule):
         """finish up finish up requires/produces on success, failures here
         cause the rule to fail"""
         for p in rule.produces:
@@ -119,7 +125,7 @@ class ExRun(object):
         for r in rule.requires:
             r.finishRequire()
 
-    def _finishFail(self, rule):
+    def __finishFail(self, rule):
         """finish up finish up requires/produces on failure, will log errors,
         but not fail so original error is not lost"""
         for p in rule.produces:
@@ -135,50 +141,51 @@ class ExRun(object):
                 self.verb.prall("Error in Production.finishRequire() for ", r.name, ": ", ex)
                 self.verb.pr(Verb.error, "\t", sys.exc_info()[2])
         
-    def _evalRule(self, rule):
+    def __evalRule(self, rule):
         "evaulate a rule"
         assert(isinstance(rule, Rule))
         self.verb.enter(Verb.trace, "eval rule: ", rule)
         try:
-            self._preEvalRuleCheck(rule)
+            self.__preEvalRuleCheck(rule)
             self.verb.pr(Verb.details, "run: ", rule)
             rule.state = RuleState.running
             rule.execute()
-            self._finishSucceed(rule)
+            self.__finishSucceed(rule)
             if rule.isOutdated():
                 raise ExRunException("rule didn't update all productions: " + ", ".join([str(p) for p in rule.getOutdated()]))
             rule.state = RuleState.success
             self.verb.leave(Verb.trace, "done rule: ", rule)
         except Exception, ex:
             rule.state = RuleState.failed
-            self._finishFail(rule)
+            self.__finishFail(rule)
             self.verb.leave((Verb.trace,Verb.error), "fail rule: ", rule, ": ", ex)
             raise
 
-    def _buildRule(self, rule):
+    def __buildRule(self, rule):
         "recursively build a rule"
         assert(isinstance(rule, Rule))
         for r in rule.requires:
-            self._buildProd(r)
+            self.__buildProd(r)
         if rule.isOutdated():
-            self._evalRule(rule)
+            self.__evalRule(rule)
             
-    def _buildProd(self, prod):
+    def __buildProd(self, prod):
         "recursively build a production"
         assert(isinstance(prod, Production))
         if (prod.producedBy != None):
-            self._buildRule(prod.producedBy)
+            self.__buildRule(prod.producedBy)
         if prod.getTime() < 0.0:
             if (prod.producedBy == None):
                 raise ExRunException("No rule to build: " + str(prod))
             else:
                 raise ExRunException("Product not built: " + str(prod))
 
-    def _getRunnableRules(self, entries):
+    def __getRunnableRules(self, entries):
         """get list of rules that need to be run and are runnable (all
         required are current), starting with the specified list of
         entry productions"""
         rules = []
+        # FIXME
 
     def run(self):
         "run the experiment"
@@ -187,9 +194,9 @@ class ExRun(object):
             self.dumpGraph()
         self.graph.check()
         for prod in self.graph.getEntryProductions():
-            self._buildProd(prod)
+            self.__buildProd(prod)
 
-    def _dumpRule(self, rule, fh=None):
+    def __dumpRule(self, rule, fh=None):
         self.verb.prall("Rule: ", str(rule))
         self.verb.enter()
         pre = "prd: "
@@ -202,7 +209,7 @@ class ExRun(object):
             pre = "     "
         self.verb.leave()
         
-    def _dumpProduction(self, prod):
+    def __dumpProduction(self, prod):
         self.verb.prall("Production: ", str(prod))
         self.verb.enter()
         self.verb.prall("producedBy: ", str(prod.producedBy))
@@ -216,9 +223,9 @@ class ExRun(object):
         self.verb.enter()
         for node in self.graph.bfs():
             if isinstance(node, Rule):
-                self._dumpRule(node)
+                self.__dumpRule(node)
             else:
-                self._dumpProduction(node)
+                self.__dumpProduction(node)
         self.verb.leave()
         if fh != None:
             self.verb.fh = holdFh
