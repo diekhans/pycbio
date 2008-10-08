@@ -1,5 +1,5 @@
 from pycbio.sys import fileOps
-import os, sys, unittest, difflib, threading, errno
+import os, sys, unittest, difflib, threading, errno, re
 
 try:
     MAXFD = os.sysconf("SC_OPEN_MAX")
@@ -144,3 +144,12 @@ class TestCaseBase(unittest.TestCase):
         numOpen = self.numOpenFiles()
         if numOpen != prevNumOpen:
             self.fail("number of open files changed, was " + str(prevNumOpen) + ", now it's " + str(numOpen))
+
+    def failUnlessMatch(self, obj, expectRe, msg=None):
+        """Fail if the str(obj) does not match expectRe
+           operator.
+        """
+        if not re.match(expectRe, str(obj), re.DOTALL):
+            raise self.failureException, \
+                  (msg or "'%s' does not match '%s'" % (str(obj), expectRe))
+

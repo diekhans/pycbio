@@ -2,7 +2,7 @@
 import os.path,sys,socket
 from pycbio.exrun.Graph import *
 from pycbio.sys import typeOps
-from pycbio.exrun import ExRunException,Verb
+from pycbio.exrun import ExRunException, Verb, Sched
 from pycbio.exrun.CmdRule import CmdRule, Cmd, File, FileIn, FileOut
 
 os.stat_float_times(True) # very, very gross
@@ -25,15 +25,17 @@ os.stat_float_times(True) # very, very gross
 
 
 class ExRun(object):
-    "object that defines and runs an experiment"
-    def __init__(self, verbFlags=None):
+    """Object that defines and runs an experiment.  """
+    def __init__(self, verbFlags=None, keepGoing=False):
         self.pending = None  # pending queue
         self.verb = Verb(flags=verbFlags)
+        self.keepGoing = keepGoing
         self.graph = Graph()
         self.hostName = socket.gethostname()
         self.uniqIdCnt = 0
         self.files = {}
         self.running = False
+        self.failedCnt = 0
 
     def __modGraphErr(self):
         "generate error on attempt to modify graph after started running"
