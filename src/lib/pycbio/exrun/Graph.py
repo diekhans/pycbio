@@ -16,6 +16,7 @@ class CycleException(ExRunException):
         ExRunException.__init__(self, "cycle detected:\n" + "\n".join(desc))
 
 # state of a rule
+# FIXME: better name than new?
 RuleState = Enumeration("RuleState",
                         ("new", "running", "success", "failed"))
 
@@ -188,11 +189,16 @@ class Rule(Node):
                 return True
         return False
 
+    def isRunnable(self):
+        "can the rule be run?"
+        # FIXME:
+        return (self.state == RuleState.new)
+
 class Target(Production):
     """A target is a production that doesn't have any real output, it is just
     and explicty entry point into a graph.  It's time is set to the current
     time when it is run."""
-
+    # FIXME: used???
     def __init__(self, name):
         Production.__init__(self, name)
         self.time = -1.0
@@ -203,9 +209,9 @@ class Target(Production):
         self.time
         
 class Graph(object):
-    """Graph of productions and rules.  Once create, the topology of the graph
-    is fixed and hence all methods are thread safe.  The contents of nodes
-    maye require additional synchronization."""
+    """Graph of productions and rules. Access to the graph should be
+    single-threaded"""
+    # FIXME thread safety
     def __init__(self):
         self.nodes = set()
         self.productions = set()
