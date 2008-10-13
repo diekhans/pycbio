@@ -23,7 +23,7 @@ class ExceptTests(TestCaseBase):
             ex = e
         self.failUnless(ex != None)
         self.failUnlessEqual(str(ex), "testing 1 2 3")
-        self.failUnlessMatch(ex.format(), """^testing 1 2 3.+in testBasicExcept.+fn1\(\).+fn2\(\).+fn3\(\).+raise TestExcept\("testing 1 2 3"\)\n$""")
+        self.failUnlessMatch(ex.format(), """^TestExcept: testing 1 2 3.+in testBasicExcept.+fn1\(\).+fn2\(\).+fn3\(\).+raise TestExcept\("testing 1 2 3"\)\n$""")
         
     def testChainedExcept(self):
         def fn1():
@@ -56,9 +56,8 @@ class ExceptTests(TestCaseBase):
         except Exception, e:
             ex = e
         self.failUnless(ex != None)
-        self.failUnlessEqual(str(ex), "in-fn1, caused by in-fn3, caused by OS meltdown")
-        print ex.format()
-        #self.failUnlessMatch(ex.format(), """^testing 1 2 3.+in testBasicExcept.+self.fn1\(\).+self.fn2\(\).+self.fn3\(\).+raise TestExcept\("testing 1 2 3"\)\n$""")
+        self.failUnlessEqual(str(ex), "in-fn1, caused by in-fn3, caused by in-fn6, caused by OS meltdown")
+        self.failUnlessMatch(ex.format(), """^TestExcept: in-fn1.+fn1\(\).+raise TestExcept\("in-fn1", e\)\ncaused by: TestExcept: in-fn3.+fn3\(\).+caused by: TestExcept: in-fn6.+fn4\(\).+fn5\(\).+fn6\(\).+caused by: OSError: OS meltdown.+fn7\(\).+raise OSError\("OS meltdown"\)$""")
         
 def suite():
     suite = unittest.TestSuite()
