@@ -13,8 +13,7 @@ class PycbioException(Exception):
                 cause.__dict__["stackTrace"] = traceback.format_list(traceback.extract_tb(exi[2]))
         Exception.__init__(self, msg)
         self.cause = cause
-        print traceback.format_list(traceback.extract_stack())
-        self.stackTrace = traceback.extract_stack())[0:-1]
+        self.stackTrace = traceback.format_list(traceback.extract_stack())[0:-1]
 
     def __str__(self):
         "recursively construct message for chained exception"
@@ -33,15 +32,20 @@ class PycbioException(Exception):
         return PycbioException.formatExcept(self)
 
     @staticmethod
-    def formatExcept(ex):
+    def formatExcept(ex, doneStacks=None):
         """Format any type of exception, handling PycbioException objects and
-        stackTrace added to standard Exceptions"""
+        stackTrace added to standard Exceptions."""
         desc = ""
         desc += type(ex).__name__ + ": " + ex.message + "\n"
         st = getattr(ex, "stackTrace", None)
         if st != None:
-            desc += st
+            if doneStacks == None:
+                doneStacks = set()
+            for s in st:
+                if s not in doneStacks:
+                    desc += s
+                    doneStacks.add(s)
         ca = getattr(ex, "cause", None)
         if ca != None:
-            desc += "caused by: " + PycbioException.formatExcept(ca)
+            desc += "caused by: " + PycbioException.formatExcept(ca, doneStacks)
         return desc
