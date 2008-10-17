@@ -264,7 +264,7 @@ class ProcDagTests(TestCaseBase):
         pd.wait()
         self.diffExpected(".out")
         # formatting fails here: (FIXME: improve??)
-        self.commonChecks(nopen, pd, "^cat <\\(tee >\\(cat \\.\\.\\.\\) <.+/input/simple1\\.txt >/dev/null\\) </dev/null >.+/output/ProcDagTests\\.ProcDagTests\\.testArgToArg\\.out ; tee \\.\\.\\.$", isRe=True)
+        self.commonChecks(nopen, pd, "^tee >\\(cat <\\(tee \\.\\.\\.\\) </dev/null >.+/output/ProcDagTests\\.ProcDagTests\\.testArgToArg\\.out\\) <.+/input/simple1\\.txt >/dev/null ; cat \\.\\.\\.$", isRe=True)
 
     def testStdioCycleDetect(self):
         "stdio cycle detection"
