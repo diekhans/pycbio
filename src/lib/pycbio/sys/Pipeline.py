@@ -975,6 +975,8 @@ class _ProcDagDesc(object):
         # find sub-pipelines not connected as args or stderr and start
         # formatting these
         (notConn, areConn)= self.__partPipelines()
+        notConn.sort()  # consistent test results
+        areConn.sort()
         descs = []
         for pl in notConn:
             descs.append(self.__descPipeline(pl[0]))
