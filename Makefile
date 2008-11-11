@@ -19,6 +19,9 @@ bin/%: %
 	@mkdir -p bin
 	ln -sf ../$< $@
 
+test:
+	(cd src/lib && ./runTests)
+
 clean:
 	rm -rf bin
 	rm -f lib
