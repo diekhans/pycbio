@@ -3,7 +3,6 @@ VPATH = src/progs/tsv:src/progs/gbff:src/progs/genePred:src/progs/loci:src/progs
 BIN_PROGS = \
 	bin/tsvSelectById \
 	bin/gbffGenesToGenePred \
-	gbffRnaToAcc \
 	bin/clusterGenesStats \
 	bin/clusterGenesSelect \
 	bin/genePredSelect \
