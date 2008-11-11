@@ -32,7 +32,7 @@ class PipelineTests(TestCaseBase):
         pl = Pipeline((("gzip", "-1"),
                        ("gzip", "-dc"),
                        ("wc",),
-                       ("sed", "-e", "s/ */\t/g")),
+                       ("sed", "-e", "s/  */\t/g")),
                       "w", otherEnd=outf)
         self.cpFileToPl("simple1.txt", pl)
         pl.wait()
@@ -59,14 +59,12 @@ class PipelineTests(TestCaseBase):
 
     def testReadMult(self):
         inf = self.getInputFile("simple1.txt")
-        infGz = self.getOutputFile(".txt.gz")
-        procOps.runProc(("gzip", "-c", inf), stdout=infGz)
 
-        pl = Pipeline((("gzip","-1"),
+        pl = Pipeline((("gzip","-1c"),
                        ("gzip", "-dc"),
                        ("wc",),
-                       ("sed", "-e", "s/ */\t/g")),
-                      "r", otherEnd=infGz)
+                       ("sed", "-e", "s/  */\t/g")),
+                      "r", otherEnd=inf)
         self.cpPlToFile(pl, ".wc")
         pl.wait()
 
