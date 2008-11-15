@@ -24,7 +24,7 @@ class BrowserDir(object):
 
     def __init__(self, browserUrl, defaultDb, colNames=None, pageSize=50,
                  title=None, dirPercent=15, below=False, pageDesc=None,
-                 tracks=None, style=None):
+                 tracks=None, style=None, numColumns=1):
         """tracks is a dict, or none; pageSize of None creates a single
         page"""
         self.browserUrl = browserUrl
@@ -36,6 +36,7 @@ class BrowserDir(object):
         self.title = title
         self.dirPercent = dirPercent
         self.below = below
+        self.numColumns = numColumns
         self.pageDesc = pageDesc
         self.entries = []
         self.tracksArgs = None
@@ -125,6 +126,25 @@ class BrowserDir(object):
             html.append("next")
         return ", ".join(html)
 
+    def __addTblHeader(self, pg):
+        row = []
+        for cn in xrange(self.numColumns):
+            row.extend(self.colNames)
+        pg.tableHeader(row)
+
+    # FIXME: really want table of tables for multi-column mode
+    def __addTblBody(self, pg, pgEntries):
+        l = len(pgEntries)
+        for ie in xrange(0, l, self.numColumns):
+            row = []
+            for ic in xrange(ie, ie+self.numColumns):
+                if ic < l:
+                    row.extend(pgEntries[ic].row)
+                else:
+                    for i in xrange(len(pgEntries[0].row)):
+                        row.append("")
+            pg.tableRow(row)
+
     def __writeDirPage(self, outDir, pgEntries, pageNum, numPages):
         title = "page %d" % pageNum
         if self.title:
@@ -139,10 +159,8 @@ class BrowserDir(object):
         
         pg.tableStart(style="white-space:nowrap;")
         if self.colNames != None:
-            pg.tableHeader(self.colNames)
-        
-        for i in xrange(beginRow, endRow):
-            pg.tableRow(self.entries[i].row)
+            self.__addTblHeader(pg)
+        self.__addTblBody(pg, pgEntries)
         pg.tableEnd()
         pg.add(pageLinks)
 
@@ -158,6 +176,7 @@ class BrowserDir(object):
             self.__writeDirPage(outDir, self.entries, 1, 1)
         else:
             # split
+            numPages = (len(self.entries)+self.pageSize-1)/self.pageSize
             for pageNum in xrange(1,numPages+1):
                 first = (pageNum-1) * self.pageSize
                 last = first+(self.pageSize-1)
