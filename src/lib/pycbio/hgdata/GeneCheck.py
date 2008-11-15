@@ -57,50 +57,50 @@ def nmdFmt(val):
 nmdType = (nmdParse, nmdFmt)
 
 
-class GeneCheck(TSVRow):
-    """Object wrapper for one record from the gene-check program """
+# frame status
+Frame = Enumeration("FrameStat",
+                    ["ok", "bad", "mismatch", "discontig", "noCDS"])
 
-    # frame status
-    Frame = Enumeration("FrameStat",
-                        ["ok", "bad", "mismatch", "discontig", "noCDS"])
 
-typeMap = {
-    "chrStart": int,
-    "chrEnd": int,
-    "stat": statType,
-    "frame": GeneCheck.Frame,
-    "start": startStopType,
-    "stop": startStopType,
-    "orfStop": int,
-    "cdsGap": int,
-    "cdsMult3Gap": int,
-    "utrGap": int,
-    "cdsUnknownSplice": int,
-    "utrUnknownSplice": int,
-    "cdsNonCanonSplice": int,
-    "utrNonCanonSplice": int,
-    "cdsSplice": int,   # old column
-    "utrSplice": int,   # old column
-    "numExons": int,
-    "numCds": int,
-    "numUtr5": int,
-    "numUtr3": int,
-    "numCdsIntrons": int,
-    "numUtrIntrons": int, 
-    "nmd": nmdType, 
-    "causes": strArrayType
+#acc	chr	chrStart	chrEnd	strand	stat	frame	start	stop	orfStop	cdsGap	cdsMult3Gap	utrGap	cdsUnknownSplice	utrUnknownSplice	cdsNonCanonSplice	utrNonCanonSplice	numExons	numCds	numUtr5	numUtr3	numCdsIntrons	numUtrIntrons	nmd	causes
+typeMap = {"acc": intern,
+           "chrStart": int,
+           "chrEnd": int,
+           "strand": intern,
+           "stat": statType,
+           "frame": Frame,
+           "start": startStopType,
+           "stop": startStopType,
+           "orfStop": int,
+           "cdsGap": int,
+           "cdsMult3Gap": int,
+           "utrGap": int,
+           "cdsUnknownSplice": int,
+           "utrUnknownSplice": int,
+           "cdsNonCanonSplice": int,
+           "utrNonCanonSplice": int,
+           "cdsSplice": int,   # old column
+           "utrSplice": int,   # old column
+           "numExons": int,
+           "numCds": int,
+           "numUtr5": int,
+           "numUtr3": int,
+           "numCdsIntrons": int,
+           "numUtrIntrons": int, 
+           "nmd": nmdType, 
+           "causes": strArrayType
     }
 
 
 class GeneCheckReader(TSVReader):
-    def __init__(self, fileName, isRdb=True):
+    def __init__(self, fileName, isRdb=False):
         TSVReader.__init__(self, fileName, typeMap=typeMap, isRdb=isRdb)
 
 class GeneCheckTbl(TSVTable):
     """Table of GeneCheck objects loaded from a TSV or RDB.  acc index is build
     """
     
-    def __init__(self, fileName, isRdb=True, idIsUniq=False):
+    def __init__(self, fileName, isRdb=False, idIsUniq=False):
         self.idIsUniq = idIsUniq
         if idIsUniq:
             uniqKeyCols="acc"
@@ -108,8 +108,7 @@ class GeneCheckTbl(TSVTable):
         else:
             uniqKeyCols=None
             multiKeyCols="acc"
-        TSVTable.__init__(self, fileName, rowClass=GeneCheck, typeMap=typeMap,
-                          isRdb=isRdb, uniqKeyCols=uniqKeyCols, multiKeyCols=multiKeyCols)
+        TSVTable.__init__(self, fileName, typeMap=typeMap, isRdb=isRdb, uniqKeyCols=uniqKeyCols, multiKeyCols=multiKeyCols)
         self.idIndex = self.indices.acc
 
     def _sameLoc(self, chk, chrom, start, end):
