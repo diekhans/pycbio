@@ -14,6 +14,7 @@ class HtmlPage(list):
     def __init__(self, title=None, headExtra=None, inStyle=None, fragment=False, framesetAttrs=None):
         """Start a new page."""
         self.frameSet = (framesetAttrs != None)
+        self.title = title
         if not fragment:
             self.append('<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">')
             self.append("<html><head>")
@@ -154,7 +155,7 @@ class HtmlPage(list):
             return "</body></html>"
 
     def __str__(self):
-        return "\n".join(self + self._pageClose())
+        return "\n".join(self + self.__pageClose())
 
     def writeFile(self, fname):
         fh = open(fname, "w")
@@ -162,7 +163,7 @@ class HtmlPage(list):
             for line in self:
                 fh.write(line)
                 fh.write("\n")
-            fh.write(self._pageClose())
+            fh.write(self.__pageClose())
             fh.write("\n")
         finally:
             fh.close()
