@@ -1,5 +1,9 @@
-from pycbio.sys.fileOps import prLine, prRowv
+import math
+from pycbio.sys.fileOps import prLine, prRowv, iterRows
 from pycbio.sys.typeOps import isListLike
+
+# FIXME: computed histo should be an object, not just a list
+# FIXME: binnins doesn't work for values in the range [-1.0, 1.0]
 
 class Bin(object):
     "A bin in the histogram"
@@ -56,15 +60,18 @@ class Histogram(object):
     tuples of (value, count).
     """
 
-    def __init__(self, data=None, isTupleData=False):
+    def __init__(self, data=None, isTupleData=False,
+                 truncMin = False, truncMax = False,
+                 binMin = None, binMax = None,
+                 binSize = None, numBins = None):
         "create histogram, optionally adding data"
         # parameters controling histogram
-        self.truncMin = False
-        self.truncMax = False
-        self.binMin = None
-        self.binMax = None
-        self.binSize = None
-        self.numBins = None
+        self.truncMin = truncMin
+        self.truncMax = truncMax
+        self.binMin = binMin
+        self.binMax = binMax
+        self.binSize = binSize
+        self.numBins = numBins
 
         self.isTupleData = isTupleData
         if isTupleData:
@@ -72,12 +79,14 @@ class Histogram(object):
         else:
             self.data = NumData()
 
-        # these are computed automatically if the the value is not specified
+        # these are computed automatically if the value is not specified
         # above.  This allows changing the above values and rebinning
         self.binMinUse = None
         self.binMaxUse = None
         self.binSizeUse = None
         self.numBinsUse = None
+        self.binFloorUse = None  # min to actually use for indexing
+        self.binCeilUse = None   # max to actually use for indexing
 
         if (data != None):
             self.data.extend(data)
@@ -93,24 +102,16 @@ class Histogram(object):
     def addFile(self, fname, type=int, valCol=0):
         "add from a tab separated file of values of the specfied type"
         assert(not self.isTupleData)
-        fh = open(fname)
-        for line in fh:
-            line=line[0:-1]
-            row = line.split("\t")
+        for row in iterRows(fname):
             self.data.append(type(row[valCol]))
-        fh.close()
 
     def addTupleFile(self, fname, type=int, valCol=0, cntCol=1):
         "add from a tab separated file of values of the specfied type and counts"
         assert(self.isTupleData)
-        fh = open(fname)
-        for line in fh:
-            line=line[0:-1]
-            row = line.split("\t")
+        for row in iterRows(fname):
             self.data.append((type(row[valCol]), int(row[cntCol])))
-        fh.close()
 
-    def _calcParams(self):
+    def __calcParams(self):
         "Calculate binning paramters"
         self.data.compute()
         self.binMinUse = self.binMin
@@ -128,53 +129,71 @@ class Histogram(object):
             self.numBinsUse = 10
         if self.binSizeUse == None:
             # compute bin size from num bins
-            self.binSizeUse = float(self.binMaxUse-self.binMinUse)/float(self.numBinsUse-1)
+            estBinSize = float(self.binMaxUse-self.binMinUse)/float(self.numBinsUse-1)
+            self.binSizeUse = float(self.binMaxUse-self.binMinUse+estBinSize)/float(self.numBinsUse)
+            self.binFloorUse = self.binMinUse - (self.binSizeUse/2.0)
+            self.binCeilUse = self.binFloorUse + (self.numBinsUse*self.binSizeUse)
         else:
             # compute num bins from bin size
-            self.numBinsUse = int((self.binMaxUse-self.binMinUse)/self.binSizeUse)+1
+            raise Exception("doesn't work")
+            self.numBinsUse = int(float(self.binMaxUse-self.binMinUse)/float(self.binSizeUse))
+            self.binFloorUse = self.binMinUse
+            self.binCeilUse = self.binMaxUse
 
-    def _getBin(self, val):
-        "Get the integer bin number for a value"
+    def __getBin(self, val):
+        "Get the integer bin number for a value, or None to ignore"
         if self.binSizeUse == 0.0:
             return 0
         elif val < self.binMinUse:
-            return 0
+            return None if self.truncMin else 0
         elif val > self.binMaxUse:
-            return self.numBinsUse - 1
+            return None if self.truncMax else self.numBinsUse - 1
         else:
-            return int((val-self.binMinUse)/self.binSizeUse)
+            return int((val-self.binFloorUse)/float(self.binSizeUse))
 
-    def _inclItem(self, val):
-        return (((not self.truncMin) or (item >= self.binMinUse))
-                and ((not self.truncMax) or (item <= self.binMaxUse)))
-
-    def build(self):
-        "construct histogram from data, return list of bins"
-        self._calcParams()
+    def __mkBins(self):
         histo = []
         for i in xrange(self.numBinsUse):
-            histo.append(Bin(self, i, i*self.binSizeUse, self.binSizeUse))
-        if self.isTupleData:
-            for item in self.data:
-                if self._inclItem(item[0]):
-                    histo[self._getBin(item[0])].cnt += item[1]
-        else:
-            for item in self.data:
-                if self._inclItem(item):
-                    histo[self._getBin(item)].cnt += 1
+            histo.append(Bin(self, i, self.binFloorUse+(i*self.binSizeUse), self.binSizeUse))
+        return histo
 
-        # compute frequences
+    def __binTupleData(self, histo):
+        for item in self.data:
+            iBin = self.__getBin(item[0])
+            if iBin != None:
+                histo[iBin].cnt += item[1]
+
+    def __binScalarData(self, histo):
+        for item in self.data:
+            iBin = self.__getBin(item)
+            if iBin != None:
+                histo[iBin].cnt += 1
+
+    def __computeFreqs(self, histo):
+        for bin in histo:
+            bin.freq = bin.cnt / float(len(self.data))
+                
+    def build(self):
+        "construct histogram from data, return list of bins"
+        self.__calcParams()
+        histo = self.__mkBins()
+        if self.isTupleData:
+            self.__binTupleData(histo)
+        else:
+            self.__binScalarData(histo)
+
+        # compute frequencies
         if self.data.total != 0.0:
-            for bin in histo:
-                bin.freq = bin.cnt / float(self.data.total)
+            self.__computeFreqs(histo)
 
         return histo
 
     def dump(self, fh, desc=None):
+        self.__calcParams()
         if desc != None:
             prLine(fh, desc)
-        self.build()
         prLine(fh, "  data:  len: ", len(self.data), "  min: ", self.data.min, "  max: ", self.data.max)
         prLine(fh, "  bins:  num: ", self.numBins, "  size: ", self.binSize, "  min: ", self.binMin, "  max: ", self.binMax)
-        prLine(fh, "  use:  num: ", self.numBinsUse, "  size: ", self.binSizeUse, "  min: ", self.binMinUse, "  max: ", self.binMaxUse)
+        prLine(fh, "  use:  num: ", self.numBinsUse, "  size: ", self.binSizeUse, "  min: ", self.binMinUse, "  max: ", self.binMaxUse,
+               "  floor: ", self.binFloorUse, "  ceil: ", self.binCeilUse)
         

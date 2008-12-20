@@ -96,6 +96,10 @@ class Enumeration(Immutable):
         self.values = tuple(self.values)
         Immutable.__init__(self)
 
+    def __len__(self):
+        "return number of values"
+        return len(self.values)
+
     def _createValue(self, valueClass, name, numValue, strValue):
         val = valueClass(self, name, numValue, strValue)
         self.__dict__[name] = val
