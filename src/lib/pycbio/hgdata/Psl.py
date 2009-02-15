@@ -162,7 +162,7 @@ class Psl(object):
         if cmp != 0:
             cmp = psl1.qStart - psl2.qStart
             if cmp != 0:
-                cmp = psl1.qEmd - psl2.qEnd
+                cmp = psl1.qEnd - psl2.qEnd
         return cmp
 
     def targetCmp(psl1, psl2):
@@ -171,7 +171,7 @@ class Psl(object):
         if cmp != 0:
             cmp = psl1.tStart - psl2.tStart
             if cmp != 0:
-                cmp = psl1.tEmd - psl2.tEnd
+                cmp = psl1.tEnd - psl2.tEnd
         return cmp
 
     def sameAlign(self, other):

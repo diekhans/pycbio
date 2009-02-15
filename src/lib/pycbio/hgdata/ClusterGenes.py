@@ -77,6 +77,12 @@ class Cluster(list):
                 genes.append(g)
         return genes
 
+    def __hash__(self):
+        return hash(id(self))
+
+    def __eq__(self, other):
+        return id(self) == id(other)
+
     def write(self, fh, trackSet=None):
         "if trackSet is specified, only output genes in this set"
         for gene in self:

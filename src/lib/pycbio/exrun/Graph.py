@@ -229,7 +229,7 @@ class Graph(object):
         """Get entry productions of the graph; that is those having no requireBy"""
         entries = [p for p in self.productions if (len(p.requiredBy) == 0)]
         # sorted by names so that test produce consistent results
-        entries.sort(lambda a,b:cmp(a.name,b.name))
+        entries.sort(cmp=lambda a,b:cmp(a.name,b.name))
         return entries
 
     def __cycleCheck(self, visited, node):
