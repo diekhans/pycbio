@@ -83,7 +83,7 @@ class BrowserDir(object):
 
     def sort(self, cmpFunc=cmp, reverse=False):
         "sort by the key"
-        self.entries.sort(lambda a,b: cmpFunc(a.key, b.key), reverse=reverse)
+        self.entries.sort(cmp=lambda a,b: cmpFunc(a.key, b.key), reverse=reverse)
 
     def __mkFrame(self, title=None, dirPercent=15, below=False):
         """create frameset as a HtmlPage object"""
