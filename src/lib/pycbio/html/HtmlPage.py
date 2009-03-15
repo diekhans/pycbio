@@ -1,11 +1,10 @@
 """ Classes to handle creating HTML pages and fragments
 """
 
-# FIX: should add DTD info
-# FIX: frameset kind of a hack
-# FIX: really should be a tree rep
-# FIX; probably some module to do all of this
+# FIXME: frameset kind of a hack
+# FIXME; probably some module to do all of this
 # maybe: http://starship.python.net/crew/friedrich/HTMLgen/html/main.html
+# FIXME: add class TableCell
 
 class HtmlPage(list):
     """ Object to assist in creating an HTML page.  Page is stored as a list
@@ -87,19 +86,16 @@ class HtmlPage(list):
         if caption != None:
             self.append("<caption>"+ caption + "</caption>")
 
-    def __addTableRow(self, cell, row, hclasses=None, style=None):
+    def __addTableRow(self, cell, row, hclasses=None):
         """ add a table row
         - cell = th or td
         - row, substituting &nbsp; for empty of None.  If a cell is
-          a list or tuple. the the remain arguments become TH or TD
+          a list or tuple. then the remain arguments become TH or TD
           attributes.
         - if hclasses is specified, it's a parallel sequence with
-          class attr names for the cell, or none for no class.
+          class attr names for the cells, or none for no class.
         """
-        hrow = "<tr"
-        if style:
-            hrow += ' style="' + style + '"'
-        hrow += ">"
+        hrow = "<tr>"
         i = 0
         for c in row:
             hrow += "<" + cell
@@ -119,10 +115,10 @@ class HtmlPage(list):
         hrow += "</tr>"
         self.add(hrow)
 
-    def tableHeader(self, row, hclasses=None, style=None):
+    def tableHeader(self, row, hclasses=None):
         self.__addTableRow("th", row, hclasses)
 
-    def tableRow(self, row, hclasses=None, style=None):
+    def tableRow(self, row, hclasses=None):
        self.__addTableRow("td", row, hclasses)
 
     def tableEnd(self):
