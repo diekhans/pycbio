@@ -8,14 +8,49 @@ from pycbio.sys import fileOps
 
 class Entry(object):
     "entry in directory"
-    __slots__= ("row", "key", "cssClass")
+    __slots__= ("row", "key", "cssClass", "subRows")
 
-    def __init__(self, row, key=None, cssClass=None):
-        """Entry in directory, key can be some value(s) used in sorting
-        The row should be HTML encoded """
-        self.row = list(row)
+    def __init__(self, row, key=None, cssClass=None, subRows=None):
+        """Entry in directory, key can be some value(s) used in sorting The
+        row should be HTML encoded.  If subRows is not None, they are a list
+        of list used in constructing a table row with row column-spanning
+        subRows"""
+        self.row = tuple(row)
         self.key = key
         self.cssClass = cssClass
+        self.subRows = subRows
+
+    def numColumns(self):
+        "compute number of columns that will be generated"
+        n = len(self.row)
+        if self.subRows != None:
+            n += len(self.subRows[0][0])
+        return n
+
+    def toHtmlRow(self):
+        if self.cssClass != None:
+            tr = "<tr class=\""+self.cssClass+"\">"
+        else:
+            tr = "<tr>"
+        if (self.subRows != None) and (len(self.subRows) > 1):
+            td = "<td rowspan=\""+str(len(self.subRows)) + "\">"
+        else:
+            td = "<td>"
+        h = [tr]
+        for c in self.row:
+            h.append(td + c)
+        if self.subRows != None:
+            for c in self.subRows[0]:
+                h.append("<td>" + c)
+        h.append("</tr>\n")
+        # remaining subrows
+        if self.subRows != None:
+            for sr in xrange(1, len(self.subRows)):
+                h.append(tr)
+                for c in self.subRows[sr]:
+                    h.append("<td>" + c)
+                h.append("</tr>\n")
+        return "".join(h)
 
 class BrowserDir(object):
     """Create a frameset and collection of HTML pages that index one or more
@@ -24,9 +59,9 @@ class BrowserDir(object):
 
     def __init__(self, browserUrl, defaultDb, colNames=None, pageSize=50,
                  title=None, dirPercent=15, below=False, pageDesc=None,
-                 tracks=None, style=None, numColumns=1):
+                 tracks=None, style=None, numColumns=1, customTrackUrl=None):
         """tracks is a dict, or none; pageSize of None creates a single
-        page"""
+        page. If numColumns is greater than 1"""
         self.browserUrl = browserUrl
         if self.browserUrl.endswith("/"):
             self.browserUrl = self.browserUrl[0:-1] # drop trailing `/', so we don't end up with '//'
@@ -39,17 +74,21 @@ class BrowserDir(object):
         self.numColumns = numColumns
         self.pageDesc = pageDesc
         self.entries = []
-        self.tracksArgs = None
+        self.style = style
+        self.customTrackUrl = customTrackUrl
         if tracks != None:
             self.tracksArgs = self.__mkTracksArgs(tracks)
         else:
             self.tracksArgs = ""
-        self.style = style
+        if customTrackUrl != None:
+            self.tracksArgs += "&hgt.customText=" + self.customTrackUrl
+            
 
     def __mkTracksArgs(self, initialTracks):
         l = []
-        for t in initialTracks:
-            l.append(t + "=" + initialTracks[t])
+        if initialTracks != None:
+            for t in initialTracks:
+                l.append(t + "=" + initialTracks[t])
         return "&" + "&".join(l)
         
     def mkDefaultUrl(self):
@@ -69,9 +108,11 @@ class BrowserDir(object):
             text = str(coords)
         return "<a href=\"" + self.mkUrl(coords) + "\" target=browser>" + text + "</a>"
         
-    def addRow(self, row, key=None, cssClass=None):
-        """add an encoded row """
-        self.entries.append(Entry(row, key, cssClass))
+    def addRow(self, row, key=None, cssClass=None, subRows=None):
+        """add an encoded row, row can be a list or an Entry object"""
+        if not isinstance(row, Entry):
+            row = Entry(row, key, cssClass, subRows)
+        self.entries.append(row)
 
     def add(self, coords, name=None):
         """add a simple row, linking to location If name is None, it's the
@@ -126,24 +167,50 @@ class BrowserDir(object):
             html.append("next")
         return ", ".join(html)
 
-    def __addTblHeader(self, pg):
-        row = []
-        for cn in xrange(self.numColumns):
-            row.extend(self.colNames)
-        pg.tableHeader(row)
+    def __padRows(self, pg, numPadRows, numColumns):
+        pr = "<tr colspan=\"" + numColumns + "\"></tr>"
+        for i in xrange(numPadRows):
+            pg.add(pr)
 
-    # FIXME: really want table of tables for multi-column mode
-    def __addTblBody(self, pg, pgEntries):
-        l = len(pgEntries)
-        for ie in xrange(0, l, self.numColumns):
-            row = []
-            for ic in xrange(ie, ie+self.numColumns):
-                if ic < l:
-                    row.extend(pgEntries[ic].row)
-                else:
-                    for i in xrange(len(pgEntries[0].row)):
-                        row.append("")
-            pg.tableRow(row)
+    def __addPageRows(self, pg, pgEntries, numPadRows):
+        """add one set of rows to the page.  In multi-column mode, this
+        will be contained in a higher-level table"""
+        pg.tableStart(style="white-space:nowrap;")
+        if self.colNames != None:
+            pg.tableHeader(self.colNames)
+        numColumns = None
+        for ent in pgEntries:
+            numColumns = ent.numColumns()  # better all be the same
+            pg.add(ent.toHtmlRow())
+        if numPadRows > 0:
+            self.__padRows(pg, numPadRows, numColumns)
+        pg.tableEnd()
+
+    def __addMultiColEntryTbl(self, pg, pgEntries):
+        pg.tableStart()
+        nEnts = len(pgEntries)
+        rowsPerCol = nEnts/self.numColumns
+        iEnt = 0
+        pg.add("<tr>")
+        for icol in xrange(self.numColumns):
+            pg.add("<td>")
+            if iEnt < nEnts-rowsPerCol:
+                n = rowsPerCol
+                np = 0
+            else:
+                n = nEnts-iEnt
+                np = rowsPerCol - n
+            self.__addPageRows(pg, pgEntries[iEnt:iEnt+n], np)
+            pg.add("</td>")
+        pg.add("</tr>")
+        pg.tableEnd()
+        
+
+    def __addEntryTbl(self, pg, pgEntries):
+        if self.numColumns > 1:
+            self.__addMultiColEntryTbl(pg, pgEntries)
+        else:
+            self.__addPageRows(pg, pgEntries, 0)
 
     def __writeDirPage(self, outDir, pgEntries, pageNum, numPages):
         title = "page %d" % pageNum
@@ -156,12 +223,7 @@ class BrowserDir(object):
             pg.add(self.pageDesc)
             pg.add("<br><br>")
         pg.add(pageLinks)
-        
-        pg.tableStart(style="white-space:nowrap;")
-        if self.colNames != None:
-            self.__addTblHeader(pg)
-        self.__addTblBody(pg, pgEntries)
-        pg.tableEnd()
+        self.__addEntryTbl(pg, pgEntries)
         pg.add(pageLinks)
 
         dirFile = outDir + "/dir%d.html" % pageNum

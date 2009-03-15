@@ -71,6 +71,7 @@ def decompressCmd(path):
     else:
         return None
 
+# FIXME: should this use python gzip/bzip2 classes??
 def opengz(file, mode="r"):
     """open a file, if it ends in an extension indicating compression, open
     with a decompression pipe.  Only reading is currently supported"""
