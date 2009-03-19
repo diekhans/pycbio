@@ -38,10 +38,10 @@ class Entry(object):
             td = "<td>"
         h = [tr]
         for c in self.row:
-            h.append(td + c)
+            h.append(td + str(c))
         if self.subRows != None:
             for c in self.subRows[0]:
-                h.append("<td>" + c)
+                h.append("<td>" + str(c))
         h.append("</tr>\n")
         # remaining subrows
         if self.subRows != None:

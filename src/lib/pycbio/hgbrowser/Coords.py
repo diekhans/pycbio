@@ -41,6 +41,9 @@ class Coords(Immutable):
     def __str__(self):
         return self.chr + ":" + str(self.start) + "-" + str(self.end)
 
+    def size(self):
+        return self.end-self.start
+
     def overlaps(self, other):
         return ((self.chr == other.chr) and (self.start < other.end) and (self.end > other.start) and (self.strand == other.strand))
 
