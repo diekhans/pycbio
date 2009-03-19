@@ -74,13 +74,15 @@ class HtmlPage(list):
             self.add("<li> " + row)
         self.append("</ul>")
 
-    # start a table
-    def tableStart(self, caption=None, attrs=("border",), style=None):
+    def tableStart(self, caption=None, attrs=("border",), style=None, hclass=None):
+        "start a table"
         tag = "<table"
         if attrs != None:
             tag += " " + " ".join(attrs)
         if style != None:
             tag += ' style="' + style + '"'
+        if hclass != None:
+            tag += ' class="' + hclass + '"'
         tag += ">"
         self.append(tag)
         if caption != None:
@@ -95,6 +97,7 @@ class HtmlPage(list):
         - if hclasses is specified, it's a parallel sequence with
           class attr names for the cells, or none for no class.
         """
+        # FIXME: drop hclasses, allow cell to be a more informative object
         hrow = "<tr>"
         i = 0
         for c in row:
