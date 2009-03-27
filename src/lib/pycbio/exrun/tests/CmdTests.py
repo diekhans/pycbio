@@ -3,24 +3,33 @@
 import unittest, sys, os, re
 if __name__ == '__main__':
     sys.path.append("../../..")
-from pycbio.sys.fileOps import ensureFileDir, rmFiles
+from pycbio.sys import strOps,fileOps
 from pycbio.sys.Pipeline import ProcException
-from pycbio.sys.TestCaseBase import TestCaseBase
 from pycbio.exrun import ExRunException, ExRun, CmdRule, Cmd, File, FileIn, FileOut, Verb
+from pycbio.exrun.Graph import ProdState,RuleState
+from pycbio.exrun.tests import ExRunTestCaseBase
 
 # change this for debugging:
-verbFlags=None
+verbFlags=set()
 #verbFlags=set((Verb.error, Verb.trace, Verb.details))
+#verbFlags=set((Verb.error,))
+#verbFlags=Verb.all
 
-def rmOutput(*files):
-    "delete output files, which can be specified as strings or File objects"
-    for f in files:
-        if isinstance(f, File):
-            rmFiles(f.path)
-        else:
-            rmFiles(f)
+def prExceptions(er, ex):
+    "print and exception and any recorded ones"
+    sys.stdout.flush()
+    sys.stderr.flush()
+    fh = sys.stderr
+    fileOps.prLine(fh, "\n"+strOps.dup(78, '='))
+    fileOps.prLine(fh, "Unexpected exception:")
+    fileOps.prLine(fh, ProcException.formatExcept(ex))
+    for e in er.errors:
+        fileOps.prLine(fh, strOps.dup(78, '-'))
+        fileOps.prLine(fh, ProcException.formatExcept(e))
+    fileOps.prLine(fh, strOps.dup(78, '^'))
+    sys.stderr.flush()
 
-class CmdSuppliedTests(TestCaseBase):
+class CmdSuppliedTests(ExRunTestCaseBase):
     "tests of CmdRule with commands supplied to class"
 
     def testSort1(self):
@@ -28,23 +37,31 @@ class CmdSuppliedTests(TestCaseBase):
         er = ExRun(verbFlags=verbFlags)
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp = er.getFile(self.getOutputFile(".txt"))
-        rmOutput(ofp)
         # auto add requires and produces
         c = Cmd(("sort", "-n"), stdin=ifp, stdout=ofp)
         er.addRule(CmdRule(c))
-        er.run()
+        try:
+            er.run()
+        except Exception, ex:
+            prExceptions(er, ex)
+            raise
         self.diffExpected(".txt")
+        self.checkGraphStates(er)
 
     def testSortPipe(self):
         "pipeline command to sort a file"
         er = ExRun(verbFlags=verbFlags)
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp = er.getFile(self.getOutputFile(".txt"))
-        rmOutput(ofp)
         c = Cmd((("sort", "-r", FileIn(ifp)), ("sort", "-nr")), stdout=ofp)
         er.addRule(CmdRule(c, requires=ifp, produces=ofp))
-        er.run()
+        try:
+            er.run()
+        except Exception, ex:
+            prExceptions(er, ex)
+            raise
         self.diffExpected(".txt")
+        self.checkGraphStates(er)
 
     def testSort2(self):
         "two commands"
@@ -52,13 +69,17 @@ class CmdSuppliedTests(TestCaseBase):
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp1 = er.getFile(self.getOutputFile(".txt"))
         ofp2 = er.getFile(self.getOutputFile(".linecnt"))
-        rmOutput(ofp1, ofp2)
         c1 = Cmd((("sort", "-r", FileIn(ifp)), ("sort", "-nr")), stdout=ofp1)
         c2 = Cmd((("wc", "-l"), ("sed", "-e", "s/ //g")), stdin=ofp1, stdout=ofp2)
         er.addRule(CmdRule((c1, c2), requires=ifp))
-        er.run()
+        try:
+            er.run()
+        except Exception, ex:
+            prExceptions(er, ex)
+            raise
         self.diffExpected(".txt")
         self.diffExpected(".linecnt")
+        self.checkGraphStates(er)
 
     def testSort2Rules(self):
         "two commands in separate rules"
@@ -66,14 +87,18 @@ class CmdSuppliedTests(TestCaseBase):
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp1 = er.getFile(self.getOutputFile(".txt"))
         ofp2 = er.getFile(self.getOutputFile(".linecnt"))
-        rmOutput(ofp1, ofp2)
         c1 = Cmd((("sort", "-r", FileIn(ifp)), ("sort", "-nr")), stdout=ofp1)
         c2 = Cmd((("wc", "-l"), ("sed", "-e", "s/ //g")), stdin=ofp1, stdout=ofp2)
         er.addRule(CmdRule(c2))
         er.addRule(CmdRule(c1, requires=ifp))
-        er.run()
+        try:
+            er.run()
+        except Exception, ex:
+            prExceptions(er, ex)
+            raise
         self.diffExpected(".txt")
         self.diffExpected(".linecnt")
+        self.checkGraphStates(er)
 
     def testSort2RulesSub(self):
         "two commands in separate rules, with file ref subtitution"
@@ -81,27 +106,35 @@ class CmdSuppliedTests(TestCaseBase):
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp1 = er.getFile(self.getOutputFile(".txt"))
         ofp2 = er.getFile(self.getOutputFile(".linecnt"))
-        rmOutput(ofp1, ofp2)
         c1 = Cmd((("sort", "-r", FileIn(ifp)), ("sort", "-nr"), ("tee", FileOut(ofp1))), stdout="/dev/null")
         c2 = Cmd((("cat", FileIn(ofp1)), ("wc", "-l"), ("sed", "-e", "s/ //g"), ("tee", FileOut(ofp2))), stdout="/dev/null")
         er.addRule(CmdRule(c2))
         er.addRule(CmdRule(c1))
-        er.run()
+        try:
+            er.run()
+        except Exception, ex:
+            prExceptions(er, ex)
+            raise
         self.diffExpected(".txt")
         self.diffExpected(".linecnt")
+        self.checkGraphStates(er)
 
     def testFilePrefix(self):
         "test prefixes to FileIn/FileOut"
         er = ExRun(verbFlags=verbFlags)
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp = er.getFile(self.getOutputFile(".txt"))
-        rmOutput(ofp)
         c = Cmd(("dd", "if="+FileIn(ifp), "of="+FileOut(ofp)))
         er.addRule(CmdRule(c))
-        er.run()
+        try:
+            er.run()
+        except Exception, ex:
+            prExceptions(er, ex)
+            raise
         self.diffExpected(".txt")
+        self.checkGraphStates(er)
 
-class CmdSubclassTests(TestCaseBase):
+class CmdSubclassTests(ExRunTestCaseBase):
     "tests of CmdRule with subclassing"
     def testSort1(self):
         "single command to sort a file"
@@ -116,10 +149,14 @@ class CmdSubclassTests(TestCaseBase):
         er = ExRun(verbFlags=verbFlags)
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp = er.getFile(self.getOutputFile(".txt"))
-        rmOutput(ofp)
         er.addRule(Sort(ifp, ofp))
-        er.run()
+        try:
+            er.run()
+        except Exception, ex:
+            prExceptions(er, ex)
+            raise
         self.diffExpected(".txt")
+        self.checkGraphStates(er)
 
     def testSortPipe(self):
         "pipeline command to sort a file"
@@ -135,10 +172,14 @@ class CmdSubclassTests(TestCaseBase):
         er = ExRun(verbFlags=verbFlags)
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp = er.getFile(self.getOutputFile(".txt"))
-        rmOutput(ofp)
         er.addRule(Sort(ifp, ofp))
-        er.run()
+        try:
+            er.run()
+        except Exception, ex:
+            prExceptions(er, ex)
+            raise
         self.diffExpected(".txt")
+        self.checkGraphStates(er)
 
     def testSort2(self):
         "two commands"
@@ -157,11 +198,15 @@ class CmdSubclassTests(TestCaseBase):
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp1 = er.getFile(self.getOutputFile(".txt"))
         ofp2 = er.getFile(self.getOutputFile(".linecnt"))
-        rmOutput(ofp1, ofp2)
         er.addRule(Sort(ifp, ofp1, ofp2))
-        er.run()
+        try:
+            er.run()
+        except Exception, ex:
+            prExceptions(er, ex)
+            raise
         self.diffExpected(".txt")
         self.diffExpected(".linecnt")
+        self.checkGraphStates(er)
 
     def testSort2Rules(self):
         "two commands in separate rules"
@@ -188,14 +233,18 @@ class CmdSubclassTests(TestCaseBase):
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp1 = er.getFile(self.getOutputFile(".txt"))
         ofp2 = er.getFile(self.getOutputFile(".linecnt"))
-        rmOutput(ofp1, ofp2)
         er.addRule(Count(ofp1, ofp2))
         er.addRule(Sort(ifp, ofp1))
-        er.run()
+        try:
+            er.run()
+        except Exception, ex:
+            prExceptions(er, ex)
+            raise
         self.diffExpected(".txt")
         self.diffExpected(".linecnt")
+        self.checkGraphStates(er)
 
-class CmdCompressTests(TestCaseBase):
+class CmdCompressTests(ExRunTestCaseBase):
     "tests of CmdRule with automatic compression"
 
     def testStdio(self):
@@ -205,8 +254,13 @@ class CmdCompressTests(TestCaseBase):
         ofp2 = er.getFile(self.getOutputFile(".txt"))
         er.addCmd(["sort", "-r"], stdin=ifp, stdout=ofp1)
         er.addCmd((["zcat", FileIn(ofp1, autoDecompress=False)], ["sed", "-e", "s/^/= /"]), stdout=ofp2)
-        er.run()
+        try:
+            er.run()
+        except Exception, ex:
+            prExceptions(er, ex)
+            raise
         self.diffExpected(".txt")
+        self.checkGraphStates(er)
         
     def testArgs(self):
         er = ExRun(verbFlags=verbFlags)
@@ -215,26 +269,42 @@ class CmdCompressTests(TestCaseBase):
         ofp2 = er.getFile(self.getOutputFile(".txt"))
         er.addCmd((["sort", "-r", FileIn(ifp)], ["tee", FileOut(ofp1)]), stdout="/dev/null")
         er.addCmd(["sed", "-e", "s/^/= /", FileIn(ofp1)], stdout=FileOut(ofp2))
-        er.run()
+        try:
+            er.run()
+        except Exception, ex:
+            prExceptions(er, ex)
+            raise
         self.diffExpected(".txt")
+        self.checkGraphStates(er)
 
     def testCmdErr(self):
-        "test handling of pipes when process has error"
+        "handling of pipes when process has error"
         er = ExRun(verbFlags=set())
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp1 = er.getFile(self.getOutputFile(".txt.gz"))
         ofp2 = er.getFile(self.getOutputFile(".txt"))
-        er.addCmd((["sort", "-r", FileIn(ifp)], ["tee", FileOut(ofp1)]), stdout="/dev/null")
-        er.addCmd((["zcat", FileIn(ofp1, autoDecompress=False)], ["false"]), stdout=FileOut(ofp2))
+        r1 = er.addCmd((["sort", "-r", FileIn(ifp)], ["tee", FileOut(ofp1)]), stdout="/dev/null")
+        r2 = er.addCmd((["zcat", FileIn(ofp1, autoDecompress=False)], ["false"]), stdout=FileOut(ofp2))
         ex = None
         try:
             er.run()
-        except ProcException, ex:
-            exre = "process exited 1:\nfalse"
-            if not re.match(exre, str(ex)):
-                self.fail("expected ProcException matching: \"" + exre + "\", got: \"" + str(ex) + "\"")
+        except ExRunException, ex:
+            self.failUnlessEqual("Experiment failed: 1 error(s) encountered", str(ex))
+            ex1 = er.errors[0]
+            self.failUnless(isinstance(ex1, ExRunException))
+            ex2 = ex1.cause
+            self.failUnless(isinstance(ex2, ExRunException))
+            ex3 = ex2.cause
+            self.failUnless(isinstance(ex3, ProcException))
+            exre = "process exited 1: false"
+            self.failUnless(str(ex3),exre)
         if ex == None:
             self.fail("expected ProcException")
+        self.checkGraphStates(er,
+                              ((ofp1, ProdState.current),
+                               (ofp2, ProdState.failed),
+                               (r1,   RuleState.ok),
+                               (r2,   RuleState.failed)))
             
     def testCmdSigPipe(self):
         "test command recieving SIGPIPE with no error"
@@ -242,7 +312,12 @@ class CmdCompressTests(TestCaseBase):
         ofp = er.getFile(self.getOutputFile(".txt"))
         er.addCmd((["yes"], ["true"]), stdout=FileOut(ofp))
         ex = None
-        er.run()
+        try:
+            er.run()
+        except Exception, ex:
+            prExceptions(er, ex)
+            raise
+        self.checkGraphStates(er)
             
 def suite():
     suite = unittest.TestSuite()

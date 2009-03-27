@@ -1,5 +1,5 @@
 from pycbio.sys import fileOps
-import os, sys, unittest, difflib, threading, errno, re
+import os, sys, unittest, difflib, threading, errno, re, glob
 
 try:
     MAXFD = os.sysconf("SC_OPEN_MAX")
@@ -10,17 +10,27 @@ except:
 class TestCaseBase(unittest.TestCase):
     """Base class for test case with various test support functions"""
 
+    def __init__(self, methodName='runTest'):
+        """initialize, removing old output files associated with the class"""
+        unittest.TestCase.__init__(self, methodName)
+        clId = self.getClassId()
+        od = self.getOutputDir()
+        for f in glob.glob(od+"/"+clId + ".*") + glob.glob(od+"/tmp.*."+clId + ".*"):
+            os.unlink(f)
+    
+    def getClassId(self):
+        """Get the first part of the portable test id, consisting 
+        moduleBase.class.  This is the prefix to output files"""  
+        # module name is __main__ when run standalone, so get base file name
+        mod = os.path.splitext(os.path.basename(sys.modules[self.__class__.__module__].__file__))[0]
+        return mod + "." + self.__class__.__name__
+
     def getId(self):
         """get the fixed test id, which is in the form moduleBase.class.method
         which avoids different ids when test module is run as main or
         from a larger program"""
-        # last two parts are class and method
-        idParts = self.id().split(".")[-2:]
-        
-        # module name is __main__ when run standalone, so get base file name
-        mod = os.path.splitext(os.path.basename(sys.modules[self.__class__.__module__].__file__))[0]
-        ftid = mod + "." + str.join(".",idParts)
-        return ftid
+        # last part of unittest id is method
+        return self.getClassId() + "." + self.id().split(".")[-1]
 
     def getTestDir(self):
         """find test directory, where concrete class is defined."""

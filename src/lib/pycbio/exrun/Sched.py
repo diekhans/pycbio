@@ -6,15 +6,17 @@ concurrent tasks controls the number of process executing on a host.
 
 A scheduling group is associated with a host.  While all threads are on the
 local host, groups are used for tasks that start threads on remote hosts.  The
-motivating goal is to be able to run multiple cluster batches concurrently.
-This allows rules to create batches naturally, and still maximize the number
-of jobs running in parallel.
+motivation is to be able to run multiple cluster batches concurrently.  This
+allows rules to create batches naturally, and still maximize the number of
+jobs running in parallel.
 
-Tasks only pause when being switch between scheduling groups.
-
+Tasks are not preemptive, once started, they only pause when being switch
+between scheduling groups.  A task is not equivalent to a thread, they
+are something run by a thread.
 """
 from __future__ import with_statement
 import sys, os, threading, Queue, traceback
+from pycbio.sys import PycbioException
 
 # Notes:
 #   - This module has no dependencies on the rest of the package
@@ -27,14 +29,14 @@ import sys, os, threading, Queue, traceback
 
 groupLocal = "localhost"
 
-class SchedException(Exception):
+class SchedException(PycbioException):
     "various Sched exceptions"
     pass
 
-class TaskTerminateException(Exception):
+class TaskTerminateException(PycbioException):
     "exception used to prematurely terminate a task"
     def __init__(self):
-        Exception.__init__(self, "task terminated")
+        PycbioException.__init__(self, "task terminated")
 
 class TaskRunMsg(object):
     "message to tell a task to run"
@@ -58,11 +60,10 @@ class SchedTaskMoveMsg(object):
         self.newGroup = newGroup
 
 class Task(threading.Thread):
-    """A task, which is something to execute. A tasks can be moved between
-    groups.  Moving between groups is use for remote execution.
-    The runFunc takes one argument, which takes this Task object as
-    an argument.  It must handle all errors, if it raises an exception,
-    all processing will be stopped.
+    """A task, which is something to execute. A tasks can be moved between groups.
+    Moving between groups is use for remote execution.  The runFunc takes this
+    Task object as a single argument.  It must handle all errors, if it raises
+    an exception, all processing will be stopped.
     """
     def __init__(self, runFunc, pri):
         self.runFunc = runFunc
@@ -72,7 +73,7 @@ class Task(threading.Thread):
         threading.Thread.__init__(self)
         self.start()
 
-    def __recieve(self):
+    def __receive(self):
         "receive a message to run or terminate"
         msg = self.msgQ.get()
         if isinstance(msg, TaskEndMsg):
@@ -88,7 +89,7 @@ class Task(threading.Thread):
         "run the task"
         try:
             try:
-                self.__recieve()
+                self.__receive()
                 self.runFunc(self)
             except Exception, e:
                 sys.stderr.write("Fatal error: unhandled exception in task:\n")
@@ -103,7 +104,7 @@ class Task(threading.Thread):
         if isinstance(newGroup, str):
             newGroup = self.group.sched.obtainGroup(newGroup)
         self.__send(SchedTaskMoveMsg(self, newGroup))
-        self.__recieve()
+        self.__receive()
 
 class Group(object):
     """Scheduling group, normally associated with a host,
@@ -169,9 +170,9 @@ class Sched(object):
 
     def addTask(self, runFunc, group, pri=10):
         "add a new task, group can be object or group name"
-        if isinstance(group, str):
-            group = self.obtainGroup(group)
         with self.lock:
+            if isinstance(group, str):
+                group = self.obtainGroup(group)
             group._addTask(Task(runFunc, pri))
             self.numTasks += 1
 

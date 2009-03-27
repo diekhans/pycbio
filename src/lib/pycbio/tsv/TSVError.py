@@ -1,10 +1,11 @@
+from pycbio.sys import PycbioException
 
-class TSVError(Exception):
+class TSVError(PycbioException):
     "Error from reading or parsing a TSV file"
     def __init__(self, msg, reader=None, cause=None):
         if (reader != None):
             msg = reader.fileName + ":" + str(reader.lineNum) + ": " + msg
-        Exception.__init__(self, msg)
+        PycbioException.__init__(self, msg, cause)
 
 
 # FIXME: something here isn't right, like msg geting lost when pass to Exception

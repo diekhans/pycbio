@@ -1,6 +1,7 @@
 from Bio.GenBank import LocationParser
+from pycbio.sys import PycbioException
 
-class GbffExcept(Exception):
+class GbffExcept(PycbioException):
     pass
 
 def featFindQual(feat, key):
