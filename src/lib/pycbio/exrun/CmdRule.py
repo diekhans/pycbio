@@ -3,7 +3,7 @@
 import os.path,sys
 from pycbio.sys import typeOps,fileOps
 from pycbio.exrun import ExRunException,Verb
-from pycbio.exrun.Graph import Production,Rule
+from pycbio.exrun.Graph import Production,Rule,negInf
 from pycbio.sys import Pipeline
 
 # FIXME: Auto decompression is not supported, as many programs handle reading
@@ -97,12 +97,12 @@ class File(Production):
     def __str__(self):
         return self.path
 
-    def getTime(self):
-        "modification time of file, or -1.0 if it doesn't exist"
+    def getLocalTime(self):
+        "modification time of file, or -inf if it doesn't exist"
         if os.path.exists(self.path):
             return os.path.getmtime(self.path)
         else:
-            return -1.0
+            return negInf
 
     def getOutPath(self, autoCompress=True):
         """Get the output name for the file, which is newPath until the rule
@@ -365,7 +365,8 @@ class CmdRule(Rule):
         try:
             file.done()
         except Exception, ex:
-            self.verb.pr(Verb.error, "Exception on file: " + str(file) + ": ", ex, sys.exc_info()[2])
+            ex = ExRunException("Exception on file: " + str(file), cause=ex)
+            self.verb.pr(Verb.error, str(ex)+"\n"+ex.format())
             if firstEx == None:
                 firstEx = ex
         return firstEx
@@ -377,7 +378,8 @@ class CmdRule(Rule):
             try:
                 cmd.call(self.verb)
             except Exception, ex:
-                self.verb.pr(Verb.error, "Exception: ", ex, "\n", sys.exc_info()[2])
+                ex = ExRunException("Exception running command: " + str(cmd), cause=ex)
+                self.verb.pr(Verb.error, str(ex)+"\n"+ex.format())
                 firstEx = ex
         finally:
             # close compress pipes
@@ -408,7 +410,8 @@ class CmdRule(Rule):
         try:
             self.run()
         except Exception, ex:
-            self.verb.pr(Verb.error, "Exception: ", ex, "\n", sys.exc_info()[2])
+            ex = ExRunException("Exception executing rule: " + str(self), cause=ex)
+            self.verb.pr(Verb.error, str(ex)+"\n"+ex.format())
             raise
         finally:
             self.verb.leave()

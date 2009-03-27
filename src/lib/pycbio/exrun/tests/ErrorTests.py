@@ -3,10 +3,13 @@
 import unittest, sys, os
 if __name__ == '__main__':
     sys.path.append("../../..")
-from pycbio.sys.TestCaseBase import TestCaseBase
 from pycbio.exrun import ExRun, ExRunException, Rule
-from pycbio.exrun.Graph import CycleException
+from pycbio.exrun.Graph import CycleException,ProdState,RuleState
 from pycbio.sys import fileOps
+from pycbio.exrun.tests import ExRunTestCaseBase
+
+# change this for debugging:
+verbFlags=set(())
 
 # FIXME add:
 #  dup production test
@@ -37,13 +40,13 @@ def _sortMsg(msg):
     ml.sort()
     return ml
 
-class ErrorTests(TestCaseBase):
+class ErrorTests(ExRunTestCaseBase):
     def testCycleAll(self):
         "all nodes in a cycle (no entry)"
         id = self.getId()
         ex = None
         try:
-            er = ExRun()
+            er = ExRun(verbFlags=verbFlags)
             # use id so file path doesn't vary with run directory
             f1 = er.getFile(id + ".file1")
             f2 = er.getFile(id + ".file2")
@@ -65,7 +68,7 @@ class ErrorTests(TestCaseBase):
         id = self.getId()
         ex = None
         try:
-            er = ExRun()
+            er = ExRun(verbFlags=verbFlags)
             # use id so file path doesn't vary with run directory
             f1 = er.getFile(id + ".file1")
             f2 = er.getFile(id + ".file2")
@@ -83,17 +86,23 @@ class ErrorTests(TestCaseBase):
         "no rule to make a production"
         ex = None
         try:
-            er = ExRun()
+            er = ExRun(verbFlags=verbFlags)
             f1 = er.getFile(self.getOutputFile(".file1"))
             f2 = er.getFile(self.getOutputFile(".file2"))
             f3 = er.getFile(self.getId() + ".file3")
-            er.addRule(TouchRule("noRule1", self, f3, f2))
-            er.addRule(TouchRule("noRule2", self, f2, f1))
+            r1 = er.addRule(TouchRule("noRule1", self, f3, f2))
+            r2 = er.addRule(TouchRule("noRule2", self, f2, f1))
             er.run()
         except ExRunException, ex:
             self.failUnlessEqual(str(ex), "No rule to build production(s): ErrorTests.ErrorTests.testNoRule.file3")
         if ex == None:
             self.fail("expected ExRunException")
+        self.checkGraphStates(er,
+                              ((f1, ProdState.blocked),
+                               (f2, ProdState.blocked),
+                               (f3, ProdState.bad),
+                               (r1, RuleState.blocked),
+                               (r2, RuleState.blocked)))
         
 def suite():
     suite = unittest.TestSuite()

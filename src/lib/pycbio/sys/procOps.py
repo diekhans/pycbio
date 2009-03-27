@@ -4,63 +4,42 @@
 # also see stderr changes in genbank copy of this file
 # FIXME: names are a bit too verbose (callLines instead of callProcLines)
 
-import subprocess, os, stat
-from pycbio.sys import fileOps
+import os, re
+from pycbio.sys import Pipeline
 
-class ProcException(Exception):
-    "process error exception"
-    def __init__(self, cmd, returncode, stderr=None):
-        self.returncode = returncode
-        self.stderr = stderr
-        if (returncode < 0):
-            msg = "process signaled " + str(-returncode)
-        else:
-            msg = "process error: \"" + " ".join(cmd) + "\""
-            if (stderr != None) and (len(stderr) != 0):
-                msg += ": " + stderr
-            else:
-                msg += ": exit code: " + str(returncode)
-        Exception.__init__(self, msg)
 
 def callProc(cmd, keepLastNewLine=False):
-    "call a process and return stdout, exception with stderr in message"
-    p = subprocess.Popen(cmd, stdin=fileOps.getDevNull(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (out, err) = p.communicate()
-    if (p.returncode != 0):
-        raise ProcException(cmd, p.returncode, err)
+    """call a process and return stdout, exception with stderr in message.
+    The  cmd is either a list of command and arguments, or pipeline, specified by
+    a list of lists of commands and arguments."""
+    stdout = Pipeline.DataReader()
+    pl = Pipeline.Procline(cmd, stdin="/dev/null", stdout=stdout)
+    pl.wait()
+    out = stdout.get()
     if (not keepLastNewLine) and (len(out) > 0) and (out[-1] == "\n"):
         out = out[0:-1]
     return out
 
 def callProcLines(cmd):
-    "call a process and return stdout, split into a list of lines, exception with stderr in message"
+    """call a process and return stdout, split into a list of lines, exception
+    with stderr in message"""
     out = callProc(cmd)
     return out.split("\n")
-
-def _getStdFile(spec, mode):
-    if (spec == None) or (type(spec) == int):
-        return spec
-    elif type(spec) == str:
-        if os.path.exists(spec) and stat.S_ISFIFO(os.stat(spec).st_mode):
-            return fileOps.fifoOpen(spec, mode)
-        else:
-            return file(spec, mode)
-    elif isinstance(spec, file):
-        if mode == "w":
-            spec.flush()
-        return spec
-    else:
-        raise Exception("don't know how to deal with stdio file of type " + type(spec))
 
 def runProc(cmd, stdin="/dev/null", stdout=None, stderr=None, noError=False):
     """run a process, with I/O redirection to specified file paths or open
     file objects. None specifies inheriting. If noError is True, then
     the exit code is returned rather than generating an error"""
-    p = subprocess.Popen(cmd, stdin=_getStdFile(stdin, "r"), stdout=_getStdFile(stdout, "w"), stderr=_getStdFile(stderr, "w"))
-    p.communicate()
-    if ((p.returncode != 0) and not noError):
-        raise ProcException(cmd, p.returncode)
-    return p.returncode
+    # FIXME: drop noError???
+    pl = Pipeline.Procline(cmd, stdin=stdin, stdout=stdout, stderr=stderr)
+    code = 0
+    try:
+        pl.wait()
+    except Pipeline.ProcException, ex:
+        code = ex.returncode
+        if not noError:
+            raise
+    return code
 
 def which(prog, makeAbs=False):
     "search PATH for prog, optionally generating an absolute path.  Exception if not found."
@@ -74,7 +53,26 @@ def which(prog, makeAbs=False):
             else:
                 return f
     raise Exception("Can't find program \"" + prog + "\" on path \"" + os.environ["PATH"] + "\"")
-    
 
-__all__ = (ProcException.__name__, callProc.__name__, callProcLines.__name__, runProc.__name__, which.__name__)
+shSafeRe = re.compile("^[-+./_=,:@0-9A-Za-z]+$")
+def shQuoteWord(word):
+    """quote word so that it will evaluate as a simple string by common Unix
+    shells"""
+    # help from http://code.activestate.com/recipes/498202/
+    if shSafeRe.match(word):
+        return word
+    else:
+        return "\\'".join("'" + c + "'" for c in word.split("'"))
+
+def shQuote(words):
+    """quote a list of words so that it will evaluate as simple strings by
+    common Unix shells"""
+    return [shQuoteWord(w) for w in words]
+    
+def sshCmd(host, cmd, direct=None):
+    ""
+    pass
+
+__all__ = (callProc.__name__, callProcLines.__name__, runProc.__name__, which.__name__,
+           shQuoteWord.__name__, shQuote.__name__)
 

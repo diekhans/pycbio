@@ -76,7 +76,7 @@ class ProcDagTests(TestCaseBase):
             pd.wait()
         except Exception, ex:
             pass
-        expect = "exec failed: [Errno 2] No such file or directory"
+        expect = "exec failed: procDoesNotExist -r, caused by: [Errno 2] No such file or directory"
         msg = str(ex)
         if not msg.startswith(expect):
             self.fail("'"+ msg + "' does not start with '"
@@ -263,7 +263,7 @@ class ProcDagTests(TestCaseBase):
         pd.create(("cat", PIn(io)), stdin="/dev/null", stdout=outf)
         pd.wait()
         self.diffExpected(".out")
-        # formatting fails here: (FIXME: improve??)
+        # formatting fails here: (FIXME: improve??), FIXME: doesn't always produce this result?
         self.commonChecks(nopen, pd, "^tee >\\(cat <\\(tee \\.\\.\\.\\) </dev/null >.+/output/ProcDagTests\\.ProcDagTests\\.testArgToArg\\.out\\) <.+/input/simple1\\.txt >/dev/null ; cat \\.\\.\\.$", isRe=True)
 
     def testStdioCycleDetect(self):

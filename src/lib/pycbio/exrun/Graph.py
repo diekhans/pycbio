@@ -1,11 +1,20 @@
-"""Graph (DAG) of productions and rules"""
-import os.path
+"""Graph (DAG) of productions and rules.  This also manages 
+of production and rule state flags."""
+from __future__ import with_statement
+import os.path, threading
 from pycbio.sys import typeOps
 from pycbio.sys.Enumeration import Enumeration
-from pycbio.exrun import ExRunException
+from pycbio.exrun import ExRunException, Verb
+
+# FIXME: adding node has gotten too complex
+# FIXME: state initialization is rather complex and redundent
+# FIXME: look for unused methods
+# FIXME: move states to be class methods of root/production
+# FIXME: use of r/p vars confusing r == requres/rule, etc
 
 posInf = float("inf")
 negInf = float("-inf")
+_emptySet = frozenset()
 
 class CycleException(ExRunException):
     "Exception indicating a cycle has occured"
@@ -15,23 +24,54 @@ class CycleException(ExRunException):
             desc.append("  " + str(n) + " ->")
         ExRunException.__init__(self, "cycle detected:\n" + "\n".join(desc))
 
-# state of a rule
-# FIXME: better name than new?
+# state of a Production and valid transitions
+#  - bad - doesn't exist and no rule to create
+#  - failed - rule to create failed
+#  - blocked - blocked because some requirement can't be built
+ProdState = Enumeration("ProdState",
+                        ("unknown", "outdated", "current", "failed", "blocked", "bad"))
+_prodStateTbl = {}
+_prodStateTbl[ProdState.unknown]  = frozenset([ProdState.outdated, ProdState.current, ProdState.blocked, ProdState.bad])
+_prodStateTbl[ProdState.outdated] = frozenset([ProdState.current, ProdState.blocked, ProdState.failed, ProdState.bad])
+_prodStateTbl[ProdState.current]  = _emptySet
+_prodStateTbl[ProdState.failed]   = _emptySet
+_prodStateTbl[ProdState.blocked]  = _emptySet
+_prodStateTbl[ProdState.bad]      = _emptySet
+
+# state of a Rule and valid transitions
+#  - failed - rule failed
+#  - blocked - blocked because some requirement can't be built
 RuleState = Enumeration("RuleState",
-                        ("new", "running", "success", "failed"))
+                        ("unknown", "outdated", "running", "ok", "failed", "blocked"))
+_ruleStateTbl = {}
+_ruleStateTbl[RuleState.unknown]  = frozenset([RuleState.ok, RuleState.outdated, RuleState.blocked])
+_ruleStateTbl[RuleState.outdated] = frozenset([RuleState.running, RuleState.blocked])
+_ruleStateTbl[RuleState.running]  = frozenset([RuleState.ok, RuleState.failed])
+_ruleStateTbl[RuleState.ok]       = _emptySet
+_ruleStateTbl[RuleState.failed]   = _emptySet
+_ruleStateTbl[RuleState.blocked]  = _emptySet
 
 class Node(object):
     """Base object for all entries in graph. Derived object define generators
     prevNodes() and nextNodes() for traversing tree."""
     def __init__(self, name):
+        assert(isinstance(name, str))
         self.name = name
-        # these set when added to ExRun object
+        self.graph = None # set when added to graph
+        # these set when added to graph
         self.exrun = None
         self.verb = None
 
     def __str__(self):
         return self.name
 
+    @staticmethod
+    def joinNames(nodes):
+        "join node names into a sorted, comma-separated list"
+        nodes = list(nodes)
+        nodes.sort()
+        return ", ".join([n.name for n in nodes])
+    
 class Production(Node):
     """Base class for a production. It can only have one requires (produced by)
     link.  When a production is being create by a rule, it is single threaded.
@@ -41,6 +81,39 @@ class Production(Node):
         Node.__init__(self, name);
         self.producedBy = None
         self.requiredBy = set()
+        self.state = ProdState.unknown
+
+    def _transition(self, newState):
+        "transition to a new state, validating transition"
+        if newState not in _prodStateTbl[self.state]:
+            raise ExRunException("invalid Production transition: " + str(self.state) + " to " + str(newState) + " on " + self.name)
+        self.state = newState
+
+    def __stateFromRuleState(self, rs):
+        "get state give state of producing rule"
+        if rs == RuleState.outdated:
+            return ProdState.outdated
+        elif rs == RuleState.running:
+            return ProdState.outdated
+        elif rs == RuleState.ok:
+            return ProdState.current
+        elif rs == RuleState.failed:
+            return ProdState.failed
+        elif rs == RuleState.blocked:
+            return ProdState.blocked
+        else:
+            raise ExRunException("BUG: can't update production from rule in state: " + str(rs))
+
+    def computeState(self):
+        "compute and update state from producing rule state"
+        if self.producedBy == None:
+            # no rule to produce, must exist
+            if prod.getLocalTime() < 0:
+                prod._transition(ProdState.bad)
+            else:
+                prod._transition(ProdState.current)
+        else:
+            self._transition(self.__stateFromRuleState(self.producedBy.state))
 
     def nextNodes(self):
         "generator for traversing tree"
@@ -70,8 +143,19 @@ class Production(Node):
             self.requiredBy.add(r)
             r.requires.add(self);
 
+    def setState(self, state):
+        "recursively set the state or this production and parents"
+        with self.graph.lock:
+            self.verb.enter(Verb.debug, "Production.setState: " + str(self.state), "=>", str(state), self.name) # FIXME
+            self._transition(state)
+            if (state == ProdState.failed) or (state == ProdState.blocked):
+                for r in self.requiredBy:
+                    r.setState(RuleState.blocked)
+            # FIXME: could have a ready state
+            self.verb.leave() # FIXME
+
     def finishSucceed(self):
-        "called when the rule to create this production finishes successfuly"
+        "called when the rule to create this production finishes successfully"
         pass
 
     def finishFail(self):
@@ -84,26 +168,138 @@ class Production(Node):
         cleaning up things like decompress pipelines.  Must be thread-safe."""
         pass
 
-    def getTime(self):
+    def getLocalTime(self):
         """Get the modification time of this Production as a floating point number.
-        If the object do not exist, return -1.0.  This is not recurisve, it is
+        If the object do not exist, return -inf.  This is not recurisve, it is
         simply the time associated with the production.   Must be thread-safe."""
-        raise ExRunException("getTime() not implemented for Production " + str(type(self)))
-    
+        raise ExRunException("getLocalTime() not implemented for Production " + str(type(self)))
+
+    def getUpdateTime(self):
+        """Recursively get the update time of this Products as a floating point
+        number.  This is the oldest time recursive times of any of the requirements.
+        If the production does not exist, returns -inf. """
+        pt = self.getLocalTime()
+        if (pt < 0.0) or (self.producedBy == None):
+            return pt # short-circuit
+        else:
+            return min(pt, self.producedBy.getUpdateTime())
+
 class Rule(Node):
     """Base class for a rule.  A rule is single threaded."""
     def __init__(self, name, requires=None, produces=None):
         Node.__init__(self, name);
-        self.state = RuleState.new
+        self.state = RuleState.unknown
         self.requires = set()
         self.produces = set()
         if requires != None:
             self.linkRequires(requires)
         if produces != None:
             self.linkProduces(produces)
+        # set when task is associated
+        self.task = None
 
     def __str__(self):
         return self.name
+
+    def _transition(self, newState):
+        "transition to a new state, validating transition"
+        if newState not in _ruleStateTbl[self.state]:
+            raise ExRunException("invalid Rule transition: " + str(self.state) + " to " + str(newState) + " on " + self.name)
+        self.state = newState
+
+    def __getRequiresStates(self):
+        "get a set of all of the states of requires"
+        states = set()
+        for r in self.requires:
+            states.add(r.state)
+        return states
+
+    def __getRequiresTime(self):
+        """get the oldest requires local time, -inf if any don't exist, None if no
+        requires"""
+        if len(self.requires) == 0:
+            return None
+        rtime = posInf
+        for r in self.requires:
+            t = r.getLocalTime()
+            if t < 0.0:
+                return negInf
+            elif t < rtime:
+                rtime = t
+        return rtime
+
+    def __getProducesTime(self):
+        """get the newest produces local time, +inf if any don't exist, None if no
+        produces"""
+        if len(self.produces) == 0:
+            return None
+        ptime = negInf
+        for p in self.produces:
+            t = p.getLocalTime()
+            if t < 0.0:
+                return posInf
+            elif t > ptime:
+                ptime = t
+        return ptime
+
+    def __stateFromRequiresState(self, reqStates):
+        "compute state from require states, return None if times must be compared"
+        if ProdState.unknown in reqStates:
+            raise ExRunException("BUG: can't update rule from production in state: " + str(ProdState.unknown))
+        elif ProdState.failed in reqStates:
+            return RuleState.failed
+        elif (ProdState.bad in reqStates) or (ProdState.blocked in reqStates):
+            return RuleState.blocked
+        else:
+            return None
+
+    def __stateFromReqProdTimes(self):
+        "compute state by comparing times of requires and produces"
+        # can only look at times of produces, not state, as state is set
+        # bottom up
+        rtime = self.__getRequiresTime()
+        ptime = self.__getProducesTime()
+        if rtime == None:
+            # no requires
+            if ptime == None:
+                return RuleState.failed  # should never happen
+            if ptime < posInf:
+                return RuleState.ok  # exists
+            else:
+                return RuleState.outdated
+        elif ptime == None:
+            return RuleState.outdated
+        elif ptime > rtime:
+            return RuleState.outdated
+        else:
+            return RuleState.ok
+
+    def computeState(self):
+        """Compute and update state from requires and produces Productions"""
+        newState = self.__stateFromRequiresState(self.__getRequiresStates())
+        if newState == None:
+            newState = self.__stateFromReqProdTimes()
+        self._transition(newState)
+
+    def setState(self, state):
+        "recursively set the state or this rule and parents"
+        with self.graph.lock:
+            self.verb.enter(Verb.debug, "Rule.setState: " + str(self.state), "=>", str(state), self.name) # FIXME
+            self._transition(state)
+            if state == RuleState.running:
+                pstate = None
+            elif state == RuleState.ok:
+                pstate = ProdState.current
+            elif state == RuleState.failed:
+                pstate = ProdState.failed
+            elif state == RuleState.blocked:
+                pstate = ProdState.blocked
+            else:
+                raise ExRunException("BUG: Rule.setState() invalid state:" + str(state))
+            if pstate != None:
+                for p in self.produces:
+                    p.setState(pstate)
+            self.verb.leave() # FIXME
 
     def nextNodes(self):
         "generator for traversing tree"
@@ -136,94 +332,116 @@ class Rule(Node):
         call the approriate finish*() methods on the produces and requires,
         they should not be run by the derived rule class"""
         raise ExRunException("execute() not implemented for " + str(type(self)))
-    
-    def isOutdated(self):
-        """Determine if this rule is outdated and needs to be run.  It is
-        outdated if any of the requires are new than any of the produces.  If
-        there are no requires, it is outdated if any of the produces don't
-        exist.  This is not recursive."""
-        # get oldest produces
-        pOldest = posInf
-        for p in self.produces:
-            t = p.getTime()
-            if t < 0.0:
-                return True  # doesn't exist
-            pOldest = min(pOldest, t)
 
-        # compare to requires
+    def getUpdateTime(self):
+        """Recursively get the update time of this Rule as a floating point
+        number.  This is the oldest time recursive times of any of the requirements.
+        If an productions do not exist, returns -inf. """
+        # FIXME: bad name
+        rt = posInf
         for r in self.requires:
-            if pOldest < r.getTime() :
-                return True
-        return False
+            pt = r.getUpdateTime()
+            if pt < 0.0:
+                return pt # short-circuit
+            rt = min(rt, pt)
+        return rt
+    
+    def __isProdOutdated(self, rtime, prod):
+        "is production outdated relative to requirement time"
+        # FIXME: needed
+        pt = prod.getLocalTime()
+        return (pt < 0.0) or ((rtime != None) and ((pt < rtime) or (rtime < 0)))
 
     def getOutdated(self):
         """Get list of productions that are out of date relative to requires"""
+        # FIXME: needed
         outdated = []
+        rtime = self.__getRequiresTime()
         for p in self.produces:
-            pt = p.getTime()
-            if pt < 0.0:
+            if self.__isProdOutdated(rtime, p):
                 outdated.append(p)
-            else:
-                for r in self.requires:
-                    if pt < r.getTime():
-                        outdated.append(p)
-                        break
         return outdated
 
     def isOutdated(self):
         """Determine if this rule is outdated and needs to be run.  It is
-        outdated if any of the requires are new than any of the produces.  If
+        outdated if any of the requires are newer than any of the produces.  If
         there are no requires, it is outdated if any of the produces don't
         exist.  This is not recursive."""
-        # get oldest produces
-        pOldest = posInf
+        # FIXME: needed
+        rtime = self.__getRequiresTime()
         for p in self.produces:
-            pt = p.getTime()
-            if pt < 0.0:
-                return True  # doesn't exist
-            pOldest = min(pOldest, pt)
-
-        # compare to requires
-        for r in self.requires:
-            if pOldest < r.getTime() :
+            if self.__isProdOutdated(rtime, p):
                 return True
         return False
 
-    def isRunnable(self):
-        "can the rule be run?"
-        # FIXME:
-        return (self.state == RuleState.new)
+    def isReady(self):
+        "is this rule ready to be run?" 
+        if self.state != RuleState.outdated:
+            return False
+        for r in self.requires:
+            if r.state != ProdState.current:
+                return False
+        return True
 
-class Target(Production):
-    """A target is a production that doesn't have any real output, it is just
-    and explicty entry point into a graph.  It's time is set to the current
-    time when it is run."""
-    # FIXME: used???
-    def __init__(self, name):
-        Production.__init__(self, name)
-        self.time = -1.0
-    
-    def getTime(self):
-        """Get the time this target's rule completed as a floating point number,
-        or -1.0 if it hasn't completed."""
-        self.time
+class Target(Node):
+    """A target is an explicit entry point into a graph.  It can have multiple
+    productions or other targets as children, but will not be listed as their
+    parents.  Thus multiple Targets can refer to the same production.  A graph
+    must have at least one target.
+    """
+    def __init__(self, name, requires=None):
+        "requires can be Productions of Targets"
+        Node.__init__(self, name)
+        self.requires = set()
+        if requires != None:
+            self.linkRequires(requires)
         
+    def linkRequires(self, requires):
+        """link in productions or targets required by this node. Can be single nodes,
+        or lists or sets of nodes"""
+        for r in typeOps.mkiter(requires):
+            if not (isinstance(r, Production) or isinstance(r, Target)):
+                raise ExRunException("Target " + str(self) + " requires can only be linked to a Production or a Target, attempt to link to: " + str(r))
+            self.requires.add(r)
+            
+    def nextNodes(self):
+        "generator for traversing tree"
+        for r in self.requires:
+            yield r
+
 class Graph(object):
-    """Graph of productions and rules. Access to the graph should be
-    single-threaded"""
-    # FIXME thread safety
-    def __init__(self):
+    """Graph of productions and rules. Assumes that topology modifications
+    are single threaded"""
+    def __init__(self, exRun, verb):
+        """Construct graph call complete() after adding nodes and edges."""
+        self.exrun = exRun
+        self.verb = verb
         self.nodes = set()
         self.productions = set()
+        self.productionsByName = {}
+        self.entryProds = set()
         self.rules = set()
+        self.rulesByName = {}
+        self.targets = set()
+        self.targetsByName = {}
+        self.lock = threading.RLock()
 
-    def addNode(self, node):
-        "add a node to the graph"
+    def __addNode(self, desc, node, nodeList, nodeIdx):
+        "common operations on adding a node"
         self.nodes.add(node)
-        if isinstance(node, Production):
-            self.productions.add(node)
-        else:
-            self.rules.add(node)
+        node.graph = self
+        if node.name in nodeIdx:
+            raise ExRunException("duplicate " + desc + " name: " + node.name)
+        nodeList.add(node)
+        nodeIdx[node.name] = node
+        node.exrun = self.exrun
+        node.verb = self.verb
+        
+    def addTarget(self, target):
+        "add a target to the graph"
+        assert(isinstance(target, Target))
+        with self.lock:
+            self.__addNode("Target", target, self.targets, self.targetsByName)
 
     def getEntryProductions(self):
         """Get entry productions of the graph; that is those having no requireBy"""
@@ -232,17 +450,48 @@ class Graph(object):
         entries.sort(cmp=lambda a,b:cmp(a.name,b.name))
         return entries
 
-    def __cycleCheck(self, visited, node):
+    def addRule(self, rule):
+        "add a rule to the graph"
+        assert(isinstance(rule, Rule))
+        with self.lock:
+            self.__addNode("Rule", rule, self.rules, self.rulesByName)
+
+    def addProd(self, prod):
+        "add a production to the graph"
+        assert(isinstance(prod, Production))
+        with self.lock:
+            self.__addNode("Production", prod, self.productions, self.productionsByName)
+
+    def __findEntryProductions(self):
+        """Get entry productions of the graph; that is those no requiredBy,
+        and thus only reachable from targets"""
+        with self.lock:
+            entries = [p for p in self.productions if (len(p.requiredBy) == 0)]
+            # sorted by names so that test produce consistent results
+            entries.sort(lambda a,b:cmp(a.name,b.name))
+            return entries
+
+    def __entrySetup(self, defaultTargetName=None):
+        "setup entry points info"
+        self.entryProds = self.__findEntryProductions()
+        if (len(self.targets) == 0) and (len(self.entryProds) > 0):
+            if (defaultTargetName != None):
+                self.addTarget(Target(defaultTargetName, self.entryProds))
+            else:
+                raise ExRunException("graph does not contain any targets")
+
+    def __cycleCheckNode(self, visited, allVisited, node):
         """check for cycles, once a visited node is found, return list of
         nodes in cycle, throwing an exception when returns to start of
-        cycle. Also checks that nodes are in node set, which could occur
-        in a node was linked to a node in the graph, but not added"""
+        cycle.
+        """
         if node in visited:
             return [node]  # cycle detected
         visited.add(node)
+        allVisited.add(node)
 
         for n in node.nextNodes():
-            cycle = self.__cycleCheck(visited, n)
+            cycle = self.__cycleCheckNode(visited, allVisited, n)
             if cycle != None:
                 if node == cycle[0]:
                     # back at start of cycle
@@ -250,74 +499,139 @@ class Graph(object):
                     raise CycleException(cycle)
                 else:
                     cycle.append(node)
-                    return cycle
+                visited.remove(node)
+                return cycle
+        visited.remove(node)
         return None
 
-    def cycleCheck(self):
-        """check for cycles in graph """
-        entries = self.getEntryProductions()
-        if len(entries) == 0:
-            # no entry nodes, either empty or completely connected, just pick one
-            for p in self.productions:
-                entries.append(p)
-                break
-        for node in entries:
-            self.__cycleCheck(set(), node)
+    def __cycleCheck(self, root, allVisited):
+        """check for cycles, starting at a root, update set of all visited"""
+        cycle = self.__cycleCheckNode(set(), allVisited, root)
+        if cycle != None:
+            raise CycleException(cycle) # should never happen
 
-    def productionCheck(self):
-        """check that all productions with exist or have a rule to build them.
-        By check this up front, it prevents file from being created as
-        side-affects that are not encoded in the graph"""
-        noRuleFor = set()
-        for prod in self.productions:
-            if (prod.producedBy == None) and (prod.getTime() < 0.0):
-                noRuleFor.add(prod)
-        if (len(noRuleFor) > 0):
-            raise ExRunException("No rule to build production(s): " + ", ".join([str(r) for r in noRuleFor]))
+    def __getCheckEntries(self):
+        """get entries for cycle check. If all is well, there should be a least one
+        target, but handle incorrect cases so that cycles of all nodes get
+        reported by cycle check code."""
+        if len(self.targets) > 0:
+            return self.targets
+        elif len(self.entryProds) > 0:
+            return self.entryProds
+        elif len(self.nodes) > 0:
+            return self.nodes
+        else:
+            return []
 
-    def ruleCheck(self):
-        "check that there are no loose rules without productions"
-        noProdFor = set()
-        for rule in self.rules:
-            if len(rule.produces) == 0:
-                noProdFor.add(rule)
-        if (len(noProdFor) > 0):
-            raise ExRunException("Loose rules without production(s): " + ", ".join([str(p) for p in noProdFor]))
+    def __connectivityCheck(self):
+        """check for cycles and a full connected graph"""
+        reachable = set()
+        for entry in self.__getCheckEntries():
+            self.__cycleCheck(entry, reachable)
+        if len(reachable) < len(self.nodes):
+            raise ExRunException("Nodes not reachable from any Target: "
+                                 + Node.joinNames(self.nodes-reachable))
+        elif len(reachable) > len(self.nodes):
+            raise ExRunException("Invalid graph, nodes not added through API: "
+                                 + Node.joinNames(reachable-self.nodes))
 
-    def __inGraphCheck(self, node):
-        "check if a node has been added to the graph"
-        if not node in self.nodes:
-            raise ExRunException("node linked to graph, but was not added to graph: " + node.name)
+    def __initRuleStates(self, rule):
+        "recursively initial rules states"
+        for prod in rule.requires:
+            if prod.state == ProdState.unknown:
+                self.__initProdStates(prod)
+        rule.computeState()
 
-    def inGraphCheck(self):
-        "check that all nodes linked to the graph have been correctly added to the graph"
-        for node in self.nodes:
-            for n in node.prevNodes():
-                self.__inGraphCheck(n)
-            for n in node.nextNodes():
-                self.__inGraphCheck(n)
+    def __initProdStates(self, prod):
+        "recursively initial production states"
+        if prod.producedBy == None:
+            # no rule to produce, must exist
+            if prod.getLocalTime() < 0:
+                prod._transition(ProdState.bad)
+            else:
+                prod._transition(ProdState.current)
+        else:
+            # recursively update, 
+            if prod.producedBy.state == RuleState.unknown:
+                self.__initRuleStates(prod.producedBy)
+            prod.computeState()
+
+    def __initStates(self):
+        "initialize state information"
+        for prod in self.entryProds:
+            if prod.state == ProdState.unknown:
+                self.__initProdStates(prod)
+
+    def __getBadProds(self):
+        "get list of productions flags as bad, or None"
+        l = None
+        for p in self.productions:
+            if p.state == ProdState.bad:
+                l = typeOps.listAppend(l, p)
+        return l
+
+    def __stateCheck(self):
+        "check for various things after state initialized"
+        bad = self.__getBadProds()
+        if bad != None:
+            raise ExRunException("No rule to build production(s): " + Node.joinNames(bad))
         
-    def check(self):
-        "check graph"
-        self.inGraphCheck()
-        self.cycleCheck()
-        self.productionCheck()
-        self.ruleCheck()
+    def complete(self, defaultTargetName=None):
+        """complete construction of graph, validating and setting initial states.
+        If there are no targets, then a default one can be created linking to
+        all defaultTargetName"""
+        with self.lock:
+            self.__entrySetup(defaultTargetName)
+            self.__connectivityCheck()
+            self.__initStates()
+            self.__stateCheck()
+
+    def getTargets(self, targetNames):
+        "get targets for given names"
+        targets = []
+        for tn in targetNames:
+            t = self.targetsByName.get(tn)
+            if t == None:
+                raise ExRunException("no Target named: " + tn)
+            targets.append(t)
+        return targets
 
     def bfs(self):
       "BFS generator for graph"
-      # initialize queue
-      queue = self.getEntryProductions()
-      visited = set(queue)
-      while len(queue) > 0:
-          node = queue.pop()
-          yield node
-          for n in node.nextNodes():
-              if not n in visited:
-                  visited.add(n)
-                  queue.append(n)
-      # if not all nodes were visited, something is linked by not in nodes
-      if len(visited) != len(self.nodes):
-          self.inGraphCheck()
+      with self.lock:
+          # initialize queue
+          queue = self.__findEntryProductions()
+          visited = set(queue)
+          while len(queue) > 0:
+              node = queue.pop()
+              yield node
+              for n in node.nextNodes():
+                  if not n in visited:
+                      visited.add(n)
+                      queue.append(n)
 
-__all__ = (CycleException.__name__, Production.__name__, Rule.__name__, Graph.__name__, "RuleState")
+    def __getReady(self, root, ready):
+        assert(isinstance(root, Node))
+        if isinstance(root, Target):
+            for r in root.requires:
+                self.__getReady(r, ready)
+        elif isinstance(root, Production):
+            if root.producedBy != None:
+                self.__getReady(root.producedBy, ready)
+        elif isinstance(root, Rule):
+            if root.isReady():
+                ready.add(root)
+            elif root.state == RuleState.outdated:
+                for r in root.requires:
+                    self.__getReady(r, ready)
+                      
+    def getReady(self, roots):
+        """get list of rules that are ready to run, starting at the
+        given list of nodes."""
+        with self.lock:
+            ready = set()
+            for r in roots:
+                self.__getReady(r, ready)
+            return ready
+
+__all__ = (CycleException.__name__, Target.__name__, Production.__name__, Rule.__name__, Graph.__name__, "RuleState", Node.__name__)

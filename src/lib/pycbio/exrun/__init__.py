@@ -1,12 +1,15 @@
-"""Experiment running module"""
+"""Experiment running module.
+"""
 
 import sys,traceback,types
-from pycbio.sys import typeOps
-
-class ExRunException(Exception):
+from pycbio.sys import typeOps, PycbioException
+                                
+class ExRunException(PycbioException):
     "Exceptions thrown by exrun module derive from this object" 
-    pass
+    def __init__(self, msg, cause=None):
+        PycbioException.__init__(self, msg, cause)
 
+# FIXME: make this a sys object:
 class Verb(object):
     """Verbose tracing, bases on a set of flags.  The str() of
     any object passed to print routines with the following exceptions:
@@ -17,7 +20,11 @@ class Verb(object):
     error = intern("error")     # output errors
     trace = intern("trace")     # basic tracing
     details = intern("details") # detailed tracing
-    graph = intern("graph")     # dump graph at the start
+    debug = intern("debug")     # debugging
+    dumpIn = intern("dumpIn")   # dump graph input graph before complete()
+    dumpStart = intern("dumpStart")   # dump graph at start
+    dumpEnd = intern("dumpEnd")     # dump graph after finish
+    all = set([error, trace, details, debug, dumpIn, dumpStart, dumpEnd])
 
     def __init__(self, flags=None, fh=sys.stderr):
         self.fh = fh
@@ -42,7 +49,10 @@ class Verb(object):
     def __prIndent(self, msg):
         ind = ("%*s" % (2*self.indent, ""))
         self.fh.write(ind)
+        sep = ""
         for m in msg:
+            self.fh.write(sep)
+            sep = " "
             if isinstance(m, types.TracebackType):
                 self.fh.write(ind.join(traceback.format_tb(m)))
             else:
@@ -72,7 +82,7 @@ class Verb(object):
             self.__prIndent(msg)
 
 # make classes commonly used externally part of top module
-from pycbio.exrun.Graph import Production, Rule
+from pycbio.exrun.Graph import Target, Production, Rule
 from pycbio.exrun.CmdRule import CmdRule, Cmd, FileOut, FileIn, FileOut, File
 from pycbio.exrun.ExRun import ExRun
 

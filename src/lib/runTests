@@ -3,18 +3,21 @@
 # run all of the tests 
 # 
 
-import unittest, sys
+import unittest, sys, os
 sys.path.append(".")
+from pycbio.sys import fileOps,strOps
 
 class DynTest(object):
     "dynamic loading and executing of test"
     def __init__(self):
         self.suites = []
         self.importErrCnt = 0
+        self.pkgs = set()
 
     def add(self, name):
         "add a module, continuing past import error"
         pkgName, modName = name.rsplit(".", 1)
+        self.pkgs.add(pkgName)
         try:
             mod = __import__(pkgName,  globals(), None, [modName])
             mod = getattr(mod, modName)
@@ -23,7 +26,8 @@ class DynTest(object):
             self.importErrCnt += 1
             sys.stderr.write("Error: import failed for: " + name + ": " + str(e) + "\n")
 
-    bar = "======================================================================\n"
+    bar = strOps.dup(70, "=") + "\n"
+
     def run(self):
         alltests = unittest.TestSuite(self.suites)
         runner = unittest.TextTestRunner(sys.stdout, verbosity=2)
@@ -42,7 +46,13 @@ class DynTest(object):
             sys.exit(1)
         else:
             sys.stderr.write("Tests successful\n")
-            
+
+    def cleanup(self):
+        "clean up output directories from all test packages"
+        for pkg in self.pkgs:
+            pkgOutDir = pkg.replace(".", "/") + "/output"
+            if os.path.isdir(pkgOutDir):
+                fileOps.rmTree(pkgOutDir)
 
 dt = DynTest()
 dt.add("pycbio.tsv.tests.TSVTests")
@@ -52,6 +62,7 @@ dt.add("pycbio.sys.tests.ImmutableTests")
 dt.add("pycbio.sys.tests.ExceptTests")
 dt.add("pycbio.sys.tests.ProcDagTests")
 dt.add("pycbio.sys.tests.PipelineTests")
+dt.add("pycbio.sys.tests.ProcOpsTests")
 dt.add("pycbio.hgdata.tests.GenePredTests")
 dt.add("pycbio.hgdata.tests.GeneCheckTests")
 dt.add("pycbio.hgdata.tests.PslTests")
@@ -59,10 +70,12 @@ dt.add("pycbio.hgdata.tests.ClusterGenesTests")
 #FIXME: dt.add("pycbio.stats.tests.HistoTests")
 dt.add("pycbio.stats.tests.SubsetsTests")
 dt.add("pycbio.stats.tests.VennTests")
-dt.add("pycbio.exrun.tests.SchedTests")
-dt.add("pycbio.exrun.tests.ErrorTests")
-dt.add("pycbio.exrun.tests.CmdTests")
 dt.add("pycbio.exrun.tests.BasicTests")
+dt.add("pycbio.exrun.tests.ErrorTests")
+dt.add("pycbio.exrun.tests.SchedTests")
+dt.add("pycbio.exrun.tests.CmdTests")
+dt.add("pycbio.exrun.tests.BigTests")
 dt.add("pycbio.align.tests.PairAlignTest")
 dt.run()
 
+dt.cleanup()

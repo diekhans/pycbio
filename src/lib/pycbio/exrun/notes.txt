@@ -19,6 +19,32 @@ er.addCmd([(["cat"] + [s.getIn() for s in blastpRawOuts]),
     - dynamic subgraphs
   - 
 
-- *** Need to cleanup all output files before tests
-
 - return list of errors
+--------------------------------------------
+
+RemoteCmd: task user host dir [simpleCbmd]
+ - want to allow stdin, but conflicts with send commands on stdin.
+ - stdout (returnor pipe) / stderr stderr or except
+ - might want to allow rsh, but exit code problem (ssh rsh seems to work)
+ - can shell be specified to avoid use shell?
+
+ParaRemote
+
+taktuk - efficient, large scale, parallel remote execution of commands
+
+ssh dev sys
+
+see QuoteForPOSIX(string): http://code.activestate.com/recipes/498202/
+
+time ssh hgwdev
+
+time rsh hgwdev date 0.008u 0.004s 0:00.15
+
+time ssh hgwdev date 0.020u 0.008s 0:00.25
+time ssh -o PreferredAuthentications=hostbased  hgwdev date  Permission denied
+
+ -c blowfish  # FASTER
+
+time ssh -c blowfish  hgwdev date 0.018u 0.011s 0:00.25
+time ssh -c 3des  hgwdev date    0.027u 0.006s 0:00.26
+

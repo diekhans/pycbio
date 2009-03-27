@@ -1,8 +1,8 @@
 """
 Process pipelines constructed as a DAG.
 """
-import os, sys, fcntl, stat, signal, socket, errno, threading, traceback, pickle
-from pycbio.sys import strOps, Trace
+import os, sys, fcntl, stat, signal, socket, errno, threading, traceback, pickle, time
+from pycbio.sys import strOps, Trace, PycbioException, Fifo
 
 # FIXME:
 #    - need to close other files (optional)
@@ -12,7 +12,6 @@ try:
 except:
     MAXFD = 256
 
-
 def _getSigName(num):
     "get name for a signal number"
     # find name in signal namespace
@@ -21,13 +20,24 @@ def _getSigName(num):
             return key
     return "signal"+str(num)
 
-def _mkFdPath(fd):
-    "get linux /proc path for an fd"
-    assert(fd != None)
-    p = "/proc/" + str(os.getpid()) + "/fd/" + str(fd)
-    if not os.path.exists(p):
-        raise ProcDagException("no /proc file descriptor entry: " + p)
-    return p
+def _setPgid(pid, pgid):
+    """set pgid of a process, ignored exception caused by race condition
+    that occurs if already set by parent or child has already existed"""
+    # Should just ignore on EACCES, as to handle race condition with parent
+    # and child.  However some Linux kernels (seen in 2.6.18-53) report ESRCH
+    # or EPERM.  To handle this is a straight-forward way, just check that the
+    # change has been made.  However, in some cases the change didn't take,
+    # retrying seems to make the problem go away.
+    for i in xrange(0,5):
+        try:
+            os.setpgid(pid, pgid)
+            return
+        except OSError, e:
+            if os.getpgid(pid) == pgid:
+                return
+            time.sleep(0.25) # sleep for retry
+    # last try, let it return an error
+    os.setpgid(pid, pgid)
 
 def _quoteStr(a):
     "return string  with quotes if it contains white space"
@@ -36,89 +46,27 @@ def _quoteStr(a):
         a = '"' + a + '"'
     return a
 
-class Fifo(object):
-    """Object wrapper for pipe, abstracting traditional and named pipes,
-    and hiding OS differences"""
-    __slots__ = ("rfd", "wfd", "rfh", "wfh", "rpath", "wpath")
-
-    def __init__(self):
-        self.rfd, self.wfd = os.pipe()
-        self.rfh = self.wfh = None
-        # must do before forking, since path contains pid!
-        self.rpath = _mkFdPath(self.rfd)
-        self.wpath = _mkFdPath(self.wfd)
-
-    def __del__(self):
-        "finalizer"
-        try:
-            self.close()
-        except: pass
-
-    def getRfh(self):
-        "get read file object"
-        if self.rfh == None:
-            self.rfh = os.fdopen(self.rfd)
-        return self.rfh
-
-    def getWfh(self):
-        "get write file object"
-        if self.wfh == None:
-            self.wfh = os.fdopen(self.wfd, "w")
-        return self.wfh
-
-    def rclose(self):
-        "close read side if open"
-        if self.rfd != None:
-            if self.rfh != None:
-                self.rfh.close()
-            else:
-                os.close(self.rfd)
-            self.rfd = self.rfh = None
-
-    def wclose(self):
-        "close write side, if open"
-        if self.wfd != None:
-            if self.wfh != None:
-                self.wfh.close()
-            else:
-                os.close(self.wfd)
-            self.wfd = self.wfh = None
-
-    def close(self):
-        "close if open"
-        # do write side first to ensure EOF if in single process
-        if self.wfd != None:
-            self.wclose()
-        if self.rfd != None:
-            self.rclose()
-
-class ProcException(Exception):
+class ProcException(PycbioException):
     "Process error exception.  A None returncode indicates a exec failure."
-    def __init__(self, desc, returncode=None, stderr=None, cause=None):
-        assert((returncode != None) or (cause != None))
+    def __init__(self, procDesc, returncode=None, stderr=None, cause=None):
         self.returncode = returncode
         self.stderr = stderr
-        self.cause = cause
         if returncode == None:
-            msg = "exec failed: " + str(cause)
+            msg = "exec failed"
         elif (returncode < 0):
             msg = "process signaled: " + _getSigName(-returncode)
         else:
             msg = "process exited " + str(returncode)
-        if desc != None:
-            msg += ":\n" + desc
-        if returncode == None:
-            msg += ":\n" + cause.child_traceback
+        if procDesc != None:
+            msg += ": " + procDesc
         if (stderr != None) and (len(stderr) != 0):
             msg += ":\n" + stderr
-        Exception.__init__(self, msg)
+        PycbioException.__init__(self, msg, cause=cause)
 
-class ProcDagException(Exception):
+class ProcDagException(PycbioException):
     "Exception not associate with process execution"
     def __init__(self, msg, cause=None):
-        if cause != None:
-            msg += ": " + str(cause)
-        Exception.__init__(self, msg)
+        PycbioException.__init__(self, msg, cause)
 
 def nonBlockClear(fd):
     "clear the non-blocking flag on a fd"
@@ -144,18 +92,19 @@ class _ExecStatPipe(object):
         os.close(self.rfd)
         self.rfd = None
 
-    def sendExcept(self):
-        "send next exception to parent and exit child"
-        type, value, tb = sys.exc_info()
-        # include traceback as string, same field name as subprocess
-        trace = traceback.format_exception(type, value, tb)
-        value.child_traceback = ''.join(trace)
-        os.write(self.wfd, pickle.dumps(value))
+    def sendExcept(self, ex):
+        "send and exception to parent and exit child"
+        os.write(self.wfd, pickle.dumps(ex))
         os._exit(255)
 
+    def sendOk(self, ex):
+        "send True to parent and continue"
+        os.write(self.wfd, pickle.dumps(True))
+
     def recvStatus(self):
-        "read status from child, return exception if received, otherwise None"
-        # FIXME add read loop
+        """read status from child, return exception if received, otherwise
+        None or True"""
+        # FIXME add read loop, or read through pickle??
         data = os.read(self.rfd, 1024*1024)
         os.close(self.rfd)
         if len(data) > 0:
@@ -368,7 +317,7 @@ class DataReader(Dev):
         "pre-fork setup"
         if self.pin != None:
             raise Exception(self.__class__.__name__ + " can't be used for process input")
-        self.fifo = Fifo()
+        self.fifo = Fifo.factory()
 
     def postExecParent(self):
         "called to do any post-exec handling in the parent"
@@ -379,10 +328,12 @@ class DataReader(Dev):
         
     def finish(self):
         "called in parent when processing is complete"
-        self.fifo.wclose()  # call before join thread so it sees EOF
-        self.thread.join()
-        self.thread = None
-        self.fifo.close()
+        if self.fifo != None:
+            self.fifo.wclose()  # call before join thread so it sees EOF
+            if self.thread != None:
+                self.thread.join()
+                self.thread = None
+            self.fifo.close()
 
     def __reader(self):
         "child read thread function"
@@ -430,7 +381,7 @@ class DataWriter(Dev):
         "pre-fork setup"
         if self.pout != None:
             raise Exception(self.__class__.__name__ + " can't be used for process output")
-        self.fifo = Fifo()
+        self.fifo = Fifo.factory()
 
     def postExecParent(self):
         "called to do any post-exec handling in the parent"
@@ -487,7 +438,7 @@ class Pipe(Dev):
 
     def preFork(self):
         "pre-fork setup"
-        self.fifo = Fifo()
+        self.fifo = Fifo.factory()
 
     def postExecParent(self):
         "called to do any post-exec handling in the parent"
@@ -704,8 +655,8 @@ class Proc(object):
 
     def __doChildStart(self):
         "guts of start child process"
-        os.setpgid(os.getpid(), (self.dag.pgid if (self.dag.pgid != None) else os.getpid()))
         self.execStatPipe.postForkChild()
+        _setPgid(os.getpid(), self.dag.pgid if (self.dag.pgid != None) else os.getpid())
         cmd = self.__buildCmd()
         self.__stdioSetup(self.stdin, 0)
         self.__stdioSetup(self.stdout, 1)
@@ -718,22 +669,18 @@ class Proc(object):
         "start in child process"
         try:
             self.__doChildStart()
-        except:
-            self.execStatPipe.sendExcept()
+        except Exception, ex:
+            # FIXME: use isinstance(ex, ProcException) causes error in python
+            if type(ex) != ProcException:
+                ex = ProcException(str(self), cause=ex)
+            self.execStatPipe.sendExcept(ex)
             
     def __parentStart(self):
         "start in parent process"
         # first process is process leader.
         if self.dag.pgid == None:
             self.dag.pgid = self.pid
-        # by calling by calling setpgid() both in parent and child,
-        # a race condition is avoid   However, EACCES must be ignored
-        # in parent, as child may have already execed
-        try:
-            os.setpgid(self.pid, self.dag.pgid), 
-        except OSError, e:
-            if e.errno != errno.EACCES:
-                raise
+        _setPgid(self.pid, self.dag.pgid)
         self.execStatPipe.postExecParent()
 
     def __start(self):
@@ -749,7 +696,7 @@ class Proc(object):
         else:
             self.__parentStart()
 
-    def start(self):
+    def _start(self):
         "start the process"
         try:
             self.__start()
@@ -758,10 +705,13 @@ class Proc(object):
         if self.exceptInfo != None:
             self.raiseIfExcept()
 
-    def execWait(self):
+    def _execWait(self):
+        "receive status, raising the exception if one was send"
         ex = self.execStatPipe.recvStatus()
-        if ex != None:
-            raise ProcException(str(self), cause=ex)
+        if isinstance(ex, Exception):
+            if not isinstance(ex, ProcException):
+                ex = ProcException(str(self), cause=ex)
+            raise ex
 
     def running():
         "determined if this process has been started, but not finished"
@@ -1063,12 +1013,12 @@ class ProcDag(object):
 
     def __start(self):
         for p in self.procs:
-            p.start()
+            p._start()
             self.byPid[p.pid] = p
 
     def __execBarrier(self):
         for p in self.procs:
-            p.execWait()
+            p._execWait()
 
     def __postExec(self):
         for d in self.devs:
@@ -1087,8 +1037,10 @@ class ProcDag(object):
             try:
                 d.finish()
             except Exception, e:
-                # FIXME: make optional
-                sys.stderr.write("ProcDag dev cleanup exception: " +str(e)+"\n")
+                # FIXME: make optional, or record, or something
+                exi = sys.exc_info()
+                stack = "" if exi == None else "".join(traceback.format_list(traceback.extract_tb(exi[2])))+"\n"
+                sys.stderr.write("ProcDag dev cleanup exception: " +str(e)+"\n"+stack)
                 pass
         for p in self.procs:
             try:

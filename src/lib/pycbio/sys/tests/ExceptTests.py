@@ -56,8 +56,8 @@ class ExceptTests(TestCaseBase):
         except Exception, e:
             ex = e
         self.failUnless(ex != None)
-        self.failUnlessEqual(str(ex), "in-fn1, caused by in-fn3, caused by in-fn6, caused by OS meltdown")
-        self.failUnlessMatch(ex.format(), """^TestExcept: in-fn1.+fn1\(\).+raise TestExcept\("in-fn1", e\)\ncaused by: TestExcept: in-fn3.+fn3\(\).+caused by: TestExcept: in-fn6.+fn4\(\).+fn5\(\).+fn6\(\).+caused by: OSError: OS meltdown.+fn7\(\).+raise OSError\("OS meltdown"\)$""")
+        self.failUnlessEqual(str(ex), "in-fn1, caused by: in-fn3, caused by: in-fn6, caused by: OS meltdown")
+        self.failUnlessMatch(ex.format(), """^TestExcept: in-fn1.+fn1\(\).+raise TestExcept\("in-fn1", e\).+caused by: TestExcept: in-fn3.+fn3\(\).+caused by: TestExcept: in-fn6.+fn4\(\).+fn5\(\).+fn6\(\).+caused by: OSError: OS meltdown.+fn7\(\).+raise OSError\("OS meltdown"\)$""")
         
 def suite():
     suite = unittest.TestSuite()
