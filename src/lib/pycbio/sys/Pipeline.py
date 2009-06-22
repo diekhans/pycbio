@@ -583,7 +583,7 @@ class Proc(object):
             return spec  # passed unchanged
 
         # make spec into PInOut object if needed
-        if isinstance(spec, str):
+        if isinstance(spec, str) or isinstance(spec, unicode):
             spec = File(spec)
         if isinstance(spec, Dev):
             if mode == "r":
@@ -1203,6 +1203,14 @@ class Pipeline(Procline):
         Procline.__init__(self, cmds, stdin=firstIn, stdout=lastOut)
         self.start()
         self.fh = self.pio.getFh()
+
+    def __enter__(self):
+        "support for with statement"
+        return self
+
+    def __exit__(self, type, value, traceback):
+        "support for with statement"
+        self.close()
 
     def _getOtherFh(self):
         """get the other end of the pipeline, return (otherFh, closeOther), with otherFh

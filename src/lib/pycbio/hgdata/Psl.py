@@ -9,6 +9,7 @@ from Bio.Seq import reverse_complement
 
 class Psl(object):
     """Object wrapper for a parsing a PSL record"""
+    __slots__ = ("match", "misMatch", "repMatch", "nCount", "qNumInsert", "qBaseInsert", "tNumInsert", "tBaseInsert", "strand", "qName", "qSize", "qStart", "qEnd", "tName", "tSize", "tStart", "tEnd", "blockCount", "blockSizes", "qStarts", "tStarts", "qSeqs", "tSeqs")
 
     def _parse(self, row):
         self.match = int(row[0])

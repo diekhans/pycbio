@@ -15,12 +15,8 @@ class TabFile(list):
         """
         self.fileName = fileName
         self.rowClass = rowClass
-        reader = TabFileReader(self.fileName, hashAreComments)
-        for row in reader:
-            if self.rowClass:
-                self.append(self.rowClass(row))
-            else:
-                self.append(row)
+        for row in TabFileReader(self.fileName, rowClass=rowClass, hashAreComments=hashAreComments):
+            self.append(row)
 
     @staticmethod
     def write(fh, row):
@@ -34,9 +30,10 @@ class TabFile(list):
         fh.write("\n")
 
 class TabFileReader(object):
-    def __init__(self, tabFile, hashAreComments=False):
+    def __init__(self, tabFile, rowClass=None, hashAreComments=False):
         self.inFh = fileOps.opengz(tabFile)
         self.csvRdr = csv.reader(self.inFh, dialect=csv.excel_tab)
+        self.rowClass = rowClass
         self.hashAreComments = hashAreComments
         self.lineNum = 0
 
@@ -62,7 +59,10 @@ class TabFileReader(object):
             if row == None:
                 raise StopIteration
             if not (self.hashAreComments and (len(row) > 0) and row[0].startswith("#")):
-                return row
+                if self.rowClass != None:
+                    return self.rowClass(row)
+                else:
+                    return row
 
     def close(self):
         "close file, called automatically on EOF"

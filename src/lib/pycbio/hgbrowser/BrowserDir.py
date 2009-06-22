@@ -6,6 +6,16 @@ from pycbio.hgbrowser.Coords import Coords
 from pycbio.html.HtmlPage import HtmlPage
 from pycbio.sys import fileOps
 
+defaultStyle = """
+TABLE, TR, TH, TD {
+    white-space: nowrap;
+    border: solid;
+    border-width: 1px;
+    border-collapse: collapse;
+}
+"""
+
+
 class Entry(object):
     "entry in directory"
     __slots__= ("row", "key", "cssClass", "subRows")
@@ -59,9 +69,14 @@ class BrowserDir(object):
 
     def __init__(self, browserUrl, defaultDb, colNames=None, pageSize=50,
                  title=None, dirPercent=15, below=False, pageDesc=None,
-                 tracks=None, style=None, numColumns=1, customTrackUrl=None):
-        """tracks is a dict, or none; pageSize of None creates a single
-        page. If numColumns is greater than 1"""
+                 tracks=None, initTracks=None, style=defaultStyle, numColumns=1, customTrackUrl=None):
+        """The tracks arg is a dict of track name to setting, it is added to
+        each URL and the initial setting of the frame. The initTracks arg is
+        similar, however its only set in the initial frame and not added to
+        each URL.
+        A pageSize agr of None creates a single page. If numColumns is greater than 1
+        create multi-column directories.
+        """
         self.browserUrl = browserUrl
         if self.browserUrl.endswith("/"):
             self.browserUrl = self.browserUrl[0:-1] # drop trailing `/', so we don't end up with '//'
@@ -76,23 +91,22 @@ class BrowserDir(object):
         self.entries = []
         self.style = style
         self.customTrackUrl = customTrackUrl
-        if tracks != None:
-            self.tracksArgs = self.__mkTracksArgs(tracks)
-        else:
-            self.tracksArgs = ""
+        self.trackArgs = self.__mkTracksArgs(tracks)
+        self.initTrackArgs = self.__mkTracksArgs(initTracks)
         if customTrackUrl != None:
             self.tracksArgs += "&hgt.customText=" + self.customTrackUrl
             
 
     def __mkTracksArgs(self, initialTracks):
+        if initialTracks == None:
+            return ""
         l = []
-        if initialTracks != None:
-            for t in initialTracks:
-                l.append(t + "=" + initialTracks[t])
+        for t in initialTracks:
+            l.append(t + "=" + initialTracks[t])
         return "&" + "&".join(l)
         
     def mkDefaultUrl(self):
-        return self.browserUrl + "/cgi-bin/hgTracks?db=" + self.defaultDb + "&position=default" + self.tracksArgs
+        return self.browserUrl + "/cgi-bin/hgTracks?db=" + self.defaultDb + "&position=default" + self.initTrackArgs  + self.trackArgs
 
     def mkUrl(self, coords):
         url = self.browserUrl + "/cgi-bin/hgTracks?db="
@@ -100,7 +114,7 @@ class BrowserDir(object):
             url += coords.db
         else:
             url += self.defaultDb
-        url += "&position=" + str(coords) + self.tracksArgs
+        url += "&position=" + str(coords) + self.trackArgs
         return url
 
     def mkAnchor(self, coords, text=None):
@@ -175,7 +189,7 @@ class BrowserDir(object):
     def __addPageRows(self, pg, pgEntries, numPadRows):
         """add one set of rows to the page.  In multi-column mode, this
         will be contained in a higher-level table"""
-        pg.tableStart(style="white-space:nowrap;")
+        pg.tableStart()
         if self.colNames != None:
             pg.tableHeader(self.colNames)
         numColumns = None
