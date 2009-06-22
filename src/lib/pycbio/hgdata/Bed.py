@@ -1,4 +1,4 @@
-from pycbio.tsv.TabFile import TabFile
+from pycbio.tsv.TabFile import TabFile, TabFileReader
 from pycbio.hgdata.AutoSql import intArraySplit, intArrayJoin
 from pycbio.sys.MultiDict import MultiDict
 
@@ -10,9 +10,15 @@ class Bed(object):
     """Object wrapper for a parsing a BED record"""
 
     class Block(object):
-        def __init__(self, relStart, size):
+        __slots__ = ("relStart", "size", "start", "end")
+        def __init__(self, relStart, size, start):
             self.relStart = relStart
             self.size = size
+            self.start = start
+            self.end = start+size
+
+        def __str__(self):
+            return str(self.start) + "-" + str(self.end) + "[+" + str(self.relStart) + "/" + str(self.size) + "]"
 
     def __init__(self, row):
         self.numCols = len(row)
@@ -36,20 +42,19 @@ class Bed(object):
             self.thickEnd = None
             
         if self.numCols > 8:
-            self.itemRgb = int(row[8])
+            self.itemRgb = row[8]
         else:
             self.itemRgb = None
         if self.numCols > 11:
-            relStarts = intArraySplit(row[10])
-            sizes = intArraySplit(row[11])
+            sizes = intArraySplit(row[10])
+            relStarts = intArraySplit(row[11])
             self.blocks = []
             for i in xrange(len(relStarts)):
-                self.blocks.append(Bed.Block(relStarts[i], sizes[i]))
+                self.blocks.append(Bed.Block(relStarts[i], sizes[i], self.chromStart+relStarts[i]))
         else:
             self.blocks = None
 
-    def __str__(self):
-        "return BED as a tab-separated string"
+    def getRow(self):
         row = [self.chrom, str(self.chromStart), str(self.chromEnd), self.name]
         if self.numCols > 4:
             row.append(str(self.score));
@@ -69,13 +74,22 @@ class Bed(object):
                 sizes.append(str(blk.size))
             row.append(intArrayJoin(self.relStart))
             row.append(intArrayJoin(self.sizes))
-        return str.join("\t", row)
+        return row
+
+    def __str__(self):
+        "return BED as a tab-separated string"
+        return str.join("\t", self.toRow())
         
     def write(self, fh):
         """write BED to a tab-seperated file"""
         fh.write(str(self))
         fh.write('\n')        
 
+class BedReader(TabFileReader):
+    """Reader for BED objects loaded from a tab-file"""
+
+    def __init__(self, fileName):
+        TabFileReader.__init__(self, fileName, rowClass=Bed, hashAreComments=True)
 
 class BedTbl(TabFile):
     """Table of BED objects loaded from a tab-file

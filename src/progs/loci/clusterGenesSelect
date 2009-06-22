@@ -39,86 +39,87 @@ class CmdOpts(object):
                                   Maybe specified multiple times.""")
         parser.add_option("--geneIds", action="append", dest="geneIdFiles", default=None,
                           help="""select loci containing these gene ids""")
-        parser.add_option("--geneIdBedOut", action="store_true", dest="geneIdBedOut", default=False,
-                          help="""Output loci bed for each gene in --geneIds with name column being the gene id""")
         parser.add_option("--trackFilter", action="store", dest="trackFilterSet", default=None,
                           help="""Only output tracks in this set.  Loci that don't contain any of these tracks are dropped""")
+        parser.add_option("--clusterBedOutput", action="store_true", dest="clusterBedOutput", default=False,
+                          help="""Output loci bed for select loci""")
         (opts, args) = parser.parse_args()
         if len(args) != 2:
             parser.error("wrong number of arguments")
         (self.clusterFile, self.outFile) = args
         self.__dict__.update(opts.__dict__)
+            
 
 class ClusterSelect(object):
     def __init__(self, opts):
         self.clusters = ClusterGenes(opts.clusterFile)
 
-        self.trackSets = self._parseTrackSetList(opts.trackSet) if (opts.trackSet != None) else None
-        self.notTrackSets = self._parseTrackSetList(opts.notTrackSet) if (opts.notTrackSet != None) else None
-        self.onlyTrackSets = self._parseTrackSetList(opts.onlyTrackSet) if (opts.onlyTrackSet != None) else None
-        self.notOnlyTrackSets = self._parseTrackSetList(opts.notOnlyTrackSet) if (opts.notOnlyTrackSet != None) else None
-        self.geneIds = self._loadIdFiles(opts.geneIdFiles) if (opts.geneIdFiles != None) else None
-        self.trackFilterSet = self._parseTrackSet(opts.trackFilterSet) if (opts.trackFilterSet != None) else None
+        self.trackSets = self.__parseTrackSetList(opts.trackSet) if (opts.trackSet != None) else None
+        self.notTrackSets = self.__parseTrackSetList(opts.notTrackSet) if (opts.notTrackSet != None) else None
+        self.onlyTrackSets = self.__parseTrackSetList(opts.onlyTrackSet) if (opts.onlyTrackSet != None) else None
+        self.notOnlyTrackSets = self.__parseTrackSetList(opts.notOnlyTrackSet) if (opts.notOnlyTrackSet != None) else None
+        self.geneIds = self.__loadIdFiles(opts.geneIdFiles) if (opts.geneIdFiles != None) else None
+        self.trackFilterSet = self.__parseTrackSet(opts.trackFilterSet) if (opts.trackFilterSet != None) else None
 
-    def _parseTrackSet(self, spec):
+    def __parseTrackSet(self, spec):
         selSet = set()
         for tr in spec.split(","):
             selSet.add(intern(tr))
         return selSet
 
-    def _parseTrackSetList(self, specs):
+    def __parseTrackSetList(self, specs):
         trackSetList = []
         for spec in specs:
-            trackSetList.append(self._parseTrackSet(spec))
+            trackSetList.append(self.__parseTrackSet(spec))
         return trackSetList
 
-    def _loadIdFiles(self, idFiles):
+    def __loadIdFiles(self, idFiles):
         ids = set()
         for f in idFiles:
             for line in readFileLines(f):
                 ids.add(line.strip())
         return ids
 
-    def _selectedByTrackSets(self, cl):
+    def __selectedByTrackSets(self, cl):
         for ts in self.trackSets:
             if ts & cl.tableSet:
                 return True
         return False
 
-    def _rejectedByNotTrackSets(self, cl):
+    def __rejectedByNotTrackSets(self, cl):
         for ts in self.notTrackSets:
             if ts & cl.tableSet:
                 return True
         return False
 
-    def _selectedByOnlyTrackSets(self, cl):
+    def __selectedByOnlyTrackSets(self, cl):
         for ts in self.onlyTrackSets:
             if ts == cl.tableSet:
                 return True
         return False
 
-    def _rejectedByNotOnlyTrackSets(self, cl):
+    def __rejectedByNotOnlyTrackSets(self, cl):
         for ts in self.notOnlyTrackSets:
             if ts == cl.tableSet:
                 return True
         return False
 
-    def _selectedByGeneId(self, cl):
+    def __selectedByGeneId(self, cl):
         for gene in cl:
             if gene.gene in self.geneIds:
                 return True
         return False
 
-    def _selected(self, cl):
-        if (self.trackSets != None) and not self._selectedByTrackSets(cl):
+    def __selected(self, cl):
+        if (self.trackSets != None) and not self.__selectedByTrackSets(cl):
             return False
-        if (self.notTrackSets != None) and self._rejectedByNotTrackSets(cl):
+        if (self.notTrackSets != None) and self.__rejectedByNotTrackSets(cl):
             return False
-        if (self.onlyTrackSets != None) and not self._selectedByOnlyTrackSets(cl):
+        if (self.onlyTrackSets != None) and not self.__selectedByOnlyTrackSets(cl):
             return False
-        if (self.notOnlyTrackSets != None) and self._rejectedByNotOnlyTrackSets(cl):
+        if (self.notOnlyTrackSets != None) and self.__rejectedByNotOnlyTrackSets(cl):
             return False
-        if (self.geneIds != None) and not self._selectedByGeneId(cl):
+        if (self.geneIds != None) and not self.__selectedByGeneId(cl):
             return False
         if (self.trackFilterSet != None) and not (self.trackFilterSet & cl.tableSet):
             return False
@@ -130,31 +131,25 @@ class ClusterSelect(object):
         prRow(outFh, self.clusters.columns)
         
         for cl in self.clusters:
-            if self._selected(cl):
+            if self.__selected(cl):
                 cl.write(outFh, self.trackFilterSet)
         outFh.close()
 
-    def _geneSelected(self, gene):
-        return (((self.geneIds == None) or (gene.gene in self.geneIds))
-                and ((self.trackFilterSet == None) or (gene.table in self.trackFilterSet)))
+    def __writeClusterBed(self, outFh, cl):
+        prRowv(outFh, cl.chrom, cl.start, cl.end, cl.clusterId, 0, cl.strand)
 
-    def _writeGeneIdBed(self, outFh, cl):
-        for gene in cl:
-            if self._geneSelected(gene):
-                prRowv(outFh, cl.chrom, cl.start, cl.end, gene.gene)
-
-    def outGeneIdBed(self, outFile):
+    def outClusterBed(self, outFile):
         outFh = open(outFile, "w")
         for cl in self.clusters:
-            if self._selected(cl):
-                self._writeGeneIdBed(outFh, cl)
+            if self.__selected(cl):
+                self.__writeClusterBed(outFh, cl)
         outFh.close()
 
 def main():
     opts = CmdOpts()
     clSelect = ClusterSelect(opts)
-    if opts.geneIdBedOut:
-        clSelect.outGeneIdBed(opts.outFile)
+    if opts.clusterBedOutput:
+        clSelect.outClusterBed(opts.outFile)
     else:
         clSelect.outClusters(opts.outFile)
 

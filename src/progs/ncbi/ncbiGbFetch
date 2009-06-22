@@ -11,7 +11,7 @@ class CmdLine(object):
     usage="""%prog [options] [id1 ...]
 
 Retrieve genbank records or sequences from NCBI nucleotide (GenBank/RefSeq),
-give accessions or or ids understood by efetch server.
+give accessions or other ids understood by efetch server.
 """
     def __init__(self):
         parser = OptionParser(usage=CmdLine.usage)
@@ -30,11 +30,11 @@ give accessions or or ids understood by efetch server.
         (opts, args) = parser.parse_args()
         self.__dict__.update(opts.__dict__)
         if self.simplifyIds and not self.fasta:
-            Exception("can only specify --simplifyIds with --fasta");
-        self.ids = args
+            parser.error("can only specify --simplifyIds with --fasta");
+        self.ids = list(args)
         self._loadIdFiles()
         if len(self.ids) == 0:
-            Exception("no ids specified on command line or with --idFiles")
+            parser.error("no ids specified on command line or with --idFiles, specify --help for usage")
 
     def _loadIdFiles(self):
         for idFile in self.idFiles:

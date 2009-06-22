@@ -72,6 +72,14 @@ def addUniq(d, k, v):
         raise Exception("item \"" + str(k) + "\" already in dict")
     d[k] = v
 
+def dictObtain(d, key, mkFunc):
+    "return entry d[key], creating with mkFunc if it doesn't exist"
+    if not key in d:
+        e = d[key] = mkFunc()
+    else:
+        e = d[key]
+    return e
+
 def sortedKeys(d, sortFunc=cmp):
     "return of keys for dict d, sort by sortFunc, if d is None, return an empty list"
     if d == None:
@@ -81,5 +89,5 @@ def sortedKeys(d, sortFunc=cmp):
         keys.sort(cmp=sortFunc)
         return keys
 
-__all__ = (isListLike.__name__, listInit.__name__, listAppend.__name__, isIterable.__name__, mkiter.__name__, mkset.__name__, noneOrZero.__name__, addUniq.__name__, sortedKeys.__name__)
+__all__ = (isListLike.__name__, listInit.__name__, listAppend.__name__, isIterable.__name__, mkiter.__name__, mkset.__name__, noneOrZero.__name__, addUniq.__name__, dictObtain.__name__, sortedKeys.__name__)
 

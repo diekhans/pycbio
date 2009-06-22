@@ -56,7 +56,6 @@ class Coords(Immutable):
         if st < 0:
             st = 0
         return Coords(self.chr, st, self.end+amt)
-  
 
     def __cmp__(self, other):
         if other == None:
@@ -69,4 +68,6 @@ class Coords(Immutable):
         if d == 0:
             d = cmp(self.end, other.end)
         return d
-        
+
+    def __hash__(self):
+        return hash(self.db) + hash(self.chr) + hash(self.start)
