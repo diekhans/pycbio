@@ -21,6 +21,7 @@ class EnumValue(Immutable):
     """
     __slots__ = ("enum", "name", "numValue", "strValue")
     def __init__(self, enum, name, numValue, strValue=None):
+        Immutable.__init__(self)
         self.enum = enum
         self.name = name
         self.numValue = numValue
@@ -28,17 +29,18 @@ class EnumValue(Immutable):
             self.strValue = name
         else:
             self.strValue = strValue
-        Immutable.__init__(self)
+        self.mkImmutable()
 
     def __getstate__(self):
         # optimize strValue if same as name
         return (self.enum, self.name, self.numValue, (None if self.strValue == self.name else self.strValue))
 
     def __setstate__(self, st):
+        Immutable.__init__(self)
         (self.enum,  self.name, self.numValue, self.strValue) = st
         if self.strValue == None:
             self.strValue = self.name
-        Immutable.__init__(self)
+        self.mkImmutable()
 
     def __rept__(self):
         return self.name
@@ -79,6 +81,7 @@ class Enumeration(Immutable):
         value is a list or tuple of string aliases that can be used to
         lookup the value under a different name.
         """
+        Immutable.__init__(self)
         self.name = name
         self.aliases = {}
         self.values = []
@@ -94,7 +97,7 @@ class Enumeration(Immutable):
             else:
                 numValue += 1
         self.values = tuple(self.values)
-        Immutable.__init__(self)
+        self.mkImmutable()
 
     def __len__(self):
         "return number of values"
@@ -124,10 +127,11 @@ class Enumeration(Immutable):
         return (self.name, self.aliases, self.values, self.maxNumValue)
 
     def __setstate__(self, st):
+        Immutable.__init__(self)
         (self.name, self.aliases, self.values, self.maxNumValue) = st
         for val in self.values:
             self.__dict__[val.name] = val
-        Immutable.__init__(self)
+        self.mkImmutable()
 
     def lookup(self, name):
         """look up a value by name or aliases"""
