@@ -83,17 +83,20 @@ class EnumerationTests(TestCaseBase):
         except TypeError:
             pass
 
-    def testPickel(self):
+    def __testPickelProt(self, prot):
         Colors = Enumeration("Colors", ["red", "green", "blue"])
         stuff = {}
         stuff[Colors.red] = "red one"
         stuff[Colors.green] = "green one"
-        world = cPickle.dumps((Colors, stuff), cPickle.HIGHEST_PROTOCOL)
+        world = cPickle.dumps((Colors, stuff), prot)
         Color2, stuff2 = cPickle.loads(world)
 
         self.failUnless(Color2.red in stuff2)
         self.failUnless(Color2.green in stuff2)
 
+    def testPickel(self):
+        #self.__testPickelProt(cPickle.HIGHEST_PROTOCOL)
+        self.__testPickelProt(0)
 
 def suite():
     suite = unittest.TestSuite()

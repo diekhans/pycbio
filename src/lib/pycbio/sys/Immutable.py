@@ -2,6 +2,10 @@
 Base class used to define immutable objects
 """
 
+# FIXME: r886 used a __new__ and had __init__ set immutable flag, however this
+# doesn't worth with cPickle format < 2, however other transMap code didn't
+# work with format == 2, so take this out for now.
+
 class Immutable(object):
     """Base class to make an object instance immutable.  Call 
     Immutable.__init__(self) after construction to make immutable"""
@@ -9,13 +13,12 @@ class Immutable(object):
     __immAttr = "_Immutable__immutable"
     __slots__ = (__immAttr,)
 
-    def __new__(cls, *args, **kvs):
-        self = object.__new__(cls)
-        object.__setattr__(self, Immutable.__immAttr, False)
-        return self
-
     def __init__(self):
-        "makes derived objects immutable"
+        "constructor"
+        object.__setattr__(self, Immutable.__immAttr, False)
+
+    def mkImmutable(self):
+        "set immutable flag in object"
         object.__setattr__(self, Immutable.__immAttr, True)
 
     def __setattr__(self, attr, value):

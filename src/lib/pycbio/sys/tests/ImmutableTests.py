@@ -8,8 +8,10 @@ class ImmutableTests(TestCaseBase):
     def testDictClass(self):
         class DictClass(Immutable):
             def __init__(self, val):
-                self.val = val
                 Immutable.__init__(self)
+                self.val = val
+                self.mkImmutable()
+
         obj = DictClass(10)
         ex = None
         try:
@@ -24,8 +26,9 @@ class ImmutableTests(TestCaseBase):
         class SlotsClass(Immutable):
             __slots__ = ("val", )
             def __init__(self, val):
-                self.val = val
                 Immutable.__init__(self)
+                self.val = val
+                self.mkImmutable()
         obj = SlotsClass(10)
         ex = None
         try:
