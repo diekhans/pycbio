@@ -3,7 +3,7 @@
 import os.path,sys
 from pycbio.sys import typeOps,fileOps
 from pycbio.exrun import ExRunException,Verb
-from pycbio.exrun.Graph import Production,Rule,negInf
+from pycbio.exrun.Graph import Production,Rule
 from pycbio.sys import Pipeline
 
 # FIXME: Auto decompression is not supported, as many programs handle reading
@@ -98,11 +98,11 @@ class File(Production):
         return self.path
 
     def getLocalTime(self):
-        "modification time of file, or -inf if it doesn't exist"
+        "modification time of file, or None if it doesn't exist"
         if os.path.exists(self.path):
             return os.path.getmtime(self.path)
         else:
-            return negInf
+            return None
 
     def getOutPath(self, autoCompress=True):
         """Get the output name for the file, which is newPath until the rule

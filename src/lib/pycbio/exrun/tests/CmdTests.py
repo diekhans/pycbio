@@ -318,12 +318,37 @@ class CmdCompressTests(ExRunTestCaseBase):
             prExceptions(er, ex)
             raise
         self.checkGraphStates(er)
+
+class CmdMiscTests(ExRunTestCaseBase):
+    "misc tests, regressions, etc"
+    def __mkDependOnNoDepend(self, priFile, secFile, secContents):
+        ex = ExRun(verbFlags=verbFlags)
+        priFp = ex.getFile(priFile)
+        secFp = ex.getFile(secFile)
+        ex.addCmd(["touch", FileOut(priFp)])
+        ex.addCmd(["echo", secContents], requires=priFp, stdout=secFp)
+        ex.run()
+        return ex
+
+    def testDependOnNoDepend(self):
+        "test of a dependency on a file that is just created and has no dependencies"
+        priFile = self.getOutputFile(".primary.txt")
+        secFile = self.getOutputFile(".secondary.txt")
+        # build once
+        self.__mkDependOnNoDepend(priFile, secFile, "one")
+        self.verifyOutputFile(".secondary.txt", "one\n")
+
+        # should not be rebuilt
+        self.__mkDependOnNoDepend(priFile, secFile, "two")
+        self.verifyOutputFile(".secondary.txt", "one\n")
+
             
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(CmdSuppliedTests))
     suite.addTest(unittest.makeSuite(CmdSubclassTests))
     suite.addTest(unittest.makeSuite(CmdCompressTests))
+    suite.addTest(unittest.makeSuite(CmdMiscTests))
     return suite
 
 if __name__ == '__main__':

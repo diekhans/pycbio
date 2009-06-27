@@ -11,8 +11,8 @@ from pycbio.exrun.tests import ExRunTestCaseBase
 import threading
 
 # change this for debugging:
-verbFlags=set(())
-#verbFlags=set((Verb.error, Verb.trace, Verb.details))
+verbFlags=set((Verb.error,))
+#verbFlags=set((Verb.error, Verb.trace, Verb.details, Verb.dumpStart))
 #verbFlags=Verb.all
 #verbFlags=set([Verb.dumpEnd])
 
@@ -20,13 +20,13 @@ class MemProd(Production):
     "production that is just in memory, track times"
     def __init__(self, name):
         Production.__init__(self, name)
-        self.time = negInf
+        self.time = None
 
     def getLocalTime(self):
         return self.time
 
 class MemRule(Rule):
-    "rule for running 9in-memory tests"
+    "rule for running in-memory tests"
     def __init__(self, name, requires=None, produces=None):
         Rule.__init__(self, name, requires=requires, produces=produces)
 
@@ -131,8 +131,7 @@ class BigTests(ExRunTestCaseBase):
         prod = rname + "#prod"+str(level)
         rules.append(RuleDef(rname, reqs, prod))
         return prod
-
-
+    
     def testMany(self):
         "graph with a many independent rules in a tree"
         rules =  []
