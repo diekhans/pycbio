@@ -39,13 +39,13 @@ class _RuleTask(object):
     def __preEvalRuleCheck(self):
         "Sanity check before a rule is run"
         for r in self.rule.requires:
-            if r.getLocalTime() < 0.0:
+            if r.getLocalTime() == None:
                 raise ExRunException("require should have been built:" + str(r))
 
     def __postEvalRuleCheck(self):
         "check that a rule build it's productions"
         for p in self.rule.produces:
-            if p.getLocalTime() < 0.0:
+            if p.getLocalTime() == None:
                 if (p.producedBy == None):
                     raise ExRunException("No rule to build production: " + str(p))
                 else:
@@ -269,7 +269,20 @@ class ExRun(object):
                 self.__reportExprError(ex)
         raise ExRunException("Experiment failed: " + str(len(self.errors)) + " error(s) encountered")
 
-    def run(self, targets=defaultTargetName):
+    def __runTargets(self, targets):
+        "run targets"
+        try:
+            self.targets = self.__getRunTargets(targets)
+            self._scheduleReady()
+            self.sched.run()
+        finally:
+            if self.verb.enabled(Verb.dumpEnd):
+                self.dumpGraph("ending")
+        if len(self.errors) > 0:
+            self.__reportExprErrors()
+        
+
+    def run(self, targets=defaultTargetName, dryRun=False):
         """run the experiment, If targets are not specified, the default
         target is used.  Otherwise it can be a single or list of Target objects
         or names.
@@ -280,15 +293,9 @@ class ExRun(object):
         self.graph.complete(self.defaultTargetName)
         if self.verb.enabled(Verb.dumpStart):
             self.dumpGraph("starting")
-        try:
-            self.targets = self.__getRunTargets(targets)
-            self._scheduleReady()
-            self.sched.run()
-        finally:
-            if self.verb.enabled(Verb.dumpEnd):
-                self.dumpGraph("ending")
-        if len(self.errors) > 0:
-            self.__reportExprErrors()
+        if not dryRun:
+            self.__runTargets(targets=targets)
+        self.running = False
 
     def __dumpTarget(self, target, fh=None):
         self.verb.prall("target:", str(target))

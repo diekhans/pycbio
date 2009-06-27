@@ -3,13 +3,13 @@
 import unittest, sys, os
 if __name__ == '__main__':
     sys.path.append("../../..")
-from pycbio.exrun import ExRun, ExRunException, Rule
+from pycbio.exrun import ExRun, ExRunException, Rule, Verb
 from pycbio.exrun.Graph import CycleException,ProdState,RuleState
 from pycbio.sys import fileOps
 from pycbio.exrun.tests import ExRunTestCaseBase
 
 # change this for debugging:
-verbFlags=set(())
+verbFlags=set((Verb.error,))
 
 # FIXME add:
 #  dup production test

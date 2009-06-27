@@ -5,12 +5,12 @@ if __name__ == '__main__':
     sys.path.append("../../..")
 from pycbio.sys import fileOps
 from pycbio.sys.TestCaseBase import TestCaseBase
-from pycbio.exrun import ExRun, File, Target, Rule, Production, Verb
+from pycbio.exrun import ExRunException, ExRun, File, Target, Rule, Production, Verb
 from pycbio.exrun.Graph import RuleState, ProdState
 from pycbio.exrun.tests import ExRunTestCaseBase
 
 # change this for debugging:
-verbFlags=set(())
+verbFlags=set((Verb.error,))
 #verbFlags=set((Verb.error, Verb.trace, Verb.details))
 #verbFlags=Verb.all
 

@@ -5,6 +5,7 @@ import os.path, threading
 from pycbio.sys import typeOps
 from pycbio.sys.Enumeration import Enumeration
 from pycbio.exrun import ExRunException, Verb
+import sys # FIXME: debug
 
 # FIXME: adding node has gotten too complex
 # FIXME: state initialization is rather complex and redundent
@@ -54,16 +55,17 @@ _ruleStateTbl[RuleState.blocked]  = _emptySet
 class Node(object):
     """Base object for all entries in graph. Derived object define generators
     prevNodes() and nextNodes() for traversing tree."""
-    def __init__(self, name):
+    def __init__(self, name, shortName):
         assert(isinstance(name, str))
         self.name = name
+        self.shortName = shortName if (shortName != None) else name
         self.graph = None # set when added to graph
         # these set when added to graph
         self.exrun = None
         self.verb = None
 
     def __str__(self):
-        return self.name
+        return self.shortName
 
     @staticmethod
     def joinNames(nodes):
@@ -77,8 +79,9 @@ class Production(Node):
     link.  When a production is being create by a rule, it is single threaded.
     Once the rule is creating a production has finished, access to it is
     multi-threaded when used as a required."""
-    def __init__(self, name):
-        Node.__init__(self, name);
+    def __init__(self, name, shortName=None):
+        """Name must be unique, short name does not have to be unique and defaults to name."""
+        Node.__init__(self, name, shortName);
         self.producedBy = None
         self.requiredBy = set()
         self.state = ProdState.unknown
@@ -108,7 +111,7 @@ class Production(Node):
         "compute and update state from producing rule state"
         if self.producedBy == None:
             # no rule to produce, must exist
-            if prod.getLocalTime() < 0:
+            if prod.getLocalTime() == None:
                 prod._transition(ProdState.bad)
             else:
                 prod._transition(ProdState.current)
@@ -170,24 +173,26 @@ class Production(Node):
 
     def getLocalTime(self):
         """Get the modification time of this Production as a floating point number.
-        If the object do not exist, return -inf.  This is not recurisve, it is
+        If the object does not exist, return None.  This is not recurisve (local), it is
         simply the time associated with the production.   Must be thread-safe."""
         raise ExRunException("getLocalTime() not implemented for Production " + str(type(self)))
 
     def getUpdateTime(self):
         """Recursively get the update time of this Products as a floating point
         number.  This is the oldest time recursive times of any of the requirements.
-        If the production does not exist, returns -inf. """
+        If the production does not exist, returns None. """
         pt = self.getLocalTime()
-        if (pt < 0.0) or (self.producedBy == None):
-            return pt # short-circuit
+        if (pt == None) or (self.producedBy == None):
+            return None # short-circuit
         else:
             return min(pt, self.producedBy.getUpdateTime())
 
 class Rule(Node):
     """Base class for a rule.  A rule is single threaded."""
-    def __init__(self, name, requires=None, produces=None):
-        Node.__init__(self, name);
+    def __init__(self, name, requires=None, produces=None, shortName=None):
+        """requires/produces can be a single Production or list of productions.
+        name must be unique, short name does not have to be unique and defaults to name"""
+        Node.__init__(self, name, shortName);
         self.state = RuleState.unknown
         self.requires = set()
         self.produces = set()
@@ -215,31 +220,31 @@ class Rule(Node):
         return states
 
     def __getRequiresTime(self):
-        """get the oldest requires local time, -inf if any don't exist, None if no
+        """get the newest requires local time, +inf if any don't exist, None if no
         requires"""
         if len(self.requires) == 0:
             return None
-        rtime = posInf
+        rtime = negInf
         for r in self.requires:
-            t = r.getLocalTime()
-            if t < 0.0:
-                return negInf
-            elif t < rtime:
-                rtime = t
+            rt = r.getLocalTime()
+            if rt == None:
+                return posInf
+            elif rt > rtime:
+                rtime = rt
         return rtime
 
     def __getProducesTime(self):
-        """get the newest produces local time, +inf if any don't exist, None if no
+        """get the oldest produces local time, -inf if any don't exist, None if no
         produces"""
         if len(self.produces) == 0:
             return None
-        ptime = negInf
+        ptime = posInf
         for p in self.produces:
-            t = p.getLocalTime()
-            if t < 0.0:
-                return posInf
-            elif t > ptime:
-                ptime = t
+            pt = p.getLocalTime()
+            if pt == None:
+                return negInf
+            elif pt < ptime:
+                ptime = pt
         return ptime
 
     def __stateFromRequiresState(self, reqStates):
@@ -263,13 +268,13 @@ class Rule(Node):
             # no requires
             if ptime == None:
                 return RuleState.failed  # should never happen
-            if ptime < posInf:
+            if ptime > negInf:
                 return RuleState.ok  # exists
             else:
                 return RuleState.outdated
         elif ptime == None:
             return RuleState.outdated
-        elif ptime > rtime:
+        elif ptime < rtime:
             return RuleState.outdated
         else:
             return RuleState.ok
@@ -336,13 +341,13 @@ class Rule(Node):
     def getUpdateTime(self):
         """Recursively get the update time of this Rule as a floating point
         number.  This is the oldest time recursive times of any of the requirements.
-        If an productions do not exist, returns -inf. """
+        If an productions do not exist, returns None. """
         # FIXME: bad name
         rt = posInf
         for r in self.requires:
             pt = r.getUpdateTime()
-            if pt < 0.0:
-                return pt # short-circuit
+            if pt == None:
+                return None # short-circuit
             rt = min(rt, pt)
         return rt
     
@@ -350,7 +355,7 @@ class Rule(Node):
         "is production outdated relative to requirement time"
         # FIXME: needed
         pt = prod.getLocalTime()
-        return (pt < 0.0) or ((rtime != None) and ((pt < rtime) or (rtime < 0)))
+        return (pt == None) or ((rtime != None) and ((pt < rtime) or (rtime < 0)))
 
     def getOutdated(self):
         """Get list of productions that are out of date relative to requires"""
@@ -389,9 +394,10 @@ class Target(Node):
     parents.  Thus multiple Targets can refer to the same production.  A graph
     must have at least one target.
     """
-    def __init__(self, name, requires=None):
-        "requires can be Productions of Targets"
-        Node.__init__(self, name)
+    def __init__(self, name, requires=None, shortName=None):
+        """requires can be Productions or Targets, Name must be unique, short
+        name does not have to be unique and defaults to name."""
+        Node.__init__(self, name, shortName)
         self.requires = set()
         if requires != None:
             self.linkRequires(requires)
@@ -546,7 +552,7 @@ class Graph(object):
         "recursively initial production states"
         if prod.producedBy == None:
             # no rule to produce, must exist
-            if prod.getLocalTime() < 0:
+            if prod.getLocalTime() == None:
                 prod._transition(ProdState.bad)
             else:
                 prod._transition(ProdState.current)
