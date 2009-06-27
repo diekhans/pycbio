@@ -41,7 +41,7 @@ def _setPgid(pid, pgid):
 
 def _quoteStr(a):
     "return string  with quotes if it contains white space"
-    a = a.replace('"', '\\"')
+    a = str(a).replace('"', '\\"')
     if strOps.hasSpaces(a):
         a = '"' + a + '"'
     return a
