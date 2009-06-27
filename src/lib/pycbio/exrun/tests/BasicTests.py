@@ -11,7 +11,7 @@ from pycbio.exrun.tests import ExRunTestCaseBase
 
 # change this for debugging:
 verbFlags=set((Verb.error,))
-#verbFlags=set((Verb.error, Verb.trace, Verb.details))
+#xverbFlags=set((Verb.error, Verb.trace, Verb.details, Verb.dumpStart))
 #verbFlags=Verb.all
 
 class ProdSet(object):

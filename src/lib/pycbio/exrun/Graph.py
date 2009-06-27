@@ -262,19 +262,17 @@ class Rule(Node):
         "compute state by comparing times of requires and produces"
         # can only look at times of produces, not state, as state is set
         # bottom up
-        rtime = self.__getRequiresTime()
-        ptime = self.__getProducesTime()
+        rtime = self.__getRequiresTime()  # or None or +Inf
+        ptime = self.__getProducesTime()  # or None or -Inf
         if rtime == None:
             # no requires
             if ptime == None:
                 return RuleState.failed  # should never happen
-            if ptime > negInf:
-                return RuleState.ok  # exists
-            else:
+            elif ptime < 0:
                 return RuleState.outdated
-        elif ptime == None:
-            return RuleState.outdated
-        elif ptime < rtime:
+            else:
+                return RuleState.ok  # exists
+        elif (ptime == None) or (ptime < rtime):
             return RuleState.outdated
         else:
             return RuleState.ok
@@ -340,9 +338,11 @@ class Rule(Node):
 
     def getUpdateTime(self):
         """Recursively get the update time of this Rule as a floating point
-        number.  This is the oldest time recursive times of any of the requirements.
-        If an productions do not exist, returns None. """
-        # FIXME: bad name
+        number.  This is the oldest recursive times of any of the requirements.
+        If a requried do not exist, returns None. """
+        # FIXME: bad name, needed??
+        if len(self.returns) == 0:
+            return None
         rt = posInf
         for r in self.requires:
             pt = r.getUpdateTime()
@@ -352,7 +352,8 @@ class Rule(Node):
         return rt
     
     def __isProdOutdated(self, rtime, prod):
-        "is production outdated relative to requirement time"
+        """is production outdated relative to requirement time, rtime is None
+        if no requires, +Inf one doesn exist """
         # FIXME: needed
         pt = prod.getLocalTime()
         return (pt == None) or ((rtime != None) and ((pt < rtime) or (rtime < 0)))
