@@ -4,6 +4,10 @@ from pycbio.sys.Immutable import Immutable
 
 # FIXME: support MAF db.chrom syntax, single base syntax, etc.
 
+class CoordsError(Exception):
+    "Coordinate error"
+    pass
+
 class Coords(Immutable):
     """Browser coordinates
     Fields:
@@ -24,6 +28,7 @@ class Coords(Immutable):
     def __init__(self, *args, **opts):
         """args are either one argument in the form chr:start-end, or
         chr, start, end. options are db="""
+        Immutable.__init__(self)
         if len(args) == 1:
             self.__parse__(args[0])
         elif len(args) == 3:
@@ -36,7 +41,7 @@ class Coords(Immutable):
         else:
             raise CoordsError("Coords() excepts either one or three arguments")
         self.db = opts.get("db")
-        Immutable.__init__(self)
+        self.mkImmutable()
 
     def __str__(self):
         return self.chr + ":" + str(self.start) + "-" + str(self.end)

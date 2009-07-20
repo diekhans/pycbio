@@ -18,10 +18,11 @@ class Entry(Immutable):
     __slots__ = ("start", "end", "val")
 
     def __init__(self, start, end, val):
+        Immutable.__init__(self)
         self.start = start
         self.end = end
         self.val = val
-        Immutable.__init__(self)
+        self.mkImmutable()
 
 class Node(object):
     "a node in the skip list.
