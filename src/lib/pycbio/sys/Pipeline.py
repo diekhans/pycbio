@@ -6,6 +6,7 @@ from pycbio.sys import strOps, Trace, PycbioException, Fifo
 
 # FIXME:
 #    - need to close other files (optional)
+#    - not all stdio data types are supported yet (int, file-like)
 
 try:
     MAXFD = os.sysconf("SC_OPEN_MAX")
@@ -489,10 +490,11 @@ class File(Dev):
     """A file path for input or output, used for specifying stdio associated
     with files. Proc wraps these around string arguments automatically"""
 
-    def __init__(self, path):
+    def __init__(self, path, append=False):
         """constructor"""
         Dev.__init__(self)
         self.path = path
+        self.append = append
         self.fd = None  # in child only
 
     def __str__(self):
@@ -503,6 +505,8 @@ class File(Dev):
         if self.fd == None:
             if isinstance(pio, PIn):
                 self.fd = os.open(self.path, os.O_RDONLY)
+            elif self.append:
+                self.fd = os.open(self.path, os.O_WRONLY|os.O_CREAT|os.O_APPEND, 0666)
             else:
                 self.fd = os.open(self.path, os.O_WRONLY|os.O_CREAT|os.O_TRUNC, 0666)
         return self.fd
@@ -1127,8 +1131,8 @@ class Procline(ProcDag):
     def __init__(self, cmds, stdin=None, stdout=None, stderr=None):
         """cmds is either a list of arguments for a single process, or a list
         of such lists for a pipeline. If the stdin/out/err arguments are none,
-        they are inherited.  If they are strings, they are opened as a file,
-        otherwise it should be file-like object or file number. stdin is
+        they are inherited.  Otherwise they can be string file names, a file-like
+        object, a file number,  a Dev object, or a PIn or POut object.  Stdin is
         input to the first process, stdout is output to the last process and
         stderr is attached to all processed."""
         ProcDag.__init__(self)
