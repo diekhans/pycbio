@@ -29,9 +29,10 @@ class Frame(Immutable):
     
     __slots__ = ("val",)
     def __init__(self, val=-1):
+        Immutable.__init__(self)
         assert((val >= -1) and (val <= 2))
         self.val = val
-        Immutable.__init__(self)
+        self.mkImmutable()
 
     def incr(self, amt):
         """increment frame by positive or negative amount, returning a new
