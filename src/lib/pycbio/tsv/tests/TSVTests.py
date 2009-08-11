@@ -3,7 +3,9 @@ if __name__ == '__main__':
     sys.path.append("../../..")
 from pycbio.tsv.TSVTable import TSVTable
 from pycbio.tsv.TSVError import TSVError
+from pycbio.tsv.TSVReader import TSVReader
 from pycbio.sys.TestCaseBase import TestCaseBase
+from pycbio.sys import procOps
 from pycbio.hgdata.AutoSql import intArrayType
 
 class ReadTests(TestCaseBase):
@@ -111,6 +113,27 @@ class ReadTests(TestCaseBase):
         tsv.write(fh)
         fh.close()
         self.diffExpected(".tsv")
+
+    def readMRna1(self, inFile):
+        "routine to verify TSVReader on a mrna1.tsv derived file"
+        rowCnt = 0
+        for row in TSVReader(inFile):
+            self.failUnlessEqual(len(row), 22)
+            rowCnt += 1
+        self.failUnlessEqual(rowCnt, 10)
+
+    def testReader(self):
+        self.readMRna1(self.getInputFile("mrna1.tsv"))
+
+    def testReadGzip(self):
+        tsvGz = self.getOutputFile("tsv.gz")
+        procOps.runProc(["gzip", "-c", self.getInputFile("mrna1.tsv")], stdout=tsvGz)
+        self.readMRna1(tsvGz)
+
+    def testReadBzip2(self):
+        tsvBz = self.getOutputFile("tsv.bz2")
+        procOps.runProc(["bzip2", "-c", self.getInputFile("mrna1.tsv")], stdout=tsvBz)
+        self.readMRna1(tsvBz)
 
 def suite():
     suite = unittest.TestSuite()
