@@ -1,0 +1,106 @@
+LOCUS       NT_011875           10102850 bp    DNA     linear   CON 10-JUN-2009
+DEFINITION  Homo sapiens chromosome Y genomic contig, GRCh37 reference primary
+            assembly.
+ACCESSION   NT_011875 GPS_000125346 NT_019721 NT_019722 NT_025438 NT_025439
+            NT_025440 NT_027230 NT_027231 NT_027232 NT_028428 NT_029512
+VERSION     NT_011875.12  GI:224514809
+DBLINK      Project:168
+KEYWORDS    .
+SOURCE      Homo sapiens (human)
+  ORGANISM  Homo sapiens
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+            Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini;
+            Catarrhini; Hominidae; Homo.
+FEATURES             Location/Qualifiers
+     source          1..10102850
+                     /organism="Homo sapiens"
+                     /mol_type="genomic DNA"
+                     /db_xref="taxon:9606"
+                     /chromosome="Y"
+     STS             8..152
+                     /standard_name="G65937"
+                     /db_xref="UniSTS:229926"
+     gene            6909996..6952271
+                     /gene="HSFY1"
+                     /gene_synonym="HSF2L; HSFY"
+                     /note="Derived by automated computational analysis using
+                     gene prediction method: Curated Genomic."
+                     /db_xref="GeneID:86614"
+                     /db_xref="HGNC:18568"
+                     /db_xref="MIM:400029"
+     mRNA            join(6909996..6910608,6911087..6911900)
+                     /gene="HSFY1"
+                     /gene_synonym="HSF2L; HSFY"
+                     /product="heat shock transcription factor, Y-linked 1,
+                     transcript variant 1"
+                     /exception="unclassified transcription discrepancy"
+                     /note="Derived by automated computational analysis using
+                     gene prediction method: Curated Genomic."
+                     /transcript_id="NM_033108.2"
+                     /db_xref="GI:50312654"
+                     /db_xref="GeneID:86614"
+                     /db_xref="HGNC:18568"
+                     /db_xref="MIM:400029"
+     misc_RNA        join(6909999..6910608,6913422..6913531,6914091..6914177,
+                     6915225..6915379,6945981..6946066,6951844..6952271)
+                     /gene="HSFY1"
+                     /gene_synonym="HSF2L; HSFY"
+                     /product="heat shock transcription factor, Y-linked 1,
+                     transcript variant 3"
+                     /note="Derived by automated computational analysis using
+                     gene prediction method: Curated Genomic."
+                     /transcript_id="NR_003510.1"
+                     /db_xref="GI:145701013"
+                     /db_xref="GeneID:86614"
+                     /db_xref="HGNC:18568"
+                     /db_xref="MIM:400029"
+     mRNA            join(6909999..6910608,6951844..6952269)
+                     /gene="HSFY1"
+                     /gene_synonym="HSF2L; HSFY"
+                     /product="heat shock transcription factor, Y-linked 1,
+                     transcript variant 2"
+                     /exception="unclassified transcription discrepancy"
+                     /note="Derived by automated computational analysis using
+                     gene prediction method: Curated Genomic."
+                     /transcript_id="NM_152584.1"
+                     /db_xref="GI:24211016"
+                     /db_xref="GeneID:86614"
+                     /db_xref="HGNC:18568"
+                     /db_xref="MIM:400029"
+     CDS             join(6910096..6910608,6951844..6951942)
+                     /gene="HSFY1"
+                     /gene_synonym="HSF2L; HSFY"
+                     /note="heat shock transcription factor 2-like; Derived by
+                     automated computational analysis using gene prediction
+                     method: Curated Genomic."
+                     /codon_start=1
+                     /product="heat shock transcription factor, Y-linked 1
+                     isoform 2"
+                     /protein_id="NP_689797.1"
+                     /db_xref="GI:24211017"
+                     /db_xref="CCDS:CCDS14790.1"
+                     /db_xref="GeneID:86614"
+                     /db_xref="HGNC:18568"
+                     /db_xref="MIM:400029"
+     CDS             join(6910096..6910608,6911087..6911779)
+                     /gene="HSFY1"
+                     /gene_synonym="HSF2L; HSFY"
+                     /note="heat shock transcription factor 2-like; Derived by
+                     automated computational analysis using gene prediction
+                     method: Curated Genomic."
+                     /codon_start=1
+                     /product="heat shock transcription factor, Y-linked 1
+                     isoform 1"
+                     /protein_id="NP_149099.2"
+                     /db_xref="GI:50312655"
+                     /db_xref="CCDS:CCDS35475.1"
+                     /db_xref="GeneID:86614"
+                     /db_xref="HGNC:18568"
+                     /db_xref="MIM:400029"
+     STS             6911221..6911370
+                     /gene="HSFY1"
+                     /gene_synonym="HSF2L; HSFY"
+                     /standard_name="sY1237"
+                     /db_xref="UniSTS:478843"
+CONTIG      join(AC011293.5:1..159522,AC012502.3:1..113599)
+//
