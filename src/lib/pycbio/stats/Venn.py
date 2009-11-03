@@ -35,7 +35,7 @@ class Venn(object):
         # Tables mappings set name to items and items to set names
         self.nameToItems = SetDict()
         self.itemToNames = SetDict()
-
+        
         # Venn table, dict index by name, of items (lazy build)
         self.venn = None
 
@@ -53,6 +53,9 @@ class Venn(object):
             self.nameToItems.add(setName, item)
             self.itemToNames.add(item, setName)
         self.venn = None
+
+    def getNumItems(self):
+        return len(self.itemToNames)
 
     def __buildVenn(self):
         "build Venn table"
