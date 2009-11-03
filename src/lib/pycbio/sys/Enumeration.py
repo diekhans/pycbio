@@ -137,6 +137,10 @@ class Enumeration(Immutable):
         """look up a value by name or aliases"""
         return self.aliases[name]
 
+    def find(self, name):
+        """find a value by name or aliases, or None if not found"""
+        return self.aliases.get(name)
+
     def getValues(self, bitVals):
         "get a list of values associated with a bit set"
         vals = []
@@ -151,6 +155,13 @@ class Enumeration(Immutable):
         for v in vals:
             numVal |= int(v)
         return v
+
+    def isValueOf(self, val):
+        "is val an value of this enumeration?"
+        for v in self.values:
+            if val == v:
+                return True
+        return False
 
     # FIXME: emulates meta class new
     def __call__(self, name):

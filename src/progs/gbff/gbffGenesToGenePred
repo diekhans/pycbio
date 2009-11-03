@@ -2,8 +2,6 @@
 
 # FIXME: Required biopython with bug #1758 fixed (genbank parser chokes on /transl_except)
 
-# FIXME: hg19 (NR_024090.1): no introns.  blat alignment has introns
-
 import sys, os, traceback
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, myBinDir + "/../lib")

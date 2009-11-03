@@ -100,7 +100,7 @@ class ClusterGenes(list):
         self.columns = tsv.columns
         self.tableSet = set()
         for gene in tsv:
-            self._addGene(gene)
+            self.__addGene(gene)
 
     def haveCluster(self, clusterId):
         " determine if the specified cluster exists"
@@ -108,15 +108,15 @@ class ClusterGenes(list):
             return False
         return self[clusterId] != None
 
-    def _getCluster(self, clusterId):
+    def __getCluster(self, clusterId):
         while len(self) <= clusterId:
             self.append(None)
         if self[clusterId] == None:
             self[clusterId] = Cluster(clusterId)
         return self[clusterId]
 
-    def _addGene(self, row):
-        cluster = self._getCluster(row.cluster)
+    def __addGene(self, row):
+        cluster = self.__getCluster(row.cluster)
         cluster.add(row)
         self.genes.add(row.gene, row)
         self.tableSet.add(row.table)
