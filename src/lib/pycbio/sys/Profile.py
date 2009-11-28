@@ -45,12 +45,14 @@ class Profile(object):
                 signal.signal(self.signum, sigHandler)
             self.logFile = opts.profile
             self.profiler = hotshot.Profile(self.logFile, lineevents=opts.profileLines)
-            self.profiler.start()
+            # FIXME: start/stop doesn't work, use ;            # prof.runcall(
+            # http://bugs.python.org/issue1019882
+            # self.profiler.start()
 
     def finishUp(self):
         "if profiling is enabled, stop and close log file"
         if self.profiler != None:
-            self.profiler.stop()
+            # FIXME: self.profiler.stop()
             self.profiler.close()
             if self.signum != None:
                 signal.signal(self.signum, signal.SIG_IGN)
