@@ -1,5 +1,5 @@
 
-VPATH = src/progs/tsv:src/progs/gbff:src/progs/genePred:src/progs/loci:src/progs/ncbi:src/progs/geneCheck
+VPATH = src/progs/tsv:src/progs/gbff:src/progs/genePred:src/progs/loci:src/progs/ncbi:src/progs/geneCheck:src/progs/profStats
 BIN_PROGS = \
 	bin/tsvSelectById \
 	bin/gbffGenesToGenePred \
@@ -7,7 +7,8 @@ BIN_PROGS = \
 	bin/clusterGenesSelect \
 	bin/genePredSelect \
 	bin/ncbiGbFetch \
-	bin/geneCheckStats
+	bin/geneCheckStats \
+	bin/profStats
 
 all: lib ${BIN_PROGS}
 
