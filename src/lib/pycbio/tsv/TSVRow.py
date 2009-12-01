@@ -13,12 +13,12 @@ class TSVRow(object):
         self._colTypes_ = reader.colTypes
         self._colMap_ = reader.colMap
         if self._colTypes_:
-            self._parse(row)
+            self.__parse(row)
         else:
             for i in xrange(len(self._columns_)):
                 self.__dict__[self._columns_[i]] = row[i]
 
-    def _parse(self, row):
+    def __parse(self, row):
         for i in xrange(len(self._columns_)):
             col = row[i]
             ct = self._colTypes_[i]
@@ -52,7 +52,7 @@ class TSVRow(object):
     def __contains__(self, key):
         return key in self._colMap_
 
-    def _fmtWithTypes(self):
+    def __fmtWithTypes(self):
         row = []
         for i in xrange(len(self._columns_)):
             col = self.__dict__[self._columns_[i]]
@@ -66,7 +66,7 @@ class TSVRow(object):
             row.append(col)
         return row
 
-    def _fmtNoTypes(self):
+    def __fmtNoTypes(self):
         row = []
         for cn in self._columns_:
             col = self.__dict__[cn]
@@ -78,9 +78,9 @@ class TSVRow(object):
 
     def getRow(self):
         if self._colTypes_:
-            return self._fmtWithTypes()
+            return self.__fmtWithTypes()
         else:
-            return self._fmtNoTypes()
+            return self.__fmtNoTypes()
     
     def __str__(self):
         return string.join(self.getRow(), "\t")

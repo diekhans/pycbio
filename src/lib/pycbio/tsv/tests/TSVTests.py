@@ -1,9 +1,9 @@
 import unittest, sys, string
 if __name__ == '__main__':
     sys.path.append("../../..")
-from pycbio.tsv.TSVTable import TSVTable
-from pycbio.tsv.TSVError import TSVError
-from pycbio.tsv.TSVReader import TSVReader
+from pycbio.tsv import TSVTable
+from pycbio.tsv import TSVError
+from pycbio.tsv import TSVReader
 from pycbio.sys.TestCaseBase import TestCaseBase
 from pycbio.sys import procOps
 from pycbio.hgdata.AutoSql import intArrayType

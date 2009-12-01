@@ -1,7 +1,7 @@
 import unittest, sys, string
 if __name__ == '__main__':
     sys.path.append("../../..")
-from pycbio.tsv.TabFile import TabFile,TabFileReader
+from pycbio.tsv import TabFile,TabFileReader
 from pycbio.sys.TestCaseBase import TestCaseBase
 from pycbio.hgdata.AutoSql import intArrayType
 
