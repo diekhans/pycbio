@@ -17,28 +17,28 @@ class TSVTable(list):
         def __getitem__(self, key):
             return self.__dict__[key]
 
-    def _addIndex(self, keyCol, dictClass):
+    def __addIndex(self, keyCol, dictClass):
         if not self.colMap.has_key(keyCol):
             raise TSVError("key column \"" + keyCol + "\" is not defined")
         self.idx.__dict__[keyCol] = dictClass()
         
-    def _createIndices(self, keyCols, dictClass):
+    def __createIndices(self, keyCols, dictClass):
         "keyCols maybe string or seq of strings"
         if type(keyCols) == str:
-            self._addIndex(keyCols, dictClass)
+            self.__addIndex(keyCols, dictClass)
         else:
             for kc in keyCols:
-                self._addIndex(kc, dictClass)
+                self.__addIndex(kc, dictClass)
 
-    def _buildIndices(self, uniqKeyCols, multiKeyCols):
+    def __buildIndices(self, uniqKeyCols, multiKeyCols):
         self.idx = TSVTable.Indices()
         self.indices = self.idx # FIXME: old name, delete 
         if uniqKeyCols != None:
-            self._createIndices(uniqKeyCols, dict)
+            self.__createIndices(uniqKeyCols, dict)
         if multiKeyCols != None:
-            self._createIndices(multiKeyCols, MultiDict)
+            self.__createIndices(multiKeyCols, MultiDict)
 
-    def _buildColDictTbl(self):
+    def __buildColDictTbl(self):
         """build an array, index by column number, of dict objects, or None if not
         indexed.  Used when loading rows. """
         if len(self.idx.__dict__) == 0:
@@ -48,24 +48,24 @@ class TSVTable(list):
             tbl.append(self.idx.__dict__.get(self.columns[iCol]))
         return tbl
 
-    def _indexCol(self, iCol, colDict, col, row):
+    def __indexCol(self, iCol, colDict, col, row):
         if (type(colDict) == dict) and colDict.get(col):
             raise Exception("column " + self.columns[iCol]+ " unique index value already entered: " + str(col) + " from " + str(row))
         else:
             colDict[col] = row
             
-    def _indexRow(self, colDictTbl, row):
+    def __indexRow(self, colDictTbl, row):
         for i in xrange(len(row)):
             if colDictTbl[i] != None:
-                self._indexCol(i, colDictTbl[i], row[i], row)
+                self.__indexCol(i, colDictTbl[i], row[i], row)
 
     # FIXME: need add row function, but colDict stuff conflicts, make member
-    def _readBody(self, reader):
-        colDictTbl = self._buildColDictTbl()
+    def __readBody(self, reader):
+        colDictTbl = self.__buildColDictTbl()
         for row in reader:
             self.append(row)
             if colDictTbl != None:
-                self._indexRow(colDictTbl, row)
+                self.__indexRow(colDictTbl, row)
 
 
     def __init__(self, fileName, uniqKeyCols=None, multiKeyCols=None,
@@ -92,8 +92,8 @@ class TSVTable(list):
             self.columns = reader.columns
             self.colTypes = reader.colTypes
             self.colMap = reader.colMap
-            self._buildIndices(uniqKeyCols, multiKeyCols)
-            self._readBody(reader)
+            self.__buildIndices(uniqKeyCols, multiKeyCols)
+            self.__readBody(reader)
         except Exception, e:
             raise
         #FIXME: raise TSVError("load failed", reader=reader, cause=e),sys.exc_traceback
