@@ -23,7 +23,7 @@ class Coords(Immutable):
             self.start = int(self.start)
             self.end = int(self.end)
         except Exception, e:
-            raise CoordsError("invalid coordinates: \"" + coordsStr + "\": " + str(e))
+            raise CoordsError("invalid coordinates: \"" + str(coordsStr) + "\": " + str(e))
 
     def __init__(self, *args, **opts):
         """args are either one argument in the form chr:start-end, or
@@ -50,7 +50,7 @@ class Coords(Immutable):
         return self.end-self.start
 
     def overlaps(self, other):
-        return ((self.chr == other.chr) and (self.start < other.end) and (self.end > other.start) and (self.strand == other.strand))
+        return ((self.chr == other.chr) and (self.start < other.end) and (self.end > other.start))
 
     def pad(self, frac=0.05, minBases=5):
         """return Coords, padded with a fraction of the range."""
