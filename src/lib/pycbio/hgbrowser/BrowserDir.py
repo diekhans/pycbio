@@ -58,7 +58,7 @@ class Entry(object):
             for sr in xrange(1, len(self.subRows)):
                 h.append(tr)
                 for c in self.subRows[sr]:
-                    h.append("<td>" + c)
+                    h.append("<td>" + str(c))
                 h.append("</tr>\n")
         return "".join(h)
 
