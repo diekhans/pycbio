@@ -78,7 +78,7 @@ class Bed(object):
 
     def __str__(self):
         "return BED as a tab-separated string"
-        return str.join("\t", self.toRow())
+        return str.join("\t", self.getRow())
         
     def write(self, fh):
         """write BED to a tab-seperated file"""

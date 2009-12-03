@@ -72,9 +72,17 @@ class Psl(object):
         else:
             self._empty()
 
+    def getQStart(self, iBlk):
+        "get qStart for a block"
+        return self.qStarts[iBlk]
+
     def getQEnd(self, iBlk):
         "compute qEnd for a block"
         return self.qStarts[iBlk]+self.blockSizes[iBlk]
+
+    def getTStart(self, iBlk):
+        "get tStart for a block"
+        return self.tStarts[iBlk]
 
     def getTEnd(self, iBlk):
         "compute tEnd for a block"
@@ -114,6 +122,20 @@ class Psl(object):
         else:
             return self.tSize - self.tStarts[iBlk]
 
+    def qRangeToPos(self, start, end):
+        "convert a query range in alignment coordinates to positive strand coordinates"
+        if self.getQStrand() == "+":
+            return (start, end)
+        else:
+            return (self.qSize-end, self.qSize-start)
+
+    def tRangeToPos(self, start, end):
+        "convert a target range in alignment coordinates to positive strand coordinates"
+        if self.getTStrand() == "+":
+            return (start, end)
+        else:
+            return (self.tSize-end, self.tSize-start)
+
     def isProtein(self):
         lastBlock = self.blockCount - 1
         if len(self.strand) < 2:
@@ -123,6 +145,14 @@ class Psl(object):
                 or
                 ((self.strand[1] == '-') and
                  (self.tStart == (self.tSize-(self.tStarts[lastBlock] + 3*self.blockSizes[lastBlock])))))
+
+    def tOverlap(self, tName, tStart, tEnd):
+        "test for overlap of target range"
+        return (tName == self.tName) and  (tStart < self.tEnd) and (tEnd > self.tStart)
+
+    def tBlkOverlap(self, tStart, tEnd, iBlk):
+        "does the specified block overlap the target range"
+        return (tStart < self.getTEndPos(iBlk)) and (tEnd > self.getTStartPos(iBlk))
 
     def __str__(self):
         "return psl as a tab-separated string"
@@ -215,8 +245,8 @@ class Psl(object):
     def reverseComplement(self):
         "create a new PSL that is reverse complemented"
         rc = copy.deepcopy(self)
-        rc.strand = ('-' if self.strand[0] != '+' else '+') \
-                    + ('-' if (len(self.strand) < 2) or (self.strand[1] != '+') else '+')
+        rc.strand = ('-' if self.strand[0] == '+' else '+') \
+                    + ('-' if (len(self.strand) < 2) or (self.strand[1] == '+') else '+')
         j = 0
         for i in xrange(self.blockCount-1,-1,-1):
             bs = self.blockSizes[i]
