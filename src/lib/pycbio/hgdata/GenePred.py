@@ -65,7 +65,7 @@ class Exon(object):
     def __str__(self):
         s = str(self.start) + "-" + str(self.end)
         if self.frame != None:
-            s += "/" + str(frame)
+            s += "/" + str(self.frame)
         return s
 
     def getCdsExonIdx(self):
