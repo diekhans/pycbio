@@ -37,12 +37,10 @@ def selectById(selectCol, selectTsv, inCol, inTsv, outTsv):
             row.write(rd)
     outFh.close()
 
-def main():
-    parser = OptionParser(usage=usage)
-    global cmdOpts
-    (cmdOpts, args) = parser.parse_args()
-    if len(args) != 5:
-        parser.error("wrong number of arguments")
-    selectById(args[0], args[1], args[2], args[3], args[4])
-
-main()
+# FIXME: not done
+parser = OptionParser(usage=usage)
+global cmdOpts
+(cmdOpts, args) = parser.parse_args()
+if len(args) != 5:
+parser.error("wrong number of arguments")
+selectById(args[0], args[1], args[2], args[3], args[4])

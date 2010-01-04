@@ -145,12 +145,9 @@ class ClusterSelect(object):
                 self.__writeClusterBed(outFh, cl)
         outFh.close()
 
-def main():
-    opts = CmdOpts()
-    clSelect = ClusterSelect(opts)
-    if opts.clusterBedOutput:
-        clSelect.outClusterBed(opts.outFile)
-    else:
-        clSelect.outClusters(opts.outFile)
-
-main()
+opts = CmdOpts()
+clSelect = ClusterSelect(opts)
+if opts.clusterBedOutput:
+    clSelect.outClusterBed(opts.outFile)
+else:
+    clSelect.outClusters(opts.outFile)

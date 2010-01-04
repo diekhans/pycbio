@@ -6,35 +6,31 @@ sys.path.append(myBinDir + "/../lib")
 from optparse import OptionParser
 import hotshot.stats
 
-
-def profStats(profLog, outFile, sortKey):
-    stats = hotshot.stats.load(profLog)
-    if outFile != None:
-        sys.stdout = open(outFile, "w")
-    stats.strip_dirs()
-    stats.sort_stats(sortKey)
-    stats.print_stats()
-    sys.stdout.close()
-
 validSortKeys = ('calls', 'cumulative', 'file', 'module', 'pcalls', 'line',
                  'name', 'nfl', 'stdname', 'time')
 
-def main():
+class CmdOpts(object):
     usage="""%prog [options] profLog [profOut]
 
     format python profile logs from hotshot.
     """
-    parser = OptionParser(usage=usage)
-    parser.add_option("--sort", action="store", dest="sort", default="cumulative",
-                      help="sort result by specified key, one of: "
-                      + ", ".join(validSortKeys))
-    (cmdOpts, args) = parser.parse_args()
-    if not (1 <= len(args) <= 2):
-        parser.error("wrong number of arguments")
-    if not cmdOpts.sort in validSortKeys:
-        raise Exception("invalid sort key: " + cmdOpts.sort
-                        + ", expected one of: " + ", ".join(validSortKeys))
-    if len(args) < 2:
-        args.append(None)
-    profStats(args[0], args[1], cmdOpts.sort)
-main()
+    def __init__(self):
+        parser = OptionParser(usage=usage)
+        parser.add_option("--sort", action="store", dest="sort", default="cumulative",
+                          help="sort result by specified key, one of: "
+                          + ", ".join(validSortKeys))
+        (opts, args) = parser.parse_args()
+        if not (1 <= len(args) <= 2):
+            parser.error("wrong number of arguments")
+        if not opts.sort in validSortKeys:
+            raise Exception("invalid sort key: " + opts.sort
+                            + ", expected one of: " + ", ".join(validSortKeys))
+        if len(args) < 2:
+            args.append(None)
+        (self.profLog, self.progOut) = args
+        self.__dict__.update(opts.__dict__)
+
+
+opts = CmdOpts()
+profStats(opts.profLog, opts.profOut, opts.sort)
+

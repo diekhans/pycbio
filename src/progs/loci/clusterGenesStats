@@ -166,13 +166,10 @@ class ClusterStats(object):
                     prRowv(fh, gene.gene, clusterId, " ".join(subset))
         fh.close()
 
-def main():
-    opts = CmdOpts()
-    clStats = ClusterStats(opts.clusterFile, opts.lociCats, opts.omitZero)
-    clStats.saveVenn(opts.statsFile, opts.total)
-    if opts.totalsOut != None:
-        clStats.saveSetTotals(opts.totalsOut)
-    if opts.geneSubsetOut:
-        clStats.saveGeneSubsets(opts.geneSubsetOut)
-
-main()
+opts = CmdOpts()
+clStats = ClusterStats(opts.clusterFile, opts.lociCats, opts.omitZero)
+clStats.saveVenn(opts.statsFile, opts.total)
+if opts.totalsOut != None:
+    clStats.saveSetTotals(opts.totalsOut)
+if opts.geneSubsetOut:
+    clStats.saveGeneSubsets(opts.geneSubsetOut)

@@ -78,9 +78,6 @@ class GenePredSelect(object):
             if self._selected(gp):
                 fileOps.prRow(outFh, gp.getRow())
 
-def main():
-    opts = CmdOpts()
-    gs = GenePredSelect(opts)
-    gs.select(opts.genePredIn, opts.genePredOut)
-
-main()
+opts = CmdOpts()
+gs = GenePredSelect(opts)
+gs.select(opts.genePredIn, opts.genePredOut)

@@ -92,9 +92,6 @@ class CountChks(object):
                    self.probInstCnts[v])
         outFh.close()
 
-def main():
-    opts = CmdParser()
-    counter = CountChks(opts.geneChks)
-    counter.count(opts.statsOut)
-    
-main()
+opts = CmdParser()
+counter = CountChks(opts.geneChks)
+counter.count(opts.statsOut)
