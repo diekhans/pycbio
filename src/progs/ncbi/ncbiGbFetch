@@ -115,8 +115,5 @@ def ncbiGbFetch(opts):
     if outFh != sys.stdout:
         outFh.close()
 
-def main():
-    opts = CmdLine()
-    ncbiGbFetch(opts)
-
-main()
+opts = CmdLine()
+ncbiGbFetch(opts)
