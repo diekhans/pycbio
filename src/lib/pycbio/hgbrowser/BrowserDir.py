@@ -15,51 +15,84 @@ TABLE, TR, TH, TD {
 }
 """
 
+class SubRows(object):
+    """Object used to specify a set of sub-rows.  Indicates number of columns
+    occupied, which is need for laying out.
+    """
+    def __init__(self, numCols):
+        self.numCols = numCols
+        self.rows = []
+
+    def addRow(self, row):
+        assert(len(row) == self.numCols)
+        self.rows.append(row)
+
+    def getNumRows(self):
+        return len(self.rows)
+
+    def toTdRow(self, iRow):
+        """return row of cells for the specified row, or one covering multiple
+        columns if iRow exceeds the number of rows"""
+        if iRow < len(self.rows):
+            return "<td>" + "<td>".join([str(c) for c in self.rows[iRow]])
+        else:
+            return "<td colspan=%d>" % self.numCols
 
 class Entry(object):
     "entry in directory"
-    __slots__= ("row", "key", "cssClass", "subRows")
+    __slots__= ("row", "key", "cssClass", "subRowGroups")
 
     def __init__(self, row, key=None, cssClass=None, subRows=None):
         """Entry in directory, key can be some value(s) used in sorting The
-        row should be HTML encoded.  If subRows is not None, they are a list
-        of list used in constructing a table row with row column-spanning
-        subRows"""
+        row should be HTML encoded.  If subRows is not None, it should be a SubRow
+        object or list of SubRow objects, used to produce row spanning rows for
+        contained in this row."""
         self.row = tuple(row)
         self.key = key
         self.cssClass = cssClass
-        self.subRows = subRows
+        self.subRowGroups = None
+        if subRows != None:
+            if isinstance(subRows, SubRows):
+                self.subRowGroups = [subRows]
+            else: 
+                self.subRowGroups = subRows
+
+    def __numSubRowGroupCols(self):
+        n = 0
+        for subRows in self.subRowGroups:
+            n += subRows.numCols
+        return n
+
+    def __numSubRowGroupRows(self):
+        n = 0
+        for subRows in self.subRowGroups:
+            n = max(n, subRows.getNumRows())
+        return n
 
     def numColumns(self):
         "compute number of columns that will be generated"
-        n = len(self.row)
-        if self.subRows != None:
-            n += len(self.subRows[0][0])
-        return n
+        return len(self.row) + self.__numSubRowGroupCols()
 
     def toHtmlRow(self):
-        if self.cssClass != None:
-            tr = "<tr class=\""+self.cssClass+"\">"
-        else:
-            tr = "<tr>"
-        if (self.subRows != None) and (len(self.subRows) > 1):
-            td = "<td rowspan=\""+str(len(self.subRows)) + "\">"
+        numSubRowRows = self.__numSubRowGroupRows()
+        h = ["<tr>"]
+        if numSubRowRows > 1:
+            td = "<td rowspan=\""+str(numSubRowRows) + "\">"
         else:
             td = "<td>"
-        h = [tr]
         for c in self.row:
             h.append(td + str(c))
-        if self.subRows != None:
-            for c in self.subRows[0]:
-                h.append("<td>" + str(c))
+        if numSubRowRows > 0:
+            for subRows in self.subRowGroups:
+                h.append(subRows.toTdRow(0))
         h.append("</tr>\n")
-        # remaining subrows
-        if self.subRows != None:
-            for sr in xrange(1, len(self.subRows)):
-                h.append(tr)
-                for c in self.subRows[sr]:
-                    h.append("<td>" + str(c))
-                h.append("</tr>\n")
+
+        # remaining rows
+        for iRow in xrange(1, numSubRowRows):
+            h.append("<tr>\n")
+            for subRows in self.subRowGroups:
+                h.append(subRows.toTdRow(0))
+            h.append("</tr>\n")
         return "".join(h)
 
 class BrowserDir(object):
@@ -129,7 +162,7 @@ class BrowserDir(object):
         self.entries.append(row)
 
     def add(self, coords, name=None):
-        """add a simple row, linking to location If name is None, it's the
+        """add a simple row, linking to location. If name is None, it's the
         location """
         if name == None:
             name = str(coords)
