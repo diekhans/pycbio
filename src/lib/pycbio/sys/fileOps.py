@@ -231,22 +231,27 @@ def iterRows(fspec):
         if isinstance(fspec, str):
             fh.close()
 
-_tmpFileCnt = 0
+__tmpFileCnt = 0
 def tmpFileGet(prefix=None, suffix="tmp", tmpDir=None):
     "obtain a tmp file with a unique name"
-    # FIXME should jump through security hoops
-    if tmpDir==None:
+    # FIXME should jump through security hoops, have version that returns an open name
+    if tmpDir == None:
+        tmpDir = os.getenv("TMPDIR")
+    if tmpDir == None:
         tmpDir = "/scratch/tmp"
         if not os.path.exists(tmpDir):
             tmpDir = "/var/tmp"
-    pre = tmpDir + "/"
+    pre = tmpDir
+    if not pre.endswith("/"):
+        pre += "/"
     if prefix != None:
         pre += prefix + "."
-    pre += str(os.getpid())
+    pre += socket.gethostname() + "." + str(os.getpid())
+    global __tmpFileCnt
     while True:
-        path = pre + "." + str(_tmpFileCnt) + suffix
-        _tmpFileCnt += 1
-        if not os.exists(path):
+        path = pre + "." + str(__tmpFileCnt) + "." + suffix
+        __tmpFileCnt += 1
+        if not os.path.exists(path):
             return path
 
 def atomicInstall(tmpPath, finalPath):
