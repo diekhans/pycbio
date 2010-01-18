@@ -91,7 +91,7 @@ class Entry(object):
         for iRow in xrange(1, numSubRowRows):
             h.append("<tr>\n")
             for subRows in self.subRowGroups:
-                h.append(subRows.toTdRow(0))
+                h.append(subRows.toTdRow(iRow))
             h.append("</tr>\n")
         return "".join(h)
 
