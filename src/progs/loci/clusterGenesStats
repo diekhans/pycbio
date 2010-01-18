@@ -10,14 +10,6 @@ from pycbio.stats.Venn import Venn
 from pycbio.sys.fileOps import prRowv
 from pycbio.tsv.TabFile import TabFile
 
-cmdOpts = None
-
-def fmtFrac(cnt, total):
-    if (total == 0):
-        return "0"
-    else:
-        return "%0.3f" % (float(cnt)/float(total))
-
 class CmdOpts(object):
     usage="""%prog [options] clusterFile statsFile
 
@@ -54,6 +46,12 @@ class CmdOpts(object):
                 raise Exception("rows must have at least two columns: "+catsFile)
             cats[int(row[0])] = intern(row[1])
         return cats
+
+def fmtFrac(cnt, total):
+    if (total == 0):
+        return "0"
+    else:
+        return "%0.3f" % (float(cnt)/float(total))
 
 class Total(object):
     def __init__(self, name):
