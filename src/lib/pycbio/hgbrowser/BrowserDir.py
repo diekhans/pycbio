@@ -35,8 +35,10 @@ class SubRows(object):
         columns if iRow exceeds the number of rows"""
         if iRow < len(self.rows):
             return "<td>" + "<td>".join([str(c) for c in self.rows[iRow]])
-        else:
+        elif self.numCols > 1:
             return "<td colspan=%d>" % self.numCols
+        else:
+            return "<td>"
 
 class Entry(object):
     "entry in directory"
@@ -131,7 +133,7 @@ class BrowserDir(object):
             
 
     def __mkTracksArgs(self, initialTracks):
-        if initialTracks == None:
+        if (initialTracks == None) or (len(initialTracks) == 0):
             return ""
         l = []
         for t in initialTracks:
@@ -215,7 +217,10 @@ class BrowserDir(object):
         return ", ".join(html)
 
     def __padRows(self, pg, numPadRows, numColumns):
-        pr = "<tr colspan=\"" + numColumns + "\"></tr>"
+        if numColumns > 1:
+            pr = "<tr colspan=\"" + numColumns + "\"></tr>"
+        else:
+            pr = "<tr></tr>"
         for i in xrange(numPadRows):
             pg.add(pr)
 
