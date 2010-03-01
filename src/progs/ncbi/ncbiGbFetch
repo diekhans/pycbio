@@ -25,7 +25,7 @@ give accessions or other ids understood by efetch server.
                           help="simplify genbank fasta ids")
         parser.add_option("--verbose", "-v", dest="verbose", action="store_true", default=False,
                           help="verbose tracing")
-        parser.add_option("--debug", "-c", dest="debug", action="store", type="int", default=None,
+        parser.add_option("--debug", dest="debug", action="store", type="int", default=None,
                           help="set HTTP debug level to this value")
         (opts, args) = parser.parse_args()
         self.__dict__.update(opts.__dict__)
@@ -34,7 +34,7 @@ give accessions or other ids understood by efetch server.
         self.ids = list(args)
         self._loadIdFiles()
         if len(self.ids) == 0:
-            parser.error("no ids specified on command line or with --idFiles, specify --help for usage")
+            parser.error("no ids specified on command line or with --idFile, specify --help for usage")
 
     def _loadIdFiles(self):
         for idFile in self.idFiles:
@@ -77,7 +77,7 @@ def efetch(opts, conn, id, outFh):
     if opts.fasta:
         fmt = "fasta"
     else:
-        fmt = "gb"
+        fmt = "gbwithparts"
     url = "/entrez/eutils/efetch.fcgi?db=nucleotide&rettype=" + fmt + "&id=" + id
     if opts.verbose:
         print >>sys.stderr,"get http://" + host + url
@@ -98,11 +98,12 @@ def doFetch(opts, outFh):
         conn.set_debuglevel(opts.debug)
 
     for id in opts.ids:
-        efetch(opts, conn, id, outFh)
         # FIXME: some bug with either httplib or eutils cause crash for second
         # request because data stream is confused.  This might have to do with
-        # chunked.  For now, just close on each response
+        # chunked.  For now, just reopen on each response
         conn.close()
+        conn.connect()
+        efetch(opts, conn, id, outFh)
     conn.close()
 
 def ncbiGbFetch(opts):
