@@ -16,6 +16,14 @@ from pycbio.tsv.TSVError import TSVError
 #
 # rename  typeMap -> colTypes
 
+# typeMap converter for str types were empty represents None
+strOrNoneType = (lambda v: None if (v == "") else v,
+                 lambda v: "" if (v == None) else v)
+
+# typeMap converter for int types were empty represents None
+intOrNoneType = (lambda v: None if (v == "") else int(v),
+                 lambda v: "" if (v == None) else str(v))
+
 class TSVReader(object):
     """Class for reading TSV files.  Reads header and builds column name to
     column index map.  After a next, object contains a row and each column
