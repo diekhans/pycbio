@@ -7,11 +7,80 @@ from Bio.Seq import reverse_complement
 
 # FIXME: create a block object, build on TSV
 
-class Psl(object):
-    """Object wrapper for a parsing a PSL record"""
-    __slots__ = ("match", "misMatch", "repMatch", "nCount", "qNumInsert", "qBaseInsert", "tNumInsert", "tBaseInsert", "strand", "qName", "qSize", "qStart", "qEnd", "tName", "tSize", "tStart", "tEnd", "blockCount", "blockSizes", "qStarts", "tStarts", "qSeqs", "tSeqs")
+def rcStrand(s):
+    "return reverse-complement of a strand character"
+    return "+" if (s == "-") else "-"
 
-    def _parse(self, row):
+class PslBlock(object):
+    """Block of a PSL"""
+    __slots__ = ("psl", "qStart", "qEnd", "tStart", "tEnd", "size", "qSeq", "tSeq")
+
+    def __init__(self, psl, qStart, tStart, size, qSeq=None, tSeq=None):
+        self.psl = psl
+        self.qStart= qStart
+        self.qEnd = qStart + size
+        self.tStart = tStart
+        self.tEnd = tStart + size
+        self.size = size
+        self.qSeq = qSeq
+        self.tSeq = tSeq
+
+    def __len__(self):
+        return self.size
+
+    def getQStartPos(self):
+        "get qStart for the block on positive strand"
+        if self.psl.getQStrand() == '+':
+            return self.qStart
+        else:
+            return self.psl.qSize - self.qEnd
+
+    def getQEndPos(self):
+        "get qEnd for the block on positive strand"
+        if self.psl.getQStrand() == '+':
+            return self.qEnd
+        else:
+            return self.psl.qSize - self.qStart
+
+    def getTStartPos(self):
+        "get tStart for the block on positive strand"
+        if self.psl.getTStrand() == '+':
+            return self.tStart
+        else:
+            return self.psl.tSize - self.tEnd
+
+    def getTEndPos(self):
+        "get tEnd for the block on positive strand"
+        if self.psl.getTStrand() == '+':
+            return self.tEnd
+        else:
+            return self.psl.tSize - self.tStart
+
+    def sameAlign(self, other):
+        "compare for equality of alignment."
+        return (other != None) and (self.qStart == other.qStart) and (self.tStart == other.tStart) and (self.size == other.size)
+
+    def reverseComplement(self, newPsl):
+        "construct a block that is the reverse complement of this block"
+        return PslBlock(newPsl, self.psl.qSize-self.qEnd, self.psl.tSize-self.tEnd, self.size,
+                        (reverse_complement(self.qSeq) if (self.qSeq != None) else None),
+                        (reverse_complement(self.tSeq) if (self.tSeq != None) else None))
+
+    def swapSides(self, newPsl):
+        "construct a block with query and target swapped "
+        return PslBlock(newPsl, self.tStart, self.qStart, self.size, self.tSeq, self.qSeq)
+
+    def swapSidesReverseComplement(self, newPsl):
+        "construct a block with query and target swapped and reverse complemented "
+        return PslBlock(newPsl, self.psl.tSize-self.tEnd, self.psl.qSize-self.qEnd, self.size,
+                        (reverse_complement(self.tSeq) if (self.tSeq != None) else None),
+                        (reverse_complement(self.qSeq) if (self.qSeq != None) else None))
+
+class Psl(object):
+    """Object containing data from a PSL record."""
+    __slots__ = ("match", "misMatch", "repMatch", "nCount", "qNumInsert", "qBaseInsert", "tNumInsert", "tBaseInsert", "strand", "qName", "qSize", "qStart", "qEnd", "tName", "tSize", "tStart", "tEnd", "blockCount", "blocks")
+
+    def __parse(self, row):
         self.match = int(row[0])
         self.misMatch = int(row[1])
         self.repMatch = int(row[2])
@@ -30,17 +99,24 @@ class Psl(object):
         self.tStart = int(row[15])
         self.tEnd = int(row[16])
         self.blockCount = int(row[17])
-        self.blockSizes = intArraySplit(row[18])
-        self.qStarts = intArraySplit(row[19])
-        self.tStarts = intArraySplit(row[20])
-        if len(row) > 21:
-            self.qSeqs = strArraySplit(row[21])
-            self.tSeqs = strArraySplit(row[22])
-        else:
-            self.qSeqs = None
-            self.tSeqs = None
+        self.blocks = []
 
-    def _empty(self, row):
+        # convert parallel arrays
+        blockSizes = intArraySplit(row[18])
+        qStarts = intArraySplit(row[19])
+        tStarts = intArraySplit(row[20])
+        haveSeqs = len(row) > 21
+        if haveSeqs:
+            qSeqs = strArraySplit(row[21])
+            tSeqs = strArraySplit(row[22])
+
+        for i in xrange(self.blockCount):
+            self.blocks.append(PslBlock(self, qStarts[i], tStarts[i], blockSizes[i],
+                                        (qSeqs[i] if haveSeqs else None),
+                                        (tSeqs[i] if haveSeqs else None)))
+
+
+    def __empty(self):
         self.match = 0
         self.misMatch = 0
         self.repMatch = 0
@@ -59,68 +135,20 @@ class Psl(object):
         self.tStart = 0
         self.tEnd = 0
         self.blockCount = 0
-        self.blockSizes = None
-        self.qStarts = []
-        self.tStarts = []
-        self.qSeqs = None
-        self.tSeqs = None
+        self.blocks = []
 
     def __init__(self, row=None):
         "construct a new PSL, either parsing a row, or creating an empty one"
         if row != None:
-            self._parse(row)
+            self.__parse(row)
         else:
-            self._empty()
-
-    def getQStart(self, iBlk):
-        "get qStart for a block"
-        return self.qStarts[iBlk]
-
-    def getQEnd(self, iBlk):
-        "compute qEnd for a block"
-        return self.qStarts[iBlk]+self.blockSizes[iBlk]
-
-    def getTStart(self, iBlk):
-        "get tStart for a block"
-        return self.tStarts[iBlk]
-
-    def getTEnd(self, iBlk):
-        "compute tEnd for a block"
-        return self.tStarts[iBlk]+self.blockSizes[iBlk]
+            self.__empty()
 
     def getQStrand(self):
         return self.strand[0]
 
     def getTStrand(self):
         return (self.strand[1] if len(self.strand) > 1 else "+")
-
-    def getQStartPos(self, iBlk):
-        "get qStart for a block on positive strand"
-        if self.strand[0] == '+':
-            return self.qStarts[iBlk]
-        else:
-            return self.qSize - (self.qStarts[iBlk]+self.blockSizes[iBlk])
-
-    def getQEndPos(self, iBlk):
-        "get qEnd for a block on positive strand"
-        if self.strand[0] == '+':
-            return self.qStarts[iBlk]+self.blockSizes[iBlk]
-        else:
-            return self.qSize - self.qStarts[iBlk]
-
-    def getTStartPos(self, iBlk):
-        "get tStart for a block on positive strand"
-        if self.getTStrand() == '+':
-            return self.tStarts[iBlk]
-        else:
-            return self.tSize - (self.tStarts[iBlk]+self.blockSizes[iBlk])
-
-    def getTEndPos(self, iBlk):
-        "get tEnd for a block on positive strand"
-        if self.getTStrand() == '+':
-            return self.tStarts[iblk]+self.blockSizes[iBlk]
-        else:
-            return self.tSize - self.tStarts[iBlk]
 
     def qRangeToPos(self, start, end):
         "convert a query range in alignment coordinates to positive strand coordinates"
@@ -174,12 +202,12 @@ class Psl(object):
                str(self.tStart),
                str(self.tEnd),
                str(self.blockCount),
-               intArrayJoin(self.blockSizes),
-               intArrayJoin(self.qStarts),
-               intArrayJoin(self.tStarts)]
-        if self.qSeqs != None:
-            row.append(strArrayJoin(self.qSeqs))
-            row.append(strArrayJoin(self.tSeqs))
+               intArrayJoin([b.size for b in self.blocks]),
+               intArrayJoin([b.qStart for b in self.blocks]),
+               intArrayJoin([b.tStart for b in self.blocks])]
+        if self.blocks[0].qSeq != None:
+            row.append(strArrayJoin([b.qSeq for b in self.blocks]))
+            row.append(strArrayJoin([b.tSeq for b in self.blocks]))
         return str.join("\t", row)
         
     def write(self, fh):
@@ -220,9 +248,7 @@ class Psl(object):
             or (self.blockCount != other.blockCount)):
             return False
         for i in xrange(self.blockCount):
-            if ((self.blockSizes[i] != other.blockSizes[i])
-                or (self.qStarts[i] != other.qStarts[i])
-                or (self.tStarts[i] != other.tStarts[i])):
+            if not self.blocks[i].sameAlign(other.blocks[i]):
                 return False
         return True
 
@@ -244,20 +270,80 @@ class Psl(object):
 
     def reverseComplement(self):
         "create a new PSL that is reverse complemented"
-        rc = copy.deepcopy(self)
-        rc.strand = ('-' if self.strand[0] == '+' else '+') \
-                    + ('-' if (len(self.strand) < 2) or (self.strand[1] == '+') else '+')
-        j = 0
+        rc = Psl(None)
+        rc.match = self.match
+        rc.misMatch = self.misMatch
+        rc.repMatch = self.repMatch
+        rc.nCount = self.nCount
+        rc.qNumInsert = self.qNumInsert
+        rc.qBaseInsert = self.qBaseInsert
+        rc.tNumInsert = self.tNumInsert
+        rc.tBaseInsert = self.tBaseInsert
+        rc.strand = rcStrand(self.getQStrand()) + rcStrand(self.getTStrand())
+        rc.qName = self.qName
+        rc.qSize = self.qSize
+        rc.qStart = self.qStart
+        rc.qEnd = self.qEnd
+        rc.tName = self.tName
+        rc.tSize = self.tSize
+        rc.tStart = self.tStart
+        rc.tEnd = self.tEnd
+        rc.blockCount = self.blockCount
+        rc.blocks = []
         for i in xrange(self.blockCount-1,-1,-1):
-            bs = self.blockSizes[i]
-            rc.qStarts[j] = (self.qSize - (self.qStarts[i]+bs))
-            rc.tStarts[j] = (self.tSize - (self.tStarts[i]+bs))
-            rc.blockSizes[j] = bs
-            if self.qSeqs != None:
-                rc.qSeqs[j] = reverse_complement(self.qSeqs[i])
-                rc.tSeqs[j] = reverse_complement(self.tSeqs[i])
-            j += 1
+            rc.blocks.append(self.blocks[i].reverseComplement(rc))
         return rc
+
+    def __swapStrand(self, rc, keepTStrandImplicit, doRc):
+        # don't make implicit if already explicit
+        if keepTStrandImplicit and (len(self.strand) == 1):
+            qs = rcStrand(self.getTStrand()) if doRc else self.getTStrand()
+            ts = ""
+        else:
+            # swap and make|keep explicit
+            qs = self.getTStrand()
+            ts = self.getQStrand()
+        return qs+ts
+
+    def swapSides(self, keepTStrandImplicit=False):
+        """Create a new PSL with target and query swapped, 
+
+        If keepTStrandImplicit is True the psl has an implicit positive target strand, reverse
+        complement to keep the target strand positive and implicit.
+
+        If keepTStrandImplicit is False, don't reverse complement untranslated
+        alignments to keep target positive strand.  This will make the target
+        strand explicit."""
+        doRc = (keepTStrandImplicit and (len(self.strand) == 1) and (self.getQStrand() == "-"))
+        
+        swap = Psl(None)
+        swap.match = self.match
+        swap.misMatch = self.misMatch
+        swap.repMatch = self.repMatch
+        swap.nCount = self.nCount
+        swap.qNumInsert = self.tNumInsert
+        swap.qBaseInsert = self.tBaseInsert
+        swap.tNumInsert = self.qNumInsert
+        swap.tBaseInsert = self.qBaseInsert
+        swap.strand = self.__swapStrand(swap, keepTStrandImplicit, doRc)
+        swap.qName = self.tName
+        swap.qSize = self.tSize
+        swap.qStart = self.tStart
+        swap.qEnd = self.tEnd
+        swap.tName = self.qName
+        swap.tSize = self.qSize
+        swap.tStart = self.qStart
+        swap.tEnd = self.qEnd
+        swap.blockCount = self.blockCount
+        swap.blocks = []
+
+        if doRc:
+            for i in xrange(self.blockCount-1,-1,-1):
+                swap.blocks.append(self.blocks[i].swapSidesReverseComplement(swap))
+        else:
+            for i in xrange(self.blockCount):
+                swap.blocks.append(self.blocks[i].swapSides(swap))
+        return swap
 
 class PslReader(object):
     """Read PSLs from a tab file"""
@@ -285,7 +371,7 @@ class PslTbl(TabFile):
     """Table of PSL objects loaded from a tab-file
     """
 
-    def _mkQNameIdx(self):
+    def __mkQNameIdx(self):
         self.qNameMap = MultiDict()
         for psl in self:
             self.qNameMap.add(psl.qName, psl)
@@ -294,7 +380,7 @@ class PslTbl(TabFile):
         TabFile.__init__(self, fileName, rowClass=Psl, hashAreComments=True)
         self.qNameMap = None
         if qNameIdx:
-            self._mkQNameIdx()
+            self.__mkQNameIdx()
 
     def getQNameIter(self):
         return self.qNameMap.iterkeys()
