@@ -1,10 +1,9 @@
 import string
-from pycbio.tsv.TabFile import TabFile
 from pycbio.sys import fileOps
 from pycbio.hgdata.AutoSql import intArraySplit, intArrayJoin
 from pycbio.sys.Enumeration import Enumeration
 
-## FIXME: build on TSV code, allow indices, add GenePredReader
+## FIXME: build on TSV code
 
 CdsStat = Enumeration("CdsStat", [
     ("none", "none"),             # No CDS (non-coding)
@@ -384,37 +383,40 @@ class GenePred(object):
         fh.write(str(self))
         fh.write("\n")
         
-class GenePredTbl(TabFile):
+class GenePredTbl(list):
     """Table of GenePred objects loaded from a tab-file"""
-    # FIXME: two index flags is a hack
     def __init__(self, fileName, buildIdx=False, buildUniqIdx=False, buildRangeIdx=False):
-        TabFile.__init__(self, fileName, rowClass=GenePred)
         if buildIdx and buildUniqIdx:
             raise Exception("can't specify both buildIdx and buildUniqIdx")
+        for row in GenePredReader(fileName):
+            self.append(row)
         self.names = None
         self.rangeMap = None
         if buildUniqIdx:
-            self.names = dict()
-            for row in self:
-                if row.name in self.names:
-                    raise Exception("gene with this name already in index: " + row.name)
-                self.names[row.name] = row
+            self.__buildUniqIdx()
         if buildIdx:
-            from pycbio.sys.MultiDict import MultiDict
-            self.names = MultiDict()
-            for row in self:
-                self.names.add(row.name, row)
+            self.__buildIdx()
         if buildRangeIdx:
-            from pycbio.hgdata.RangeFinder import RangeFinder
-            self.rangeMap = RangeFinder()
-            for gene in self:
-                self.rangeMap.add(gene.chrom, gene.txStart, gene.txEnd, gene, gene.strand)
+            self.__buildRangeIdx()
 
-    def getGeneSet(self):
-        "get a set of all of the genes in the table"
-        return set(self)
+    def __buildUniqIdx(self):
+        self.names = dict()
+        for row in self:
+            if row.name in self.names:
+                raise Exception("gene with this name already in index: " + row.name)
+            self.names[row.name] = row
 
-# FIXME: hacked in, above should use this
+    def __buildIdx(self):
+        from pycbio.sys.MultiDict import MultiDict
+        self.names = MultiDict()
+        for row in self:
+            self.names.add(row.name, row)
+
+    def __buildRangeIdx(self):
+        from pycbio.hgdata.RangeFinder import RangeFinder
+        self.rangeMap = RangeFinder()
+        for gene in self:
+            self.rangeMap.add(gene.chrom, gene.txStart, gene.txEnd, gene, gene.strand)
 
 class GenePredReader(object):
     """Read genePreds from a tab file"""

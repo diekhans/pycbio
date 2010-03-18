@@ -505,13 +505,13 @@ def _mkPslSeq(name, start, end, size, strand, cds=None):
     else:
         return Seq(name, start, end, size, strand, cds)
 
-def _addPslBlk(psl, aln, i, prevBlk, inclUnaln):
+def _addPslBlk(pslBlk, aln, prevBlk, inclUnaln):
     """add an aligned block, and optionally preceeding unaligned blocks"""
-    qStart = psl.qStarts[i]
-    qEnd = psl.getQEnd(i)
-    tStart = psl.tStarts[i]
-    tEnd = psl.getTEnd(i)
-    if inclUnaln and (i > 0):
+    qStart = pslBlk.qStart
+    qEnd = pslBlk.qEnd
+    tStart = pslBlk.tStart
+    tEnd = pslBlk.tEnd
+    if inclUnaln and (prevBlk != None):
         if qStart > prevBlk.q.end:
             aln.addBlk(aln.qSeq.mkSubSeq(prevBlk.q.end, qStart), None)
         if tStart > prevBlk.t.end:
@@ -529,7 +529,7 @@ def fromPsl(psl, qCdsRange=None, inclUnaln=False, projectCds=False, contained=Fa
     aln = PairAlign(qSeq, tSeq)
     prevBlk = None
     for i in xrange(psl.blockCount):
-        prevBlk = _addPslBlk(psl, aln, i, prevBlk, inclUnaln)
+        prevBlk = _addPslBlk(psl.blocks[i], aln, prevBlk, inclUnaln)
     if projectCds and (aln.qSeq.cds != None):
         aln.projectCdsToTarget(contained)
     return aln

@@ -11,9 +11,9 @@ def strArraySplit(commaStr):
 def strArrayJoin(strs):
      "formatter for a list into a comma seperated string"
      if strs != None:
-          return string.join(strs,",")
+          return string.join(strs,",") + ","
      else:
-          return ""
+          return ","
 
 # TSV typeMap tuple for str arrays
 strArrayType = (strArraySplit, strArrayJoin)
@@ -31,9 +31,9 @@ def intArrayJoin(ints):
           strs = []
           for i in ints:
                strs.append(str(i))
-          return string.join(strs,",")
+          return string.join(strs,",") + ","
      else:
-          return ""
+          return ","
 
 # TSV typeMap tuple for str arrays
 intArrayType = (intArraySplit, intArrayJoin)

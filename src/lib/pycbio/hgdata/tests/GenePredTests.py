@@ -34,8 +34,9 @@ def featRangeEq(featRange, expectRange):
     "compare a feature range and an expected range tuple, either maybe None"
     if ((featRange == None) or (expectRange == None)):
         return ((featRange == None) and (expectRange == None))
-    return ((featRange.start == expectRange[0]) and
-            (featRange.end == expectRange[1]))
+    else:
+        return ((featRange.start == expectRange[0]) and
+                (featRange.end == expectRange[1]))
     
 def featureEq(feat, expected):
     "compare exon feature object with expected tuple"
