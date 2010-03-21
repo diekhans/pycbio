@@ -28,7 +28,9 @@ class TSVReader(object):
     """Class for reading TSV files.  Reads header and builds column name to
     column index map.  After a next, object contains a row and each column
     becomes a field name.  It is also indexable by column name or int index.
-    Columns can be automatically type converted by column name."""
+    Columns can be automatically type converted by column name.  This can also
+    read from a dbapi cursor object.
+    """
 
     def __readRow(self):
         "read the next row, returning None on EOF"
@@ -77,11 +79,13 @@ class TSVReader(object):
             for i in xrange(len(self.columns)):
                 self.colTypes.append(defaultColType)
 
-    def __init__(self, fileName, rowClass=None, typeMap=None, defaultColType=None, isRdb=False,
-                 columns=None, ignoreExtraCols=False, inFh=None):
+    def __init__(self, fileName, rowClass=None, typeMap=None, defaultColType=None, columns=None,
+                 ignoreExtraCols=False, isRdb=False, inFh=None):
         """Open TSV file and read header into object.  Removes leading # from
         UCSC header.
 
+        fileName - name of file, opened unless inFh is specified
+        rowClass - class to use for a row. Must take TSVReader and list of string values of columns.
         typeMap - if specified, it maps column names to the type objects to
             use to convert the column.  Unspecified columns will not be
             converted. Key is the column name, value can be either a type
@@ -90,8 +94,10 @@ class TSVReader(object):
         defaultColType - if specified, type of unspecified columns
         columns - if specified, the column names to use.  The header
             should not be in the file.
+        ignoreExtraCols - should extra columns be ignored?
+        isRdb - file is an RDB file, ignore second row (type map still needed).
         inFh - If not None, this is used as the open file, rather than
-          opening it.
+          opening it.  Closed when the end of file is reached.
         """
         self.fileName = fileName
         self.lineNum = 0

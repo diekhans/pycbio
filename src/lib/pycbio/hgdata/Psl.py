@@ -1,11 +1,10 @@
 import copy
-from pycbio.tsv.TabFile import TabFile
 from pycbio.hgdata.AutoSql import intArraySplit, intArrayJoin, strArraySplit, strArrayJoin
-from pycbio.sys import fileOps
+from pycbio.sys import fileOps, dbOps
 from pycbio.sys.MultiDict import MultiDict
 from Bio.Seq import reverse_complement
 
-# FIXME: create a block object, build on TSV
+# FIXME: Should have factory rather than __init__ multiplexing nonsense
 
 def rcStrand(s):
     "return reverse-complement of a strand character"
@@ -80,6 +79,21 @@ class Psl(object):
     """Object containing data from a PSL record."""
     __slots__ = ("match", "misMatch", "repMatch", "nCount", "qNumInsert", "qBaseInsert", "tNumInsert", "tBaseInsert", "strand", "qName", "qSize", "qStart", "qEnd", "tName", "tSize", "tStart", "tEnd", "blockCount", "blocks")
 
+    def __parseBlocks(self, blockSizesStr, qStartsStr, tStartsStr, qSeqsStr, tSeqsStr):
+        "convert parallel arrays to PslBlock objects"
+        self.blocks = []
+        blockSizes = intArraySplit(blockSizesStr)
+        qStarts = intArraySplit(qStartsStr)
+        tStarts = intArraySplit(tStartsStr)
+        haveSeqs = (qSeqsStr != None)
+        if haveSeqs:
+            qSeqs = strArraySplit(qSeqsStr)
+            tSeqs = strArraySplit(tStartsStr)
+        for i in xrange(self.blockCount):
+            self.blocks.append(PslBlock(self, qStarts[i], tStarts[i], blockSizes[i],
+                                        (qSeqs[i] if haveSeqs else None),
+                                        (tSeqs[i] if haveSeqs else None)))
+
     def __parse(self, row):
         self.match = int(row[0])
         self.misMatch = int(row[1])
@@ -99,22 +113,34 @@ class Psl(object):
         self.tStart = int(row[15])
         self.tEnd = int(row[16])
         self.blockCount = int(row[17])
-        self.blocks = []
-
-        # convert parallel arrays
-        blockSizes = intArraySplit(row[18])
-        qStarts = intArraySplit(row[19])
-        tStarts = intArraySplit(row[20])
         haveSeqs = len(row) > 21
-        if haveSeqs:
-            qSeqs = strArraySplit(row[21])
-            tSeqs = strArraySplit(row[22])
+        self.__parseBlocks(row[18], row[19], row[20],
+                           (strArraySplit(row[21]) if haveSeqs else None),
+                           (strArraySplit(row[22]) if haveSeqs else None))
 
-        for i in xrange(self.blockCount):
-            self.blocks.append(PslBlock(self, qStarts[i], tStarts[i], blockSizes[i],
-                                        (qSeqs[i] if haveSeqs else None),
-                                        (tSeqs[i] if haveSeqs else None)))
-
+    def __loadDb(self, row, dbColIdxMap):
+        self.match = row[dbColIdxMap["matches"]]
+        self.misMatch = row[dbColIdxMap["misMatches"]]
+        self.repMatch = row[dbColIdxMap["repMatches"]]
+        self.nCount = row[dbColIdxMap["nCount"]]
+        self.qNumInsert = row[dbColIdxMap["qNumInsert"]]
+        self.qBaseInsert = row[dbColIdxMap["qBaseInsert"]]
+        self.tNumInsert = row[dbColIdxMap["tNumInsert"]]
+        self.tBaseInsert = row[dbColIdxMap["tBaseInsert"]]
+        self.strand = row[dbColIdxMap["strand"]]
+        self.qName = row[dbColIdxMap["qName"]]
+        self.qSize = row[dbColIdxMap["qSize"]]
+        self.qStart = row[dbColIdxMap["qStart"]]
+        self.qEnd = row[dbColIdxMap["qEnd"]]
+        self.tName = row[dbColIdxMap["tName"]]
+        self.tSize = row[dbColIdxMap["tSize"]]
+        self.tStart = row[dbColIdxMap["tStart"]]
+        self.tEnd = row[dbColIdxMap["tEnd"]]
+        self.blockCount = row[dbColIdxMap["blockCount"]]
+        haveSeqs = "qSeqs" in dbColIdxMap
+        self.__parseBlocks(row[dbColIdxMap["blockSizes"]], row[dbColIdxMap["qStarts"]], row[dbColIdxMap["tStarts"]],
+                           (strArraySplit(row[dbColIdxMap["qSeqs"]]) if haveSeqs else None),
+                           (strArraySplit(row[dbColIdxMap["tSeqs"]]) if haveSeqs else None))
 
     def __empty(self):
         self.match = 0
@@ -137,9 +163,13 @@ class Psl(object):
         self.blockCount = 0
         self.blocks = []
 
-    def __init__(self, row=None):
-        "construct a new PSL, either parsing a row, or creating an empty one"
-        if row != None:
+    def __init__(self, row=None, dbColIdxMap=None):
+        """construct a new PSL, either parsing a row, loading a row from a
+        dbapi cursor (dbColIdxMap created by sys.dbOpts.cursorColIdxMap), or
+        creating an empty one."""
+        if dbColIdxMap != None:
+            self.__loadDb(row, dbColIdxMap)
+        elif row != None:
             self.__parse(row)
         else:
             self.__empty()
@@ -351,6 +381,10 @@ class PslReader(object):
     def __init__(self, fileName):
         self.fh = fileOps.opengz(fileName)
 
+    def __del__(self):
+        if self.fh != None:
+            self.fh.close()
+
     def __iter__(self):
         return self
 
@@ -360,14 +394,45 @@ class PslReader(object):
             line = self.fh.readline()
             if (line == ""):
                 self.fh.close();
+                self.fh = None
                 raise StopIteration
             if not ((len(line) == 1) or line.startswith('#')):
                 line = line[0:-1]  # drop newline
                 return Psl(line.split("\t"))
 
-# FIXME: need to unify PslTbl/PslReader (add TabFileReader)
+class PslDbReader(object):
+    """Read PSLs from db query"""
 
-class PslTbl(TabFile):
+    def __init__(self, conn, query):
+        self.cur = conn.cursor()
+        try:
+            self.cur.execute(query)
+        except:
+            try:
+                self.cur.close()
+            except:
+                pass
+            raise
+        self.colIdxMap = dbOps.cursorColIdxMap(self.cur)
+
+    def __del__(self):
+        if self.cur != None:
+            self.cur.close()
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        "read next PSL"
+        while True:
+            row = self.cur.fetchone()
+            if row == None:
+                self.cur.close()
+                self.cur = None
+                raise StopIteration
+            return Psl(row, dbColIdxMap=self.colIdxMap)
+
+class PslTbl(list):
     """Table of PSL objects loaded from a tab-file
     """
 
@@ -377,7 +442,8 @@ class PslTbl(TabFile):
             self.qNameMap.add(psl.qName, psl)
 
     def __init__(self, fileName, qNameIdx=False):
-        TabFile.__init__(self, fileName, rowClass=Psl, hashAreComments=True)
+        for psl in PslReader(fileName):
+            self.append(psl)
         self.qNameMap = None
         if qNameIdx:
             self.__mkQNameIdx()
