@@ -10,11 +10,17 @@ BIN_PROGS = \
 	bin/geneCheckStats \
 	bin/profStats
 
-all: lib ${BIN_PROGS}
+PKGS =  pycbio.align pycbio.distrib pycbio.exrun pycbio.hgbrowser pycbio.hgdata \
+	pycbio.html pycbio.ncbi pycbio.stats pycbio.sys pycbio.tsv
 
+
+all: lib libcomp ${BIN_PROGS}
 
 lib:
 	ln -sf src/lib lib
+
+libcomp:
+	PYTHONPATH=src/lib python -m compileall -l $(subst .,/,${PKGS:%=src/lib/%})
 
 bin/%: %
 	@mkdir -p bin
@@ -26,3 +32,4 @@ test:
 clean:
 	rm -rf bin
 	rm -f lib
+	find src/lib -name '*.pyc' -exec rm -f '{}' \;
