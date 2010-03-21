@@ -68,24 +68,28 @@ class TSVTable(list):
                 self.__indexRow(colDictTbl, row)
 
 
-    def __init__(self, fileName, uniqKeyCols=None, multiKeyCols=None,
-                 rowClass=None, typeMap=None, defaultColType=None, isRdb=False,
-                 columns=None, ignoreExtraCols=False, inFh=None):
+    def __init__(self, fileName, uniqKeyCols=None, multiKeyCols=None, rowClass=None, typeMap=None,
+                 defaultColType=None, columns=None, ignoreExtraCols=False, isRdb=False, inFh=None):
         """Read TSV file into the object
         
+        fileName - name of file, opened unless inFh is specified
         uniqKeyCols - name or names of columns to index with uniq keys,
             can be string or sequence
         multiKeyCols - name or names of columns to index, allowing multiple keys.
             can be string or sequence
+        rowClass - class to use for a row. Must take TSVReader and list of string values of columns.
         typeMap - if specified, it maps column names to the type objects to
             use to convert the column.  Unspecified columns will not be
             converted. Key is the column name, value can be either a type
             or a tuple of (parseFunc, formatFunc).  If a type is use,
             str() is used to convert to a printable value.
         defaultColType - if specified, type of unspecified columns
-        isRdb - true if this is an RDB file.
+        columns - if specified, the column names to use.  The header
+            should not be in the file.
+        ignoreExtraCols - should extra columns be ignored?
+        isRdb - file is an RDB file, ignore second row (type map still needed).
         inFh - If not None, this is used as the open file, rather than
-          opening it.
+          opening it.  Closed when the end of file is reached.
         """
         reader = TSVReader(fileName, rowClass=rowClass, typeMap=typeMap, defaultColType=defaultColType, isRdb=isRdb, columns=columns, ignoreExtraCols=ignoreExtraCols, inFh=inFh)
         try:

@@ -25,7 +25,7 @@ class Entry(Immutable):
         self.mkImmutable()
 
 class Node(object):
-    "a node in the skip list.
+    """a node in the skip list.
 
     Fields:
         pos - key of node
@@ -34,7 +34,7 @@ class Node(object):
         owners -  intervals that have an endpoint equal to key
         eqMarkers - a set of markers for intervals that have a a marker on an
                     edge that ends on this node,
-    "
+    """
     def __init__(self, pos):
         self.pos = pos
         self.forward = []
@@ -78,12 +78,12 @@ class IntervalSkipList(object):
                 x = x.forward[i]
                 
             # Pick up interval markers on edge when dropping down a level.
-            vals |= x->markers[i]
+            vals.add(x.markers[i])
 
 
         # Scan forward on bottom level to find location where search key will
         # lie.
-        while (x.forward[0] != None) and (x->forward[0]->start < start):
+        while (x.forward[0] != None) and (x.forward[0].start < start):
             x = x.forward[0]
 
         # If K is not in list, pick up interval markers on edge, otherwise
