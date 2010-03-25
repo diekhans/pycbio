@@ -27,6 +27,9 @@ class PslBlock(object):
     def __len__(self):
         return self.size
 
+    def __str__(self):
+        return str(self.qStart) + ".." + str(self.qEnd) + " <=> " + str(self.tStart) + ".." + str(self.tEnd)
+
     def getQStartPos(self):
         "get qStart for the block on positive strand"
         if self.psl.getQStrand() == '+':
