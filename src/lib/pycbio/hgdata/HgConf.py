@@ -24,3 +24,11 @@ class HgConf(dict):
                 raise Exception("expected name=value, got: " + line)
             self[line[0:i].strip()] = line[i+1:].strip()
 
+    __cache = {}
+    @staticmethod
+    def obtain(confFile=None):
+        """factory for parsed hgconf files, caching results"""
+        conf = HgConf.__cache.get(confFile)
+        if conf == None:
+            conf = HgConf.__cache[confFile] = HgConf(confFile)
+        return conf
