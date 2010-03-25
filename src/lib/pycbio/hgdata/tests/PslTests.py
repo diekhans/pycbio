@@ -41,11 +41,11 @@ class OpsTests(TestCaseBase):
     psTransNegNeg = "47	4	0	0	1	122	1	46	--	AA608343.1b	186	5	178	chr6	170899992	29962882	29962979	2	30,21,	8,160,	140937013,140937089,"
 
     @staticmethod
-    def __splitPs(ps):
-        return ps.split("\t")
+    def __splitToPsl(ps):
+        return Psl(ps.split("\t"))
     
     def __rcTest(self, psIn, psExpect):
-        self.failUnlessEqual(str(Psl(OpsTests.__splitPs(psIn)).reverseComplement()), psExpect)
+        self.failUnlessEqual(str(OpsTests.__splitToPsl(psIn).reverseComplement()), psExpect)
 
     def testReverseComplement(self):
         self.__rcTest(OpsTests.psPos, "0	10	111	0	1	13	3	344548	--	NM_025031.1	664	21	155	chr22	49554710	48109515	48454184	4	81,12,11,17,	509,603,615,626,	1100526,1101151,1445166,1445178,")
@@ -56,7 +56,7 @@ class OpsTests(TestCaseBase):
         self.__rcTest(OpsTests.psTransNegNeg, "47	4	0	0	1	122	1	46	++	AA608343.1b	186	5	178	chr6	170899992	29962882	29962979	2	21,30,	5,148,	29962882,29962949,")
 
     def __swapTest(self, psIn, psExpect):
-        self.failUnlessEqual(str(Psl(OpsTests.__splitPs(psIn)).swapSides(keepTStrandImplicit=True)), psExpect)
+        self.failUnlessEqual(str(OpsTests.__splitToPsl(psIn).swapSides(keepTStrandImplicit=True)), psExpect)
 
     def testSwapSizes(self):
         self.__swapTest(OpsTests.psPos, "0	10	111	0	3	344548	1	13	+	chr22	49554710	48109515	48454184	NM_025031.1	664	21	155	4	17,11,12,81,	48109515,48109533,48453547,48454103,	21,38,49,74,")
@@ -67,7 +67,7 @@ class OpsTests(TestCaseBase):
         self.__swapTest(OpsTests.psTransNegNeg, "47	4	0	0	1	46	1	122	--	chr6	170899992	29962882	29962979	AA608343.1b	186	5	178	2	30,21,	140937013,140937089,	8,160,")
         
     def __swapDropImplicitTest(self, psIn, psExpect):
-        self.failUnlessEqual(str(Psl(OpsTests.__splitPs(psIn)).swapSides(keepTStrandImplicit=False)), psExpect)
+        self.failUnlessEqual(str(OpsTests.__splitToPsl(psIn).swapSides(keepTStrandImplicit=False)), psExpect)
 
     def testSwapSizesDropImplicit(self):
         self.__swapDropImplicitTest(OpsTests.psPos, "0	10	111	0	3	344548	1	13	++	chr22	49554710	48109515	48454184	NM_025031.1	664	21	155	4	17,11,12,81,	48109515,48109533,48453547,48454103,	21,38,49,74,")

@@ -12,10 +12,12 @@ def rcStrand(s):
 
 class PslBlock(object):
     """Block of a PSL"""
-    __slots__ = ("psl", "qStart", "qEnd", "tStart", "tEnd", "size", "qSeq", "tSeq")
+    __slots__ = ("psl", "iBlk", "qStart", "qEnd", "tStart", "tEnd", "size", "qSeq", "tSeq")
 
     def __init__(self, psl, qStart, tStart, size, qSeq=None, tSeq=None):
+        "sets iBlk base on being added in ascending order"
         self.psl = psl
+        self.iBlk = len(psl.blocks)
         self.qStart= qStart
         self.qEnd = qStart + size
         self.tStart = tStart
@@ -182,6 +184,14 @@ class Psl(object):
 
     def getTStrand(self):
         return (self.strand[1] if len(self.strand) > 1 else "+")
+
+    def qRevRange(self, start, end):
+        "reverse a query range to the other strand"
+        return (self.qSize-end, self.qSize-start)
+
+    def tRevRange(self, start, end):
+        "reverse a query range to the other strand"
+        return (self.tSize-end, self.tSize-start)
 
     def qRangeToPos(self, start, end):
         "convert a query range in alignment coordinates to positive strand coordinates"
