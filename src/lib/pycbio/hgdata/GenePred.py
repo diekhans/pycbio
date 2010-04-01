@@ -341,7 +341,7 @@ class GenePred(object):
 
     def findContainingExon(self, pos):
         "find the exon contain pos, or None"
-        for exon in self:
+        for exon in self.exons:
             if exon.contains(pos):
                 return exon
         return None
