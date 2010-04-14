@@ -454,12 +454,19 @@ class PslTbl(list):
         for psl in self:
             self.qNameMap.add(psl.qName, psl)
 
-    def __init__(self, fileName, qNameIdx=False):
+    def __mkTNameIdx(self):
+        self.tNameMap = MultiDict()
+        for psl in self:
+            self.tNameMap.add(psl.tName, psl)
+
+    def __init__(self, fileName, qNameIdx=False, tNameIdx=False):
         for psl in PslReader(fileName):
             self.append(psl)
-        self.qNameMap = None
+        self.qNameMap = self.tNameMap = None
         if qNameIdx:
             self.__mkQNameIdx()
+        if tNameIdx:
+            self.__mkTNameIdx()
 
     def getQNameIter(self):
         return self.qNameMap.iterkeys()
@@ -477,9 +484,18 @@ class PslTbl(list):
             else:
                 yield ent
 
-    def havePsl(self, psl):
-        "determine if the specified psl is already in the table (by comparison, not object id)"
-        for p in self.qNameMap.get(psl.qName):
-            if p == psl:
-                return True
-        return False
+    def getTNameIter(self):
+        return self.tNameMap.iterkeys()
+
+    def haveTName(self, tName):
+        return (self.tNameMap.get(qName) != None)
+        
+    def getByTName(self, tName):
+        """generator to get all PSL with a give tName"""
+        ent = self.tNameMap.get(tName)
+        if ent != None:
+            if isinstance(ent, list):
+                for psl in ent:
+                    yield psl
+            else:
+                yield ent
