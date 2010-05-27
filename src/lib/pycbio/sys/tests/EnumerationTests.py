@@ -36,15 +36,15 @@ class EnumerationTests(TestCaseBase):
         self.failUnless(str(Name.Rick) == "Richard")
 
     def testAliasesBug1(self):
-        "forgot comma in one-element tuple, assert catches this problem"
+        "forgot comma in one-element tuple"
         try:
             Stat = Enumeration("Stat",
                                ["okay",
                                 ("notConserved","notConserved", ("no_alignment")),
                                 "bad_3_splice", "bad_5_splice"])
             if __debug__:
-                self.fail("should have asserted")
-        except AssertionError:
+                self.fail("should have raised exception")
+        except TypeError:
             pass
         
     def testBitSetValues(self):
