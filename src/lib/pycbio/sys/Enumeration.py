@@ -1,4 +1,5 @@
 from pycbio.sys.Immutable import Immutable
+from pycbio.sys.typeOps import isListLike
 
 # FIXME: 
 # - could have user add value object direcrly instead of complex value tuples
@@ -114,10 +115,11 @@ class Enumeration(Immutable):
         return val
     
     def _defValue(self, valueClass, valueDef, numValue):
-        if (type(valueDef) is tuple) or (type(valueDef) is list):
+        if isListLike(valueDef):
             val = self._createValue(valueClass, valueDef[0], numValue, valueDef[1])
             if (len(valueDef) > 2) and (valueDef[2] != None):
-                assert type(valueDef[2]) is tuple
+                if not isListLike(valueDef[2]):
+                    raise TypeError("valueDef[2] must be None, a list or tuple, found: " + str(valueDef[2]))
                 for a in valueDef[2]:
                     self.aliases[a] = val
         else:
