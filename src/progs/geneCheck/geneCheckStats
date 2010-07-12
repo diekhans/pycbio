@@ -20,13 +20,13 @@ def fmtRate(cnt, tot):
     else:
         return "%0.3f" % (float(cnt)/float(tot))
 
-class CmdParser(object):
+class CmdOpts(object):
     usage = """%prog geneChk statsOut
 
     get stats on gene-check
 """
     def __init__(self):
-        parser = OptionParser(usage=CmdParser.usage)
+        parser = OptionParser(usage=CmdOpts.usage)
         (opts, args) = parser.parse_args()
         if len(args) != 2:
             parser.error("wrong number of arguments")
@@ -92,6 +92,6 @@ class CountChks(object):
                    self.probInstCnts[v])
         outFh.close()
 
-opts = CmdParser()
+opts = CmdOpts()
 counter = CountChks(opts.geneChks)
 counter.count(opts.statsOut)
