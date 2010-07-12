@@ -1,11 +1,13 @@
 """Experiment running module.
+
+
 """
 
 import sys,traceback,types
 from pycbio.sys import typeOps, PycbioException
                                 
 class ExRunException(PycbioException):
-    "Exceptions thrown by exrun module derive from this object" 
+    "Exceptions thrown bye exrun module derive from this object" 
     def __init__(self, msg, cause=None):
         PycbioException.__init__(self, msg, cause)
 

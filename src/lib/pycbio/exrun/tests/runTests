@@ -1,0 +1,8 @@
+#!/bin/bash
+
+tests="BasicTests.py CmdTests.py ErrorTests.py SchedTests.py BigTests.py"
+
+for t in $tests ; do
+    echo ==== $t ====
+    python $t
+done
