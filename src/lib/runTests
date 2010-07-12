@@ -1,11 +1,21 @@
 #!/usr/bin/env python
-#
-# run all of the tests 
-# 
 
 import unittest, sys, os
+from optparse import OptionParser
 sys.path.append(".")
 from pycbio.sys import fileOps,strOps
+
+class CmdOpts(object):
+    usage = """%prog
+
+    run all tests
+"""
+    def __init__(self):
+        parser = OptionParser(usage=CmdOpts.usage)
+        (opts, args) = parser.parse_args()
+        if len(args) != 0:
+            parser.error("wrong number of arguments")
+
 
 class DynTest(object):
     "dynamic loading and executing of test"
@@ -81,4 +91,5 @@ dt.add("pycbio.exrun.tests.BigTests")
 dt.add("pycbio.align.tests.PairAlignTest")
 dt.run()
 
+opts = CmdOpts()
 dt.cleanup()
