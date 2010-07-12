@@ -114,7 +114,7 @@ class File(Production):
             raise ExRunException("output file already installed: " + self.path)
         if self.outPath == None:
             fileOps.ensureFileDir(self.path)
-            self.outPath = self.exrun.getTmpPath(self.path)
+            self.outPath = self.exrun.getAtomicPath(self.path)
         return self.outPath
 
     def getInPath(self, autoDecompress=True):

@@ -10,15 +10,12 @@ os.stat_float_times(True) # very, very gross
 
 # FIXME: should rules/prods automatically be added? ExRun object to constructor
 # would do the trick
-# FIXME: How about object wrappers for File for input and output?? instead of getIn or getOut?
 # FIXME: Dir object that is just as a base for File objects.
 # FIXME: error output is really hard to read, especially when executing a non-existent program
 #        just get `OSError: [Errno 2] No such file or directory', not much help
 # FIXME: need to improve graph dump
-# FIXME: need tracing of what is out of date
-# FIXME: Cmd should allow a Cmd as a command in the pipeline, which would
-#        allow all redirection in a subcommand (Pipeline enhancement).
-# FIXME: implement targets
+# FIXME: need tracing of what is out of date (dry run)
+
 
 # NOTES:
 #  - thread schedule should be based on load level; setup of a cluster job
@@ -109,9 +106,9 @@ class _RuleTask(object):
             self.rule.task = task
             self.__evalRule()
         except Exception, ex:
-            self.exrun._flagError(ex)
+            self.exrun.flagError(ex)
         self.rule.task = None
-        self.exrun._scheduleReady()
+        self.exrun.scheduleReady()
 
 class ExRun(object):
     # name of default target
@@ -148,11 +145,11 @@ class ExRun(object):
             self.uniqIdCnt += 1
         return id
 
-    def getTmpPath(self, path, namePrefix="tmp"):
+    def getAtomicPath(self, path, namePrefix="tmp"):
         """generate a unique temporary file path from path, the file will be
         in the same directory.  The file extensions will be maintained, to
         allow recognition of file types, etc. """
-        # FIXME: better name than tmp, check for non-existence
+        # FIXME: check for non-existence
         return os.path.join(os.path.dirname(path),
                             namePrefix + "." + self.getUniqId() + "." + os.path.basename(path))
 
@@ -183,7 +180,7 @@ class ExRun(object):
     def getFile(self, path):
         """get a file production, creating if it doesn't exist, if path is already an
         instance of File instead of a string, just return it."""
-        # doesn't require loking
+        # doesn't require locking
         if isinstance(path, File):
             return path
         realPath = os.path.realpath(path)
@@ -224,13 +221,13 @@ class ExRun(object):
         shortcut for addRule(CmdRule(Cmd(....),...)"""
         return self.addRule(CmdRule(Cmd(cmd, stdin=stdin, stdout=stdout, stderr=stderr), name=name, requires=requires, produces=produces))
     
-    def _flagError(self, err):
+    def flagError(self, err):
         "add an error from a rule to the list"
         with self.lock:
             self.errors.append(err)
         # FIXME abort other tasks
 
-    def _scheduleReady(self):
+    def scheduleReady(self):
         # must synchronize until rule states are changed
         with self.lock:
             if len(self.errors) == 0:
@@ -273,7 +270,7 @@ class ExRun(object):
         "run targets"
         try:
             self.targets = self.__getRunTargets(targets)
-            self._scheduleReady()
+            self.scheduleReady()
             self.sched.run()
         finally:
             if self.verb.enabled(Verb.dumpEnd):
