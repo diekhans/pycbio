@@ -145,8 +145,9 @@ class File(Production):
             return open(path)
 
     def done(self):
-        "called when command completes, waits for pipes but doesn't install output"
-        pass # FIXME
+        "called when command completes with success or failure, waits for
+        pipes but doesn't install output"
+        pass
 
     def finishSucceed(self):
         "finish production with atomic install of new output file as actual file"
@@ -277,6 +278,11 @@ class Cmd(list):
             pdag.wait()
         finally:
             self.prodToDev = None
+
+class PersistentFlag(Production):
+    """Object representing a flag file indicating that a rules has succeeded.
+    These are stored in the experiment control directory."""
+    
 
 class CmdRule(Rule):
     """Rule to execute processes.  Automatically installs File producions after
