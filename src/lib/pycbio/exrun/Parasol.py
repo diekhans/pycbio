@@ -6,8 +6,8 @@ A cluster batch is run in three phases
    2) run - run the batch on the cluster
    3) finishup - combine results of cluster jobs and remove temporary files.
 
-Each batch has a unique name which is used for tracking the
-state of the batch.
+Each batch has a unique name which is used for tracking the state of the
+batch.  The state is tracked via flag files, indicating
 
 """
 from pycbio.exrun.Graph import Rule

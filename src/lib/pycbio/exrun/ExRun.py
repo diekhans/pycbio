@@ -111,6 +111,8 @@ class _RuleTask(object):
         self.exrun.scheduleReady()
 
 class ExRun(object):
+    """Run an experiment.
+    """
     # name of default target
     defaultTargetName = "default"
 
