@@ -194,20 +194,21 @@ class BrowserDir(object):
             pg.add(fbr)
         return pg
 
-    def __getPageLinks(self, pageNum, numPages):
+    def __getPageLinks(self, pageNum, numPages, inclPageLinks):
         html = []
         # prev link
         if pageNum > 1:
-            html.append("<a href=\"dir%d.html\">prev</a>" % (pageNum-1));
+            html.append("<a href=\"dir%d.html\">prev</a>" % (pageNum-1))
         else:
             html.append("prev")
 
         # page number links
-        for p in xrange(1, numPages+1):
-            if p != pageNum:
-                html.append("<a href=\"dir%d.html\">%d</a>" % (p, p))
-            else:
-                html.append("[%d]" % p)
+        if inclPageLinks:
+            for p in xrange(1, numPages+1):
+                if p != pageNum:
+                    html.append("<a href=\"dir%d.html\">%d</a>" % (p, p))
+                else:
+                    html.append("[%d]" % p)
 
         # next link
         if pageNum < numPages:
@@ -269,14 +270,13 @@ class BrowserDir(object):
         if self.title:
             title += ": " + self.title
         pg = HtmlPage(title=title, inStyle=self.style)
-        pageLinks = self.__getPageLinks(pageNum, numPages)
         pg.h3(title)
         if self.pageDesc != None:
             pg.add(self.pageDesc)
             pg.add("<br><br>")
-        pg.add(pageLinks)
+        pg.add(self.__getPageLinks(pageNum, numPages, False))
         self.__addEntryTbl(pg, pgEntries)
-        pg.add(pageLinks)
+        pg.add(self.__getPageLinks(pageNum, numPages, True))
 
         dirFile = outDir + "/dir%d.html" % pageNum
         pg.writeFile(dirFile)
