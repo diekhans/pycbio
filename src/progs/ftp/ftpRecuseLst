@@ -1,0 +1,44 @@
+#!/bin/env python
+
+from optparse import OptionParser
+from ftplib import FTP
+from urlparse import urlparse
+
+class CmdOpts(object):
+    usage = """%prog ftpUrl outFile
+
+    recursive list files under the ftp URL.
+"""
+    def __init__(self):
+        parser = OptionParser(usage=CmdParser.usage)
+        (opts, args) = parser.parse_args()
+        if len(args) != 2:
+            parser.error("wrong number of arguments")
+        (self.ftpUrl, self.outFile) = args
+        self.ftpUrlParsed = urlparse(self.ftpUrl)
+        if self.ftpUrlParsed.scheme != "ftp":
+            parser.error("URL scheme must be ftp: "+ self.ftpUrl)
+        p = self.ftpUrlParsed.netloc.split(":")
+        if len(p) > 2:
+            parser.error("expect ftp://host[:port]: "+ self.ftpUrl)
+        self.ftpHost = p[0]
+        self.ftpPort = int(p[0]) if (len(p) > 1) else None
+
+class FtpRecurseLst(object):
+    def __init__(self, ftpHost, ftpPort, ftpPath):
+        self.ftp = FTP()
+        self.ftp.connect(host=ftpHost, port=ftpPort)
+        self.ftp.login()
+        
+
+opts = CmdOpts()
+frl = FtpRecurseLst(opts.ftpHost, opt.ftpPort, opt.ftpUrlParsed.path)
+>>> ftp = FTP('ftp.cwi.nl')
+>>> ftp.login()               # user anonymous, passwd anonymous@
+>>> ftp.retrlines('LIST')     # list directory contents
+
+ftp = FTP("ftp.freebsd.org")
+ftp.login()
+ftp.retrlines('LIST pub/FreeBSD', lst.append)
+
+Xhttp://stackoverflow.com/questions/966578/parse-response-from-ftp-list-command-syntax-variations
