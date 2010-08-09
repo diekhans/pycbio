@@ -366,14 +366,21 @@ class CmdRule(Rule):
             elif isinstance(a, File):
                 raise ExRunException("can't use File object in command argument, use FileIn() or FileOut() to generate a reference object")
 
-    def __callDone(self, file, firstEx):
+    def __callDone(self, fil):
         "call done function, if exception, set firstEx if it is None"
         try:
-            file.done()
+            fil.done()
         except Exception, ex:
-            ex = ExRunException("Exception on file: " + str(file), cause=ex)
+            ex = ExRunException("Exception on file: " + str(fil), cause=ex)
             self.verb.pr(Verb.error, str(ex)+"\n"+ex.format())
-            if firstEx == None:
+            return ex
+        return None
+
+    def __closeFiles(self, files, firstEx):
+        "call done method on files, to close pipes"
+        for f in files:
+            ex = self.__callDone(f)
+            if (ex != None) and (firstEx == None):
                 firstEx = ex
         return firstEx
 
@@ -388,13 +395,8 @@ class CmdRule(Rule):
                 self.verb.pr(Verb.error, str(ex)+"\n"+ex.format())
                 firstEx = ex
         finally:
-            # close compress pipes
-            for r in self.requires:
-                if isinstance(r, File):
-                    firstEx = self.__callDone(r, firstEx)
-            for p in self.produces:
-                if isinstance(p, File):
-                    firstEx = self.__callDone(p, firstEx)
+            firstEx = self.__closeFiles(self.requires, firstEx)
+            firstEx = self.__closeFiles(self.produces, firstEx)
         if firstEx != None:
             raise firstEx
 

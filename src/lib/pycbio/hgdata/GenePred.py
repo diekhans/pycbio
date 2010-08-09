@@ -1,5 +1,5 @@
 import string
-from pycbio.sys import fileOps
+from pycbio.sys import fileOps, dbOps
 from pycbio.hgdata.AutoSql import intArraySplit, intArrayJoin
 from pycbio.sys.Enumeration import Enumeration
 
@@ -131,7 +131,19 @@ class Exon(object):
 
 class GenePred(object):
     """Object wrapper for a genePred"""
-    def _parse(self, row):
+
+    def __buildExons(self, exonStarts, exonEnds, exonFrames):
+        "build array of exon objects"
+        self.exons = []
+        frame = None
+        self.cdsStartIExon = None
+        self.cdsEndIExon = None
+        for i in xrange(len(exonStarts)):
+            if exonFrames != None:
+                frame = exonFrames[i]
+            self.addExon(exonStarts[i], exonEnds[i], frame)
+
+    def __parse(self, row):
         self.name = row[0]
         self.chrom = row[1]
         self.strand = row[2]
@@ -154,8 +166,8 @@ class GenePred(object):
         self.cdsStartStat = None
         self.cdsEndStat = None
         if iCol < numCols:  # 12,13
-            self.cdsStartStat = CdsStat.lookup(row[iCol])
-            self.cdsEndStat = CdsStat.lookup(row[iCol+1])
+            self.cdsStartStat = CdsStat(row[iCol])
+            self.cdsEndStat = CdsStat(row[iCol+1])
             iCol = iCol+2
         exonFrames = None
         self.hasExonFrames = False
@@ -164,17 +176,32 @@ class GenePred(object):
             iCol = iCol+1
             self.hasExonFrames = True
 
-        # build array of exon objects
-        self.exons = []
-        frame = None
-        self.cdsStartIExon = None
-        self.cdsEndIExon = None
-        for i in xrange(len(exonStarts)):
-            if exonFrames != None:
-                frame = exonFrames[i]
-            self.addExon(exonStarts[i], exonEnds[i], frame)
+        self.__buildExons(exonStarts, exonEnds, exonFrames)
 
-    def _empty(self):
+    @staticmethod
+    def __colOrNone(row, dbColIdxMap, colName, typeCnv):
+        idx = dbColIdxMap.get(colName)
+        return None if (idx == None) else typeCnv(row[idx])
+
+    def __loadDb(self, row, dbColIdxMap):
+        self.name = row[dbColIdxMap["name"]]
+        self.chrom = row[dbColIdxMap["chrom"]]
+        self.strand = row[dbColIdxMap["strand"]]
+        self.txStart = int(row[dbColIdxMap["txStart"]])
+        self.txEnd = int(row[dbColIdxMap["txEnd"]])
+        self.cdsStart = int(row[dbColIdxMap["cdsStart"]])
+        self.cdsEnd = int(row[dbColIdxMap["cdsEnd"]])
+        exonStarts = intArraySplit(row[dbColIdxMap["exonStarts"]])
+        exonEnds = intArraySplit(row[dbColIdxMap["exonEnds"]])
+        self.score = self.__colOrNone(row, dbColIdxMap, "score", int)
+        self.name2 = self.__colOrNone(row, dbColIdxMap, "name2", str)
+        self.cdsStartStat = self.__colOrNone(row, dbColIdxMap, "cdsStartStat", CdsStat)
+        self.cdsEndStat = self.__colOrNone(row, dbColIdxMap, "cdsEndStat", CdsStat)
+        exonFrames = self.__colOrNone(row, dbColIdxMap, "exonFrames", intArraySplit)
+        self.hasExonFrames = (exonFrames != None)
+        self.__buildExons(exonStarts, exonEnds, exonFrames)
+
+    def __empty(self):
         self.name = None
         self.chrom = None
         self.strand = None
@@ -191,12 +218,14 @@ class GenePred(object):
         self.cdsStartIExon = None
         self.cdsEndIExon = None
 
-    def __init__(self, row=None):
+    def __init__(self, row=None, dbColIdxMap=None):
         "If row is not None, parse a row, otherwise initialize to empty state"
-        if row != None:
-            self._parse(row)
+        if dbColIdxMap != None:
+            self.__loadDb(row, dbColIdxMap)
+        elif row != None:
+            self.__parse(row)
         else:
-            self._empty()
+            self.__empty()
 
     def addExon(self, exonStart, exonEnd, frame=None):
         "add an exon; which must be done in assending order"
@@ -436,3 +465,30 @@ class GenePredReader(object):
             if not ((len(line) == 1) or line.startswith('#')):
                 line = line[0:-1]  # drop newline
                 return GenePred(line.split("\t"))
+
+class GenePredDbReader(object):
+    """Read genePreds from a db query"""
+    def __init__(self, conn, query):
+        self.cur = conn.cursor()
+        try:
+            self.cur.execute(query)
+        except:
+            try:
+                self.cur.close()
+            except:
+                pass
+            raise
+        self.colIdxMap = dbOps.cursorColIdxMap(self.cur)
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        "GPR next"
+        while True:
+            row = self.cur.fetchone()
+            if row == None:
+                self.cur.close()
+                self.cur = None
+                raise StopIteration
+            return GenePred(row, dbColIdxMap=self.colIdxMap)
