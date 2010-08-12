@@ -145,8 +145,8 @@ class File(Production):
             return open(path)
 
     def done(self):
-        "called when command completes with success or failure, waits for
-        pipes but doesn't install output"
+        """called when command completes with success or failure, waits for
+        pipes but doesn't install output"""
         pass
 
     def finishSucceed(self):
