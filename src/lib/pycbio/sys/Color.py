@@ -28,7 +28,7 @@ class Color(Immutable):
 
     @staticmethod
     def __toReal(v):
-        assert(0 <= v <= 1.0)
+        assert(0 <= v <= 255)
         return v/255.0
 
     @staticmethod
@@ -103,13 +103,21 @@ class Color(Immutable):
     def toHtmlColor(self):
         return "#%02x%02x%02x" % (self.__r, self.__g, self.__b)
 
+    def toRgbStr(self, sep=",", pos=4):
+        "convert to a string of real RGB values, separated by sep"
+        return "%0.*f%s%0.*f%s%0.*f" % (pos, self.__r, sep, pos, self.__g, sep, pos, self.__b)
+
     def toRgb8Str(self, sep=","):
-        "convert to a string of 8-bit RGB values , separated by sep"
-        return str(Color.__toInt(self.__r)) + sep + str(Color.__toInt(self.__g)) + sep + str(Color.__toInt(self.__b))
+        "convert to a string of 8-bit RGB values, separated by sep"
+        return str(Color.__toInt8(self.__r)) + sep + str(Color.__toInt8(self.__g)) + sep + str(Color.__toInt8(self.__b))
+
+    def toHsvStr(self, sep=",", pos=4):
+        "convert to a string of real HSV values, separated by sep"
+        return "%0.*f%s%0.*f%s%0.*f" % (pos, self.__h, sep, pos, self.__s, sep, pos, self.__v)
 
     def toHsv8Str(self, sep=","):
         "convert to a string of 8-bit HSV values, separated by sep"
-        return str(Color.__toInt(self.__h)) + sep + str(Color.__toInt(self._s)) + sep + str(Color.__toInt(self.__v))
+        return str(Color.__toInt8(self.__h)) + sep + str(Color.__toInt8(self.__s)) + sep + str(Color.__toInt8(self.__v))
 
     def setRed(self, red):
         "Create a new Color object with red set to the specified real number"
@@ -147,7 +155,6 @@ class Color(Immutable):
     @staticmethod
     def fromRgb8(r, g, b):
         "construct from 8-bit int RGB values"
-        h, s, v = colorsys.rgb_to_hsv(r, g, b)
         return Color.fromRgb(Color.__toReal(r), Color.__toReal(g), Color.__toReal(b))
 
     @staticmethod
