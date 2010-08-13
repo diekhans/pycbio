@@ -36,6 +36,7 @@ class ColorTests(TestCaseBase):
         self.assertAlmostEquals(hsv[1], 0.4)
         self.assertAlmostEquals(hsv[2], 0.5)
         self.assertEquals(c.getHsv8(), (234, 102, 128))
+        self.assertEquals(c.toHtmlColor(), "#804d66")
 
     def testRegress(self):
         c = Color.fromRgb8(16, 78, 139)
@@ -44,6 +45,7 @@ class ColorTests(TestCaseBase):
         self.assertEquals(c.getBlue8(), 139)
         self.assertEquals(c.toRgb8Str(), "16,78,139")
         self.assertEquals(c.toHsv8Str(), "149,226,139")
+        self.assertEquals(c.toHtmlColor(), "#104e8b")
 
 # FIXME: many more tests needed
 

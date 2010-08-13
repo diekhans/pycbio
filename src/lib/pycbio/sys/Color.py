@@ -101,7 +101,7 @@ class Color(Immutable):
         return (Color.__toInt8(self.__h), Color.__toInt8(self.__s), Color.__toInt8(self.__v))
 
     def toHtmlColor(self):
-        return "#%02x%02x%02x" % (self.__r, self.__g, self.__b)
+        return "#%02x%02x%02x" % self.getRgb8()
 
     def toRgbStr(self, sep=",", pos=4):
         "convert to a string of real RGB values, separated by sep"
