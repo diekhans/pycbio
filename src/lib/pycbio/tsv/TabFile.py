@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 
 ## FIXME: needed for faster readings, but needs cleaned up, need reader/writer
 ## classes

@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 from pycbio.tsv.TabFile import TabFile
 
 class ChromSize(object):

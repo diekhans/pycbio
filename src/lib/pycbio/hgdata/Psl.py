@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 import copy
 from pycbio.hgdata.AutoSql import intArraySplit, intArrayJoin, strArraySplit, strArrayJoin
 from pycbio.sys import fileOps, dbOps

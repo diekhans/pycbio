@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 from pycbio.tsv.TSVTable import TSVTable
 from pycbio.tsv.TSVReader import TSVReader
 #inId	selectId	inOverlap	selectOverlap	overBases	similarity

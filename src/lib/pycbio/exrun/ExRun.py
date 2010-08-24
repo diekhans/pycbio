@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 """Experiment running objects"""
 from __future__ import with_statement
 import os.path,sys,socket,threading

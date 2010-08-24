@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 "Classes used to implement rules that execute commands and produce files"
 
 import os.path,sys

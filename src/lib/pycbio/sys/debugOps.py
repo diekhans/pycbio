@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 """Functions useful for debugging"""
 import os.path,sys,posix
 

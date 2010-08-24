@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 "array and matrix classed, indexed by Enumerations"
 
 from pycbio.sys.Enumeration import Enumeration

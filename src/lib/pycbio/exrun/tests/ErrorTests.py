@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 "test of error conditions"
 
 import unittest, sys, os

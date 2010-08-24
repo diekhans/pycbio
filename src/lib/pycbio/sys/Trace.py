@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 """Debug tracing to a file"""
 # ideas from:
 #  http://www.dalkescientific.com/writings/diary/archive/2005/04/20/tracing_python_code.html

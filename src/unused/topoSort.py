@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
     def _dfsFindCycle(self, edges, n):
         "find a cycle with a DFS"
         self.visited.add(n)

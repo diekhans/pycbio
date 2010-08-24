@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 """Create a frameset that that is a directory of locations in the genome
 browser.
 """

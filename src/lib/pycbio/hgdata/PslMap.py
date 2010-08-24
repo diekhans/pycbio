@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 
 class PslMap(object):
     """Object for mapping coordinates using PSL alignments.

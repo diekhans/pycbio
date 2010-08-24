@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 from Bio.GenBank import LocationParser
 from pycbio.sys import PycbioException
 

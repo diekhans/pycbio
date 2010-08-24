@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 """support classes for parsing autoSql generated objects"""
 import string
 

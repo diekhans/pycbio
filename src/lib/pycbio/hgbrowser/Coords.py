@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 "browser coordinates object"
 
 from pycbio.sys.Immutable import Immutable
