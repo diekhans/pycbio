@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 from pycbio.sys import fileOps
 import os, sys, unittest, difflib, threading, errno, re, glob
 

@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 from pycbio.sys.TestCaseBase import TestCaseBase
 from pycbio.exrun.Graph import ProdState,RuleState
 from pycbio.sys import typeOps

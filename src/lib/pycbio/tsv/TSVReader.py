@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 """TSV reading classes"""
 import sys,csv
 from pycbio.sys import fileOps

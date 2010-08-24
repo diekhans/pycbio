@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 """Experiment running module.
 
 

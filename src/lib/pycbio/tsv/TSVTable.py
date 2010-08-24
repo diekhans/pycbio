@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 from pycbio.tsv.TSVReader import TSVReader
 from pycbio.tsv.TSVError import TSVError
 from pycbio.sys.MultiDict import MultiDict

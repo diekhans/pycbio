@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 from pycbio.tsv.TSVRow import TSVRow
 from pycbio.tsv.TSVTable import TSVTable
 from pycbio.tsv.TSVReader import TSVReader

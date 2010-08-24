@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 """Container index by sequence id, range, and optionally strand that
 efficiently searches for overlapping entries."""
 

@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 """classes for interacting with parasol batch system"""
 import sys, os.path
 from pycbio.sys import procOps,fileOps

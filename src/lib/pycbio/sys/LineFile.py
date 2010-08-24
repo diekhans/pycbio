@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 """module that provides a wrapper around a file object that is a bit
 easier to use for readline lines from ascii files"""
 

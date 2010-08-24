@@ -1,3 +1,4 @@
+# Copyright 2006-2010 Mark Diekhans
 from pycbio.sys.procOps import callProc
 
 class ChromInfo(object):
