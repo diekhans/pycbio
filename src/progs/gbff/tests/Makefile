@@ -13,7 +13,7 @@ BIN_DIR = ../../../../bin
 #   - NM_032971.1 - bad CDS record NP_116754.1
 
 test: \
-	pseudoTest geneTest pseudoIgTest geneIgTest exonsOnlyTest \
+	pseudoTest geneTest dropLocusVerTest pseudoIgTest geneIgTest exonsOnlyTest \
 	hsRegressTest mmRegressTest rnaGeneTest \
 	pseudoExtTest geneExtTest mixedRnasTest
 
@@ -24,6 +24,11 @@ pseudoTest: mkdirs
 
 geneTest: mkdirs
 	${BIN_DIR}/gbffGenesToGenePred --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp
+	genePredCheck output/$@.gp
+	diff expected/$@.gp output/$@.gp
+
+dropLocusVerTest: mkdirs
+	${BIN_DIR}/gbffGenesToGenePred --dropLocusVer --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp
 	genePredCheck output/$@.gp
 	diff expected/$@.gp output/$@.gp
 
