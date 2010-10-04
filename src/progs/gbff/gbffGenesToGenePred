@@ -590,7 +590,7 @@ class GeneConverter(object):
     def __convertTrans(self, trans):
         "convert a transcript to a genePred"
 
-        gpb = GenePredBuilder(self.gene.geneSym, trans.getTransId(), self.gene.rec.locus, self.mkExt)
+        gpb = GenePredBuilder(self.gene.geneSym, trans.getTransId(), self.gene.rec.version, self.mkExt)
 
         # get exons, from one of the sources
         if trans.mrnaFt != None:
