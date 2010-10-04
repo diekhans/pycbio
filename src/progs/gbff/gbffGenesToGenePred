@@ -62,11 +62,12 @@ otherwise, associated are chosen by best match
         parser.add_option("--pseudo", dest="pseudo", action="store_true",
                           default=False,
                           help="extract  pseudogenes, either immunoglobulin or assumed protein coding (since type not annotated)")
-        parser.add_option("--live", dest="live", action="store_true",
-                          default=False,
+        parser.add_option("--live", dest="live", action="store_true", default=False,
                           help="extract  live gene annotations; default if --pseudo is not specified")
         parser.add_option("--ext", dest="ext", action="store_true", default=False,
                           help="make extended genePreds")
+        parser.add_option("--dropLocusVer", dest="dropLocusVer", action="store_true", default=False,
+                          help="remove the version from the locus (contig or chrom) accession")
         parser.add_option("--verbose", dest="verbose", action="store", type="int", default=0,
                           help="set verbosity level")
         parser.add_option("--noPsycho", dest="usePsycho", action="store_false",
@@ -582,15 +583,16 @@ class GeneConverter(object):
     get the exon annotations.  For pseudogenes, they come from exon features,
     for genes they come from the mRNA feature"""
 
-    def __init__(self, gene, mkExt):
+    def __init__(self, gene, mkExt, dropLocusVer):
         self.gene = gene
         self.mkExt = mkExt
+        self.dropLocusVer = dropLocusVer
         self.outFh = None
 
     def __convertTrans(self, trans):
         "convert a transcript to a genePred"
 
-        gpb = GenePredBuilder(self.gene.geneSym, trans.getTransId(), self.gene.rec.version, self.mkExt)
+        gpb = GenePredBuilder(self.gene.geneSym, trans.getTransId(), (self.gene.rec.locus if self.dropLocusVer else self.gene.rec.version), self.mkExt)
 
         # get exons, from one of the sources
         if trans.mrnaFt != None:
@@ -649,7 +651,7 @@ class GbffToGenes(object):
                     prLine(sys.stderr, "    trans: ", trans.getTransId(), " CDS: ", trans.getCdsId())
                            
         if keep:
-            cnv = GeneConverter(gene, self.opts.ext)
+            cnv = GeneConverter(gene, self.opts.ext, self.opts.dropLocusVer)
             cnv.convert(self.outFh)
 
     def __procRec(self, rec):
