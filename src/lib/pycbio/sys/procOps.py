@@ -60,6 +60,7 @@ def shQuoteWord(word):
     """quote word so that it will evaluate as a simple string by common Unix
     shells"""
     # help from http://code.activestate.com/recipes/498202/
+    word = str(word)
     if shSafeRe.match(word):
         return word
     else:
