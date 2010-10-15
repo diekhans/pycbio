@@ -1,0 +1,3 @@
+Warning: Number of CDS features (2) doesn't match number of mRNA features (1) gene: ZNF254 (GeneID:9534)
+Warning: Number of CDS features (2) doesn't match number of mRNA features (3) gene: HSFY1 (GeneID:86614)
+Warning: can't match CDS to mRNA for: NR_003510.1 gene: HSFY1 (GeneID:86614)
