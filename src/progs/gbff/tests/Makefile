@@ -18,59 +18,70 @@ test: \
 	pseudoExtTest geneExtTest mixedRnasTest
 
 pseudoTest: mkdirs
-	${BIN_DIR}/gbffGenesToGenePred --pseudo --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp
+	${BIN_DIR}/gbffGenesToGenePred --pseudo --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp >output/$@.out 2>&1
 	genePredCheck output/$@.gp
 	diff expected/$@.gp output/$@.gp
+	diff expected/$@.out output/$@.out
 
 geneTest: mkdirs
-	${BIN_DIR}/gbffGenesToGenePred --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp
+	${BIN_DIR}/gbffGenesToGenePred --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp >output/$@.out 2>&1
 	genePredCheck output/$@.gp
 	diff expected/$@.gp output/$@.gp
+	diff expected/$@.out output/$@.out
 
 dropLocusVerTest: mkdirs
-	${BIN_DIR}/gbffGenesToGenePred --dropLocusVer --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp
+	${BIN_DIR}/gbffGenesToGenePred --dropLocusVer --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp >output/$@.out 2>&1
 	genePredCheck output/$@.gp
 	diff expected/$@.gp output/$@.gp
+	diff expected/$@.out output/$@.out
 
 pseudoIgTest: mkdirs
-	${BIN_DIR}/gbffGenesToGenePred --immunoglobulins --pseudo --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp
+	${BIN_DIR}/gbffGenesToGenePred --immunoglobulins --pseudo --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp >output/$@.out 2>&1
 	genePredCheck output/$@.gp
 	diff expected/$@.gp output/$@.gp
+	diff expected/$@.out output/$@.out
 
 geneIgTest: mkdirs
-	${BIN_DIR}/gbffGenesToGenePred --immunoglobulins --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp
+	${BIN_DIR}/gbffGenesToGenePred --immunoglobulins --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp  >output/$@.out 2>&1
 	genePredCheck output/$@.gp
 	diff expected/$@.gp output/$@.gp
+	diff expected/$@.out output/$@.out
 
 exonsOnlyTest: mkdirs
-	${BIN_DIR}/gbffGenesToGenePred input/exonsOnly.gbs output/$@.gp
+	${BIN_DIR}/gbffGenesToGenePred input/exonsOnly.gbs output/$@.gp >output/$@.out 2>&1
 	genePredCheck output/$@.gp
 	diff expected/$@.gp output/$@.gp
+	diff expected/$@.out output/$@.out
 
 hsRegressTest: mkdirs
-	${BIN_DIR}/gbffGenesToGenePred input/hs_regress.gbs output/$@.gp
+	${BIN_DIR}/gbffGenesToGenePred input/hs_regress.gbs output/$@.gp >output/$@.out 2>&1
 	genePredCheck output/$@.gp
 	diff expected/$@.gp output/$@.gp
+	diff expected/$@.out output/$@.out
 
 mmRegressTest: mkdirs
-	${BIN_DIR}/gbffGenesToGenePred --rnaq=input/mm_regress.q input/mm_regress.gbs output/$@.gp
+	${BIN_DIR}/gbffGenesToGenePred --rnaq=input/mm_regress.q input/mm_regress.gbs output/$@.gp >output/$@.out 2>&1
 	genePredCheck output/$@.gp
 	diff expected/$@.gp output/$@.gp
+	diff expected/$@.out output/$@.out
 
 rnaGeneTest: mkdirs
-	${BIN_DIR}/gbffGenesToGenePred --rnaGenes --rnaq=input/hs_chrY.part.q input/hs_chrY.part.gbs output/$@.gp
+	${BIN_DIR}/gbffGenesToGenePred --rnaGenes --rnaq=input/hs_chrY.part.q input/hs_chrY.part.gbs output/$@.gp >output/$@.out 2>&1
 	genePredCheck output/$@.gp
 	diff expected/$@.gp output/$@.gp
+	diff expected/$@.out output/$@.out
 
 pseudoExtTest: mkdirs
-	${BIN_DIR}/gbffGenesToGenePred --pseudo --ext --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp
+	${BIN_DIR}/gbffGenesToGenePred --pseudo --ext --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp >output/$@.out 2>&1
 	genePredCheck output/$@.gp
 	diff expected/$@.gp output/$@.gp
+	diff expected/$@.out output/$@.out
 
 geneExtTest: mkdirs
-	${BIN_DIR}/gbffGenesToGenePred --ext --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp
+	${BIN_DIR}/gbffGenesToGenePred --ext --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp >output/$@.out 2>&1
 	genePredCheck output/$@.gp
 	diff expected/$@.gp output/$@.gp
+	diff expected/$@.out output/$@.out
 
 # mRNA and other RNAs in same gene
 mixedRnasTest: mkdirs
