@@ -365,7 +365,7 @@ class GeneFeatures(object):
     def __checkCdsTransMatch(self, cdsFt, trans):
         """return size, or None is no match, or transcript already has a CDS,
         also skip NR/XRs"""
-        if trans.getTransId().startswith("NR_") or trans.getTransId().startswith("XR_") or not GeneFeatures.__cdsMatches(trans, cdsFt):
+        if trans.getTransId().startswith("NR_") or trans.getTransId().startswith("XR_") or (trans.cdsFt != None) or not GeneFeatures.__cdsMatches(trans, cdsFt):
             return None
         else:
             return Coords.fromLocation(cdsFt.location).size()
@@ -744,7 +744,7 @@ rnaCdsMap = None
 if opts.rnaq != None:
     rnaCdsMap = RnaCdsMap(rnaqFile=opts.rnaq)
 elif opts.mrnaProtMap != None:
-    rnaCdsMap = RnaCdsMap(mrnaProtFile=opts.rnaProtMap)
+    rnaCdsMap = RnaCdsMap(mrnaProtFile=opts.mrnaProtMap)
 gbffConvert = GbffToGenes(opts, rnaCdsMap)
 gbffConvert.convert(opts.genePredFile)
 if opts.errorOnWarn and (warnCnt > 0):
