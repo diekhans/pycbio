@@ -222,6 +222,38 @@ class TransFeatures(object):
             self.exonCoords.sort()
         return self.exonCoords
 
+    def getMergedMRnaCdsCoords(self):
+        """generate coordinates defined by a merge or the CDS and mRNA
+        coords.  This will leave small, internal gaps, which indicate
+        ribosomal frame shifts, etc"""
+        coords = []
+        mrna = self.getMRnaCoords()
+        mi = 0
+        cds = self.getCdsCoords()
+        ci = 0
+
+        # initial UTR-only blocks
+        while (mi < len(mrna)) and (mrna[mi].end < cds[0].start):
+            coords.append(mrna[mi])  # before CDS
+            mi += 1
+
+        # CDS/UTR overlap, first block define this way starts on mRNA exon
+        # last block end on mRNA exon boundary, the rest define by CDS blocks.
+        # this captures frame shifts
+        while (ci < len(cds)) and (mi < len(mrna)):
+            while (ci < len(cds)) and (mrna[mi].contains(cds[ci])):
+                st = mrna[mi].start if ci == 0 else cds[ci].start
+                en = mrna[mi].end if ci == len(cds)-1 else cds[ci].end
+                coords.append(Coord(st, en, mrna[mi].strand))
+                ci += 1
+            mi += 1
+
+        # final UTR-only blocks
+        while mi < len(mrna):
+            coords.append(mrna[mi])  # after CDS
+            mi += 1
+        return coords
+
     def dump(self):
         prLine(sys.stderr, "\ttranscript: ", self.transId, " gene: ", self.gene.geneSym)
         prLine(sys.stderr, "\t   cds: ", self.cdsFt)
@@ -572,31 +604,34 @@ class GenePredBuilder(object):
             self.gp.cdsStart = coord.start
             self.gp.cdsEnd = coord.end
             
+    def __addExon(self, coord, prevStart, prevEnd):
+        assert(coord.start < coord.end)
+        # adjust tx range to contain exon
+        if self.gp.txStart == None:
+            self.gp.txStart = coord.start
+            self.gp.txEnd = coord.end
+            self.gp.strand = coord.strand
+        else:
+            self.gp.txStart = min(self.gp.txStart, coord.start)
+            self.gp.txEnd = max(self.gp.txEnd, coord.end)
+            
+        if (prevStart != None) and (coord.start <= prevEnd):
+            # merge adjacent or overlapping exons
+            prevEnd = max(prevEnd, coord.end)
+        else:
+            if prevStart != None:
+                self.gp.addExon(prevStart, prevEnd)
+            prevStart = coord.start
+            prevEnd = coord.end
+        return (prevStart, prevEnd)
+
     def addExons(self, coords):
         """add exons, given a list of converted coordiante tuples, making adjustments
         to prevent overlapping exons or gaps between tx bounds and exons"""
         prevStart = None
         prevEnd = None
-        for e in coords:
-            assert(e.start < e.end)
-            # adjust tx range to contain exon
-            if self.gp.txStart == None:
-                self.gp.txStart = e.start
-                self.gp.txEnd = e.end
-                self.gp.strand = e.strand
-            else:
-                self.gp.txStart = min(self.gp.txStart, e.start)
-                self.gp.txEnd = max(self.gp.txEnd, e.end)
-            
-            if (prevStart != None) and (e.start <= prevEnd):
-                # merge adjacent or overlapping exons
-                prevEnd = max(prevEnd, e.end)
-            else:
-                if prevStart != None:
-                    self.gp.addExon(prevStart, prevEnd)
-                prevStart = e.start
-                prevEnd = e.end
-
+        for coord in coords:
+            prevStart, prevEnd = self.__addExon(coord, prevStart, prevEnd)
         # last exon
         if prevStart != None:
             self.gp.addExon(prevStart, prevEnd)
@@ -617,9 +652,12 @@ class GeneConverter(object):
 
         gpb = GenePredBuilder(self.gene.geneSym, trans.getTransId(), (self.gene.rec.locus if self.dropLocusVer else self.gene.rec.version), self.mkExt)
 
-        # get exons, from one of the sources
+        # get exons from one of the sources
         if trans.mrnaFt != None:
-            gpb.addExons(trans.getMRnaCoords())
+            if trans.cdsFt != None:
+                gpb.addExons(trans.getMergedMRnaCdsCoords())
+            else:
+                gpb.addExons(trans.getMRnaCoords())
         elif trans.miscRnaFt != None:
             gpb.addExons(trans.getMiscRnaCoords())
         elif trans.cdsFt != None:
