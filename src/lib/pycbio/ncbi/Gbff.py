@@ -173,37 +173,21 @@ class Coords(list):
                 return i
         return None
 
-    def isSubrange(self, other):
-        """is other a sub-range of this object. That is, the this
-        object is that same as other, with-in the bounds of other."""
-        sLen = len(self)
-        oLen = len(other)
+    def isContained(self, other):
+        """Are all blocks in other contained within blocks of self.  This
+        doesn't check for all bases of the containing blocks being covered.
+        This handles fame shift CDS, where a base in the mRNA block may not be
+        covered."""
 
-        # initial block
         oi = 0
-        si = self.findContained(other[0])
-        if si == None:
-            return False
-        if (sLen-si) < oLen:
-            return False # not enough left to cover
-
-        # internal blocks
-        if oLen > 1:
-            if other[0].end != self[si].end:
-                return False  # initial end mismatch
-            si += 1
-            oi += 1
-            while (si < sLen-1) and (oi < oLen-1):
-                if other[oi] != self[si]:
-                    return False
+        si = 0
+        while oi < len(other):
+            # find next self block containing other[oi]
+            while  (si < len(self)) and (self[si].end < other[oi].start):
                 si += 1
-                oi += 1
-            if other[oi].start != self[si].start:
-                return False  # final start mismatch
-
-        # final block
-        if other[oi].end > self[si].end:
-            return False
+            if (si >= len(self)) or (self[si].start >= other[oi].end) or not self[si].contains(other[oi]):
+                return False
+            oi += 1
         return True
 
     @staticmethod
