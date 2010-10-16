@@ -12,7 +12,7 @@ from optparse import OptionParser
 from pycbio.sys import fileOps, setOps, typeOps
 from pycbio.sys.Enumeration import Enumeration
 from pycbio.sys.fileOps import prLine
-from pycbio.tsv.TSVReader import TSVReader
+from pycbio.tsv import TSVReader, TabFileReader
 from pycbio.hgdata.GenePred import GenePred,CdsStat
 from pycbio.ncbi.Gbff import *
 
@@ -36,14 +36,19 @@ files.
 Retrieve files with:
     wget -nv -r -A 'hs_ref_*.gbs.gz' 'ftp://ftp.ncbi.nih.gov/genomes/H_sapiens/CHR*'
 
-To obtain correct association of CDS to mRNA, use the rna.q file:
+To obtain correct association of CDS to mRNA, use the either the rna.q file
+specified with the --rnaq argument and files obtained from locations like:
    ftp://ftp.ncbi.nih.gov/genomes/H_sapiens/mapview/rna.q.gz
-otherwise, associated are chosen by best match
+
+or use the --protMRnaMap option and an mapping obtained by other means.  Otherwise,
+a crude heuristic is used to associated associated CDS and mRNA records.
 """
     def __init__(self):
         parser = OptionParser(usage=CmdOpts.usage)
         parser.add_option("--rnaq", dest="rnaq", action="store", default=None,
                           help="use this rna.q file to match CDS to mRNA")
+        parser.add_option("--mrnaProtMap", dest="mrnaProtMap", action="store", default=None,
+                          help="tab-separated file of /transcript_id mRNA field to corresponding CDS /protein_id field")
         parser.add_option("--protGenes", dest="protGenes", action="store_true",
                           default=False,
                           help="extract protein coding gene annotations, default if no other get options are specified")
@@ -70,6 +75,8 @@ otherwise, associated are chosen by best match
                           help="remove the version from the locus (contig or chrom) accession")
         parser.add_option("--verbose", dest="verbose", action="store", type="int", default=0,
                           help="set verbosity level")
+        parser.add_option("--errorOnWarn", dest="errorOnWarn", action="store_true", default=False,
+                          help="generate an error at the end if warnings are encountered")
         parser.add_option("--noPsycho", dest="usePsycho", action="store_false",
                           default=True,
                           help="disable pyscho compiler")
@@ -78,6 +85,8 @@ otherwise, associated are chosen by best match
             parser.error("wrong number of arguments")
         (self.gbff, self.genePredFile) = args
         self.__dict__.update(opts.__dict__)
+        if (self.rnaq != None) and (self.mrnaProtMap != None):
+            parser.error("can only specify one of -rnaq or -mrnaProtMap")
         if self.allGenes:
             self.protGenes = self.rnaGenes = self.other = self.immunoglobulins = True
         elif not (self.protGenes or self.rnaGenes or self.otherGenes or self.immunoglobulins):
@@ -90,7 +99,7 @@ otherwise, associated are chosen by best match
         if self.rnaGenes:
             self.selected.add(GeneType.rnaGene)
         if self.otherGenes:
-            self.selected.add(GeneType.otherGene)
+            self.selected.add(GeneType.other)
         if self.immunoglobulins:
             self.selected.add(GeneType.immunoglobulin)
         self.active = set()
@@ -101,28 +110,42 @@ otherwise, associated are chosen by best match
         if len(self.active) == 0:
             self.active.add(ActiveType.live)
         if self.verbose >= 1:
-            prLine(sys.stderr, "selecting: genes: ", 
-                   setOps.setJoin(self.selected), "  ",
-                   setOps.setJoin(self.active))
+            prLine(sys.stderr, "selecting: genes: ", setOps.setJoin(self.selected), "  ", setOps.setJoin(self.active))
 
+warnCnt = 0
 def prWarn(*objs):
     "print warning, a space is added between each arg"
+    global warnCnt
     fh = sys.stderr
     fh.write("Warning:")
     for o in objs:
         fh.write(' ')
         fh.write(str(o))
     fh.write("\n")
+    warnCnt += 1
 
 class RnaCdsMap(object):
-    "associate table of mRNA id to protein id from rna.q file"
-    #rna_accession	rna_gi	prot_accession	prot_gi	gene_id	unigene_id	bases	strain	source_db	defline
-    def __init__(self,  rnaqFile):
-        self.rnaAccMap = dict()
-        self.protAccMap = dict()
+    "associate table of mRNA id to protein id from rna.q or a tab-separated file"
+    def __init__(self,  rnaqFile=None, mrnaProtFile=None):
+        self.rnaProtMap = dict()
+        self.protRnaMap = dict()
+        if rnaqFile != None:
+            self.src = rnaqFile
+            self.__loadRnaq(rnaqFile)
+        else:
+            self.src = mrnaProtFile
+            self.__loadMrnaProtFile(mrnaProtFile)
+
+    def __loadRnaq(self, rnaqFile):
+        #rna_accession	rna_gi	prot_accession	prot_gi	gene_id	unigene_id	bases	strain	source_db	defline
         for row in TSVReader(rnaqFile):
-            self.rnaAccMap[row.rna_accession] = row
-            self.protAccMap[row.prot_accession] = row
+            self.rnaProtMap[row.rna_accession] = row.prot_accession
+            self.protRnaMap[row.prot_accession] = row.rna_accession
+
+    def __loadMrnaProtFile(self, mrnaProtFile):
+        for row in TabFileReader(mrnaProtFile):
+            self.rnaProtMap[row[0]] = row[1]
+            self.protRnaMap[row[1]] = row[0]
 
 class TransFeatures(object):
     "object that holds features"
@@ -200,11 +223,10 @@ class TransFeatures(object):
         return self.exonCoords
 
     def dump(self):
-        prLine(sys.stderr, "\ttranscript: ", self.transId,
-               " gene: ", self.gene.geneSym)
+        prLine(sys.stderr, "\ttranscript: ", self.transId, " gene: ", self.gene.geneSym)
         prLine(sys.stderr, "\t   cds: ", self.cdsFt)
         prLine(sys.stderr, "\t  mRNA: ", self.mrnaFt)
-        prLine(sys.stderr, "\t  RNA:  ", self.miscRnaFt)
+        prLine(sys.stderr, "\t   RNA: ", self.miscRnaFt)
         prLine(sys.stderr, "\t exons: ", self.exonFts)
 
 class GeneFeatures(object):
@@ -229,12 +251,10 @@ class GeneFeatures(object):
         self.geneType = GeneType.unknown
         self.activeType = ActiveType.live
         self.__flagIfPseudoFt(geneFt)
-        self.cdsAssocProbs = False  # any problems associating CDS?
         
     def __str__(self):
         return self.geneSym + " (" + self.geneId + ")"
 
-    # FIXME: mostly dup of this code in __procGene
     def prTransCds(self, fh):
         prLine(fh, "gene: ", self)
         prLine(fh, "    mrnaTrans:")
@@ -259,63 +279,68 @@ class GeneFeatures(object):
                 self.geneType = GeneType.other
         # other tasks
         if len(self.cdsFts) > 0:
-                self.__assocCds(verbose, rnaCdsMap)
+            self.__assocCds(verbose, rnaCdsMap)
 
     def __assocCds(self, verbose, rnaCdsMap):
-        "associate a CDS features with mRNA features"
-        if len(self.mrnaTrans) != len(self.cdsFts):
-            prWarn("Number of CDS features ("+str(len(self.cdsFts))+") doesn't match number of mRNA features ("+str(len(self.mrnaTrans))+") gene:",self)
-            self.cdsAssocProbs = True
-
-        for trans in self.mrnaTrans:
-            if rnaCdsMap != None:
-                if not self.__tblAssocCds(trans, rnaCdsMap):
-                    if verbose >= 1:
-                        prWarn("can't find CDS for " + trans.getTransId() + " in rna.q file")
-                    self.__matchAssocCds(trans)
-            else:
-                self.__matchAssocCds(trans)
-
-    def __tblAssocCds(self, trans, rnaCdsMap):
-        "look up CDS in map"
-        rnaCds = rnaCdsMap.rnaAccMap.get(trans.getTransId())
-        if rnaCds != None:
-            cdsFt = self.__cdsFtById(rnaCds.prot_accession)
-            if cdsFt != None:
-                trans.addCds(cdsFt)
-                return True
-        return False
-
-    def __cdsFtById(self, cdsId):
+        """associate CDS features with mRNA features This maps from CDS to
+        mRNA, as there is no way of knowing if a mRNA should have a CDS"""
         for cdsFt in self.cdsFts:
-            if featGetCdsId(cdsFt) == cdsId:
-                return cdsFt
+            # FIXME: None checkl is immunoglobulins
+            if featGetCdsId(cdsFt) != None:
+                if rnaCdsMap != None:
+                    self.__tblAssocCds(cdsFt, rnaCdsMap)
+                else:
+                    self.__matchAssocCds(cdsFt)
+
+    def __tblAssocCds(self, cdsFt, rnaCdsMap):
+        "associated cds with a transcript using the in map"
+        transId = rnaCdsMap.protRnaMap.get(featGetCdsId(cdsFt))
+        if transId == None:
+            prWarn("can't find entry for CDS", featGetCdsId(cdsFt), "in", rnaCdsMap.src)
+        else:
+            trans = self.__transById(transId)
+            if trans != None:
+                trans.addCds(cdsFt)
+            else:
+                prWarn("can't find mRNA", transId, "for CDS", featGetCdsId(cdsFt))
+
+    def __transById(self, tranId):
+        for trans in self.mrnaTrans:
+            if  trans.getTransId() == tranId:
+                return trans
         return None
 
-    def __matchAssocCds(self, trans):
-        """ associate CDS with transcripts via longest matched"""
-        cdsFt = self.__findLongestCdsMatch(trans)
-        if cdsFt == None:
-            prWarn("can't match CDS to mRNA for:", trans.transId, "gene:",self)
-        else:
+    def __matchAssocCds(self, cdsFt):
+        """associate CDS with transcripts via longest matched"""
+        trans = self.__findLongestCdsMatch(cdsFt)
+        if trans != None:
             trans.addCds(cdsFt)
+        else:
+            prWarn("can't find matching mRNA for CDS", featGetCdsId(cdsFt), "gene:", self)
 
-    def __findLongestCdsMatch(self, trans):
-        "find longest CDS matching a transcript, or None if no match"
+    def __findLongestCdsMatch(self, cdsFt):
+        """find longest transcript matching a CDS and not already having a CDS
+        defined, or None if no match"""
         bestSize = 0
-        bestCds = None
-        for cdsFt in self.cdsFts:
-            if GeneFeatures.__cdsMatches(trans, cdsFt):
-                cdsCoord = Coords.fromLocation(cdsFt.location)
-                sz = cdsCoord.size()
-                if sz > bestSize:
-                    bestSize = sz
-                    bestCds = cdsFt
-        return bestCds
+        bestTrans = None
+        for trans in self.mrnaTrans:
+            sz = self.__checkCdsTransMatch(cdsFt, trans)
+            if (sz != None) and (sz > bestSize):
+                bestSize = sz
+                bestTrans = trans
+        return bestTrans
+
+    def __checkCdsTransMatch(self, cdsFt, trans):
+        """return size, or None is no match, or transcript already has a CDS,
+        also skip NR/XRs"""
+        if trans.getTransId().startswith("NR_") or trans.getTransId().startswith("XR_") or not GeneFeatures.__cdsMatches(trans, cdsFt):
+            return None
+        else:
+            return Coords.fromLocation(cdsFt.location).size()
 
     @staticmethod
     def __cdsMatches(trans, cdsFt):
-        return trans.getMRnaCoords().isSubrange(Coords.fromLocation(cdsFt.location))
+        return trans.getMRnaCoords().isContained(Coords.fromLocation(cdsFt.location))
     
     def getCoords(self):
         if self.coords == None:
@@ -416,8 +441,6 @@ class RecProcessor(object):
 
     def __finishGene(self, gene, rnaCdsMap):
         gene.finish(self.opts.verbose, rnaCdsMap)
-        if (self.opts.verbose >= 2) and gene.cdsAssocProbs:
-            gene.prTransCds(sys.stderr)
 
     def __findGenes(self, rec):
         for feat in rec.features:
@@ -629,9 +652,9 @@ class GeneConverter(object):
 
 class GbffToGenes(object):
     "convert a genbank flat file object to genePreds"
-    def __init__(self, opts):
+    def __init__(self, opts, rnaCdsMap):
         self.opts = opts
-        self.rnaCdsMap = RnaCdsMap(opts.rnaq) if opts.rnaq != None else None
+        self.rnaCdsMap = rnaCdsMap
 
     def __shouldConvert(self, gene):
         return (gene.geneType in self.opts.selected) and (gene.activeType in self.opts.active)
@@ -678,5 +701,15 @@ if opts.usePsycho:
         psyco.full()
     except ImportError,e:
         pass
-gbffConvert = GbffToGenes(opts)
+
+rnaCdsMap = None
+if opts.rnaq != None:
+    rnaCdsMap = RnaCdsMap(rnaqFile=opts.rnaq)
+elif opts.mrnaProtMap != None:
+    rnaCdsMap = RnaCdsMap(mrnaProtFile=opts.rnaProtMap)
+gbffConvert = GbffToGenes(opts, rnaCdsMap)
 gbffConvert.convert(opts.genePredFile)
+if opts.errorOnWarn and (warnCnt > 0):
+    sys.stderr.write("Error: " + str(warnCnt) + " warning(s) encountered\n")
+    sys.exit(1)
+
