@@ -1,0 +1,54 @@
+LOCUS       NW_001109716         1216382 bp    DNA     linear   CON 01-JUN-2010
+DEFINITION  Macaca mulatta chromosome 1 genomic scaffold, Mmul_051212, whole
+            genome shotgun sequence.
+ACCESSION   NW_001109716
+VERSION     NW_001109716.1  GI:90662741
+DBLINK      Project: 16397
+KEYWORDS    WGS.
+SOURCE      Macaca mulatta (rhesus monkey)
+  ORGANISM  Macaca mulatta
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+            Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini;
+            Catarrhini; Cercopithecidae; Cercopithecinae; Macaca.
+FEATURES             Location/Qualifiers
+     source          1..1216382
+                     /organism="Macaca mulatta"
+                     /mol_type="genomic DNA"
+                     /isolate="17573"
+                     /db_xref="taxon:9544"
+                     /chromosome="1"
+                     /sex="female"
+                     /country="USA: Southwest National Primate Research Center
+                     at the Southwest Foundation for Biomedical Research, San
+                     Antonio, TX"
+                     /note="derived from Indian origin rhesus"
+     gene            2206852..2210054
+                     /gene="OAZ3"
+                     /note="Derived by automated computational analysis using
+                     gene prediction method: BestRefseq."
+                     /db_xref="GeneID:711313"
+     mRNA            join(2206852..2207085,2207369..2207505,2208244..2208419,
+                     2208882..2208967,2209799..2210054)
+                     /gene="OAZ3"
+                     /product="ornithine decarboxylase antizyme 3"
+                     /note="Derived by automated computational analysis using
+                     gene prediction method: BestRefseq."
+                     /transcript_id="NM_001128630.1"
+                     /db_xref="GI:191252786"
+                     /db_xref="GeneID:711313"
+     CDS             join(2206919..2207085,2207369..2207429,2207431..2207505,
+                     2208244..2208419,2208882..2208967,2209799..2209941)
+                     /gene="OAZ3"
+                     /ribosomal_slippage
+                     /note="non-AUG (CUG) translation initiation codon; protein
+                     translation dependent on +1 ribosomal frameshift;
+                     non-AUG (CUG) translation initiation codon; Derived by
+                     automated computational analysis using gene prediction
+                     method: BestRefseq."
+                     /codon_start=1
+                     /product="ornithine decarboxylase antizyme 3"
+                     /protein_id="NP_001122102.1"
+                     /db_xref="GI:191252787"
+                     /db_xref="GeneID:711313"
+CONTIG      join(AANU01134437.1:1..2618)
+//
