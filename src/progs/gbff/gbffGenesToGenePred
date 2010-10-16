@@ -3,7 +3,7 @@
 
 # FIXME: Required biopython with bug #1758 fixed (genbank parser chokes on /transl_except)
 
-import sys, os, traceback
+import sys, os, traceback, re
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, myBinDir + "/../lib")
 
@@ -68,7 +68,9 @@ a crude heuristic is used to associated associated CDS and mRNA records.
                           default=False,
                           help="extract  pseudogenes, either immunoglobulin or assumed protein coding (since type not annotated)")
         parser.add_option("--live", dest="live", action="store_true", default=False,
-                          help="extract  live gene annotations; default if --pseudo is not specified")
+                          help="extract live gene annotations; default if --pseudo is not specified")
+        parser.add_option("--refSeqOnly", dest="refSeqOnly", action="store_true", default=False,
+                          help="only convert entries that appear to have RefSeq accessions")
         parser.add_option("--ext", dest="ext", action="store_true", default=False,
                           help="make extended genePreds")
         parser.add_option("--dropLocusVer", dest="dropLocusVer", action="store_true", default=False,
@@ -253,6 +255,10 @@ class TransFeatures(object):
             coords.append(mrna[mi])  # after CDS
             mi += 1
         return coords
+
+    refSeqAccRe = re.compile("^[NX][MRP]_[0-9]+(\\.[0-9]+)?$")
+    def isRefSeq(self):
+        return (self.transId != None) and (self.refSeqAccRe.match(self.transId) != None)
 
     def dump(self):
         prLine(sys.stderr, "\ttranscript: ", self.transId, " gene: ", self.gene.geneSym)
@@ -448,6 +454,12 @@ class GeneFeatures(object):
 
     def flagImmunoglobulin(self):
         self.geneType = GeneType.immunoglobulin
+
+    def isRefSeq(self):
+        for trans in self.mrnaTrans:
+            if trans.isRefSeq():
+                return True
+        return False
 
     def dump(self):
         prLine(sys.stderr, "gene:", self.geneSym)
@@ -695,22 +707,25 @@ class GbffToGenes(object):
         self.rnaCdsMap = rnaCdsMap
 
     def __shouldConvert(self, gene):
-        return (gene.geneType in self.opts.selected) and (gene.activeType in self.opts.active)
+        return ((gene.geneType in self.opts.selected) and (gene.activeType in self.opts.active)
+                and ((not self.opts.refSeqOnly) or gene.isRefSeq()))
+
+    def __trace(self, gene, keep):
+        prLine(sys.stderr, ("converting" if keep else "skipping"),
+               " gene: ", str(gene), " [", gene.geneType, ", ", gene.activeType, "]")
+        for transId in gene.getTransIds():
+            trans = gene.transTbl[transId]
+            if self.opts.verbose >= 2:
+                prLine(sys.stderr, "    trans: ", trans.getTransId(), " ", 
+                       (trans.getMRnaCoords() if trans.mrnaFt != None else trans.getMiscRnaCoords()))
+                prLine(sys.stderr, "    CDS:   ", trans.getCdsId(), " ", trans.getCdsCoords())
+            else:
+                prLine(sys.stderr, "    trans: ", trans.getTransId(), " CDS: ", trans.getCdsId())
         
     def __procGene(self, gene):
         keep = self.__shouldConvert(gene)
         if self.opts.verbose >= 1:
-            prLine(sys.stderr, ("converting" if keep else "skipping"),
-                   " gene: ", str(gene), " [", gene.geneType, ", ", gene.activeType, "]")
-            for transId in gene.getTransIds():
-                trans = gene.transTbl[transId]
-                if self.opts.verbose >= 2:
-                    prLine(sys.stderr, "    trans: ", trans.getTransId(), " ", 
-                           (trans.getMRnaCoords() if trans.mrnaFt != None else trans.getMiscRnaCoords()))
-                    prLine(sys.stderr, "    CDS:   ", trans.getCdsId(), " ", trans.getCdsCoords())
-                else:
-                    prLine(sys.stderr, "    trans: ", trans.getTransId(), " CDS: ", trans.getCdsId())
-                           
+            self.__trace(gene, keep)
         if keep:
             cnv = GeneConverter(gene, self.opts.ext, self.opts.dropLocusVer)
             cnv.convert(self.outFh)

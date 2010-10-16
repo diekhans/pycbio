@@ -14,7 +14,8 @@ BIN_DIR = ../../../../bin
 
 test: \
 	pseudoTest geneTest dropLocusVerTest pseudoIgTest geneIgTest exonsOnlyTest \
-	hsRegressTest mmRegressTest rnaGeneTest rnaGeneTabMapTest pseudoExtTest geneExtTest mixedRnasTest ribShiftTest
+	hsRegressTest mmRegressTest rnaGeneTest rnaGeneTabMapTest pseudoExtTest geneExtTest \
+	mixedRnasTest ribShiftTest allGenesTest refSeqTest
 
 pseudoTest: mkdirs
 	${BIN_DIR}/gbffGenesToGenePred --pseudo --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp >output/$@.out 2>&1
@@ -101,6 +102,19 @@ ribShiftTest: mkdirs
 	genePredCheck output/$@.gp
 	diff expected/$@.gp output/$@.gp
 	diff expected/$@.out output/$@.out
+
+allGenesTest: mkdirs
+	${BIN_DIR}/gbffGenesToGenePred --allGenes --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp >output/$@.out 2>&1
+	genePredCheck output/$@.gp
+	diff expected/$@.gp output/$@.gp
+	diff expected/$@.out output/$@.out
+
+refSeqTest: mkdirs
+	${BIN_DIR}/gbffGenesToGenePred --allGenes --refSeqOnly --rnaq=input/hs_chr22.part.q input/hs_chr22.part.gbs output/$@.gp >output/$@.out 2>&1
+	genePredCheck output/$@.gp
+	diff expected/$@.gp output/$@.gp
+	diff expected/$@.out output/$@.out
+
 
 mkdirs:
 	@mkdir -p output
