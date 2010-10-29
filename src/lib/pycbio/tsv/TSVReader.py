@@ -64,6 +64,8 @@ class TSVReader(object):
         for col in columns:
             col = intern(col)
             self.columns.append(col)
+            if col in self.colMap:
+                raise TSVError("Duplicate column name: " + col)
             self.colMap[col] = i
             i += 1
 
