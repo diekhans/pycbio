@@ -95,6 +95,7 @@ class ReadTests(TestCaseBase):
         except TSVError,e:
             err = e
         self.failIfEqual(err, None)
+        self.failUnlessEqual(str(err), "key column \"noCol\" is not defined")
 
     def testWrite(self):
         tsv = TSVTable(self.getInputFile("mrna1.tsv"), uniqKeyCols="qName")
@@ -135,6 +136,16 @@ class ReadTests(TestCaseBase):
         tsvBz = self.getOutputFile("tsv.bz2")
         procOps.runProc(["bzip2", "-c", self.getInputFile("mrna1.tsv")], stdout=tsvBz)
         self.readMRna1(tsvBz)
+
+    def testDupColumn(self):
+        err = None
+        try:
+            tsv = TSVTable(self.getInputFile("dupCol.tsv"))
+        except TSVError,e:
+            err = e
+        self.failIfEqual(err, None)
+        self.failUnlessEqual(str(err), "Duplicate column name: col1")
+
 
 def suite():
     suite = unittest.TestSuite()
