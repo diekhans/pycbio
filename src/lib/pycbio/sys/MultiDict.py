@@ -9,7 +9,7 @@ class MultiDict(dict):
     def obtain(self, key):
         """get the values for key, creating an empty entry if key is not in
         object"""
-        if self.has_key(key):
+        if key in self:
             vals = self[key]
         else:
             vals = []

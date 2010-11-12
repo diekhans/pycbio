@@ -40,6 +40,8 @@ class TabFileReader(object):
 
     def __readRow(self):
         "read the next row, returning None on EOF"
+        if self.csvRdr == None:
+            return None
         try:
             row = self.csvRdr.next()
         except Exception, e:
