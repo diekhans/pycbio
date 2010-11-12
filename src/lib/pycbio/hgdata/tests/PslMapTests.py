@@ -76,9 +76,9 @@ class TargetToQueryTests(TestCaseBase):
         mapper = MapTester()
         pslPosMrna = splitToPsl(_psDoubleDel1)
         got = mapper.targetToQueryMap(pslPosMrna, 151283730, 151370810)
-        print got
+        self.failUnlessEqual(got, (('blk', 'NM_017069.1-1.1', 8, 1580, 1590, 151283730, 151283740), ('gap', 'NM_017069.1-1.1', 8, 9, None, None, 151283740, 151370804), ('blk', 'NM_017069.1-1.1', 9, 1591, 1593, 151370804, 151370806), ('gap', 'NM_017069.1-1.1', 9, 10, None, None, 151370806, 151370807), ('blk', 'NM_017069.1-1.1', 10, 1593, 1596, 151370807, 151370810)))
         got = mapper.queryToTargetMap(pslPosMrna, 1408, 1784)
-        print got
+        self.failUnlessEqual(got, (('blk', 'NM_017069.1-1.1', 8, 1408, 1590, 151283558, 151283740), ('gap', 'NM_017069.1-1.1', 8, 9, 1590, 1591, None, None), ('blk', 'NM_017069.1-1.1', 9, 1591, 1593, 151370804, 151370806), ('blk', 'NM_017069.1-1.1', 10, 1593, 1762, 151370807, 151370976), ('gap', 'NM_017069.1-1.1', 10, 11, 1762, 1764, None, None), ('blk', 'NM_017069.1-1.1', 11, 1764, 1784, 151370976, 151370996)))
 
 class QueryToTargetTests(TestCaseBase):
     def testPosMRna(self):

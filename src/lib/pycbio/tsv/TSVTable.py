@@ -19,7 +19,7 @@ class TSVTable(list):
             return self.__dict__[key]
 
     def __addIndex(self, keyCol, dictClass):
-        if not self.colMap.has_key(keyCol):
+        if not keyCol in self.colMap:
             raise TSVError("key column \"" + keyCol + "\" is not defined")
         self.idx.__dict__[keyCol] = dictClass()
         
@@ -105,7 +105,7 @@ class TSVTable(list):
 
     def addColumn(self, colName, initValue=None, colType=None):
         "add a column to all rows in the table"
-        if self.colMap.has_key(colName):
+        if colName in self.colMap:
             raise TSVError("column \"" + colName + "\" is already defined")
         self.colMap[colName] = len(self.columns)
         if colType:
