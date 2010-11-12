@@ -34,7 +34,7 @@ class MemRule(Rule):
     def execute(self):
         for p in self.produces:
             time.sleep(0.00001) # allow other threads to run
-            if p.time > 0:
+            if (p.time != None) and (p.time > 0.0):
                 raise Exception("production already done: " + p.name)
             p.time = time.time()
 
