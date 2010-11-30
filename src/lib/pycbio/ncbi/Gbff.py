@@ -216,10 +216,14 @@ class Coords(list):
             end = Coords.__getPos(loc.local_location.high)
         elif isinstance(loc.local_location, LocationParser.Integer):
             # single location
-            start = start = loc.local_location.val-1
+            start = loc.local_location.val-1
+            end = start+1
+        elif isinstance(loc.local_location, LocationParser.LowBound) or isinstance(loc.local_location, LocationParser.HighBound):
+            # single location
+            start = Coords.__getPos(loc.local_location)-1
             end = start+1
         else:
-            raise GbffExcept("__cnvAbs can't handle location class: " + str(loc.__class__))
+            raise GbffExcept("__cnvAbs can't handle location class: " + str(loc.local_location.__class__) + ", seen in " + str(loc))
         return Coord(start, end, strand)
 
     @staticmethod
