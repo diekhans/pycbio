@@ -40,8 +40,15 @@ To obtain correct association of CDS to mRNA, use the either the rna.q file
 specified with the --rnaq argument and files obtained from locations like:
    ftp://ftp.ncbi.nih.gov/genomes/H_sapiens/mapview/rna.q.gz
 
-or use the --protMRnaMap option and an mapping obtained by other means.  Otherwise,
-a crude heuristic is used to associated associated CDS and mRNA records.
+or use the --mrnaProtMap option and an mapping obtained by other means.
+Otherwise, a crude heuristic is used to associated associated CDS and mRNA
+records.
+
+The --mrnaProtMap file can be produce 
+    wget ftp://ftp.ncbi.nih.gov/genomes/H_sapiens/RNA/rna.gbk.gz
+    zcat rna.gbk.gz |awk '/^VERSION/{mrna=$2} /\/protein_id=/{print mrna"\t"gensub("^.*\"(.*)\"","\\1","g",$1)}'  >mrna2prot.tbl
+
+You will also need to lift the contigs to chromosomes.
 """
     def __init__(self):
         parser = OptionParser(usage=CmdOpts.usage)
