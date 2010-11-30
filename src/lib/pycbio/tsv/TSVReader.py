@@ -139,7 +139,10 @@ class TSVReader(object):
         return self
 
     def next(self):
-        row = self.__readRow()
+        try:
+            row = self.__readRow()
+        except Exception,ex:
+            raise TSVError("Error reading TSV row", self, ex)
         if row == None:
             raise StopIteration
         if ((self.ignoreExtraCols and (len(row) < len(self.columns)))
@@ -148,6 +151,9 @@ class TSVReader(object):
             raise TSVError("row has %d columns, expected %d" %
                            (len(row), len(self.columns)),
                            reader=self)
-        return self.rowClass(self, row)
+        try:
+            return self.rowClass(self, row)
+        except Exception,ex:
+            raise TSVError("Error converting TSV row to object", self, ex)
 
 
