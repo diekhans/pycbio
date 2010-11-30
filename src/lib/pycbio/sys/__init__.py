@@ -4,6 +4,15 @@ import sys, traceback
 class PycbioException(Exception):
     """Base class for exceptions.  This implements exception chaining and
     stores a stack trace.
+
+    To chain an exception
+       try:
+          ...
+       except Exception, ex:
+          tb = sys.exc_info()[2]
+          ...
+          raise PycbioException("more stuff", ex), None, tb
+
     """
     def __init__(self, msg, cause=None):
         """Constructor."""
@@ -21,7 +30,7 @@ class PycbioException(Exception):
         "recursively construct message for chained exception"
         desc = self.msg
         if self.cause != None:
-            desc += ", caused by: " + str(self.cause)
+            desc += ",\n    caused by: " + self.cause.__class__.__name__ + ": " +  str(self.cause)
         return desc
 
     def format(self):
