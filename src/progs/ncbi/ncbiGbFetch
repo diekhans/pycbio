@@ -6,7 +6,7 @@ from optparse import OptionParser
 
 host="eutils.ncbi.nlm.nih.gov"
 
-class CmdLine(object):
+class CmdOpts(object):
     usage="""%prog [options] [id1 ...]
 
 Retrieve genbank records or sequences from NCBI nucleotide (GenBank/RefSeq),
@@ -115,5 +115,5 @@ def ncbiGbFetch(opts):
     if outFh != sys.stdout:
         outFh.close()
 
-opts = CmdLine()
+opts = CmdOpts()
 ncbiGbFetch(opts)
