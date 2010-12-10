@@ -13,6 +13,8 @@ data1 = (
     ("chr12", 100,  1000, '+', "val1.2"),
     ("chr12", 100,   500, '-', "val1.3"),
     ("chr12", 150, 10000, '+', "val1.4"),
+    ("chr32", 1000000000, 2000000000, '+', "val1.5"),  # outside of basic range
+    ("chr32", 100000, 2000000000, '-', "val1.6"),  # crossing of basic and extended range
     )
 # (seqId start end strand expectWithStrand expectWithoutStrand)
 queries1 = (
@@ -25,6 +27,9 @@ queries1 = (
     ("chr12", 10000,  1500000, '+', (), ()),
     ("chr12", 1,  151, '-', ("val1.3",), ("val1.2", "val1.3", "val1.4")),
     ("chr12", 1,  151, '+', ("val1.2","val1.4"), ("val1.2", "val1.3", "val1.4")),
+    ("chr32", 10,  100001, '+', (), ("val1.6",)),
+    ("chr32", 10,  1000000001, '+', ("val1.5",), ("val1.5", "val1.6",)),
+    ("chr32", 1900000001, 2000000002, '+', ("val1.5",), ("val1.5", "val1.6",)),
     )
 class RangeTests(TestCaseBase):
     def mkRangeFinder(self, data, useStrand):

@@ -1,10 +1,11 @@
 # Copyright 2006-2010 Mark Diekhans
 """Container index by sequence id, range, and optionally strand that
-efficiently searches for overlapping entries."""
+efficiently searches for overlapping entries.  Also contains code for
+generating SQL where clauses to restrict by bin."""
 
 ##
-# This code is a python reimplementation of binRange.{h,c}, written by
-# Jim Kent.
+# This code is a python reimplementation of binRange.{h,c} and hdb.c written
+# by Jim Kent.
 ##
 
 # There's a bin for each 128k (1<<17) segment. The next coarsest is 8x as big
@@ -13,6 +14,67 @@ efficiently searches for overlapping entries."""
 # start and end are int's, the practical limit is up to 2Gb-1, and thus, only
 # four result bins on the second level. A range goes into the smallest bin it
 # will fit in.
+
+
+class Binner(object):
+    "functions to translate ranges to bin numbers"
+
+    binOffsetsBasic = (512+64+8+1, 64+8+1, 8+1, 1, 0)
+    binOffsetsExtended = (4096+512+64+8+1, 512+64+8+1, 64+8+1, 8+1, 1, 0)
+    
+    binFirstShift = 17 # How much to shift to get to finest bin.
+    binNextShift = 3   # How much to shift to get to next larger bin.
+    
+    binBasicMaxEnd = 512*1024*1024
+    binOffsetToExtended = 4681
+    # FIXME: binLevelsBasic = len(binOffsetsBasic)
+    # FIXME: binLevelsExtended = len(binOffsetsExtended)
+
+    @staticmethod
+    def __calcBinForOffsets(start, end, baseOffset, offsets):
+        "get the bin for a range"
+        startBin = start >> Binner.binFirstShift
+        endBin = (end-1) >> Binner.binFirstShift
+        for binOff in Binner.binOffsetsExtended:
+            if (startBin == endBin):
+                return baseOffset + binOff + startBin
+            startBin >>= Binner.binNextShift;
+            endBin >>= Binner.binNextShift;
+        raise Exception("can't computer bin: start %d, end %d out of range" % (start, end))
+
+    @staticmethod
+    def calcBin(start, end):
+        "get the bin for a range"
+        if end <= Binner.binBasicMaxEnd:
+            return Binner.__calcBinForOffsets(start, end, 0, Binner.binOffsetsBasic)
+        else:
+            return Binner.__calcBinForOffsets(start, end, Binner.binOffsetToExtended, Binner.binOffsetsExtended)
+
+    @staticmethod
+    def __generateBinsForOffsets(start, end, baseOffset, offsets):
+        "generate bins for a range given a list of offsets"
+        startBin = start >> Binner.binFirstShift
+        endBin = (end-1) >> Binner.binFirstShift
+        for offset in offsets:
+            yield (startBin+baseOffset+offset, endBin+baseOffset+offset)
+            startBin >>= Binner.binNextShift;
+            endBin >>= Binner.binNextShift;
+
+    @staticmethod
+    def generateBins(start, end):
+        """Generate of bins for the range.  Each value is closed range of (startBin, endBin)"""
+        if end <= Binner.binBasicMaxEnd:
+            # contained in basic range
+            for bins in Binner.__generateBinsForOffsets(start, end, 0, Binner.binOffsetsBasic):
+                yield bins
+            yield (Binner.binOffsetToExtended, Binner.binOffsetToExtended)
+        else:
+            if start < Binner.binBasicMaxEnd:
+                # overlapping both basic and extended
+                for bins in Binner.__generateBinsForOffsets(start, Binner.binBasicMaxEnd, 0, Binner.binOffsetsBasic):
+                    yield bins
+            for bins in Binner.__generateBinsForOffsets(start, end, Binner.binOffsetToExtended, Binner.binOffsetsExtended):
+                yield bins
 
 class Entry(object):
     "entry associating a range with a value"
@@ -32,32 +94,13 @@ class RangeBins(object):
     scheme that implements spacial indexing. Based on UCSC hg browser binRange
     C module.  """
 
-    binOffsets = (4096+512+64+8+1, 512+64+8+1, 64+8+1, 8+1, 1, 0)
-
-    binFirstShift = 17 # How much to shift to get to finest bin.
-    binNextShift = 3   # How much to shift to get to next larger bin.
-
     def __init__(self, seqId, strand):
         self.seqId = seqId
         self.strand = strand
         self.bins = {}  # indexed by bin
 
-    def _getBin(self, start, end):
-        "get the bin for a range"
-
-        startBin = start >> self.binFirstShift
-        endBin = (end-1) >> self.binFirstShift
-
-        for binOff in self.binOffsets:
-            if (startBin == endBin):
-                return startBin + binOff;
-            startBin >>= self.binNextShift;
-            endBin >>= self.binNextShift;
-
-        raise Exception("start %d, end %d out of range in findBin (max is 2Gb)" % (start, end))
-
     def add(self, start, end, value):
-        bin = self._getBin(start, end)
+        bin = Binner.calcBin(start, end)
         entries = self.bins.get(bin)
         if (entries == None):
            self.bins[bin] = entries = []
@@ -65,21 +108,14 @@ class RangeBins(object):
 
     def overlapping(self, start, end):
         "generator over values overlapping the specified range"
-
-        if (start >= end):
-            return
-        startBin = start >> self.binFirstShift
-        endBin = (end-1) >> self.binFirstShift
-
-        for binOff in self.binOffsets:
-            for j in xrange(startBin+binOff, endBin+binOff+1):
-                bin = self.bins.get(j)
-                if (bin != None):
-                    for entry in bin:
-                        if entry.overlaps(start, end):
-                            yield entry.value
-            startBin >>= self.binNextShift
-            endBin >>= self.binNextShift
+        if (start < end):
+            for bins in Binner.generateBins(start, end):
+                for j in xrange(bins[0], bins[1]+1):
+                    bin = self.bins.get(j)
+                    if (bin != None):
+                        for entry in bin:
+                            if entry.overlaps(start, end):
+                                yield entry.value
 
     def values(self):
         "generator over all values"
