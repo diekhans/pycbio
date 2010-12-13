@@ -31,11 +31,12 @@ class TabFile(list):
         fh.write("\n")
 
 class TabFileReader(object):
-    def __init__(self, tabFile, rowClass=None, hashAreComments=False):
+    def __init__(self, tabFile, rowClass=None, hashAreComments=False, skipBlankLines=False):
         self.inFh = fileOps.opengz(tabFile)
         self.csvRdr = csv.reader(self.inFh, dialect=csv.excel_tab)
         self.rowClass = rowClass
         self.hashAreComments = hashAreComments
+        self.skipBlankLines = skipBlankLines
         self.lineNum = 0
 
     def __readRow(self):
@@ -56,12 +57,20 @@ class TabFileReader(object):
     def __iter__(self):
         return self
 
+    def __keepRow(self, row):
+        if self.hashAreComments and (len(row) > 0) and row[0].startswith("#"):
+            return False
+        elif self.skipBlankLines and (len(row) == 0):
+            return False
+        else:
+            return True
+
     def next(self):
         while True:
             row = self.__readRow()
             if row == None:
                 raise StopIteration
-            if not (self.hashAreComments and (len(row) > 0) and row[0].startswith("#")):
+            if self.__keepRow(row):
                 if self.rowClass != None:
                     return self.rowClass(row)
                 else:
