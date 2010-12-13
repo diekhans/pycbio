@@ -3,7 +3,6 @@ from pycbio.tsv.TabFile import TabFile, TabFileReader
 from pycbio.hgdata.AutoSql import intArraySplit, intArrayJoin
 from pycbio.sys.MultiDict import MultiDict
 
-# FIXME: create a block object, build on TSV
 
 # FIXME: not complete
 
@@ -90,7 +89,7 @@ class BedReader(TabFileReader):
     """Reader for BED objects loaded from a tab-file"""
 
     def __init__(self, fileName):
-        TabFileReader.__init__(self, fileName, rowClass=Bed, hashAreComments=True)
+        TabFileReader.__init__(self, fileName, rowClass=Bed, hashAreComments=True, skipBlankLines=True)
 
 class BedTbl(TabFile):
     """Table of BED objects loaded from a tab-file
