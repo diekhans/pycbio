@@ -5,7 +5,7 @@ def frameToPhase(frame):
     "convert a frame to a phase"
     if frame < 0:
         return -1
-    elif frame == 0
+    elif frame == 0:
         return 0
     elif frame == 1:
         return 2
