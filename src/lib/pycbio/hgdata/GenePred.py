@@ -4,8 +4,6 @@ from pycbio.sys import fileOps, dbOps
 from pycbio.hgdata.AutoSql import intArraySplit, intArrayJoin
 from pycbio.sys.Enumeration import Enumeration
 
-## FIXME: build on TSV code
-
 CdsStat = Enumeration("CdsStat", [
     ("none", "none"),             # No CDS (non-coding)
     ("unknown", "unk"),           # CDS is unknown (coding, but not known)
@@ -129,6 +127,13 @@ class Exon(object):
     def size(self):
         "size of the exon"
         return self.end-self.start
+
+    def getRelCoords(self, chromSize):
+        "get a range object of strand-relative coordinates"
+        if self.gene.strand == '+':
+            return Range(self.start, self.end)
+        else:
+            return Range(chromSize - self.end, chromStart - self.start)
 
 class GenePred(object):
     """Object wrapper for a genePred"""
@@ -322,6 +327,14 @@ class GenePred(object):
     def getCdsExon(self, iCdsExon):
         "get a exon containing CDS, by CDS exon index"
         return self.exons[self.cdsStartIExon + iCdsExon]
+
+    def getStepping(self):
+        """get (start, stop, step) to step through exon ranges in direction of
+        transcription"""
+        if self.strand:
+            return (0, len(self.exons), 1)
+        else:
+            return (len(self.exons)-1, -1, -1)
 
     def getRow(self):
         row = [self.name, self.chrom, self.strand, str(self.txStart), str(self.txEnd), str(self.cdsStart), str(self.cdsEnd)]

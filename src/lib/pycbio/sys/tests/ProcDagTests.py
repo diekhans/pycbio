@@ -77,7 +77,7 @@ class ProcDagTests(TestCaseBase):
             pd.wait()
         except Exception, ex:
             pass
-        expect = "exec failed: procDoesNotExist -r, caused by: [Errno 2] No such file or directory"
+        expect = "exec failed: procDoesNotExist -r,\n    caused by: OSError: [Errno 2] No such file or directory"
         msg = str(ex)
         if not msg.startswith(expect):
             self.fail("'"+ msg + "' does not start with '"
