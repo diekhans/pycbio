@@ -1,4 +1,4 @@
-# Copyright 2006-2010 Mark Diekhans
+# Copyright 2006-2011 Mark Diekhans
 import string
 
 # FIXME: danger of bdump, etc, methods conflicting with columns??

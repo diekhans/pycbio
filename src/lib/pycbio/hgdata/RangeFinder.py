@@ -1,4 +1,4 @@
-# Copyright 2006-2010 Mark Diekhans
+# Copyright 2006-2011 Mark Diekhans
 """Container index by sequence id, range, and optionally strand that
 efficiently searches for overlapping entries.  Also contains code for
 generating SQL where clauses to restrict by bin."""

@@ -1,4 +1,4 @@
-# Copyright 2006-2010 Mark Diekhans
+# Copyright 2006-2011 Mark Diekhans
 """Graph (DAG) of productions and rules.  This also manages 
 of production and rule state flags."""
 from __future__ import with_statement

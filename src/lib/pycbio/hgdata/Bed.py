@@ -1,4 +1,4 @@
-# Copyright 2006-2010 Mark Diekhans
+# Copyright 2006-2011 Mark Diekhans
 from pycbio.tsv.TabFile import TabFile, TabFileReader
 from pycbio.hgdata.AutoSql import intArraySplit, intArrayJoin
 from pycbio.sys.MultiDict import MultiDict
