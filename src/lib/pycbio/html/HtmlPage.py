@@ -1,4 +1,4 @@
-# Copyright 2006-2010 Mark Diekhans
+# Copyright 2006-2011 Mark Diekhans
 """ Classes to handle creating HTML pages and fragments
 """
 

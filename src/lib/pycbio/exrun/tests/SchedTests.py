@@ -1,4 +1,4 @@
-# Copyright 2006-2010 Mark Diekhans
+# Copyright 2006-2011 Mark Diekhans
 "test of Sched class independent of rest of ExRun"
 
 import unittest, sys, os, time

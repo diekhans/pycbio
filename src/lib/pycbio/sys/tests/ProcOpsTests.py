@@ -1,4 +1,4 @@
-# Copyright 2006-2010 Mark Diekhans
+# Copyright 2006-2011 Mark Diekhans
 import unittest, sys
 if __name__ == '__main__':
     sys.path.append("../../..")
