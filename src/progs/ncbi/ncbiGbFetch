@@ -13,7 +13,7 @@ Retrieve genbank records or sequences from NCBI nucleotide (GenBank/RefSeq),
 give accessions or other ids understood by efetch server.
 """
     def __init__(self):
-        parser = OptionParser(usage=CmdLine.usage)
+        parser = OptionParser(usage=CmdOpts.usage)
         parser.add_option("--idFile", dest="idFiles", action="append", default=[],
                           help="file containing ids, can be specified multiple times.")
         parser.add_option("--out", "-o", dest="out", action="store", default=None,
