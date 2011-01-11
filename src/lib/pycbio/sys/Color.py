@@ -98,7 +98,7 @@ class Color(Immutable):
         return (self.__h, self.__s, self.__v)
 
     def getHsvInt(self):
-        "get HSV as tuple ofintergers"
+        "get HSV as tuple of integers"
         return (self.getHueInt(), self.getSaturationInt(), self.getValueInt())
 
     def toHtmlColor(self):
