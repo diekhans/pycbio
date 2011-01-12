@@ -29,10 +29,12 @@ class Range(object):
     def overlapAmt(self, other):
         maxStart = max(self.start, other.start)
         minEnd = min(self.end, other.end)
-        if maxStart >= minEnd:
-            return 0
-        else:
-            return (minEnd - maxStart)
+        return (minEnd - maxStart) if maxStart < minEnd else 0
+
+    def overlapingAmt(self, start, end):
+        maxStart = max(self.start, start)
+        minEnd = min(self.end, end)
+        return (minEnd - maxStart) if maxStart < minEnd else 0
 
     def __str__(self):
         return str(self.start) + ".." + str(self.end)
@@ -87,7 +89,7 @@ class Exon(object):
 
     def featureSplit(self):
         """split exon into a length-3 tuple in the form (utr5, cds, utr3)
-        where each element is either None, or (start, end).  utr5 is 5' UTR
+`        where each element is either None, or (start, end).  utr5 is 5' UTR
         in the exon, utr3, is 3'UTR, and cds is coding sequence of the exon."""
         feats = ExonFeatures()
 
@@ -133,7 +135,7 @@ class Exon(object):
         if self.gene.strand == '+':
             return Range(self.start, self.end)
         else:
-            return Range(chromSize - self.end, chromStart - self.start)
+            return Range(chromSize - self.end, chromSize - self.start)
 
 class GenePred(object):
     """Object wrapper for a genePred"""
@@ -305,7 +307,7 @@ class GenePred(object):
         "get the total length of all exons"
         l = 0
         for e in self.exons:
-            l += e.end - e.start
+            l += e.size()
         return l
 
     def getLenCds(self):
@@ -329,12 +331,20 @@ class GenePred(object):
         return self.exons[self.cdsStartIExon + iCdsExon]
 
     def getStepping(self):
-        """get (start, stop, step) to step through exon ranges in direction of
+        """get (start, stop, step) to step through exons in direction of
         transcription"""
         if self.strand:
             return (0, len(self.exons), 1)
         else:
             return (len(self.exons)-1, -1, -1)
+
+    def getStepper(self):
+        """generator to step through exon indexes in direction of
+        transcription"""
+        if self.strand:
+            return xrange(0, len(self.exons), 1)
+        else:
+            return xrange(len(self.exons)-1, -1, -1)
 
     def getRow(self):
         row = [self.name, self.chrom, self.strand, str(self.txStart), str(self.txEnd), str(self.cdsStart), str(self.cdsEnd)]
