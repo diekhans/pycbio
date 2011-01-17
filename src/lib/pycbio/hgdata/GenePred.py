@@ -24,20 +24,33 @@ class Range(object):
         return (other == None) or (self.start != other.start) or (self.end != other.end)
 
     def size(self):
-        return  self.end - self.start
+        return self.end - self.start
+
+    def __len__(self):
+        return self.end - self.start
 
     def overlapAmt(self, other):
         maxStart = max(self.start, other.start)
         minEnd = min(self.end, other.end)
         return (minEnd - maxStart) if maxStart < minEnd else 0
 
-    def overlapingAmt(self, start, end):
+    def overlaps(self, other):
+        return (self.start < other.end) and (self.end > other.start)
+
+    def overlappingAmt(self, start, end):
         maxStart = max(self.start, start)
         minEnd = min(self.end, end)
         return (minEnd - maxStart) if maxStart < minEnd else 0
 
+    def overlapping(self, start, end):
+        return (self.start < end) and (self.end > start)
+
     def __str__(self):
         return str(self.start) + ".." + str(self.end)
+
+    def reverse(self, chromSize):
+        "get a range on the opposite strand"
+        return Range(chromSize - self.end, chromSize - self.start)
 
 class ExonFeatures(object):
     "object the holds the features of a single exon"
@@ -303,6 +316,13 @@ class GenePred(object):
     def hasCds(self):
         return (self.cdsStartIExon != None)
 
+    def getCds(self):
+        "get Range of CDS, or None if there isn't any"
+        if self.cdsStart < self.cdsEnd:
+            return Range(self.cdsStart, self.cdsEnd)
+        else:
+            return None
+
     def getLenExons(self):
         "get the total length of all exons"
         l = 0
@@ -333,10 +353,10 @@ class GenePred(object):
     def getStepping(self):
         """get (start, stop, step) to step through exons in direction of
         transcription"""
-        if self.strand:
-            return (0, len(self.exons), 1)
-        else:
+        if self.strand == '-':
             return (len(self.exons)-1, -1, -1)
+        else:
+            return (0, len(self.exons), 1)
 
     def getStepper(self):
         """generator to step through exon indexes in direction of
