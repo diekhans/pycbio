@@ -46,7 +46,7 @@ class Entry(object):
     __slots__= ("row", "key", "cssClass", "subRowGroups")
 
     def __init__(self, row, key=None, cssClass=None, subRows=None):
-        """Entry in directory, key can be some value(s) used in sorting The
+        """Entry in directory, key can be some value(s) used in sorting. The
         row should be HTML encoded.  If subRows is not None, it should be a SubRow
         object or list of SubRow objects, used to produce row spanning rows for
         contained in this row."""
@@ -62,14 +62,16 @@ class Entry(object):
 
     def __numSubRowGroupCols(self):
         n = 0
-        for subRows in self.subRowGroups:
-            n += subRows.numCols
+        if self.subRowGroups != None:
+            for subRows in self.subRowGroups:
+                n += subRows.numCols
         return n
 
     def __numSubRowGroupRows(self):
         n = 0
-        for subRows in self.subRowGroups:
-            n = max(n, subRows.getNumRows())
+        if self.subRowGroups != None:
+            for subRows in self.subRowGroups:
+                n = max(n, subRows.getNumRows())
         return n
 
     def numColumns(self):
