@@ -30,7 +30,7 @@ class TSVReader(object):
     column index map.  After a next, object contains a row and each column
     becomes a field name.  It is also indexable by column name or int index.
     Columns can be automatically type converted by column name.  This can also
-    read from a dbapi cursor object.
+    read from a dbapi cursor object (must set allowEmpty to be tree)
     """
 
     def __readRow(self):
@@ -48,20 +48,20 @@ class TSVReader(object):
         self.lineNum = self.csvRdr.line_num
         return row
 
-    def __readHeader(self):
+    def __readHeader(self, allowEmpty):
         row = self.__readRow()
         if row == None:
-            raise TSVError("empty TSV file", reader=self), sys.exc_info()[2]
-        if self.isRdb:
-            self.__readRow() # skip format line
-        if (len(row) > 0) and row[0].startswith('#'):
-            row[0] = row[0][1:]
-        self.__setupColumns(row)
+            if not allowEmpty:
+                raise TSVError("empty TSV file", reader=self), sys.exc_info()[2]
+        else:
+            if self.isRdb:
+                self.__readRow() # skip format line
+            if (len(row) > 0) and row[0].startswith('#'):
+                row[0] = row[0][1:]
+            self.__setupColumns(row)
 
     def __setupColumns(self, columns):
         # n.b. columns could be passed in from client, must copy
-        self.columns = []
-        self.colMap = {}
         i = 0
         for col in columns:
             col = intern(col)
@@ -85,7 +85,7 @@ class TSVReader(object):
                 self.colTypes.append(defaultColType)
 
     def __init__(self, fileName, rowClass=None, typeMap=None, defaultColType=None, columns=None,
-                 ignoreExtraCols=False, isRdb=False, inFh=None):
+                 ignoreExtraCols=False, isRdb=False, inFh=None, allowEmpty=False):
         """Open TSV file and read header into object.  Removes leading # from
         UCSC header.
 
@@ -103,7 +103,11 @@ class TSVReader(object):
         isRdb - file is an RDB file, ignore second row (type map still needed).
         inFh - If not None, this is used as the open file, rather than
           opening it.  Closed when the end of file is reached.
+        allowEmpty - an empty input results in an EOF rather than an error.
+          Should specify this if reading from a database query.
         """
+        self.columns = []
+        self.colMap = {}
         self.fileName = fileName
         self.lineNum = 0
         self.rowClass = rowClass
@@ -121,7 +125,7 @@ class TSVReader(object):
             if columns:
                 self.__setupColumns(columns)
             else:
-                self.__readHeader()
+                self.__readHeader(allowEmpty)
             self.__initColTypes(typeMap, defaultColType)
         except Exception, e:
             self.close()
