@@ -146,6 +146,15 @@ class ReadTests(TestCaseBase):
         self.failIfEqual(err, None)
         self.failUnlessEqual(str(err), "Duplicate column name: col1")
 
+    def testAllowEmptyReader(self):
+        cnt = 0
+        for row in TSVReader("/dev/null", allowEmpty=True):
+            cnt += 1
+        self.failUnlessEqual(cnt, 0)
+
+    def testAllowEmptyTbl(self):
+        tbl = TSVTable("/dev/null", allowEmpty=True)
+        self.failUnlessEqual(len(tbl), 0)
 
 def suite():
     suite = unittest.TestSuite()
