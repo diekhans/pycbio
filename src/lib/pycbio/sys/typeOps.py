@@ -43,7 +43,7 @@ def mkiter(item):
     item, if item is none, return an empty iter"""
     # FIXME: don't really need to construct a list
     if item == None:
-        return iter([])
+        return iter(())
     elif isIterable(item):
         return iter(item)
     else:

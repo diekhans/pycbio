@@ -68,7 +68,6 @@ class TSVTable(list):
             if colDictTbl != None:
                 self.__indexRow(colDictTbl, row)
 
-
     def __init__(self, fileName, uniqKeyCols=None, multiKeyCols=None, rowClass=None, typeMap=None,
                  defaultColType=None, columns=None, ignoreExtraCols=False, isRdb=False, inFh=None, allowEmpty=False):
         """Read TSV file into the object
