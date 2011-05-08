@@ -48,7 +48,7 @@ geneIgTest: mkdirs
 	diff expected/$@.out output/$@.out
 
 exonsOnlyTest: mkdirs
-	${BIN_DIR}/gbffGenesToGenePred input/exonsOnly.gbs output/$@.gp >output/$@.out 2>&1
+	${BIN_DIR}/gbffGenesToGenePred --ignoreShortSequence input/exonsOnly.gbs output/$@.gp >output/$@.out 2>&1
 	genePredCheck output/$@.gp
 	diff expected/$@.gp output/$@.gp
 	diff expected/$@.out output/$@.out

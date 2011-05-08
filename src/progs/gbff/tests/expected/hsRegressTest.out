@@ -1,5 +1,8 @@
-Warning: didn't find any of these qualifiers: /transcript_id=, /gene= in feature:      misc_RNA        1925600..1925682
-                     /product="microRNA:hsa-mir-1238"
-                     /note="Data source: miRBase"
-                     /db_xref="miRBase:MI0006328"
+Warning: didn't find any of these qualifiers: transcript_id, gene in feature: type: misc_RNA
+location: [1925599:1925682]
+strand: 1
+qualifiers: 
+    Key: db_xref, Value: ['miRBase:MI0006328']
+    Key: note, Value: ['Data source: miRBase']
+    Key: product, Value: ['microRNA:hsa-mir-1238']
 
