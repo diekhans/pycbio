@@ -1,118 +1,97 @@
 # Copyright 2006-2011 Mark Diekhans
-from Bio.GenBank import LocationParser
+
+# this module is tested by pycbio/src/progs/gbff/gbffGenesToGenePred
+
 from pycbio.sys import PycbioException
+from Bio import SeqFeature
 
 class GbffExcept(PycbioException):
     pass
 
-def featFindQual(feat, key):
-    "get the specified qualifier, or None"
-    for qual in feat.qualifiers:
-        if qual.key == key:
-            return qual
-    return None
-
-def qualTrimVal(qual):
-    if qual == None:
-        return None
-    val = qual.value
-    if (val != None) and val.startswith('"') and val.endswith('"'):
-        val = val[1:-1]
-    return val
-
 def featHaveQual(feat, key):
     "does a feature have a qualifier?"
-    return (featFindQual(feat, key) != None)
+    return (key in feat.qualifiers)
 
-def featGetQual(feat, key):
-    "get the specified qualifier value, or None if not found.  Remove quotes if present"
-    qual = featFindQual(feat, key)
-    if qual == None:
+def featGetQual1(feat, key):
+    """get the single valued qualifier, or None if not found.  Returns first
+    value and error if qualifier has more than one value"""
+    val = feat.qualifiers.get(key)
+    if val == None:
         return None
-    val = qual.value
-    if val.startswith('"') and val.endswith('"'):
-        val = val[1:-1]
-    return val
+    if len(val) != 1:
+        raise GbffExcept("qualifier \"" + key + "\" has multiple values")
+    return val[0]
         
-def featMustGetQual(feat, key):
-    val = featGetQual(feat, key)
+def featMustGetQual1(feat, key):
+    val = featGetQual1(feat, key)
     if val == None:
         raise GbffExcept("qualifier \""+key+"\" not found in feature: " + str(feat))
     return val
 
-def featGetQualByKeys(feat, keys):
-    "get feature based on first matching key"
+def featGetQual1ByKeys(feat, keys):
+    "get single-valued qualifier based on first matching key"
     for key in keys:
-        val = featGetQual(feat, key)
+        val = featGetQual1(feat, key)
         if val != None:
             return val
     return None
     
-def featMustGetQualByKeys(feat, keys):
-    "get feature based on first matching key, or error"
-    val = featGetQualByKeys(feat, keys)
+def featMustGetQual1ByKeys(feat, keys):
+    "get a single valued qualifier based on first matching key, or error"
+    val = featGetQual1ByKeys(feat, keys)
     if val == None:
         featRaiseNeedAQual(feat, keys)
     return val
 
-def featRaiseNeedAQual(feat, keys):
+def featRaiseNeedAQual(feat, quals):
    "raise error about one of the qualifiers not being found"
    raise GbffExcept("didn't find any of these qualifiers: "
-                    + ", ".join(keys) + " in feature: " + str(feat))
+                    + ", ".join(quals) + " in feature: " + str(feat))
+
+def featGetDbXRef(feat, dbXRefPrefix):
+    "return a dbXRef starting with dbXRefPrefix (include `:' in key), or None if not found"
+    dbXRefs = feat.qualifiers.get("db_xref")
+    if dbXRefs != None:
+        for dbXRef in dbXRefs:
+            if dbXRef.startswith(dbXRefPrefix):
+                return dbXRef[len(dbXRefPrefix):]
+    return None
 
 def featGetGeneId(feat):
     "get a db_ref qualifier for GeneID, or None"
-    for qual in feat.qualifiers:
-        if (qual.key == "/db_xref=") and qual.value.startswith('"GeneID:'):
-            return qualTrimVal(qual)
-    return None
+    return featGetDbXRef(feat, "GeneID:")
 
 def featMustGetGeneId(feat):
-    """get a db_ref qualifier for GeneID.  If it can't be found, but there is
-    a LocusID, fake up a GeneID from the LocusID, or error if neither can occur"""
-    # FIXME: still needed?
+    """get a db_ref qualifier for GeneID or error if not found"""
+    # FIXME: at one point returned locus id if gene id not found still needed?
     val = featGetGeneId(feat)
     if val == None:
-        val = featGetLocusId(feat)
-        if val != None:
-            prWarn("/db_xref GeneID not found in feature, using LocusID:", feat)
-            val = "GeneID:" + val.split(":")[1]  # fake it
-    if val == None:
-        raise GbffExcept("/db_xref GeneID not found in feature: " + str(feat))
+        raise GbffExcept("db_xref GeneID not found in feature: " + str(feat))
     return val
 
 def featGetLocusId(feat):
     "get a db_ref qualifier for LocusId, or None"
-    for qual in feat.qualifiers:
-        if (qual.key == "/db_xref=") and qual.value.startswith('"LocusID:'):
-            return qualTrimVal(qual)
-    return None
+    return featGetDbXRef(feat, "LocusID:")
 
 def featGetGID(feat):
-    "get a db_ref qualifier for GeneID, or None"
-    for qual in feat.qualifiers:
-        if (qual.key == "/db_xref=") and qual.value.startswith('"GI:'):
-            return qualTrimVal(qual)
-    return None
-
-def featGetGIDIfFeat(feat):
-    "get a db_ref qualifier for GeneID, or None if missing or feat is None"
-    if feat == None:
-        return None
-    else:
-         return featGetGID(feat)
+    "get a db_ref qualifier for GI, or None"
+    return featGetDbXRef(feat, "GI:")
 
 def featGetCdsId(feat):
     "get a CDS identifier from qualifier, or None"
-    return featGetQualByKeys(feat, ("/protein_id=", "/standard_name="))
+    return featGetQual1ByKeys(feat, ("protein_id", "standard_name"))
 
 class Coord(object):
     "[0..n) coord"
     __slots__ = ("start", "end", "strand")
     def __init__(self, start, end, strand):
+        "stand can be +/- or -1/+1, converted to +/-"
         self.start = start
         self.end = end
-        self.strand = strand
+        if isinstance(strand, int):
+            self.strand = "+" if (strand > 0) else "-"
+        else:
+            self.strand = strand
 
     def __str__(self):
         return str(self.start) + ".." + str(self.end) + "/"+str(self.strand)
@@ -136,6 +115,11 @@ class Coord(object):
 
     def contains(self, other):
         return (other.start >= self.start) and (other.end <= self.end) and (self.strand == other.strand)
+
+    @staticmethod
+    def fromFeatureLocation(loc, strand):
+        "convert to a FeatureLocation object to a Coord"
+        return Coord(loc.start.position, loc.end.position, strand)
 
 class Coords(list):
     "List of Coord objects"
@@ -190,57 +174,18 @@ class Coords(list):
             oi += 1
         return True
 
+    def __cnvSeqFeature(self, feat):
+        self.append(Coord.fromFeatureLocation(feat.location, feat.strand))
+
     @staticmethod
-    def fromLocation(locSpec):
-        """Convert Genbank location spec to Coords"""
-        loc = LocationParser.parse(LocationParser.scan(locSpec))
-        return Coords(Coords.__cnvLoc(loc))
+    def fromSeqFeature(feat):
+        """Convert Biopython SeqFeature object to Coords. This will handle sub_features"""
+        isinstance(feat, SeqFeature.SeqFeature)
+        coords = Coords()
+        if len(feat.sub_features) == 0:
+            coords.__cnvSeqFeature(feat)
+        else:
+            for sf in feat.sub_features:
+                coords.__cnvSeqFeature(sf)
+        return coords
             
-    @staticmethod
-    def __getPos(posObj):
-        if isinstance(posObj, LocationParser.HighBound) or isinstance(posObj, LocationParser.LowBound):
-            val = posObj.base
-        else:
-            val = posObj.val
-        if isinstance(val, LocationParser.Integer):
-            val = val.val
-        return val
-
-    @staticmethod
-    def __cnvAbs(loc, strand):
-        if loc.path != None:
-            raise GbffExcept("don't know how to handel non-null path in: "+str(loc))
-        # dig out start and end based on location class
-        if isinstance(loc.local_location, LocationParser.Range):
-            start = Coords.__getPos(loc.local_location.low)-1
-            end = Coords.__getPos(loc.local_location.high)
-        elif isinstance(loc.local_location, LocationParser.Integer):
-            # single location
-            start = loc.local_location.val-1
-            end = start+1
-        elif isinstance(loc.local_location, LocationParser.LowBound) or isinstance(loc.local_location, LocationParser.HighBound):
-            # single location
-            start = Coords.__getPos(loc.local_location)-1
-            end = start+1
-        else:
-            raise GbffExcept("__cnvAbs can't handle location class: " + str(loc.local_location.__class__) + ", seen in " + str(loc))
-        return Coord(start, end, strand)
-
-    @staticmethod
-    def __cnvLoc(loc, strand='+'):
-        "convert to a list of Coord objects"
-        if isinstance(loc, LocationParser.AbsoluteLocation):
-            return [Coords.__cnvAbs(loc, strand)]
-        elif isinstance(loc, LocationParser.Function):
-            if loc.name == "complement":
-                return Coords.__cnvLoc(loc.args, '-')
-            if loc.name == "join":
-                return Coords.__cnvLoc(loc.args, strand)
-        elif isinstance(loc, list):
-            coords = []
-            for l in loc:
-                coords.extend(Coords.__cnvLoc(l, strand))
-            return coords
-        else:
-            raise GbffExcept("don't not how to convert location: " + str(loc))
-

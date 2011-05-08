@@ -30,7 +30,7 @@ class TSVReader(object):
     column index map.  After a next, object contains a row and each column
     becomes a field name.  It is also indexable by column name or int index.
     Columns can be automatically type converted by column name.  This can also
-    read from a dbapi cursor object (must set allowEmpty to be tree)
+    read from a dbapi cursor object (must set allowEmpty to true)
     """
 
     def __readRow(self):

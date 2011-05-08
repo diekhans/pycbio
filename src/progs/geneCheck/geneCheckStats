@@ -32,6 +32,7 @@ class CmdOpts(object):
         if len(args) != 2:
             parser.error("wrong number of arguments")
         (self.geneChks, self.statsOut) = args
+        self.__dict__.update(opts.__dict__)
 
 class CountChks(object):
     def __init__(self, geneChks):
