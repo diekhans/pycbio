@@ -1,8 +1,9 @@
 # Copyright 2006-2011 Mark Diekhans
 import string
 
-# FIXME: danger of bdump, etc, methods conflicting with columns??
-# FIXME: option of using a static class (__slots__) would help performance
+# FIXME: danger of bdump, etc, methods conflicting with columns.  maybe
+# a better convention to avoid colisons
+# FIXME: need accessor functions for columns
 
 class TSVRow(object):
     "Row of a TSV where columns are fields."
@@ -10,6 +11,7 @@ class TSVRow(object):
     # places when they are stored as fields
 
     def __init__(self, reader, row):
+        # FIXME: stupid names
         self._columns_ = reader.columns
         self._colTypes_ = reader.colTypes
         self._colMap_ = reader.colMap
