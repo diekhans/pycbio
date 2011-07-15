@@ -95,7 +95,9 @@ class ReadTests(TestCaseBase):
         except TSVError,e:
             err = e
         self.failIfEqual(err, None)
-        self.failUnlessEqual(str(err), "key column \"noCol\" is not defined")
+        # should have chained exception
+        self.failIfEqual(err.cause, None)
+        self.failUnlessEqual(err.cause.message, "key column \"noCol\" is not defined")
 
     def testWrite(self):
         tsv = TSVTable(self.getInputFile("mrna1.tsv"), uniqKeyCols="qName")
