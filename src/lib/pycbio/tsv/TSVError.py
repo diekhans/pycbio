@@ -5,5 +5,5 @@ class TSVError(PycbioException):
     "Error from reading or parsing a TSV file"
     def __init__(self, msg, reader=None, cause=None):
         if (reader != None):
-            msg = reader.fileName + ":" + str(reader.lineNum) + ": " + msg
+            msg = str(reader.fileName) + ":" + str(reader.lineNum) + ": " + msg
         PycbioException.__init__(self, msg, cause)
