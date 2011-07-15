@@ -14,6 +14,7 @@ from pycbio.tsv.TSVError import TSVError
 # FIXME: is colMap needed any more???
 # FIXME: need to add write stuff. (see GeneCheck), where str() is called on
 #        alfor all column ty
+# FIXME: change TSVRow to be based on collections.namedtuple **** (thanks Max)
 #
 # rename  typeMap -> colTypes
 
@@ -52,7 +53,7 @@ class TSVReader(object):
         row = self.__readRow()
         if row == None:
             if not allowEmpty:
-                raise TSVError("empty TSV file", reader=self), sys.exc_info()[2]
+                raise TSVError("empty TSV file", reader=self), None, sys.exc_info()[2]
         else:
             if self.isRdb:
                 self.__readRow() # skip format line
@@ -67,7 +68,7 @@ class TSVReader(object):
             col = intern(col)
             self.columns.append(col)
             if col in self.colMap:
-                raise TSVError("Duplicate column name: " + col)
+                raise TSVError("Duplicate column name: " + col), None, sys.exc_info()[2]
             self.colMap[col] = i
             i += 1
 
@@ -146,7 +147,7 @@ class TSVReader(object):
         try:
             row = self.__readRow()
         except Exception,ex:
-            raise TSVError("Error reading TSV row", self, ex)
+            raise TSVError("Error reading TSV row", self, ex), None, sys.exc_info()[2]
         if row == None:
             raise StopIteration
         if ((self.ignoreExtraCols and (len(row) < len(self.columns)))
@@ -154,10 +155,10 @@ class TSVReader(object):
             # FIXME: will hang: self.close()
             raise TSVError("row has %d columns, expected %d" %
                            (len(row), len(self.columns)),
-                           reader=self)
+                           reader=self), None, sys.exc_info()[2]
         try:
             return self.rowClass(self, row)
         except Exception,ex:
-            raise TSVError("Error converting TSV row to object", self, ex)
+            raise TSVError("Error converting TSV row to object", self, ex), None, sys.exc_info()[2]
 
 

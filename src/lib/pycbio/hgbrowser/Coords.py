@@ -38,7 +38,7 @@ class Coords(Immutable):
                 self.start = int(args[1])
                 self.end = int(args[2])
             except Exception, e:
-                raise CoordsError("invalid coordinates: \"" + args + "\": " + str(e))
+                raise CoordsError("invalid coordinates: \"" + str(args) + "\": " + str(e))
         else:
             raise CoordsError("Coords() excepts either one or three arguments")
         self.db = opts.get("db")

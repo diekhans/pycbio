@@ -9,6 +9,7 @@ from pycbio.sys.typeOps import isListLike
 #   compare then with code constants after load
 # - should really be a tuple instead of values field
 # FIXME: should really use meta classes; some enumeration stuff:
+# FIXME: should be iteratable
 #
 # http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/67107
 # http://pytable.sourceforge.net/pydoc/basictypes.enumeration.html

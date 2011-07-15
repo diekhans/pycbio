@@ -353,6 +353,7 @@ class GenePred(object):
     def getStepping(self):
         """get (start, stop, step) to step through exons in direction of
         transcription"""
+        # FIXME this is stupid, just store in both directions
         if self.strand == '-':
             return (len(self.exons)-1, -1, -1)
         else:
