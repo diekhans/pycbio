@@ -13,6 +13,9 @@ class PycbioException(Exception):
           ...
           raise PycbioException("more stuff", ex), None, tb
 
+    or 
+       except Exception, ex:
+          raise PycbioException("more stuff", ex), None, sys.exc_info()[2]
     """
     def __init__(self, msg, cause=None):
         """Constructor."""

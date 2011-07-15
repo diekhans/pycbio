@@ -20,7 +20,7 @@ class TSVTable(list):
 
     def __addIndex(self, keyCol, dictClass):
         if not keyCol in self.colMap:
-            raise TSVError("key column \"" + keyCol + "\" is not defined")
+            raise TSVError("key column \"" + keyCol + "\" is not defined"), None, sys.exc_info()[2]
         self.idx.__dict__[keyCol] = dictClass()
         
     def __createIndices(self, keyCols, dictClass):
@@ -101,13 +101,13 @@ class TSVTable(list):
             self.__buildIndices(uniqKeyCols, multiKeyCols)
             self.__readBody(reader)
         except Exception, e:
-            raise
-        #FIXME: raise TSVError("load failed", reader=reader, cause=e),sys.exc_traceback
+            raise TSVError("load failed", reader=reader, cause=e), None, sys.exc_info()[2]
 
     def addColumn(self, colName, initValue=None, colType=None):
         "add a column to all rows in the table"
         if colName in self.colMap:
-            raise TSVError("column \"" + colName + "\" is already defined")
+            raise TSVError("column \"" + colName + "\" is already defined"), None, sys.exc_info()[2]
+
         self.colMap[colName] = len(self.columns)
         if colType:
             assert(self.colTypes)
