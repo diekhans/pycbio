@@ -2,7 +2,7 @@
 from pycbio.tsv.TSVReader import TSVReader
 from pycbio.tsv.TSVError import TSVError
 from pycbio.sys.MultiDict import MultiDict
-import sys
+import sys,csv
 
 # FIX: maybe make each index it's own class to handle uniq check, etc.
 
@@ -69,7 +69,7 @@ class TSVTable(list):
                 self.__indexRow(colDictTbl, row)
 
     def __init__(self, fileName, uniqKeyCols=None, multiKeyCols=None, rowClass=None, typeMap=None,
-                 defaultColType=None, columns=None, ignoreExtraCols=False, isRdb=False, inFh=None, allowEmpty=False):
+                 defaultColType=None, columns=None, ignoreExtraCols=False, isRdb=False, inFh=None, allowEmpty=False, dialect=csv.excel_tab):
         """Read TSV file into the object
         
         fileName - name of file, opened unless inFh is specified
@@ -93,7 +93,7 @@ class TSVTable(list):
         allowEmpty - an empty input results in an EOF rather than an error.
           Should specify this if reading from a database query.
         """
-        reader = TSVReader(fileName, rowClass=rowClass, typeMap=typeMap, defaultColType=defaultColType, isRdb=isRdb, columns=columns, ignoreExtraCols=ignoreExtraCols, inFh=inFh, allowEmpty=allowEmpty)
+        reader = TSVReader(fileName, rowClass=rowClass, typeMap=typeMap, defaultColType=defaultColType, isRdb=isRdb, columns=columns, ignoreExtraCols=ignoreExtraCols, inFh=inFh, allowEmpty=allowEmpty, dialect=dialect)
         try:
             self.columns = reader.columns
             self.colTypes = reader.colTypes
