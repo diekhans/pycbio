@@ -36,17 +36,17 @@ class TSVReader(object):
 
     def __readRow(self):
         "read the next row, returning None on EOF"
-        if self.csvRdr == None:
+        if self.reader == None:
             return None
         try:
-            row = self.csvRdr.next()
+            row = self.reader.next()
         except Exception, e:
             self.close()
             if isinstance(e, StopIteration):
                 return None
             else:
                 raise
-        self.lineNum = self.csvRdr.line_num
+        self.lineNum = self.reader.line_num
         return row
 
     def __readHeader(self, allowEmpty):
@@ -86,7 +86,7 @@ class TSVReader(object):
                 self.colTypes.append(defaultColType)
 
     def __init__(self, fileName, rowClass=None, typeMap=None, defaultColType=None, columns=None,
-                 ignoreExtraCols=False, isRdb=False, inFh=None, allowEmpty=False):
+                 ignoreExtraCols=False, isRdb=False, inFh=None, allowEmpty=False, dialect=csv.excel_tab):
         """Open TSV file and read header into object.  Removes leading # from
         UCSC header.
 
@@ -106,6 +106,7 @@ class TSVReader(object):
           opening it.  Closed when the end of file is reached.
         allowEmpty - an empty input results in an EOF rather than an error.
           Should specify this if reading from a database query.
+        dialect - a csv dialect object or name.
         """
         self.columns = []
         self.colMap = {}
@@ -122,7 +123,7 @@ class TSVReader(object):
         else:
             self.inFh = fileOps.opengz(fileName, "r")
         try:
-            self.csvRdr = csv.reader(self.inFh, dialect=csv.excel_tab)
+            self.reader = csv.reader(self.inFh, dialect=dialect)
             if columns:
                 self.__setupColumns(columns)
             else:
@@ -138,7 +139,7 @@ class TSVReader(object):
         if self.inFh != None:
             self.inFh.close()
             self.inFh = None
-            self.csvRdr = None
+            self.reader = None
 
     def __iter__(self):
         return self
