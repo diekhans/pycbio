@@ -33,3 +33,9 @@ clean:
 	rm -rf bin
 	rm -f lib
 	find src/lib -name '*.pyc' -exec rm -f '{}' \;
+
+# update the two UCSC trees in /hive/groups
+ucscUpdate: recon.ucscUpdate gencode.ucscUpdate
+
+%.ucscUpdate:
+	(cd /hive/groups/$*/local/pycbio && svn up && make)
