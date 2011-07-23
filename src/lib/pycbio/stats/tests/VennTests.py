@@ -8,12 +8,12 @@ from pycbio.sys.fileOps import prRowv
 
 class VennTests(TestCaseBase):
     def _checkVenn(self, venn):
-        vi = self.getOutputFile(".vinfo")
-        viFh = open(vi, "w")
-        for subset in venn.subsets.getSubsets():
-            prRowv(viFh, subset, venn.getSubsetIds(subset))
-        viFh.close()
+        with open(self.getOutputFile(".vinfo"), "w") as viFh:
+            venn.writeSets(viFh)
         self.diffExpected(".vinfo")
+        with open(self.getOutputFile(".vcnts"), "w") as viFh:
+            venn.writeCounts(viFh)
+        self.diffExpected(".vcnts")
         
     def testVenn1(self):
         venn = Venn()
