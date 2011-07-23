@@ -10,6 +10,8 @@ BIN_PROGS = \
 	bin/geneCheckStats \
 	bin/profStats
 
+progsWithTests = gbff ncbi
+
 PKGS =  pycbio.align pycbio.distrib pycbio.exrun pycbio.hgbrowser pycbio.hgdata \
 	pycbio.html pycbio.ncbi pycbio.stats pycbio.sys pycbio.tsv
 
@@ -26,8 +28,13 @@ bin/%: %
 	@mkdir -p bin
 	ln -sf ../$< $@
 
-test:
+test:  libTests ${progsWithTests:%=%.progtest}
+
+libTests:
 	(cd src/lib && ./runTests)
+
+%.progtest:
+	(cd src/progs/$*/tests && ${MAKE} test)
 
 clean:
 	rm -rf bin

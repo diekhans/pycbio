@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # Copyright 2006-2011 Mark Diekhans
 
-import sys, os, httplib, re
+import sys, os, re, socket
 from optparse import OptionParser
+from Bio import Entrez
 
 host="eutils.ncbi.nlm.nih.gov"
 
@@ -26,6 +27,8 @@ give accessions or other ids understood by efetch server.
                           help="verbose tracing")
         parser.add_option("--debug", dest="debug", action="store", type="int", default=None,
                           help="set HTTP debug level to this value")
+        parser.add_option("--email", dest="email", action="store", default=None,
+                          help="override defaulting of email address")
         (opts, args) = parser.parse_args()
         self.__dict__.update(opts.__dict__)
         if self.simplifyIds and not self.fasta:
@@ -34,6 +37,8 @@ give accessions or other ids understood by efetch server.
         self._loadIdFiles()
         if len(self.ids) == 0:
             parser.error("no ids specified on command line or with --idFile, specify --help for usage")
+        if self.email == None:
+            self.email = self.__getEmail()
 
     def _loadIdFiles(self):
         for idFile in self.idFiles:
@@ -48,6 +53,9 @@ give accessions or other ids understood by efetch server.
                 ids.append(line)
         fh.close()
         return ids
+
+    def __getEmail(self):
+        return os.getenv("USER") + "@" + socket.gethostbyaddr(socket.gethostname())[0]
 
 # >gi|37590707|gb|AAH59029.1| RIKEN cDNA A930017N06 gene [Mus musculus]
 # >gi|14424222|sp|O94933|SLIK3_HUMAN SLIT and NTRK-like protein 3 precursor
@@ -71,19 +79,13 @@ def simplifyFastaId(ent):
         sid = parts[-1]
     return ">" + sid + m.group(2)
     
-def efetch(opts, conn, id, outFh):
+def efetch(opts, gbid, outFh):
     "fetch a genbank entry or fasta"
     if opts.fasta:
         fmt = "fasta"
     else:
         fmt = "gbwithparts"
-    url = "/entrez/eutils/efetch.fcgi?db=nucleotide&rettype=" + fmt + "&id=" + id
-    if opts.verbose:
-        print >>sys.stderr,"get http://" + host + url
-    conn.request("get", url)
-    resp = conn.getresponse()
-    if resp.status != httplib.OK:
-        raise httplib.HTTPException(resp.reason + " (" + str(resp.status) + "): http://" + host + url)
+    resp = Entrez.efetch(db="nucleotide", id=gbid, rettype=fmt, email=opts.email)
     ent = resp.read()
     if len(ent) <= 1:
         raise Exception("no entry found for \""+id+"\"")
@@ -92,28 +94,14 @@ def efetch(opts, conn, id, outFh):
     outFh.write(ent)
 
 def doFetch(opts, outFh):
-    conn = httplib.HTTPConnection(host)
-    if opts.debug != None:
-        conn.set_debuglevel(opts.debug)
-
-    for id in opts.ids:
-        # FIXME: some bug with either httplib or eutils cause crash for second
-        # request because data stream is confused.  This might have to do with
-        # chunked.  For now, just reopen on each response
-        conn.close()
-        conn.connect()
-        efetch(opts, conn, id, outFh)
-    conn.close()
-
-def ncbiGbFetch(opts):
-    if opts.out != None:
-        outFh = open(opts.out, "w")
-    else:
-        outFh = sys.stdout
-    doFetch(opts, outFh)
-
-    if outFh != sys.stdout:
-        outFh.close()
+    for gbid in opts.ids:
+        efetch(opts, gbid, outFh)
 
 opts = CmdOpts()
-ncbiGbFetch(opts)
+if opts.out != None:
+    outFh = open(opts.out, "w")
+else:
+    outFh = sys.stdout
+doFetch(opts, outFh)
+if outFh != sys.stdout:
+    outFh.close()
