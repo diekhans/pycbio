@@ -1,0 +1,554 @@
+LOCUS       NM_013266               3248 bp    mRNA    linear   PRI 13-MAR-2011
+DEFINITION  Homo sapiens catenin (cadherin-associated protein), alpha 3
+            (CTNNA3), transcript variant 1, mRNA.
+ACCESSION   NM_013266
+VERSION     NM_013266.2  GI:188497715
+KEYWORDS    .
+SOURCE      Homo sapiens (human)
+  ORGANISM  Homo sapiens
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+            Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini;
+            Catarrhini; Hominidae; Homo.
+REFERENCE   1  (bases 1 to 3248)
+  AUTHORS   Sebastiani,P., Solovieff,N., Puca,A., Hartley,S.W., Melista,E.,
+            Andersen,S., Dworkis,D.A., Wilk,J.B., Myers,R.H., Steinberg,M.H.,
+            Montano,M., Baldwin,C.T. and Perls,T.T.
+  TITLE     Genetic Signatures of Exceptional Longevity in Humans
+  JOURNAL   Science (2010) In press
+   PUBMED   20595579
+  REMARK    Publication Status: Available-Online prior to print
+REFERENCE   2  (bases 1 to 3248)
+  AUTHORS   Bailey,S.D., Xie,C., Do,R., Montpetit,A., Diaz,R., Mohan,V.,
+            Keavney,B., Yusuf,S., Gerstein,H.C., Engert,J.C. and Anand,S.
+  CONSRTM   DREAM investigators
+  TITLE     Variation at the NFATC2 locus increases the risk of
+            thiazolidinedione-induced edema in the Diabetes REduction
+            Assessment with ramipril and rosiglitazone Medication (DREAM) study
+  JOURNAL   Diabetes Care 33 (10), 2250-2253 (2010)
+   PUBMED   20628086
+  REMARK    GeneRIF: Observational study of gene-disease association,
+            gene-environment interaction, and pharmacogenomic / toxicogenomic.
+            (HuGE Navigator)
+REFERENCE   3  (bases 1 to 3248)
+  AUTHORS   van Dijk,M., van Bezu,J., van Abel,D., Dunk,C., Blankenstein,M.A.,
+            Oudejans,C.B. and Lye,S.J.
+  TITLE     The STOX1 genotype associated with pre-eclampsia leads to a
+            reduction of trophoblast invasion by alpha-T-catenin upregulation
+  JOURNAL   Hum. Mol. Genet. 19 (13), 2658-2667 (2010)
+   PUBMED   20400461
+  REMARK    GeneRIF: The risk allele (Y153H) of the preeclampsia susceptibility
+            gene STOX1 negatively regulates trophoblast invasion by
+            upregulation of the cell-cell adhesion protein a-T-catenin
+            (CTNNA3).
+REFERENCE   4  (bases 1 to 3248)
+  AUTHORS   Rose,J.E., Behm,F.M., Drgon,T., Johnson,C. and Uhl,G.R.
+  TITLE     Personalized smoking cessation: interactions between nicotine dose,
+            dependence and quit-success genotype score
+  JOURNAL   Mol. Med. 16 (7-8), 247-253 (2010)
+   PUBMED   20379614
+  REMARK    GeneRIF: Clinical trial of gene-disease association and
+            gene-environment interaction. (HuGE Navigator)
+REFERENCE   5  (bases 1 to 3248)
+  AUTHORS   Goldstein,B.A., Hubbard,A.E., Cutler,A. and Barcellos,L.F.
+  TITLE     An application of Random Forests to a genome-wide association
+            dataset: methodological considerations & new findings
+  JOURNAL   BMC Genet. 11, 49 (2010)
+   PUBMED   20546594
+  REMARK    GeneRIF: Observational study and genome-wide association study of
+            gene-disease association. (HuGE Navigator)
+            Publication Status: Online-Only
+REFERENCE   6  (bases 1 to 3248)
+  AUTHORS   Deloukas,P., Earthrowl,M.E., Grafham,D.V., Rubenfield,M.,
+            French,L., Steward,C.A., Sims,S.K., Jones,M.C., Searle,S.,
+            Scott,C., Howe,K., Hunt,S.E., Andrews,T.D., Gilbert,J.G.,
+            Swarbreck,D., Ashurst,J.L., Taylor,A., Battles,J., Bird,C.P.,
+            Ainscough,R., Almeida,J.P., Ashwell,R.I., Ambrose,K.D.,
+            Babbage,A.K., Bagguley,C.L., Bailey,J., Banerjee,R., Bates,K.,
+            Beasley,H., Bray-Allen,S., Brown,A.J., Brown,J.Y., Burford,D.C.,
+            Burrill,W., Burton,J., Cahill,P., Camire,D., Carter,N.P.,
+            Chapman,J.C., Clark,S.Y., Clarke,G., Clee,C.M., Clegg,S., Corby,N.,
+            Coulson,A., Dhami,P., Dutta,I., Dunn,M., Faulkner,L., Frankish,A.,
+            Frankland,J.A., Garner,P., Garnett,J., Gribble,S., Griffiths,C.,
+            Grocock,R., Gustafson,E., Hammond,S., Harley,J.L., Hart,E.,
+            Heath,P.D., Ho,T.P., Hopkins,B., Horne,J., Howden,P.J., Huckle,E.,
+            Hynds,C., Johnson,C., Johnson,D., Kana,A., Kay,M., Kimberley,A.M.,
+            Kershaw,J.K., Kokkinaki,M., Laird,G.K., Lawlor,S., Lee,H.M.,
+            Leongamornlert,D.A., Laird,G., Lloyd,C., Lloyd,D.M., Loveland,J.,
+            Lovell,J., McLaren,S., McLay,K.E., McMurray,A.,
+            Mashreghi-Mohammadi,M., Matthews,L., Milne,S., Nickerson,T.,
+            Nguyen,M., Overton-Larty,E., Palmer,S.A., Pearce,A.V., Peck,A.I.,
+            Pelan,S., Phillimore,B., Porter,K., Rice,C.M., Rogosin,A.,
+            Ross,M.T., Sarafidou,T., Sehra,H.K., Shownkeen,R., Skuce,C.D.,
+            Smith,M., Standring,L., Sycamore,N., Tester,J., Thorpe,A.,
+            Torcasso,W., Tracey,A., Tromans,A., Tsolas,J., Wall,M., Walsh,J.,
+            Wang,H., Weinstock,K., West,A.P., Willey,D.L., Whitehead,S.L.,
+            Wilming,L., Wray,P.W., Young,L., Chen,Y., Lovering,R.C.,
+            Moschonas,N.K., Siebert,R., Fechtel,K., Bentley,D., Durbin,R.,
+            Hubbard,T., Doucette-Stamm,L., Beck,S., Smith,D.R. and Rogers,J.
+  TITLE     The DNA sequence and comparative analysis of human chromosome 10
+  JOURNAL   Nature 429 (6990), 375-381 (2004)
+   PUBMED   15164054
+REFERENCE   7  (bases 1 to 3248)
+  AUTHORS   Busby,V., Goossens,S., Nowotny,P., Hamilton,G., Smemo,S.,
+            Harold,D., Turic,D., Jehu,L., Myers,A., Womick,M., Woo,D.,
+            Compton,D., Doil,L.M., Tacey,K.M., Lau,K.F., Al-Saraj,S.,
+            Killick,R., Pickering-Brown,S., Moore,P., Hollingworth,P.,
+            Archer,N., Foy,C., Walter,S., Lendon,C., Iwatsubo,T., Morris,J.C.,
+            Norton,J., Mann,D., Janssens,B., Hardy,J., O'Donovan,M., Jones,L.,
+            Williams,J., Holmans,P., Owen,M.J., Grupe,A., Powell,J., van
+            Hengel,J., Goate,A., Van Roy,F. and Lovestone,S.
+  TITLE     Alpha-T-catenin is expressed in human brain and interacts with the
+            Wnt signaling pathway but is not responsible for linkage to
+            chromosome 10 in Alzheimer's disease
+  JOURNAL   Neuromolecular Med. 5 (2), 133-146 (2004)
+   PUBMED   15075440
+  REMARK    GeneRIF: We found no association between CTNNA3 and Alzheimer
+            disease in subjects showing linkage to chromosome 10, nor were
+            these SNPs associated with Abeta deposition in brain. CTNNA3 is
+            unlikely to account for the susceptibility locus on chromosome 10
+REFERENCE   8  (bases 1 to 3248)
+  AUTHORS   Ertekin-Taner,N., Ronald,J., Asahara,H., Younkin,L., Hella,M.,
+            Jain,S., Gnida,E., Younkin,S., Fadale,D., Ohyagi,Y., Singleton,A.,
+            Scanlin,L., de Andrade,M., Petersen,R., Graff-Radford,N., Hutton,M.
+            and Younkin,S.
+  TITLE     Fine mapping of the alpha-T catenin gene to a quantitative trait
+            locus on chromosome 10 in late-onset Alzheimer's disease pedigrees
+  JOURNAL   Hum. Mol. Genet. 12 (23), 3133-3143 (2003)
+   PUBMED   14559775
+  REMARK    GeneRIF: Alpha-T catenin gene has variants which influence Abeta42
+            and contribute to the previously reported linkage for plasma
+            Abeta42 in late-onset Alzheimer's disease families.
+REFERENCE   9  (bases 1 to 3248)
+  AUTHORS   Janssens,B., Mohapatra,B., Vatta,M., Goossens,S., Vanpoucke,G.,
+            Kools,P., Montoye,T., van Hengel,J., Bowles,N.E., van Roy,F. and
+            Towbin,J.A.
+  TITLE     Assessment of the CTNNA3 gene encoding human alpha T-catenin
+            regarding its involvement in dilated cardiomyopathy
+  JOURNAL   Hum. Genet. 112 (3), 227-236 (2003)
+   PUBMED   12596047
+  REMARK    GeneRIF: gene localized on chromosome 10q21 and is 1,776 kb in
+            length; mutation screening of all 18 exons of the CTNNA3 gene in a
+            family showing dilated cardiomyopathy (DCM)linkage to the 10q21-q23
+            locus, however, has not detected any DCM-linked CTNNA3 mutations
+REFERENCE   10 (bases 1 to 3248)
+  AUTHORS   Janssens,B., Goossens,S., Staes,K., Gilbert,B., van Hengel,J.,
+            Colpaert,C., Bruyneel,E., Mareel,M. and van Roy,F.
+  TITLE     alphaT-catenin: a novel tissue-specific beta-catenin-binding
+            protein mediating strong cell-cell adhesion
+  JOURNAL   J. Cell. Sci. 114 (PT 17), 3177-3188 (2001)
+   PUBMED   11590244
+COMMENT     VALIDATED REFSEQ: This record has undergone validation or
+            preliminary review. The reference sequence was derived from
+            AK313882.1, AF091606.1, BC065819.1 and AK289756.1.
+            On May 16, 2008 this sequence version replaced gi:7019570.
+            
+            Transcript Variant: This variant (1) utilizes an alternate first
+            exon resulting in a distinct 5'UTR. Transcript variants 1 and 2
+            encode the same protein isoform.
+            
+            Publication Note:  This RefSeq record includes a subset of the
+            publications that are available for this gene. Please see the Gene
+            record to access additional publications.
+PRIMARY     REFSEQ_SPAN         PRIMARY_IDENTIFIER PRIMARY_SPAN        COMP
+            1-22                AK313882.1         3-24
+            23-674              AF091606.1         1-652
+            675-1728            BC065819.1         571-1624
+            1729-3042           AF091606.1         1707-3020
+            3043-3248           AK289756.1         2932-3137
+FEATURES             Location/Qualifiers
+     source          1..3248
+                     /organism="Homo sapiens"
+                     /mol_type="mRNA"
+                     /db_xref="taxon:9606"
+                     /chromosome="10"
+                     /map="10q22.2"
+     gene            1..3248
+                     /gene="CTNNA3"
+                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /note="catenin (cadherin-associated protein), alpha 3"
+                     /db_xref="GeneID:29119"
+                     /db_xref="HGNC:2511"
+                     /db_xref="HPRD:09639"
+                     /db_xref="MIM:607667"
+     exon            1..192
+                     /gene="CTNNA3"
+                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /inference="alignment:Splign"
+                     /number=1
+     misc_feature    159..161
+                     /gene="CTNNA3"
+                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /note="upstream in-frame stop codon"
+     exon            193..296
+                     /gene="CTNNA3"
+                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /inference="alignment:Splign"
+                     /number=3
+     CDS             198..2885
+                     /gene="CTNNA3"
+                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /note="alpha-catenin-like protein; alpha-T-catenin; alpha
+                     T-catenin; cadherin-associated protein"
+                     /codon_start=1
+                     /product="catenin alpha-3"
+                     /protein_id="NP_037398.2"
+                     /db_xref="GI:188497716"
+                     /db_xref="CCDS:CCDS7269.1"
+                     /db_xref="GeneID:29119"
+                     /db_xref="HGNC:2511"
+                     /db_xref="HPRD:09639"
+                     /db_xref="MIM:607667"
+                     /translation="MSAETPITLNIDPQDLQVQTFTVEKLLEPLIIQVTTLVNCPQNP
+                     SSRKKGRSKRASVLLASVEEATWNLLDKGEKIAQEATVLKDELTASLEEVRKESEALK
+                     VSAERFTDDPCFLPKREAVVQAARALLAAVTRLLILADMIDVMCLLQHVSAFQRTFES
+                     LKNVANKSDLQKTYQKLGKELENLDYLAFKRQQDLKSPNQRDEIAGARASLKENSPLL
+                     HSICSACLEHSDVASLKASKDTVCEEIQNALNVISNASQGIQNMTTPPEPQAATLGSA
+                     LDELENLIVLNPLTVTEEEIRPSLEKRLEAIISGAALLADSSCTRDLHRERIIAECNA
+                     IRQALQDLLSEYMNNAGKKERSNTLNIALDNMCKKTRDLRRQLRKAIIDHVSDSFLDT
+                     TVPLLVLIEAAKNGREKEIKEYAAIFHEHTSRLVEVANLACSMSTNEDGIKIVKIAAN
+                     HLETLCPQIINAALALAARPKSQAVKNTMEMYKRTWENHIHVLTEAVDDITSIDDFLA
+                     VSESHILEDVNKCIIALRDQDADNLDRAAGAIRGRAARVAHIVTGEMDSYEPGAYTEG
+                     VMRNVNFLTSTVIPEFVTQVNVALEALSKSSLNVLDDNQFVDISKKIYDTIHDIRCSV
+                     MMIRTPEELEDVSDLEEEHEVRSHTSIQTEGKTDRAKMTQLPEAEKEKIAEQVADFKK
+                     VKSKLDAEIEIWDDTSNDIIVLAKNMCMIMMEMTDFTRGKGPLKHTTDVIYAAKMISE
+                     SGSRMDVLARQIANQCPDPSCKQDLLAYLEQIKFYSHQLKICSQVKAEIQNLGGELIM
+                     SALDSVTSLIQAAKNLMNAVVQTVKMSYIASTKIIRIQSPAGPRHPVVMWRMKAPAKK
+                     PLIKREKPEETCAAVRRGSAKKKIHPLQVMSEFRGRQIY"
+     misc_feature    2106..2108
+                     /gene="CTNNA3"
+                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /experiment="experimental evidence, no additional details
+                     recorded"
+                     /note="Phosphoserine; propagated from UniProtKB/Swiss-Prot
+                     (Q9UI47.2); phosphorylation site"
+     misc_feature    2796..2798
+                     /gene="CTNNA3"
+                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /experiment="experimental evidence, no additional details
+                     recorded"
+                     /note="Phosphothreonine; propagated from
+                     UniProtKB/Swiss-Prot (Q9UI47.2); phosphorylation site"
+     exon            297..489
+                     /gene="CTNNA3"
+                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /inference="alignment:Splign"
+                     /number=4
+     exon            490..656
+                     /gene="CTNNA3"
+                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /inference="alignment:Splign"
+                     /number=5
+     exon            657..776
+                     /gene="CTNNA3"
+                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /inference="alignment:Splign"
+                     /number=6
+     exon            777..1040
+                     /gene="CTNNA3"
+                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /inference="alignment:Splign"
+                     /number=7
+     exon            1041..1244
+                     /gene="CTNNA3"
+                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /inference="alignment:Splign"
+                     /number=8
+     exon            1245..1325
+                     /gene="CTNNA3"
+                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /inference="alignment:Splign"
+                     /number=9
+     exon            1326..1478
+                     /gene="CTNNA3"
+                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /inference="alignment:Splign"
+                     /number=10
+     exon            1479..1571
+                     /gene="CTNNA3"
+                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /inference="alignment:Splign"
+                     /number=11
+     exon            1572..1728
+                     /gene="CTNNA3"
+                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /inference="alignment:Splign"
+                     /number=12
+     exon            1729..1929
+                     /gene="CTNNA3"
+                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /inference="alignment:Splign"
+                     /number=13
+     exon            1930..2081
+                     /gene="CTNNA3"
+                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /inference="alignment:Splign"
+                     /number=14
+     exon            2082..2174
+                     /gene="CTNNA3"
+                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /inference="alignment:Splign"
+                     /number=15
+     exon            2175..2356
+                     /gene="CTNNA3"
+                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /inference="alignment:Splign"
+                     /number=16
+     exon            2357..2462
+                     /gene="CTNNA3"
+                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /inference="alignment:Splign"
+                     /number=17
+     exon            2463..2597
+                     /gene="CTNNA3"
+                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /inference="alignment:Splign"
+                     /number=18
+     exon            2598..3248
+                     /gene="CTNNA3"
+                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /inference="alignment:Splign"
+                     /number=19
+     STS             2656..3162
+                     /gene="CTNNA3"
+                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /standard_name="CTNNA3_4652"
+                     /db_xref="UniSTS:462847"
+ORIGIN      
+        1 tttctttctt atcctgggtg aacaacgctc agcgaaattg actgccccac tgtcatctgc
+       61 ctctcaattt ggtactctgt aactctgtga ccaccaagaa gcctttttcc gtcccccaca
+      121 aagctctttt tggaaaattc cctacgggag ctgaatttta agcccattta ctttatagga
+      181 agaaacagaa aggcagcatg tcagctgaaa caccaatcac attgaatatc gatcctcagg
+      241 atctgcaggt ccaaacattc accgtggaga agctactgga gcctctcata atccaggtta
+      301 ccacacttgt aaactgtccc cagaaccctt ccagcaggaa aaaaggacgt tcgaaaagag
+      361 ccagtgtcct tctagcttct gtggaggaag caacttggaa tttattagac aagggagaga
+      421 agattgccca ggaagctaca gttttaaagg atgagcttac ggcttcactt gaggaagttc
+      481 gcaaagaaag tgaagctctg aaagtatcag ctgagagatt tacagatgac ccctgttttc
+      541 tcccaaaaag ggaggctgtg gttcaagctg cccgtgcctt gctggctgcg gtgacgagac
+      601 tccttatcct tgcggacatg attgatgtca tgtgcctctt gcaacatgtg tcagcttttc
+      661 aaaggacatt tgagtctctc aaaaatgttg ccaacaaatc tgacctccag aaaacctacc
+      721 agaagcttgg gaaggagctg gaaaatttgg attatttagc cttcaaacgt cagcaggact
+      781 taaaatctcc aaatcagaga gatgaaattg caggagcccg agcttcactg aaggagaact
+      841 ctcccctctt gcattcaatt tgttcagctt gtttggagca ttctgatgtt gcttccctca
+      901 aagcaagcaa ggacacagtt tgtgaagaaa ttcagaatgc tctcaatgta atttcaaatg
+      961 cttcacaagg gatccagaat atgacaaccc caccagaacc tcaggcagca accctgggaa
+     1021 gtgcccttga tgagctggag aatttaattg tcctgaatcc actcacagta actgaggagg
+     1081 aaatacgacc atcactagag aaacgccttg aagccattat cagtggggct gctctgctgg
+     1141 cggattcttc atgtacgagg gacttacacc gagagcggat tatcgcagaa tgcaacgcca
+     1201 ttcgccaggc tcttcaggat ctgctttcag agtacatgaa caacgctgga aaaaaagaaa
+     1261 ggagtaatac cctgaatatt gctttagaca acatgtgtaa gaagacaaga gaccttcgca
+     1321 gacagctccg caaggctatt atagatcatg tgtcagactc tttcctggat acgacagtcc
+     1381 ctcttttggt tctcattgaa gctgctaaga atggccggga aaaggaaata aaagaatatg
+     1441 ctgcgatatt tcatgaacac accagcaggc ttgtagaggt ggcaaatctt gcttgttcca
+     1501 tgtcaacaaa tgaagatgga attaaaattg tcaaaattgc agccaatcat ttggaaacct
+     1561 tgtgtccaca gattattaat gctgcacttg ctttggctgc aagacccaaa agtcaagcgg
+     1621 tcaaaaacac catggaaatg tacaagcgta catgggagaa tcatatacat gtcctcactg
+     1681 aagccgtaga tgacattaca agcattgatg acttccttgc tgtatctgaa agccatatct
+     1741 tggaagatgt caacaagtgt atcatagcct taagagacca ggatgctgat aatttagacc
+     1801 gtgctgcggg tgctatcaga ggccgggcag caagagttgc tcacatcgtc acgggtgaaa
+     1861 tggacagtta cgagccaggg gcttacacgg aaggtgtaat gagaaatgtt aacttcctta
+     1921 caagtactgt aattcctgaa tttgtaacac aagtgaatgt tgccttggaa gccttaagca
+     1981 aaagctcatt gaatgtgttg gatgataatc aatttgtgga catctcaaag aagatctatg
+     2041 atacaattca tgatatcaga tgttcagtca tgatgattcg gaccccagag gaactggagg
+     2101 atgtttctga ccttgaagag gaacacgagg tccgcagtca caccagcatt cagaccgaag
+     2161 ggaaaactga tagggctaag atgactcaac tgcctgaggc agaaaaagaa aagattgctg
+     2221 agcaagttgc tgatttcaag aaagtaaaga gtaagctgga tgctgagatt gagatatggg
+     2281 atgatacaag caacgacatc attgttctgg ccaagaacat gtgtatgatc atgatggaga
+     2341 tgacagactt cactaggggc aaaggaccac taaagcatac aactgatgtg atctatgcag
+     2401 cgaaaatgat atcagaatca ggatcaagga tggatgtcct tgctcggcag attgctaatc
+     2461 agtgcccaga tccatcttgt aaacaggact tgttggccta cctggaacag attaagttct
+     2521 actcccacca actgaaaatc tgcagtcaag ttaaagctga gatccagaac ctgggaggag
+     2581 agctcatcat gtcagctttg gacagtgtca catccctgat ccaagcagcc aaaaatttaa
+     2641 tgaatgctgt agtgcaaaca gtgaaaatgt cttacattgc ctcaaccaag atcatccgaa
+     2701 tccagagtcc tgctgggccc cggcacccag ttgtgatgtg gagaatgaag gctcctgcaa
+     2761 aaaaaccctt gattaaaaga gagaagccag aggaaacgtg tgcagctgtc agacgaggct
+     2821 cagcaaagaa aaaaatccat ccattgcaag tcatgagtga atttagagga agacaaatct
+     2881 actgaaacca ctattctaca tatagtgcct atatgacaaa atcctgccta accacactgc
+     2941 tttattttac acttaagaag ttctgtaatt tcactaagtt ttggtgttta actcacaaat
+     3001 aacataaaat attgggcgct aaatcaacaa aagcaatata tatttgggat catatcactg
+     3061 tcatttctgt atggtcagca cctaatagtt aaggaatatt tgcttgttga atgaatgaaa
+     3121 ttatcacgtg tcattcagcg tttcccatca tagagattat ctactattcg ttaccaaata
+     3181 aacacaggag aggccagaga gtcctgttta tctgtaatac ttcatgtaca cttatcatcc
+     3241 ttatcttg
+//
+
+LOCUS       AK289756                3137 bp    mRNA    linear   PRI 09-JAN-2008
+DEFINITION  Homo sapiens cDNA FLJ78082 complete cds, highly similar to Homo
+            sapiens alphaT-catenin (CTNNA3) mRNA.
+ACCESSION   AK289756
+VERSION     AK289756.1  GI:158260534
+KEYWORDS    FLI_CDNA; oligo capping.
+SOURCE      Homo sapiens (human)
+  ORGANISM  Homo sapiens
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+            Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini;
+            Catarrhini; Hominidae; Homo.
+REFERENCE   1
+  AUTHORS   Wakamatsu,A., Yamamoto,J., Kimura,K., Ishii,S., Watanabe,K.,
+            Sugiyama,A., Murakawa,K., Kaida,T., Tsuchiya,K., Fukuzumi,Y.,
+            Kumagai,A., Oishi,Y., Yamamoto,S., Ono,Y., Komori,Y., Yamazaki,M.,
+            Kisu,Y., Nishikawa,T., Sugano,S., Nomura,N. and Isogai,T.
+  TITLE     NEDO human cDNA sequencing project
+  JOURNAL   Unpublished
+REFERENCE   2  (bases 1 to 3137)
+  AUTHORS   Isogai,T. and Yamamoto,J.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (09-OCT-2007) Contact:Takao Isogai Reverse Proteomics
+            Research Institute; 1-9-11 Kaji-cho, Chiyoda-ku, Tokyo 101-0044,
+            Japan E-mail :flj-cdna@nifty.com
+COMMENT     Human cDNA sequencing project focused on splicing variants of mRNA
+            in NEDO functional analysis of protein and research application
+            project supported by Ministry of Economy, Trade and Industry,
+            Japan; cDNA selection for complete cds sequencing: Reverse
+            Proteomics Research Institute (REPRORI), Hitachi, Ltd., Japan
+            (Hitachi) and Japan Biological Informatics Consortium, Japan
+            (JBIC); cDNA complete cds sequencing: JBIC; cDNA library
+            construction: Helix Research Institute supported by Japan Key
+            Technology Center, Japan (HRI); cDNA 5'- & 3'-end sequencing:
+            Research Association for Biotechnology, Japan, Biotechnology
+            Center, National Institute of Technology and Evaluation, Japan and
+            HRI; cDNA mapping to human genome: Central Research Laboratory,
+            Hitachi; evaluation and annotation: REPRORI.
+FEATURES             Location/Qualifiers
+     source          1..3137
+                     /organism="Homo sapiens"
+                     /mol_type="mRNA"
+                     /db_xref="taxon:9606"
+                     /clone="BRAWH3012756"
+                     /tissue_type="brain"
+                     /clone_lib="BRAWH3"
+                     /note="cloning vector: pME18SFL3"
+     CDS             87..2774
+                     /note="unnamed protein product; highly similar to Homo
+                     sapiens alphaT-catenin (CTNNA3) mRNA"
+                     /codon_start=1
+                     /protein_id="BAF82445.1"
+                     /db_xref="GI:158260535"
+                     /translation="MSAETPITLNIDPQDLQVQTFTVEKLLEPLIIQVTTLVNCPQNP
+                     SSRKKGRSKRASVLLASVEEATWNLLDKGEKIAQEATVLKDELTASLEEVRKESEALK
+                     VSAERFTDDPCFLPKREAVVQAARALLAAVTRLLILADMIDVMCLLQHVSAFQRTFES
+                     LKNVANKSDLQKTYQKLGKELENLDYLAFKRQQDLKSPNQRDEIAGARASLKENSPLL
+                     HSICSACLEHSDVASLKASKDTVCEEIQNALNVISNASQGIQNMTTPPEPQAATLGSA
+                     LDELENLIVLNPLTVTEEEIRPSLEKRLEAIISGAALLADSSCTRDLHRERIIAECNA
+                     IRQALQDLLSEYMNNAGKKERSNTLNIALDNMCKKTRDLRRQLRKAIIDHVSDSFLDT
+                     TVPLLVLIEAAKNGREKEIKEYAAIFHEHTSRLVEVANLACSMSTNEDGIKIVKIAAN
+                     HLETLCPQIINAALALAARPKSQAVKNTMEMYKRTWENHIHVLTEAVDDITSIDDFLA
+                     VSESHILEDVNKCIIALRDQDADNLDRAAGAIRGRAARVAHIVTGEMDSYEPGAYTEG
+                     VMRNVNFLTSTVIPEFVTQVNVALEALSKNSLNVLDDNQFVDISKKIYDTIHDIRCSV
+                     MMIRTPEELEDVSDLEEEHEVRSHTSIQTEGKTDRAKMTQLPEAEKEKIAEQVADFKK
+                     VKSKLDAEIEIWDDTSNDIIVLAKNMCMIMMEMTDFTRGKGPLKHTTDVIYAAKMISE
+                     SGSRMDVLARQIANQCPDPSCKQDLLAYLEQIKFYSHQLKICSQVKAEIQNLGGELIM
+                     SALDSVTSLIQAAKNLMNAVVQTVKMSYIASTKIIRIQSPAGPRHPVVMWRMKAPAKK
+                     PLIKREKPEETCAAVRRGSAKKKIHPLQVMSEFRGRQIY"
+ORIGIN      
+        1 gcactgaatt tctaaataca agaaattgct tagacaattg gtttagtatc tgtatatggg
+       61 caatactctg tcctgcagta ggcagcatgt cagctgaaac accaatcaca ttgaatatcg
+      121 atcctcagga tctgcaggtc caaacattca ccgtggagaa gctactggag cctctcataa
+      181 tccaggttac cacacttgta aactgtcccc agaacccttc cagcaggaaa aaaggacgtt
+      241 cgaaaagagc cagtgtcctt ctagcttctg tggaggaagc aacttggaat ttattagaca
+      301 agggagagaa gattgcccag gaagctacag ttttaaagga tgagcttacg gcttcacttg
+      361 aggaagttcg caaagaaagt gaagctctga aagtatcagc tgagagattt acagatgacc
+      421 cctgttttct cccaaaaagg gaggctgtgg ttcaagctgc ccgtgccttg ctggctgcgg
+      481 tgacgagact ccttatcctt gcggacatga ttgatgtcat gtgcctcttg caacatgtgt
+      541 cagcttttca aaggacattt gagtctctca aaaatgttgc caacaaatct gacctccaga
+      601 aaacctacca gaagcttggg aaggagctgg aaaatttgga ttatttagcc ttcaaacgtc
+      661 agcaggactt aaaatctcca aatcagagag atgaaattgc aggagcccga gcttcactga
+      721 aggagaactc tcccctcttg cattcaattt gttcagcttg tttggagcat tctgatgttg
+      781 cttccctcaa agcaagcaag gacacagttt gtgaagaaat tcagaatgct ctcaatgtaa
+      841 tttcaaatgc ttcacaaggg atccagaata tgacaacccc accagaacct caggcagcaa
+      901 ccctgggaag tgcccttgat gagctggaga atttaattgt cctgaatcca ctcacagtaa
+      961 ctgaggagga aatacgacca tcactagaga aacgccttga agccattatc agtggggctg
+     1021 ctctgctggc ggattcttca tgtacgaggg acttacaccg agagcggatt atcgcagaat
+     1081 gcaacgccat tcgccaggct cttcaggatc tgctttcaga gtacatgaac aacgctggaa
+     1141 aaaaagaaag gagtaatacc ctgaatattg ctttagacaa catgtgtaag aagacaagag
+     1201 accttcgcag acagctccgc aaggctatta tagatcatgt gtcagactct ttcctggata
+     1261 cgacagtccc tcttttggtt ctcattgaag ctgctaagaa tggccgggaa aaggaaataa
+     1321 aagaatatgc tgcgatattt catgaacaca ccagcaggct tgtagaggtg gcaaatcttg
+     1381 cttgttccat gtcaacaaat gaagatggaa ttaaaattgt caaaattgca gccaatcatt
+     1441 tggaaacctt gtgtccacag attattaatg ctgcacttgc tttggctgca agacccaaaa
+     1501 gtcaagcggt caaaaacacc atggaaatgt acaagcgtac atgggagaat catatacatg
+     1561 tcctcactga agccgtagat gacattacaa gcattgatga cttccttgct gtatctgaaa
+     1621 gccatatctt ggaagatgtc aacaagtgta tcatagcctt aagagaccag gatgctgata
+     1681 atttagaccg tgctgcgggt gctatcagag gccgggcagc aagagttgct cacatcgtca
+     1741 cgggtgaaat ggacagttac gagccagggg cttacacgga aggtgtaatg agaaatgtta
+     1801 acttccttac aagtactgta attcctgaat ttgtaacaca agtgaatgtt gccttggaag
+     1861 ccttaagcaa aaactcattg aatgtgttgg atgataatca atttgtggac atctcaaaga
+     1921 agatctatga tacaattcat gatatcagat gttcagtcat gatgattcgg accccagagg
+     1981 aactggagga tgtttctgac cttgaagagg aacacgaggt ccgcagtcac accagcattc
+     2041 agaccgaagg gaaaactgat agggctaaga tgactcaact gcctgaggca gaaaaagaaa
+     2101 agattgctga gcaagttgct gatttcaaga aagtaaagag taagctggat gctgagattg
+     2161 agatatggga tgatacaagc aacgacatca ttgttctggc caagaacatg tgtatgatca
+     2221 tgatggagat gacagacttc actaggggca aaggaccact aaagcataca actgatgtga
+     2281 tctatgcagc gaaaatgata tcagaatcag gatcaaggat ggatgtcctt gctcggcaga
+     2341 ttgctaatca gtgcccagat ccatcttgta aacaggactt gttggcctac ctggaacaga
+     2401 ttaagttcta ctcccaccaa ctgaaaatct gcagtcaagt taaagctgag atccagaacc
+     2461 tgggaggaga gctcatcatg tcagctttgg acagtgtcac atccctgatc caagcagcca
+     2521 aaaatttaat gaatgctgta gtgcaaacag tgaaaatgtc ttacattgcc tcaaccaaga
+     2581 tcatccgaat ccagagtcct gctgggcccc ggcacccagt tgtgatgtgg agaatgaagg
+     2641 ctcctgcaaa aaaacccttg attaaaagag agaagccaga ggaaacgtgt gcagctgtca
+     2701 gacgaggctc agcaaagaaa aaaatccatc cattgcaagt catgagtgaa tttagaggaa
+     2761 gacaaatcta ctgaaaccac tattctacat atagtgccta tatgacaaaa tcctgcctaa
+     2821 ccacactgct ttattttaca cttaagaagt tctgtaattt cactaagttt tggtgtttaa
+     2881 ctcacaaata acataaaata ttgggcgcta aatcaacaaa agcaatatat atttgggatc
+     2941 atatcactgt catttctgta tggtcagcac ctaatagtta aggaatattt gcttgttgaa
+     3001 tgaatgaaat tatcacgtgt cattcagcgt ttcccatcat agagattatc tactattcgt
+     3061 taccaaataa acacaggaga ggccagagag tcctgtttat ctgtaatact tcatgtacac
+     3121 ttatcatcct tatcttg
+//
+
+LOCUS       BG187649                 790 bp    mRNA    linear   EST 29-JAN-2011
+DEFINITION  RST6530 Athersys RAGE Library Homo sapiens cDNA, mRNA sequence.
+ACCESSION   BG187649
+VERSION     BG187649.1  GI:13709224
+KEYWORDS    EST.
+SOURCE      Homo sapiens (human)
+  ORGANISM  Homo sapiens
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+            Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini;
+            Catarrhini; Hominidae; Homo.
+REFERENCE   1  (bases 1 to 790)
+  AUTHORS   Harrington,J.J., Sherf,B., Rundlett,S., Jackson,P.D., Perry,R.,
+            Cain,S., Leventhal,C., Thornton,M., Ramachandran,R.,
+            Whittington,J., Lerner,L., Costanzo,D., McElligott,K., Boozer,S.,
+            Mays,R., Smith,E., Veloso,N., Klika,A., Hess,J., Cothren,K., Lo,K.,
+            Offenbacher,J., Danzig,J. and Ducar,M.
+  TITLE     Creation of genome-wide protein expression libraries using random
+            activation of gene expression
+  JOURNAL   Nat. Biotechnol. 19 (5), 440-445 (2001)
+   PUBMED   11329013
+COMMENT     Contact: Scott J. Cain
+            Athersys, Inc.
+            3201 Carnegie Ave, Cleveland, OH 44115, USA
+            Tel: 216 431 9900
+            Fax: 216 361 9596
+            Email: scain@athersys.com
+            High quality sequence stop: 403.
+FEATURES             Location/Qualifiers
+     source          1..790
+                     /organism="Homo sapiens"
+                     /mol_type="mRNA"
+                     /db_xref="taxon:9606"
+                     /cell_line="HT1080"
+                     /clone_lib="LIBEST_008655 Athersys RAGE Library"
+                     /note="See 'Creation of Genome-wide Protein Expression
+                     Libraries using Random Activation of Gene Expression',
+                     Nature Biotechnology, in press. Note that even though the
+                     cell type indicated is HT1080, since a random activation
+                     method was used, these sequence tags are not necessarily
+                     expressed in HT1080 under normal circumstances."
+ORIGIN      
+        1 tgcccagatc catcttgtaa acaggacttg ttggcctacc tggaacagat taagttctac
+       61 tcccaccaac tgaaaatctg cagtcaagtt aaagctgaga tccagaacct gggaggagag
+      121 ctcatcatgt cagctttgga cagtgtcaca tccctgatcc aagcagccaa aaatttaatg
+      181 aatgctgtag tgcaaacagt gaaaatgtct tacattgcct caaccaagat catccgaatc
+      241 cagagtcctg ctgggccccg gcacccagtt gtgatgtgga gaatgaaggc tcctgcaaaa
+      301 aaacccttga ttaaaagaga gaagccagag gaaacgtgtg cagctgtcag acgaggctca
+      361 gcaaagaaaa aaatccatcc attgcaagtc atgagtgaat ttagaggaag acaaatctac
+      421 tgaaaccact attctacata tagtgcctat atgacaaaat cctgcctaac cacactgctt
+      481 tattttacac ttaagaagtt ctgtaatttc actgagtttt ggtgtttaac tcacaaataa
+      541 cataaaatat tgggcgctaa atcaacaaaa gcaatatata tttgggatca tatcactgtc
+      601 atttctgtat ggtcagcacc ctatagttaa ggaatatttg cttgttgaat gaatgaaatt
+      661 atcacgtgtt attcaccgtt tcccataata gagattatct actattcgtt accaaataaa
+      721 cacaggagat ggcagagagt ccggtttatc tggaatcttc atgtacctta taatccttac
+      781 ttgaattaan
+//
+
