@@ -1,4 +1,5 @@
 # Copyright 2006-2011 Mark Diekhans
+
 class Subsets(object):
     "Generate possible subsets for a set of elements"
 

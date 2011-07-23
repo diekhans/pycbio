@@ -2,6 +2,7 @@
 "Generate Venn diagram set intersection statistics"
 
 from pycbio.stats.Subsets import Subsets
+from pycbio.sys import fileOps, setOps
 
 class SetDict(dict):
     "Dictionary of sets"
@@ -95,3 +96,15 @@ class Venn(object):
         "get counts for the specified subset"
         return len(self.getSubsetIds(subset))
 
+    def writeCounts(self, fh, subsetNameSeparator=" "):
+        "write TSV of subset counts to an open file"
+        fileOps.prRowv(fh, "subset", "count")
+        for subset in self.subsets.getSubsets():
+            fileOps.prRowv(fh, subsetNameSeparator.join(subset), self.getSubsetCounts(subset))
+        
+    def writeSets(self, fh, subsetNameSeparator=" "):
+        "write TSV of subsets and ids to an open file"
+        fileOps.prRowv(fh, "subset", "ids")
+        for subset in self.subsets.getSubsets():
+            fileOps.prRowv(fh, subsetNameSeparator.join(subset), self.getSubsetCounts(subset))
+        
