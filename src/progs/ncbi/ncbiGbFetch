@@ -33,7 +33,7 @@ give accessions or other ids understood by efetch server.
         self.__dict__.update(opts.__dict__)
         if self.simplifyIds and not self.fasta:
             parser.error("can only specify --simplifyIds with --fasta");
-        self.ids = list(args)
+        self.ids = set(args)
         self._loadIdFiles()
         if len(self.ids) == 0:
             parser.error("no ids specified on command line or with --idFile, specify --help for usage")
@@ -42,17 +42,15 @@ give accessions or other ids understood by efetch server.
 
     def _loadIdFiles(self):
         for idFile in self.idFiles:
-            self.ids.extend(self._loadIdFile(idFile))
+            self._loadIdFile(idFile)
 
     def _loadIdFile(self, idFile):
-        ids = []
         fh = open(idFile)
         for line in fh:
             line=line.strip()
             if (len(line) > 0) and (line[0] != '#'):
-                ids.append(line)
+                self.ids.add(line)
         fh.close()
-        return ids
 
     def __getEmail(self):
         return os.getenv("USER") + "@" + socket.gethostbyaddr(socket.gethostname())[0]

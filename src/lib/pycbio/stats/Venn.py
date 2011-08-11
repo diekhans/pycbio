@@ -8,7 +8,8 @@ class SetDict(dict):
     "Dictionary of sets"
 
     def __init__(self, subsets=None):
-        "sets can be pre-defined to allow for empty sets"
+        """sets can be pre-defined to allow for empty sets or shared subsets
+        objects"""
         if subsets != None:
             for ss in subsets:
                 self[ss] = set()
@@ -95,6 +96,13 @@ class Venn(object):
     def getSubsetCounts(self, subset):
         "get counts for the specified subset"
         return len(self.getSubsetIds(subset))
+
+    def getTotalCounts(self):
+        "get total of counts for all subsets (meaningless on inclusive)"
+        t = 0
+        for subset in self.subsets.getSubsets():
+            t += self.getSubsetCounts(subset)
+        return t
 
     def writeCounts(self, fh, subsetNameSeparator=" "):
         "write TSV of subset counts to an open file"
