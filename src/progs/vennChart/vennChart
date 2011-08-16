@@ -1,0 +1,53 @@
+#!/usr/bin/env python
+# Copyright 2006-2011 Mark Diekhans
+
+import sys, os, re
+myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
+sys.path.insert(0, myBinDir + "/../     lib")
+
+from optparse import OptionParser
+from pycbio.tsv import TSVReader,TSVError
+
+from matplotlib.patches import Circle
+from matplotlib import.pyplot
+
+class CmdOpts(object):
+    usage = """%prog [options] inStats outImage
+
+Generate a simple Venn diagram.
+
+The Boolean set TSV input format consists of a columns
+for each input set with a boolean value indicating if
+the row includes that set, along with a column of counts.
+
+Output defaults to PDF format.
+
+"""
+    def __init__(self):
+        parser = OptionParser(usage=CmdOpts.usage)
+        parser.add_option("--countCol", dest="rnaq", action="store", default="Counts",
+                          help="column name of counts column, default is 'Counts'")
+        (opts, args) = parser.parse_args()
+        if len(args) != 2:
+            parser.error("wrong number of arguments")
+        (self.inStats, self.outImage) = args
+        self.__dict__.update(opts.__dict__)
+
+class BoolStats(object):
+    "stats extract from boolean TSV"
+    def __init__(self, statsFile, countsCol):
+        reader = TSVReader(statsFile, typeMap={countsCol: int}, defaultColType=bool)
+        if not countsCol in reader.colMap:
+            raise TSVReader("counts column \"" + countsCol + "\" not found", reader)
+
+class VennCircle(object):
+    diameter = 1.0
+
+    def __init__(self, pos):
+        pass
+
+
+
+pyplot.p
+
+
