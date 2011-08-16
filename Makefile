@@ -1,5 +1,5 @@
 
-VPATH = src/progs/tsv:src/progs/gbff:src/progs/genePred:src/progs/loci:src/progs/ncbi:src/progs/geneCheck:src/progs/profStats
+VPATH = src/progs/tsv:src/progs/gbff:src/progs/genePred:src/progs/loci:src/progs/ncbi:src/progs/geneCheck:src/progs/profStats:src/progs/vennChart
 BIN_PROGS = \
 	bin/tsvSelectById \
 	bin/gbffGenesToGenePred \
@@ -8,7 +8,8 @@ BIN_PROGS = \
 	bin/genePredSelect \
 	bin/ncbiGbFetch \
 	bin/geneCheckStats \
-	bin/profStats
+	bin/profStats \
+	bin/vennChart
 
 progsWithTests = gbff ncbi
 
