@@ -98,7 +98,7 @@ class ClusterGenes(list):
     def __init__(self, clusterGenesOut):
         self.genes = MultiDict()
         tsv = TSVReader(clusterGenesOut, typeMap=typeMap)
-        self.columns = tsv.columns
+        self.columns = tsv.getColumns()
         self.tableSet = set()
         for gene in tsv:
             self.__addGene(gene)

@@ -3,6 +3,7 @@ import copy
 from pycbio.hgdata.AutoSql import intArraySplit, intArrayJoin, strArraySplit, strArrayJoin
 from pycbio.sys import fileOps, dbOps
 from pycbio.sys.MultiDict import MultiDict
+from pycbio.hgdata.RangeFinder import Binner
 from Bio.Seq import reverse_complement
 
 # FIXME: Should have factory rather than __init__ multiplexing nonsense
@@ -415,7 +416,10 @@ class PslReader(object):
                 return Psl(line.split("\t"))
 
 class PslDbReader(object):
-    """Read PSLs from db query"""
+    """Read PSLs from db query.  Factory methods are provide
+    to generate instances for range queries."""
+
+    pslColumns = ("match", "misMatch", "repMatch", "nCount", "qNumInsert", "qBaseInsert", "tNumInsert", "tBaseInsert", "strand", "qName", "qSize", "qStart", "qEnd", "tName", "tSize", "tStart", "tEnd", "blockCount", "blockSizes", "qStarts", "tStarts", "qSequence", "tSequence")
 
     def __init__(self, conn, query):
         self.cur = conn.cursor()
@@ -423,15 +427,20 @@ class PslDbReader(object):
             self.cur.execute(query)
         except:
             try:
-                self.cur.close()
+                self.close()
             except:
                 pass
-            raise
+            raise # continue original exception
+        # FIXME: could make this optional or require column names in query
         self.colIdxMap = dbOps.cursorColIdxMap(self.cur)
 
-    def __del__(self):
+    def close(self):
         if self.cur != None:
             self.cur.close()
+        self.cur = None
+
+    def __del__(self):
+        self.close()
 
     def __iter__(self):
         return self
@@ -445,6 +454,17 @@ class PslDbReader(object):
                 self.cur = None
                 raise StopIteration
             return Psl(row, dbColIdxMap=self.colIdxMap)
+
+    @staticmethod
+    def targetRangeQuery(self, conn, table, tName, tStart, tEnd, useBin=True, haveSeqs=False):
+        """ factor to generate PslDbReader for querying a target range"""
+        query = "select " + ",".join(self.pslColumns) + " from `" + table + "` where ((tName = \"" \
+            + tName + "\") and (tStart < " + tEnd + ") and (tEnd > " + tStart + ")"
+        if useBin:
+            query += " and (" +  " or ".join(["(bin = " + str(bin) + ")" for bin in Binner.generateBins(tStart, tEnd)]) + ")"
+        query += ")"
+        return PslDbReader(conn, query)
+                
 
 class PslTbl(list):
     """Table of PSL objects loaded from a tab-file

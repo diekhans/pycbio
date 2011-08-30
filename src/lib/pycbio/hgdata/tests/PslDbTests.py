@@ -27,7 +27,7 @@ class DbReadTests(TestCaseBase):
         import MySQLdb
         return MySQLdb.connect(host=self.hgConf["db.host"], user=self.hgConf["db.user"], passwd=self.hgConf["db.password"], db=testDb)
 
-    def testDbLoad(self):
+    def testDbQueryLoad(self):
         conn = self.__connect()
         try:
             # just read 10 PSLs
@@ -35,6 +35,13 @@ class DbReadTests(TestCaseBase):
             for psl in PslDbReader(conn, "select * from %s limit 10" % testTbl):
                 pslCnt += 1
             self.failUnlessEqual(pslCnt, 10)
+        finally:
+            conn.close()
+
+    def testDbRangeLoad(self):
+        conn = self.__connect()
+        try:
+            psls = list(PslDbReader.targetRangeQuery(conn, testTbl, "chr22", 123, 456, useBin=True))
         finally:
             conn.close()
 
