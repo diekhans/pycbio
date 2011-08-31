@@ -1,4 +1,4 @@
-LOCUS       NM_013266               3248 bp    mRNA    linear   PRI 13-MAR-2011
+LOCUS       NM_013266               3248 bp    mRNA    linear   PRI 14-AUG-2011
 DEFINITION  Homo sapiens catenin (cadherin-associated protein), alpha 3
             (CTNNA3), transcript variant 1, mRNA.
 ACCESSION   NM_013266
@@ -10,13 +10,15 @@ SOURCE      Homo sapiens (human)
             Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini;
             Catarrhini; Hominidae; Homo.
 REFERENCE   1  (bases 1 to 3248)
-  AUTHORS   Sebastiani,P., Solovieff,N., Puca,A., Hartley,S.W., Melista,E.,
-            Andersen,S., Dworkis,D.A., Wilk,J.B., Myers,R.H., Steinberg,M.H.,
-            Montano,M., Baldwin,C.T. and Perls,T.T.
-  TITLE     Genetic Signatures of Exceptional Longevity in Humans
-  JOURNAL   Science (2010) In press
-   PUBMED   20595579
-  REMARK    Publication Status: Available-Online prior to print
+  AUTHORS   Christensen,A.H., Benn,M., Tybjaerg-Hansen,A., Haunso,S. and
+            Svendsen,J.H.
+  TITLE     Screening of three novel candidate genes in arrhythmogenic right
+            ventricular cardiomyopathy
+  JOURNAL   Genet Test Mol Biomarkers 15 (4), 267-271 (2011)
+   PUBMED   21254927
+  REMARK    GeneRIF: Our comprehensive mutation scanning did not identify any
+            Arrhythmogenic right ventricular cardiomyopathy (ARVC) causing
+            mutations.
 REFERENCE   2  (bases 1 to 3248)
   AUTHORS   Bailey,S.D., Xie,C., Do,R., Montpetit,A., Diaz,R., Mohan,V.,
             Keavney,B., Yusuf,S., Gerstein,H.C., Engert,J.C. and Anand,S.
@@ -164,7 +166,7 @@ FEATURES             Location/Qualifiers
                      /map="10q22.2"
      gene            1..3248
                      /gene="CTNNA3"
-                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /gene_synonym="VR22"
                      /note="catenin (cadherin-associated protein), alpha 3"
                      /db_xref="GeneID:29119"
                      /db_xref="HGNC:2511"
@@ -172,21 +174,21 @@ FEATURES             Location/Qualifiers
                      /db_xref="MIM:607667"
      exon            1..192
                      /gene="CTNNA3"
-                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /gene_synonym="VR22"
                      /inference="alignment:Splign"
                      /number=1
      misc_feature    159..161
                      /gene="CTNNA3"
-                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /gene_synonym="VR22"
                      /note="upstream in-frame stop codon"
      exon            193..296
                      /gene="CTNNA3"
-                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /gene_synonym="VR22"
                      /inference="alignment:Splign"
                      /number=3
      CDS             198..2885
                      /gene="CTNNA3"
-                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /gene_synonym="VR22"
                      /note="alpha-catenin-like protein; alpha-T-catenin; alpha
                      T-catenin; cadherin-associated protein"
                      /codon_start=1
@@ -216,101 +218,101 @@ FEATURES             Location/Qualifiers
                      PLIKREKPEETCAAVRRGSAKKKIHPLQVMSEFRGRQIY"
      misc_feature    2106..2108
                      /gene="CTNNA3"
-                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /gene_synonym="VR22"
                      /experiment="experimental evidence, no additional details
                      recorded"
                      /note="Phosphoserine; propagated from UniProtKB/Swiss-Prot
                      (Q9UI47.2); phosphorylation site"
      misc_feature    2796..2798
                      /gene="CTNNA3"
-                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /gene_synonym="VR22"
                      /experiment="experimental evidence, no additional details
                      recorded"
                      /note="Phosphothreonine; propagated from
                      UniProtKB/Swiss-Prot (Q9UI47.2); phosphorylation site"
      exon            297..489
                      /gene="CTNNA3"
-                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /gene_synonym="VR22"
                      /inference="alignment:Splign"
                      /number=4
      exon            490..656
                      /gene="CTNNA3"
-                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /gene_synonym="VR22"
                      /inference="alignment:Splign"
                      /number=5
      exon            657..776
                      /gene="CTNNA3"
-                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /gene_synonym="VR22"
                      /inference="alignment:Splign"
                      /number=6
      exon            777..1040
                      /gene="CTNNA3"
-                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /gene_synonym="VR22"
                      /inference="alignment:Splign"
                      /number=7
      exon            1041..1244
                      /gene="CTNNA3"
-                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /gene_synonym="VR22"
                      /inference="alignment:Splign"
                      /number=8
      exon            1245..1325
                      /gene="CTNNA3"
-                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /gene_synonym="VR22"
                      /inference="alignment:Splign"
                      /number=9
      exon            1326..1478
                      /gene="CTNNA3"
-                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /gene_synonym="VR22"
                      /inference="alignment:Splign"
                      /number=10
      exon            1479..1571
                      /gene="CTNNA3"
-                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /gene_synonym="VR22"
                      /inference="alignment:Splign"
                      /number=11
      exon            1572..1728
                      /gene="CTNNA3"
-                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /gene_synonym="VR22"
                      /inference="alignment:Splign"
                      /number=12
      exon            1729..1929
                      /gene="CTNNA3"
-                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /gene_synonym="VR22"
                      /inference="alignment:Splign"
                      /number=13
      exon            1930..2081
                      /gene="CTNNA3"
-                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /gene_synonym="VR22"
                      /inference="alignment:Splign"
                      /number=14
      exon            2082..2174
                      /gene="CTNNA3"
-                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /gene_synonym="VR22"
                      /inference="alignment:Splign"
                      /number=15
      exon            2175..2356
                      /gene="CTNNA3"
-                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /gene_synonym="VR22"
                      /inference="alignment:Splign"
                      /number=16
      exon            2357..2462
                      /gene="CTNNA3"
-                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /gene_synonym="VR22"
                      /inference="alignment:Splign"
                      /number=17
      exon            2463..2597
                      /gene="CTNNA3"
-                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /gene_synonym="VR22"
                      /inference="alignment:Splign"
                      /number=18
      exon            2598..3248
                      /gene="CTNNA3"
-                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /gene_synonym="VR22"
                      /inference="alignment:Splign"
                      /number=19
      STS             2656..3162
                      /gene="CTNNA3"
-                     /gene_synonym="MGC26194; MGC75041; VR22"
+                     /gene_synonym="VR22"
                      /standard_name="CTNNA3_4652"
                      /db_xref="UniSTS:462847"
 ORIGIN      
@@ -369,6 +371,63 @@ ORIGIN
      3121 ttatcacgtg tcattcagcg tttcccatca tagagattat ctactattcg ttaccaaata
      3181 aacacaggag aggccagaga gtcctgttta tctgtaatac ttcatgtaca cttatcatcc
      3241 ttatcttg
+//
+
+LOCUS       BG187649                 790 bp    mRNA    linear   EST 29-JAN-2011
+DEFINITION  RST6530 Athersys RAGE Library Homo sapiens cDNA, mRNA sequence.
+ACCESSION   BG187649
+VERSION     BG187649.1  GI:13709224
+KEYWORDS    EST.
+SOURCE      Homo sapiens (human)
+  ORGANISM  Homo sapiens
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+            Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini;
+            Catarrhini; Hominidae; Homo.
+REFERENCE   1  (bases 1 to 790)
+  AUTHORS   Harrington,J.J., Sherf,B., Rundlett,S., Jackson,P.D., Perry,R.,
+            Cain,S., Leventhal,C., Thornton,M., Ramachandran,R.,
+            Whittington,J., Lerner,L., Costanzo,D., McElligott,K., Boozer,S.,
+            Mays,R., Smith,E., Veloso,N., Klika,A., Hess,J., Cothren,K., Lo,K.,
+            Offenbacher,J., Danzig,J. and Ducar,M.
+  TITLE     Creation of genome-wide protein expression libraries using random
+            activation of gene expression
+  JOURNAL   Nat. Biotechnol. 19 (5), 440-445 (2001)
+   PUBMED   11329013
+COMMENT     Contact: Scott J. Cain
+            Athersys, Inc.
+            3201 Carnegie Ave, Cleveland, OH 44115, USA
+            Tel: 216 431 9900
+            Fax: 216 361 9596
+            Email: scain@athersys.com
+            High quality sequence stop: 403.
+FEATURES             Location/Qualifiers
+     source          1..790
+                     /organism="Homo sapiens"
+                     /mol_type="mRNA"
+                     /db_xref="taxon:9606"
+                     /cell_line="HT1080"
+                     /clone_lib="LIBEST_008655 Athersys RAGE Library"
+                     /note="See 'Creation of Genome-wide Protein Expression
+                     Libraries using Random Activation of Gene Expression',
+                     Nature Biotechnology, in press. Note that even though the
+                     cell type indicated is HT1080, since a random activation
+                     method was used, these sequence tags are not necessarily
+                     expressed in HT1080 under normal circumstances."
+ORIGIN      
+        1 tgcccagatc catcttgtaa acaggacttg ttggcctacc tggaacagat taagttctac
+       61 tcccaccaac tgaaaatctg cagtcaagtt aaagctgaga tccagaacct gggaggagag
+      121 ctcatcatgt cagctttgga cagtgtcaca tccctgatcc aagcagccaa aaatttaatg
+      181 aatgctgtag tgcaaacagt gaaaatgtct tacattgcct caaccaagat catccgaatc
+      241 cagagtcctg ctgggccccg gcacccagtt gtgatgtgga gaatgaaggc tcctgcaaaa
+      301 aaacccttga ttaaaagaga gaagccagag gaaacgtgtg cagctgtcag acgaggctca
+      361 gcaaagaaaa aaatccatcc attgcaagtc atgagtgaat ttagaggaag acaaatctac
+      421 tgaaaccact attctacata tagtgcctat atgacaaaat cctgcctaac cacactgctt
+      481 tattttacac ttaagaagtt ctgtaatttc actgagtttt ggtgtttaac tcacaaataa
+      541 cataaaatat tgggcgctaa atcaacaaaa gcaatatata tttgggatca tatcactgtc
+      601 atttctgtat ggtcagcacc ctatagttaa ggaatatttg cttgttgaat gaatgaaatt
+      661 atcacgtgtt attcaccgtt tcccataata gagattatct actattcgtt accaaataaa
+      721 cacaggagat ggcagagagt ccggtttatc tggaatcttc atgtacctta taatccttac
+      781 ttgaattaan
 //
 
 LOCUS       AK289756                3137 bp    mRNA    linear   PRI 09-JAN-2008
@@ -493,62 +552,5 @@ ORIGIN
      3001 tgaatgaaat tatcacgtgt cattcagcgt ttcccatcat agagattatc tactattcgt
      3061 taccaaataa acacaggaga ggccagagag tcctgtttat ctgtaatact tcatgtacac
      3121 ttatcatcct tatcttg
-//
-
-LOCUS       BG187649                 790 bp    mRNA    linear   EST 29-JAN-2011
-DEFINITION  RST6530 Athersys RAGE Library Homo sapiens cDNA, mRNA sequence.
-ACCESSION   BG187649
-VERSION     BG187649.1  GI:13709224
-KEYWORDS    EST.
-SOURCE      Homo sapiens (human)
-  ORGANISM  Homo sapiens
-            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
-            Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini;
-            Catarrhini; Hominidae; Homo.
-REFERENCE   1  (bases 1 to 790)
-  AUTHORS   Harrington,J.J., Sherf,B., Rundlett,S., Jackson,P.D., Perry,R.,
-            Cain,S., Leventhal,C., Thornton,M., Ramachandran,R.,
-            Whittington,J., Lerner,L., Costanzo,D., McElligott,K., Boozer,S.,
-            Mays,R., Smith,E., Veloso,N., Klika,A., Hess,J., Cothren,K., Lo,K.,
-            Offenbacher,J., Danzig,J. and Ducar,M.
-  TITLE     Creation of genome-wide protein expression libraries using random
-            activation of gene expression
-  JOURNAL   Nat. Biotechnol. 19 (5), 440-445 (2001)
-   PUBMED   11329013
-COMMENT     Contact: Scott J. Cain
-            Athersys, Inc.
-            3201 Carnegie Ave, Cleveland, OH 44115, USA
-            Tel: 216 431 9900
-            Fax: 216 361 9596
-            Email: scain@athersys.com
-            High quality sequence stop: 403.
-FEATURES             Location/Qualifiers
-     source          1..790
-                     /organism="Homo sapiens"
-                     /mol_type="mRNA"
-                     /db_xref="taxon:9606"
-                     /cell_line="HT1080"
-                     /clone_lib="LIBEST_008655 Athersys RAGE Library"
-                     /note="See 'Creation of Genome-wide Protein Expression
-                     Libraries using Random Activation of Gene Expression',
-                     Nature Biotechnology, in press. Note that even though the
-                     cell type indicated is HT1080, since a random activation
-                     method was used, these sequence tags are not necessarily
-                     expressed in HT1080 under normal circumstances."
-ORIGIN      
-        1 tgcccagatc catcttgtaa acaggacttg ttggcctacc tggaacagat taagttctac
-       61 tcccaccaac tgaaaatctg cagtcaagtt aaagctgaga tccagaacct gggaggagag
-      121 ctcatcatgt cagctttgga cagtgtcaca tccctgatcc aagcagccaa aaatttaatg
-      181 aatgctgtag tgcaaacagt gaaaatgtct tacattgcct caaccaagat catccgaatc
-      241 cagagtcctg ctgggccccg gcacccagtt gtgatgtgga gaatgaaggc tcctgcaaaa
-      301 aaacccttga ttaaaagaga gaagccagag gaaacgtgtg cagctgtcag acgaggctca
-      361 gcaaagaaaa aaatccatcc attgcaagtc atgagtgaat ttagaggaag acaaatctac
-      421 tgaaaccact attctacata tagtgcctat atgacaaaat cctgcctaac cacactgctt
-      481 tattttacac ttaagaagtt ctgtaatttc actgagtttt ggtgtttaac tcacaaataa
-      541 cataaaatat tgggcgctaa atcaacaaaa gcaatatata tttgggatca tatcactgtc
-      601 atttctgtat ggtcagcacc ctatagttaa ggaatatttg cttgttgaat gaatgaaatt
-      661 atcacgtgtt attcaccgtt tcccataata gagattatct actattcgtt accaaataaa
-      721 cacaggagat ggcagagagt ccggtttatc tggaatcttc atgtacctta taatccttac
-      781 ttgaattaan
 //
 
