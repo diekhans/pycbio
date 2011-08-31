@@ -419,8 +419,8 @@ class PslDbReader(object):
     """Read PSLs from db query.  Factory methods are provide
     to generate instances for range queries."""
 
-    pslColumns = ("match", "misMatch", "repMatch", "nCount", "qNumInsert", "qBaseInsert", "tNumInsert", "tBaseInsert", "strand", "qName", "qSize", "qStart", "qEnd", "tName", "tSize", "tStart", "tEnd", "blockCount", "blockSizes", "qStarts", "tStarts", "qSequence", "tSequence")
-
+    pslColumns = ("matches", "misMatches", "repMatches", "nCount", "qNumInsert", "qBaseInsert", "tNumInsert", "tBaseInsert", "strand", "qName", "qSize", "qStart", "qEnd", "tName", "tSize", "tStart", "tEnd", "blockCount", "blockSizes", "qStarts", "tStarts")
+    pslSeqColumns = ("qSequence", "tSequence")
     def __init__(self, conn, query):
         self.cur = conn.cursor()
         try:
@@ -456,13 +456,13 @@ class PslDbReader(object):
             return Psl(row, dbColIdxMap=self.colIdxMap)
 
     @staticmethod
-    def targetRangeQuery(self, conn, table, tName, tStart, tEnd, useBin=True, haveSeqs=False):
-        """ factor to generate PslDbReader for querying a target range"""
-        query = "select " + ",".join(self.pslColumns) + " from `" + table + "` where ((tName = \"" \
-            + tName + "\") and (tStart < " + tEnd + ") and (tEnd > " + tStart + ")"
-        if useBin:
-            query += " and (" +  " or ".join(["(bin = " + str(bin) + ")" for bin in Binner.generateBins(tStart, tEnd)]) + ")"
-        query += ")"
+    def targetRangeQuery(conn, table, tName, tStart, tEnd, haveSeqs=False):
+        """ factor to generate PslDbReader for querying a target range.  Must have a bin column"""
+        query = "select " + ",".join(PslDbReader.pslColumns)
+        if haveSeqs:
+            query += "," + ",".join(PslDbReader.pslSeqColumns)
+        query += " from " + table + " where " \
+            + Binner.getOverlappingSqlExpr("tName", "bin", "tStart", "tEnd", tName, tStart, tEnd)
         return PslDbReader(conn, query)
                 
 

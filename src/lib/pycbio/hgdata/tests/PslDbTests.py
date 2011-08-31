@@ -40,10 +40,17 @@ class DbReadTests(TestCaseBase):
 
     def testDbRangeLoad(self):
         conn = self.__connect()
+        qNames = set()
         try:
-            psls = list(PslDbReader.targetRangeQuery(conn, testTbl, "chr22", 123, 456, useBin=True))
+            for psl in PslDbReader.targetRangeQuery(conn, testTbl, "chr22", 16650000, 20470000):
+                self.failUnlessEqual(psl.tName, "chr22")
+                qNames.add(psl.qName)
         finally:
             conn.close()
+        # Test a few identifiers are included.  Must change if removed from RefSeq
+        for qName in ('NM_001178010', 'NM_001178011', 'NM_003325', 'NM_001009939'):
+            if qName not in qNames:
+                self.fail("qName not in refSeqAli select, maybe have to update test if RefSeq changed: " + qName)
 
 def suite():
     suite = unittest.TestSuite()

@@ -51,7 +51,7 @@ class Binner(object):
             return Binner.__calcBinForOffsets(start, end, Binner.binOffsetToExtended, Binner.binOffsetsExtended)
 
     @staticmethod
-    def __generateBinsForOffsets(start, end, baseOffset, offsets):
+    def __getOverlappingBinsForOffsets(start, end, baseOffset, offsets):
         "generate bins for a range given a list of offsets"
         startBin = start >> Binner.binFirstShift
         endBin = (end-1) >> Binner.binFirstShift
@@ -61,20 +61,31 @@ class Binner(object):
             endBin >>= Binner.binNextShift;
 
     @staticmethod
-    def generateBins(start, end):
+    def getOverlappingBins(start, end):
         """Generate of bins for the range.  Each value is closed range of (startBin, endBin)"""
         if end <= Binner.binBasicMaxEnd:
             # contained in basic range
-            for bins in Binner.__generateBinsForOffsets(start, end, 0, Binner.binOffsetsBasic):
+            for bins in Binner.__getOverlappingBinsForOffsets(start, end, 0, Binner.binOffsetsBasic):
                 yield bins
             yield (Binner.binOffsetToExtended, Binner.binOffsetToExtended)
         else:
             if start < Binner.binBasicMaxEnd:
                 # overlapping both basic and extended
-                for bins in Binner.__generateBinsForOffsets(start, Binner.binBasicMaxEnd, 0, Binner.binOffsetsBasic):
+                for bins in Binner.__getOverlappingBinsForOffsets(start, Binner.binBasicMaxEnd, 0, Binner.binOffsetsBasic):
                     yield bins
-            for bins in Binner.__generateBinsForOffsets(start, end, Binner.binOffsetToExtended, Binner.binOffsetsExtended):
+            for bins in Binner.__getOverlappingBinsForOffsets(start, end, Binner.binOffsetToExtended, Binner.binOffsetsExtended):
                 yield bins
+
+    @staticmethod
+    def getOverlappingSqlExpr(seqCol, binCol, startCol, endCol, seq, start, end):
+        "generate an SQL expression for overlaps with the specified range"
+        # build bin parts
+        parts = []
+        for bins in Binner.getOverlappingBins(start, end):
+            parts.append("(" + binCol + ">=" + str(bins[0]) + " and " + binCol + "<=" + str(bins[1]) + ")")
+            
+        return "((" + seqCol + "=\"" + seq + "\") and (" + startCol + "<" + str(end) + ") and (" + endCol + ">" + str(start) + ")" \
+            " and (" + " or ".join(parts) + "))"
 
 class Entry(object):
     "entry associating a range with a value"
@@ -109,7 +120,7 @@ class RangeBins(object):
     def overlapping(self, start, end):
         "generator over values overlapping the specified range"
         if (start < end):
-            for bins in Binner.generateBins(start, end):
+            for bins in Binner.getOverlappingBins(start, end):
                 for j in xrange(bins[0], bins[1]+1):
                     bin = self.bins.get(j)
                     if (bin != None):
