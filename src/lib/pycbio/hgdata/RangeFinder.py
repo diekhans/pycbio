@@ -82,7 +82,10 @@ class Binner(object):
         # build bin parts
         parts = []
         for bins in Binner.getOverlappingBins(start, end):
-            parts.append("(" + binCol + ">=" + str(bins[0]) + " and " + binCol + "<=" + str(bins[1]) + ")")
+            if bins[0] == bins[1]:
+                parts.append("(" + binCol + "=" + str(bins[0]) + ")")
+            else:
+                parts.append("(" + binCol + ">=" + str(bins[0]) + " and " + binCol + "<=" + str(bins[1]) + ")")
             
         return "((" + seqCol + "=\"" + seq + "\") and (" + startCol + "<" + str(end) + ") and (" + endCol + ">" + str(start) + ")" \
             " and (" + " or ".join(parts) + "))"
