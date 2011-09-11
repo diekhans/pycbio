@@ -5,7 +5,7 @@ import sys, os
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.append(myBinDir + "/../lib")
 from optparse import OptionParser
-import hotshot.stats
+import pstats
 
 validSortKeys = ('calls', 'cumulative', 'file', 'module', 'pcalls', 'line',
                  'name', 'nfl', 'stdname', 'time')
@@ -16,22 +16,27 @@ class CmdOpts(object):
     format python profile logs from hotshot.
     """
     def __init__(self):
-        parser = OptionParser(usage=usage)
-        parser.add_option("--sort", action="store", dest="sort", default="cumulative",
-                          help="sort result by specified key, one of: "
+        parser = OptionParser(usage=CmdOpts.usage)
+        parser.add_option("--sort", action="append", dest="sortKeys", default=["cumulative"],
+                          help="sort result by specified key, which maybe repeated, one of: "
                           + ", ".join(validSortKeys))
         (opts, args) = parser.parse_args()
         if not (1 <= len(args) <= 2):
             parser.error("wrong number of arguments")
-        if not opts.sort in validSortKeys:
-            raise Exception("invalid sort key: " + opts.sort
-                            + ", expected one of: " + ", ".join(validSortKeys))
-        if len(args) < 2:
-            args.append(None)
-        (self.profLog, self.progOut) = args
+        for sortKey in opts.sortKeys:
+            if not sortKey in validSortKeys:
+                raise Exception("invalid sort key: " + sortKey
+                                + ", expected one of: " + ", ".join(validSortKeys))
+        self.profLog = args[0]
+        self.profOut = args[1] if len(args) >= 2 else None
         self.__dict__.update(opts.__dict__)
 
 
 opts = CmdOpts()
-profStats(opts.profLog, opts.profOut, opts.sort)
+outFh = sys.stdout if opts.profOut == None else open(opts.profOut, "w")
+profStats = pstats.Stats(opts.profLog, stream=outFh)
+profStats.sort_stats(*opts.sortKeys)
+profStats.print_stats()
 
+if outFh != sys.stdout:
+    outFh.close()
