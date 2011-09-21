@@ -17,14 +17,18 @@ from pycbio.sys.typeOps import isListLike
 # http://www.python.org/doc/essays/metaclasses/Enum.py
 #   http://svn.python.org/projects/python/trunk/Demo/newmetaclasses/Enum.py
 # http://www.python.org/cgi-bin/moinmoin/EnumerationProgramming
+# http://techspot.zzzeek.org/2011/01/14/the-enum-recipe/
 
-class EnumValue(Immutable):
+# FIXME FIXME FIXME: immutable stuff and solts disabled due to problems with
+# serialization.
+
+class EnumValue(object):
     """A value of an enumeration.  The object id (address) is the
     unique value, with an associated display string and numeric value
     """
     __slots__ = ("enum", "name", "numValue", "strValue")
     def __init__(self, enum, name, numValue, strValue=None):
-        Immutable.__init__(self)
+        #Immutable.__init__(self)
         self.enum = enum
         self.name = name
         self.numValue = numValue
@@ -32,18 +36,18 @@ class EnumValue(Immutable):
             self.strValue = name
         else:
             self.strValue = strValue
-        self.mkImmutable()
+        #self.mkImmutable()
 
-    def __getstate__(self):
+    def X__getstate__(self):
         # optimize strValue if same as name
         return (self.enum, self.name, self.numValue, (None if self.strValue == self.name else self.strValue))
 
-    def __setstate__(self, st):
+    def X__setstate__(self, st):
         Immutable.__init__(self)
         (self.enum,  self.name, self.numValue, self.strValue) = st
         if self.strValue == None:
             self.strValue = self.name
-        self.mkImmutable()
+        #self.mkImmutable()
 
     def __rept__(self):
         return self.name
@@ -54,7 +58,7 @@ class EnumValue(Immutable):
     def __int__(self):
         return self.numValue
 
-    def __hash__(self):
+    def XXX__hash__(self):
         # FIXME: attempt to work around enum pickle problem in GenomeDefs.
         return hash(self.enum.name) + self.numValue
 
@@ -73,7 +77,7 @@ class EnumValue(Immutable):
         else:
             return cmp(self.numValue, otherVal.numValue)
 
-class Enumeration(Immutable):
+class Enumeration(object):
     """A class for creating enumeration objects.
     """
 
@@ -84,7 +88,7 @@ class Enumeration(Immutable):
         value is a list or tuple of string aliases that can be used to
         lookup the value under a different name.
         """
-        Immutable.__init__(self)
+        #Immutable.__init__(self)
         self.name = name
         self.aliases = {}
         self.values = []
@@ -100,7 +104,7 @@ class Enumeration(Immutable):
             else:
                 numValue += 1
         self.values = tuple(self.values)
-        self.mkImmutable()
+        #self.mkImmutable()
 
     def __len__(self):
         "return number of values"
@@ -127,15 +131,15 @@ class Enumeration(Immutable):
         else:
             self._createValue(valueClass, valueDef, numValue, valueDef)
         
-    def __getstate__(self):
+    def X__getstate__(self):
         return (self.name, self.aliases, self.values, self.maxNumValue)
 
-    def __setstate__(self, st):
+    def X__setstate__(self, st):
         Immutable.__init__(self)
         (self.name, self.aliases, self.values, self.maxNumValue) = st
         for val in self.values:
             self.__dict__[val.name] = val
-        self.mkImmutable()
+        #self.mkImmutable()
 
     def lookup(self, name):
         """look up a value by name or aliases"""
