@@ -122,8 +122,8 @@ class Psl(object):
         self.blockCount = int(row[17])
         haveSeqs = len(row) > 21
         self.__parseBlocks(row[18], row[19], row[20],
-                           (strArraySplit(row[21]) if haveSeqs else None),
-                           (strArraySplit(row[22]) if haveSeqs else None))
+                           (row[21] if haveSeqs else None),
+                           (row[22] if haveSeqs else None))
 
     def __loadDb(self, row, dbColIdxMap):
         self.match = row[dbColIdxMap["matches"]]
@@ -146,8 +146,8 @@ class Psl(object):
         self.blockCount = row[dbColIdxMap["blockCount"]]
         haveSeqs = "qSeqs" in dbColIdxMap
         self.__parseBlocks(row[dbColIdxMap["blockSizes"]], row[dbColIdxMap["qStarts"]], row[dbColIdxMap["tStarts"]],
-                           (strArraySplit(row[dbColIdxMap["qSeqs"]]) if haveSeqs else None),
-                           (strArraySplit(row[dbColIdxMap["tSeqs"]]) if haveSeqs else None))
+                           (row[dbColIdxMap["qSeqs"]] if haveSeqs else None),
+                           (row[dbColIdxMap["tSeqs"]] if haveSeqs else None))
 
     def __empty(self):
         self.match = 0
@@ -394,6 +394,7 @@ class PslReader(object):
     """Read PSLs from a tab file"""
 
     def __init__(self, fileName):
+        self.fh = None  # required for __del__ if open fails
         self.fh = fileOps.opengz(fileName)
 
     def __del__(self):
