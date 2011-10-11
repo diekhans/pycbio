@@ -36,8 +36,8 @@ class ReadTests(TestCaseBase):
         self.failUnlessEqual(len(pslTbl), 4)
         for psl in pslTbl:
             for blk in psl.blocks:
-                self.failIfEqual(blk.qSeq, None)
-                self.failIfEqual(blk.tSeq, None)
+                self.failUnlessEqual(len(blk.qSeq), len(blk))
+                self.failUnlessEqual(len(blk.tSeq), len(blk))
 
 class OpsTests(TestCaseBase):
     "test operations of PSL objects"

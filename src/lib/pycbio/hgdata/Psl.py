@@ -95,7 +95,7 @@ class Psl(object):
         haveSeqs = (qSeqsStr != None)
         if haveSeqs:
             qSeqs = strArraySplit(qSeqsStr)
-            tSeqs = strArraySplit(tStartsStr)
+            tSeqs = strArraySplit(tSeqsStr)
         for i in xrange(self.blockCount):
             self.blocks.append(PslBlock(self, qStarts[i], tStarts[i], blockSizes[i],
                                         (qSeqs[i] if haveSeqs else None),
