@@ -4,6 +4,8 @@
 from pycbio.stats.Subsets import Subsets
 from pycbio.sys import fileOps, setOps
 
+# FIXME: setName vs items can get confusing, more doc.
+
 class SetDict(dict):
     "Dictionary of sets"
 
