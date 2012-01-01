@@ -21,6 +21,8 @@ from pycbio.sys.typeOps import isListLike
 
 # FIXME FIXME FIXME: immutable stuff and solts disabled due to problems with
 # serialization.
+# FIXME: should be able to specify a EnumValue; although need a way to add
+# aliases in this case.
 
 class EnumValue(object):
     """A value of an enumeration.  The object id (address) is the
@@ -83,10 +85,11 @@ class Enumeration(object):
 
     def __init__(self, name, valueDefs, valueClass=EnumValue, bitSetValues=False):
         """Name is the name of the enumeration. ValueDefs is an ordered list of
-        string values.  If valueDefs contains a tuple, the first element is the
+        values.  If valueDefs contains a tuple, the first element is the
         value name, the second value is the __str__ value.  The third
-        value is a list or tuple of string aliases that can be used to
-        lookup the value under a different name.
+        element is a list or tuple of string aliases that can be used to
+        lookup the value under a different name, and the forth value
+        is the numeric value.  Tuple elements maybe None or omitted.
         """
         #Immutable.__init__(self)
         self.name = name
@@ -122,6 +125,9 @@ class Enumeration(object):
     
     def _defValue(self, valueClass, valueDef, numValue):
         if isListLike(valueDef):
+            if (len(valueDef) > 3) and (valueDef[3] != None):
+                numValue = valueDef[3]
+                assert(isinstance(numValue, int))
             val = self._createValue(valueClass, valueDef[0], numValue, valueDef[1])
             if (len(valueDef) > 2) and (valueDef[2] != None):
                 if not isListLike(valueDef[2]):
