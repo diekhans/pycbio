@@ -76,6 +76,15 @@ class EnumerationTests(TestCaseBase):
         self.failUnless(Colors.green in colSet)
         self.failIf(Colors.red in colSet)
 
+    def testNumberDef(self):
+        NumDef = Enumeration("NumDef",
+                             (("neg", None, None, -2),
+                              ("zero", None, None, 0),
+                              ("pos", None, None, 2),
+                              ("big", None, None, 3)))
+        values = [(str(v), int(v)) for v in NumDef.values]
+        self.failUnlessEqual(values, [('neg', -2), ('zero', 0), ('pos', 2), ('big', 3)])
+
     def FIXME_testErrors(self):
         Colors = self.__getColors()
         # check if immutable
