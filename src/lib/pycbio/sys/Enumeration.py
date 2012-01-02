@@ -93,7 +93,8 @@ class Enumeration(object):
         """
         #Immutable.__init__(self)
         self.name = name
-        self.aliases = {}
+        self.aliases = {}  # FIXME: not only aliases
+        self.numValueMap = {}
         self.values = []
         self.maxNumValue = 0
         if bitSetValues:
@@ -101,7 +102,7 @@ class Enumeration(object):
         else:
             numValue = 0
         for valueDef in valueDefs:
-            self._defValue(valueClass, valueDef, numValue)
+            self.__defValue(valueClass, valueDef, numValue)
             if bitSetValues:
                 numValue = numValue << 1
             else:
@@ -113,29 +114,33 @@ class Enumeration(object):
         "return number of values"
         return len(self.values)
 
-    def _createValue(self, valueClass, name, numValue, strValue):
+    def __createValue(self, valueClass, name, numValue, strValue):
         val = valueClass(self, name, numValue, strValue)
         self.__dict__[name] = val
         self.aliases[name] = val
         if strValue != None:
             self.aliases[strValue] = val
+        self.numValueMap[numValue] = val
         self.maxNumValue = max(self.maxNumValue, numValue)
         self.values.append(val)
         return val
-    
-    def _defValue(self, valueClass, valueDef, numValue):
+
+    def __defValue(self, valueClass, valueDef, numValue):
         if isListLike(valueDef):
-            if (len(valueDef) > 3) and (valueDef[3] != None):
-                numValue = valueDef[3]
-                assert(isinstance(numValue, int))
-            val = self._createValue(valueClass, valueDef[0], numValue, valueDef[1])
-            if (len(valueDef) > 2) and (valueDef[2] != None):
-                if not isListLike(valueDef[2]):
-                    raise TypeError("valueDef[2] must be None, a list or tuple, found: " + str(valueDef[2]))
-                for a in valueDef[2]:
-                    self.aliases[a] = val
+            return self.__defListValue(valueClass, valueDef, numValue)
         else:
-            self._createValue(valueClass, valueDef, numValue, valueDef)
+            return self.__createValue(valueClass, valueDef, numValue, valueDef)
+
+    def __defListValue(self, valueClass, valueDef, numValue):
+        if (len(valueDef) > 3) and (valueDef[3] != None):
+            numValue = valueDef[3]
+            assert(isinstance(numValue, int))
+        val = self.__createValue(valueClass, valueDef[0], numValue, valueDef[1])
+        if (len(valueDef) > 2) and (valueDef[2] != None):
+            if not isListLike(valueDef[2]):
+                raise TypeError("valueDef[2] must be None, a list or tuple, found: " + str(valueDef[2]))
+            for a in valueDef[2]:
+                self.aliases[a] = val
         
     def X__getstate__(self):
         return (self.name, self.aliases, self.values, self.maxNumValue)
@@ -163,6 +168,7 @@ class Enumeration(object):
                 vals.append(v)
         return vals
 
+    # FIXME: this doesn't belong (not an operation of self)
     def getValuesOr(self, vals):
         "get bit-wise or of the numeric values of a sequence of values"
         numVal = 0
@@ -176,6 +182,10 @@ class Enumeration(object):
             if val == v:
                 return True
         return False
+
+    def getByNumValue(self, numValue):
+        "look up a value by numeric value"
+        return self.numValueMap[numValue]
 
     # FIXME: emulates meta class new
     def __call__(self, name):
