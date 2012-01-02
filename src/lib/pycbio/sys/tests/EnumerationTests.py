@@ -84,6 +84,7 @@ class EnumerationTests(TestCaseBase):
                               ("big", None, None, 3)))
         values = [(str(v), int(v)) for v in NumDef.values]
         self.failUnlessEqual(values, [('neg', -2), ('zero', 0), ('pos', 2), ('big', 3)])
+        self.failUnlessEqual(NumDef.getByNumValue(2), NumDef.pos)
 
     def FIXME_testErrors(self):
         Colors = self.__getColors()
