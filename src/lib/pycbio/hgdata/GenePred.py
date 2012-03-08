@@ -1,5 +1,5 @@
 # Copyright 2006-2011 Mark Diekhans
-import string
+import copy
 from pycbio.sys import fileOps, dbOps
 from pycbio.hgdata.AutoSql import intArraySplit, intArrayJoin
 from pycbio.sys.Enumeration import Enumeration
@@ -59,10 +59,10 @@ class ExonFeatures(object):
     "object the holds the features of a single exon"
     __slots__ = ("utr5", "cds", "utr3")
         
-    def __init__(self):
-        self.utr5 = None
-        self.cds = None
-        self.utr3 = None
+    def __init__(self, utr5=None, cds=None, utr3=None):
+        self.utr5 = utr5
+        self.cds = cds
+        self.utr3 = utr3
 
     def __str__(self):
         return "utr5=" + str(self.utr5) + " cds=" + str(self.cds) + " utr3=" + str(self.utr3)
@@ -113,7 +113,7 @@ class Exon(object):
         start = self.start
         if (start < self.gene.cdsStart):
             end = min(self.end, self.gene.cdsStart)
-            if (self.gene.strand == "+"):
+            if self.gene.inDirectionOfTranscription():
                 feats.utr5 = Range(start, end)
             else:
                 feats.utr3 = Range(start, end)
@@ -127,7 +127,7 @@ class Exon(object):
 
         # UTR after CDS in exon
         if (start < self.end) and (start >= self.gene.cdsEnd):
-            if (self.gene.strand == "+"):
+            if self.gene.inDirectionOfTranscription():
                 feats.utr3 = Range(start, self.end)
             else:
                 feats.utr5 = Range(start, self.end)
@@ -148,7 +148,7 @@ class Exon(object):
 
     def getRelCoords(self, chromSize):
         "get a range object of strand-relative coordinates"
-        if self.gene.strand == '+':
+        if self.gene.inDirectionOfTranscription():
             return Range(self.start, self.end)
         else:
             return Range(chromSize - self.end, chromSize - self.start)
@@ -167,10 +167,11 @@ class GenePred(object):
                 frame = exonFrames[i]
             self.addExon(exonStarts[i], exonEnds[i], frame)
 
-    def __parse(self, row):
+    def __initParse(self, row):
         self.name = row[0]
         self.chrom = row[1]
         self.strand = row[2]
+        self.strandRel = False    # are these strand-relative coordinates
         self.txStart = int(row[3])
         self.txEnd = int(row[4])
         self.cdsStart = int(row[5])
@@ -199,7 +200,6 @@ class GenePred(object):
             exonFrames = intArraySplit(row[iCol])
             iCol = iCol+1
             self.hasExonFrames = True
-
         self.__buildExons(exonStarts, exonEnds, exonFrames)
 
     @staticmethod
@@ -207,10 +207,11 @@ class GenePred(object):
         idx = dbColIdxMap.get(colName)
         return None if (idx == None) else typeCnv(row[idx])
 
-    def __loadDb(self, row, dbColIdxMap):
+    def __initDb(self, row, dbColIdxMap):
         self.name = row[dbColIdxMap["name"]]
         self.chrom = row[dbColIdxMap["chrom"]]
         self.strand = row[dbColIdxMap["strand"]]
+        self.strandRel = False    # are these strand-relative coordinates
         self.txStart = int(row[dbColIdxMap["txStart"]])
         self.txEnd = int(row[dbColIdxMap["txEnd"]])
         self.cdsStart = int(row[dbColIdxMap["cdsStart"]])
@@ -225,10 +226,11 @@ class GenePred(object):
         self.hasExonFrames = (exonFrames != None)
         self.__buildExons(exonStarts, exonEnds, exonFrames)
 
-    def __empty(self):
+    def __initEmpty(self):
         self.name = None
         self.chrom = None
         self.strand = None
+        self.strandRel = False    # are these strand-relative coordinates
         self.txStart = None
         self.txEnd = None
         self.cdsStart = None
@@ -242,14 +244,68 @@ class GenePred(object):
         self.cdsStartIExon = None
         self.cdsEndIExon = None
 
-    def __init__(self, row=None, dbColIdxMap=None):
+    def __initClone(self, gp):
+        self.name = gp.name
+        self.chrom = gp.chrom
+        self.strand = gp.strand
+        self.strandRel = gp.strandRel
+        self.txStart = gp.txStart
+        self.txEnd = gp.txEnd
+        self.cdsStart = gp.cdsStart
+        self.cdsEnd = gp.cdsEnd
+        self.score = gp.score
+        self.name2 = gp.name2
+        self.cdsStartStat = gp.cdsStartStat
+        self.cdsEndStat = gp.cdsEndStat
+        self.hasExonFrames = gp.hasExonFrames
+        self.exons = copy.deepcopy(gp.exons)
+        self.cdsStartIExon = gp.cdsStartIExon
+        self.cdsEndIExon = gp.cdsEndIExon
+        
+    def __initSwapToOtherStrand(self, gp, chromSize):
+        "swap coordinates to other strand"
+        self.name = gp.name
+        self.chrom = gp.chrom
+        self.strand = gp.strand
+        self.strandRel = True
+        self.txStart = chromSize - gp.txEnd
+        self.txEnd = chromSize - gp.txStart
+        self.cdsStart = chromSize - gp.cdsEnd
+        self.cdsEnd = chromSize - gp.cdsStart
+        self.score = gp.score
+        self.name2 = gp.name2
+        self.cdsStartStat = gp.cdsEndStat
+        self.cdsEndStat = gp.cdsStartStat
+        self.hasExonFrames = gp.hasExonFrames
+        self.exons = []
+        self.cdsStartIExon = None
+        self.cdsEndIExon = None
+        for exon in reversed(gp.exons):
+            self.addExon(chromSize - exon.end, chromSize - exon.start, exon.frame)
+
+    def __init__(self, row=None, dbColIdxMap=None, noInitialize=False):
         "If row is not None, parse a row, otherwise initialize to empty state"
         if dbColIdxMap != None:
-            self.__loadDb(row, dbColIdxMap)
+            self.__initDb(row, dbColIdxMap)
         elif row != None:
-            self.__parse(row)
+            self.__initParse(row)
+        elif not noInitialize:
+            self.__initEmpty()
+
+    def getStrandRelative(self, chromSize):
+        """create a copy of this GenePred object that has strand relative
+        coordinates."""
+        gp = GenePred(noInitialize=True)
+        if self.inDirectionOfTranscription():
+            gp.__initClone(self)
+            gp.strandRel = True
         else:
-            self.__empty()
+            gp.__initSwapToOtherStrand(self, chromSize)
+        return gp
+
+    def inDirectionOfTranscription(self):
+        "are exons in the direction of transcriptions"
+        return (self.strand == "+") or self.strandRel
 
     def addExon(self, exonStart, exonEnd, frame=None):
         "add an exon; which must be done in assending order"
@@ -262,7 +318,7 @@ class GenePred(object):
 
     def assignFrames(self):
         "set frames on exons, assuming no frame shift"
-        if self.strand == "+":
+        if self.inDirectionOfTranscription():
             iStart = 0
             iEnd = len(self.exons)
             iDir = 1
@@ -357,15 +413,15 @@ class GenePred(object):
         """get (start, stop, step) to step through exons in direction of
         transcription"""
         # FIXME this is stupid, just store in both directions
-        if self.strand == '-':
-            return (len(self.exons)-1, -1, -1)
-        else:
+        if self.inDirectionOfTranscription():
             return (0, len(self.exons), 1)
+        else:
+            return (len(self.exons)-1, -1, -1)
 
     def getStepper(self):
         """generator to step through exon indexes in direction of
         transcription"""
-        if self.strand:
+        if self.inDirectionOfTranscription():
             return xrange(0, len(self.exons), 1)
         else:
             return xrange(len(self.exons)-1, -1, -1)
@@ -454,7 +510,7 @@ class GenePred(object):
             return float(overCnt)/float(self.getLenCds())
 
     def __str__(self):
-        return string.join(self.getRow(), "\t")
+        return "\t".join(self.getRow())
 
     def write(self, fh):
         fh.write(str(self))

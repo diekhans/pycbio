@@ -31,6 +31,12 @@ featsNM_000066 = ((None, (56764994, 56765149), (56764802, 56764994)),
                   (None, (56795610, 56795767), None),
                   ((56801540, 56801567), (56801447, 56801540), None))
 
+chromSizes = {"chr1": 247249719,
+              "chr7": 158821424,
+              "chr11": 134452384,
+              "chr12": 132349534}
+
+
 def featRangeEq(featRange, expectRange):
     "compare a feature range and an expected range tuple, either maybe None"
     if ((featRange == None) or (expectRange == None)):
@@ -43,12 +49,27 @@ def featureEq(feat, expected):
     "compare exon feature object with expected tuple"
     return featRangeEq(feat.utr5, expected[0]) and featRangeEq(feat.cds, expected[1]) and featRangeEq(feat.utr3, expected[2])
 
+def featureExpectedSwap1(feat, chromSize):
+    "swap either (start, end) or pass back none"
+    if feat == None:
+        return None
+    else:
+        return (chromSize - feat[1], chromSize - feat[0])
+
+def featureExpectedSwap(expected, chromSize):
+    reved = []
+    for feat in reversed(expected):
+        reved.append((featureExpectedSwap1(feat[0], chromSize),
+                      featureExpectedSwap1(feat[1], chromSize),
+                      featureExpectedSwap1(feat[2], chromSize)))
+    return tuple(reved)
+
 class ReadTests(TestCaseBase):
     def chkFeatures(self, gene, expect):
         feats = gene.getFeatures()
         self.failUnlessEqual(len(feats), len(expect))
         for i in xrange(len(feats)):
-            featureEq(feats[i], expect[i])
+            self.failUnless(featureEq(feats[i], expect[i]))
         
     def testLoadMin(self):
         gpTbl = GenePredTbl(self.getInputFile("fromPslMinTest.gp"))
@@ -75,6 +96,27 @@ class ReadTests(TestCaseBase):
         self.failUnlessEqual(r.name, "NM_000017.1")
         self.failUnlessEqual(r.exons[9].start, 119589051)
         self.failUnless(r.hasExonFrames)
+
+    def testStrandRelative(self):
+        gpTbl = GenePredTbl(self.getInputFile("fromPslMinTest.gp"))
+        self.failUnlessEqual(len(gpTbl), 9)
+        r = gpTbl[0]
+        r = r.getStrandRelative(chromSizes[r.chrom])
+        self.failUnless(r.strandRel)
+        self.failUnlessEqual(len(r.exons), 10)
+        self.failUnlessEqual(r.name, "NM_000017.1")
+        self.failUnless(not r.hasExonFrames)
+
+        # positive strand features
+        self.chkFeatures(r, featsNM_000017)
+
+        # negative strand features
+        r = gpTbl[1]
+        r = r.getStrandRelative(chromSizes[r.chrom])
+        self.failUnless(r.strandRel)
+        self.failUnlessEqual(r.name, "NM_000066.1")
+
+        self.chkFeatures(r,  featureExpectedSwap(featsNM_000066, chromSizes[r.chrom]))
 
 def suite():
     suite = unittest.TestSuite()
