@@ -75,8 +75,9 @@ def nonBlockClear(fd):
     flags = fcntl.fcntl(fd, fcntl.F_GETFL)
     fcntl.fcntl(fd, fcntl.F_SETFL, flags&~os.O_NONBLOCK)
 
-class _ExecStatPipe(object):
-    """use by parent to wait on exec and get exec error from child"""
+class _StatusPipe(object):
+    """Used to communicate from child to parent.  Child is close-on-exec,
+    so this can be used to get the status of an exec."""
     __slots__ = ("rfd", "wfd")
 
     def __init__(self):
@@ -84,7 +85,7 @@ class _ExecStatPipe(object):
         flags = fcntl.fcntl(self.wfd, fcntl.F_GETFD)
         fcntl.fcntl(self.wfd, fcntl.F_SETFD, flags|fcntl.FD_CLOEXEC)
 
-    def postExecParent(self):
+    def postForkParent(self):
         "post fork handling in parent"
         os.close(self.wfd)
         self.wfd = None
@@ -95,7 +96,7 @@ class _ExecStatPipe(object):
         self.rfd = None
 
     def sendExcept(self, ex):
-        "send and exception to parent and exit child"
+        "send an exception to parent and exit child"
         os.write(self.wfd, pickle.dumps(ex))
         os._exit(255)
 
@@ -551,7 +552,7 @@ class Proc(object):
         self.stderr = self.__stdioAssoc(stderr, "w")
         self.__argsAssoc()
         self.pid = None
-        self.execStatPipe = None
+        self.statusPipe = None
         self.returncode = None  # exit code, or -signal
         self.exceptInfo = None # (exception, value, traceback)
         self.started = False
@@ -651,7 +652,7 @@ class Proc(object):
 
     def __closeFiles(self):
         "clone non-stdio files"
-        keepOpen = set([self.execStatPipe.wfd]) | Trace.getActiveTraceFds()
+        keepOpen = set([self.statusPipe.wfd]) | Trace.getActiveTraceFds()
         for fd in xrange(3, MAXFD+1):
             try:
                 if not fd in keepOpen:
@@ -660,7 +661,7 @@ class Proc(object):
 
     def __doChildStart(self):
         "guts of start child process"
-        self.execStatPipe.postForkChild()
+        self.statusPipe.postForkChild()
         _setPgid(os.getpid(), self.dag.pgid if (self.dag.pgid != None) else os.getpid())
         cmd = self.__buildCmd()
         self.__stdioSetup(self.stdin, 0)
@@ -678,7 +679,7 @@ class Proc(object):
             # FIXME: use isinstance(ex, ProcException) causes error in python
             if type(ex) != ProcException:
                 ex = ProcException(str(self), cause=ex)
-            self.execStatPipe.sendExcept(ex)
+            self.statusPipe.sendExcept(ex)
             
     def __parentStart(self):
         "start in parent process"
@@ -686,11 +687,11 @@ class Proc(object):
         if self.dag.pgid == None:
             self.dag.pgid = self.pid
         _setPgid(self.pid, self.dag.pgid)
-        self.execStatPipe.postExecParent()
+        self.statusPipe.postForkParent()
 
     def __start(self):
         "do work of starting the process"
-        self.execStatPipe = _ExecStatPipe()
+        self.statusPipe = _StatusPipe()
         self.started = True  # do first to prevent restarts on error
         self.pid = os.fork()
         if self.pid == 0:
@@ -712,7 +713,7 @@ class Proc(object):
 
     def _execWait(self):
         "receive status, raising the exception if one was send"
-        ex = self.execStatPipe.recvStatus()
+        ex = self.statusPipe.recvStatus()
         if isinstance(ex, Exception):
             if not isinstance(ex, ProcException):
                 ex = ProcException(str(self), cause=ex)
@@ -1035,24 +1036,29 @@ class ProcDag(object):
         for d in self.devs:
             d.finish()
 
+    def __cleanupDev(self, dev):
+        try:
+            dev.finish()
+        except Exception, e:
+            # FIXME: make optional, or record, or something
+            exi = sys.exc_info()
+            stack = "" if exi == None else "".join(traceback.format_list(traceback.extract_tb(exi[2])))+"\n"
+            sys.stderr.write("ProcDag dev cleanup exception: " +str(e)+"\n"+stack)
+
+    def __cleanupProc(self, proc):
+        try:
+            proc._forceFinish()
+        except Exception, e:
+            # FIXME: make optional
+            sys.stderr.write("ProcDag proc cleanup exception: " +str(e)+"\n")
+        
     def __cleanup(self):
         """forced cleanup of child processed after failure"""
         self.finished = True
         for d in self.devs:
-            try:
-                d.finish()
-            except Exception, e:
-                # FIXME: make optional, or record, or something
-                exi = sys.exc_info()
-                stack = "" if exi == None else "".join(traceback.format_list(traceback.extract_tb(exi[2])))+"\n"
-                sys.stderr.write("ProcDag dev cleanup exception: " +str(e)+"\n"+stack)
-                pass
+            self.__cleanupDev(d)
         for p in self.procs:
-            try:
-                p._forceFinish()
-            except Exception, e:
-                # FIXME: make optional
-                sys.stderr.write("ProcDag proc cleanup exception: " +str(e)+"\n")
+            self.__cleanupProc(p)
 
     def start(self):
         """start processes"""
@@ -1165,10 +1171,10 @@ class Procline(ProcDag):
         return outPipe
 
 class Pipeline(Procline):
-    """Object to create and manage a pipeline of processes. It can either run an
-    independent set of processes, or a file-like object that either writes to
-    or reads from the pipeline.  This provides a simplified interface to the
-    ProcDag class, where pipelines are specified as lists.
+    """Object to create and manage a pipeline of processes. It can either run
+    an independent set of processes, or a file-like object that either writes
+    to or reads from the pipeline.  This provides a simplified interface to
+    the ProcDag class, where pipelines are specified as lists.
     """
 
     # FIXME: change otherEnd stdio, or stdin/stdout, match with mode
