@@ -28,4 +28,4 @@ def suite():
     return suite
 
 if __name__ == '__main__':
-1    unittest.main()
+    unittest.main()
