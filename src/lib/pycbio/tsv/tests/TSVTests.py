@@ -30,24 +30,26 @@ class ReadTests(TestCaseBase):
         self.failUnlessEqual(len(rows), 5)
         self.failUnlessEqual(rows[0].qName, "BC015400")
 
+    @staticmethod
+    def onOffParse(str):
+        if str == "on":
+            return True
+        elif str == "off":
+            return False
+        else:
+            raise ValueError("invalid onOff value: " + str)
+
+    @staticmethod
+    def onOffFmt(val):
+        if type(val) != bool:
+            raise TypeError("onOff value not a bool: " + str(type(val)))
+        if val:
+            return "on"
+        else:
+            return "off"
+
     def doTestColType(self, inFile):
-        def onOffParse(str):
-            if str == "on":
-                return True
-            elif str == "off":
-                return False
-            else:
-                raise ValueError("invalid onOff value: " + str)
-            
-        def onOffFmt(val):
-            if type(val) != bool:
-                raise TypeError("onOff value not a bool: " + str(type(val)))
-            if val:
-                return "on"
-            else:
-                return "off"
-            
-        typeMap = {"intCol": int, "floatCol": float, "onOffCol": (onOffParse, onOffFmt)}
+        typeMap = {"intCol": int, "floatCol": float, "onOffCol": (self.onOffParse, self.onOffFmt)}
 
         tsv = TSVTable(self.getInputFile(inFile), typeMap=typeMap)
 
@@ -98,6 +100,23 @@ class ReadTests(TestCaseBase):
         # should have chained exception
         self.failIfEqual(err.cause, None)
         self.failUnlessEqual(err.cause.message, "key column \"noCol\" is not defined")
+
+    def testColNameMap(self):
+        typeMap = {"int_col": int, "float_col": float, "onOff_col": (self.onOffParse, self.onOffFmt)}
+
+        tsv = TSVTable(self.getInputFile('typesColNameMap.tsv'), typeMap=typeMap, columnNameMapper=lambda s: s.replace(' ', '_'))
+
+        r = tsv[0]
+        self.failUnlessEqual(r.str_col, "name1")
+        self.failUnlessEqual(r.int_col, 10)
+        self.failUnlessEqual(r.float_col, 10.01)
+        self.failUnlessEqual(str(r), "name1\t10\t10.01\ton")
+
+        r = tsv[2]
+        self.failUnlessEqual(r.str_col, "name3")
+        self.failUnlessEqual(r.int_col, 30)
+        self.failUnlessEqual(r.float_col, 30.555)
+        self.failUnlessEqual(str(r), "name3\t30\t30.555\toff")
 
     def testWrite(self):
         tsv = TSVTable(self.getInputFile("mrna1.tsv"), uniqKeyCols="qName")

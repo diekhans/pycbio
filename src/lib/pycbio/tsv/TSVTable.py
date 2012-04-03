@@ -69,7 +69,7 @@ class TSVTable(list):
                 self.__indexRow(colDictTbl, row)
 
     def __init__(self, fileName, uniqKeyCols=None, multiKeyCols=None, rowClass=None, typeMap=None,
-                 defaultColType=None, columns=None, ignoreExtraCols=False, isRdb=False, inFh=None, allowEmpty=False, dialect=csv.excel_tab):
+                 defaultColType=None, columns=None, columnNameMapper=None, ignoreExtraCols=False, isRdb=False, inFh=None, allowEmpty=False, dialect=csv.excel_tab):
         """Read TSV file into the object
         
         fileName - name of file, opened unless inFh is specified
@@ -77,7 +77,8 @@ class TSVTable(list):
             can be string or sequence
         multiKeyCols - name or names of columns to index, allowing multiple keys.
             can be string or sequence
-        rowClass - class to use for a row. Must take TSVReader and list of string values of columns.
+        rowClass - class or class factory function to use for a row. Must take
+            TSVReader and list of string values of columns.
         typeMap - if specified, it maps column names to the type objects to
             use to convert the column.  Unspecified columns will not be
             converted. Key is the column name, value can be either a type
@@ -93,7 +94,7 @@ class TSVTable(list):
         allowEmpty - an empty input results in an EOF rather than an error.
           Should specify this if reading from a database query.
         """
-        reader = TSVReader(fileName, rowClass=rowClass, typeMap=typeMap, defaultColType=defaultColType, isRdb=isRdb, columns=columns, ignoreExtraCols=ignoreExtraCols, inFh=inFh, allowEmpty=allowEmpty, dialect=dialect)
+        reader = TSVReader(fileName, rowClass=rowClass, typeMap=typeMap, defaultColType=defaultColType, isRdb=isRdb, columns=columns, columnNameMapper=columnNameMapper, ignoreExtraCols=ignoreExtraCols, inFh=inFh, allowEmpty=allowEmpty, dialect=dialect)
         try:
             self.columns = reader.columns
             self.colTypes = reader.colTypes

@@ -17,6 +17,8 @@ from pycbio.tsv.TSVError import TSVError
 # FIXME: change TSVRow to be based on collections.namedtuple **** (thanks Max)
 #
 # rename  typeMap -> colTypes
+# FIXME: make a column object.
+# FIXME: save original column names before mapping for output
 
 # typeMap converter for str types were empty represents None
 strOrNoneType = (lambda v: None if (v == "") else v,
@@ -65,6 +67,8 @@ class TSVReader(object):
         # n.b. columns could be passed in from client, must copy
         i = 0
         for col in columns:
+            if self.columnNameMapper != None:
+                col = self.columnNameMapper(col)
             col = intern(col)
             self.columns.append(col)
             if col in self.colMap:
@@ -85,13 +89,14 @@ class TSVReader(object):
             for i in xrange(len(self.columns)):
                 self.colTypes.append(defaultColType)
 
-    def __init__(self, fileName, rowClass=None, typeMap=None, defaultColType=None, columns=None,
+    def __init__(self, fileName, rowClass=None, typeMap=None, defaultColType=None, columns=None, columnNameMapper=None,
                  ignoreExtraCols=False, isRdb=False, inFh=None, allowEmpty=False, dialect=csv.excel_tab):
         """Open TSV file and read header into object.  Removes leading # from
         UCSC header.
 
         fileName - name of file, opened unless inFh is specified
-        rowClass - class to use for a row. Must take TSVReader and list of string values of columns.
+        rowClass - class or class factory function to use for a row. Must take
+            TSVReader and list of string values of columns.
         typeMap - if specified, it maps column names to the type objects to
             use to convert the column.  Unspecified columns will not be
             converted. Key is the column name, value can be either a type
@@ -100,6 +105,7 @@ class TSVReader(object):
         defaultColType - if specified, type of unspecified columns
         columns - if specified, the column names to use.  The header
             should not be in the file.
+        columnNameMapper - function to map column names to the internal name.
         ignoreExtraCols - should extra columns be ignored?
         isRdb - file is an RDB file, ignore second row (type map still needed).
         inFh - If not None, this is used as the open file, rather than
@@ -115,6 +121,7 @@ class TSVReader(object):
         self.rowClass = rowClass
         if rowClass == None:
             self.rowClass = TSVRow
+        self.columnNameMapper = columnNameMapper
         self.isRdb = isRdb
         self.colTypes = None
         self.ignoreExtraCols = ignoreExtraCols
