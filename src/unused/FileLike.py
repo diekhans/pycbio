@@ -1,4 +1,4 @@
-# Copyright 2006-2011 Mark Diekhans
+# Copyright 2006-2012 Mark Diekhans
 """Template for creating a file-like class, mostly culled from StringIO.py"""
 
 class FileLike:

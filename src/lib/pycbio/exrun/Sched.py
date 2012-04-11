@@ -1,4 +1,4 @@
-# Copyright 2006-2011 Mark Diekhans
+# Copyright 2006-2012 Mark Diekhans
 """
 Scheduling of threads to run tasks (normally rules).  A Task object is a
 thread, the number running concurrently is controlled by the Sched object.

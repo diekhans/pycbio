@@ -1,4 +1,4 @@
-# Copyright 2006-2011 Mark Diekhans
+# Copyright 2006-2012 Mark Diekhans
 """Miscellaneous file operations"""
 
 import os, errno, sys, stat, fcntl, socket

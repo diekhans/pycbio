@@ -1,4 +1,4 @@
-# Copyright 2006-2011 Mark Diekhans
+# Copyright 2006-2012 Mark Diekhans
 from pycbio.tsv.TSVRow import TSVRow
 from pycbio.tsv.TSVReader import TSVReader, strOrNoneType, intOrNoneType
 from pycbio.tsv.TSVTable import TSVTable

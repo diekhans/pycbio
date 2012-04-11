@@ -1,4 +1,4 @@
-# Copyright 2006-2011 Mark Diekhans
+# Copyright 2006-2012 Mark Diekhans
 from pycbio.sys import PycbioException
 
 class TSVError(PycbioException):

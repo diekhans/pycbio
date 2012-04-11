@@ -1,4 +1,4 @@
-# Copyright 2006-2011 Mark Diekhans
+# Copyright 2006-2012 Mark Diekhans
 """ classes for accesssing NCBI taxonomy data dumps from:
         ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump_readme.txt
         ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz

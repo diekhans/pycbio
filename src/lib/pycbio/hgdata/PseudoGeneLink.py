@@ -1,4 +1,4 @@
-# Copyright 2006-2011 Mark Diekhans
+# Copyright 2006-2012 Mark Diekhans
 """ Object to load PseudoGeneLink table"""
 
 from pycbio.tsv.TSVTable import TSVTable

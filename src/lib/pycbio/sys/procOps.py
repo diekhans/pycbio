@@ -1,4 +1,4 @@
-# Copyright 2006-2011 Mark Diekhans
+# Copyright 2006-2012 Mark Diekhans
 "functions operation on processes"
 
 # FIXME: thes should build on pipeline
