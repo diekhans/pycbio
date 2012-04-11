@@ -2,7 +2,7 @@
 Object with chromosome information that can be loaded from a variety of
 sources.
 """
-# Copyright 2006-2011 Mark Diekhans
+# Copyright 2006-2012 Mark Diekhans
 from pycbio.sys.procOps import callProc
 from pycbio.tsv import TabFile
 

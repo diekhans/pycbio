@@ -1,4 +1,4 @@
-# Copyright 2006-2011 Mark Diekhans
+# Copyright 2006-2012 Mark Diekhans
 
 class AutoDict(dict):
     """Dictionary where entries can be automatically allocated.  Normally used

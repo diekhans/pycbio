@@ -1,4 +1,4 @@
-# Copyright 2006-2011 Mark Diekhans
+# Copyright 2006-2012 Mark Diekhans
 import math
 from pycbio.sys.fileOps import prLine, prRowv, iterRows
 from pycbio.sys.typeOps import isListLike

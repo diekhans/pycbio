@@ -1,4 +1,4 @@
-# Copyright 2006-2011 Mark Diekhans
+# Copyright 2006-2012 Mark Diekhans
 import os, errno, socket, fcntl
 
 class _Fifo(object):

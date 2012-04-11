@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2006-2011 Mark Diekhans
+# Copyright 2006-2012 Mark Diekhans
 
 import sys, os, re
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
