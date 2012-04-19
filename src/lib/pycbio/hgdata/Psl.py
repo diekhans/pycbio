@@ -260,6 +260,7 @@ class Psl(object):
         fh.write(str(self))
         fh.write('\n')        
 
+    @staticmethod
     def queryCmp(psl1, psl2):
         "sort compairson using query address"
         cmp = string.cmp(psl1.qName, psl2.qName)
@@ -269,6 +270,7 @@ class Psl(object):
                 cmp = psl1.qEnd - psl2.qEnd
         return cmp
 
+    @staticmethod
     def targetCmp(psl1, psl2):
         "sort compairson using target address"
         cmp = string.cmp(psl1.tName, psl2.tName)
