@@ -37,6 +37,8 @@ libTests:
 %.progtest:
 	(cd src/progs/$*/tests && ${MAKE} test)
 
+pylint:
+	PYTHONPATH=src/lib pylint --rcfile=pylint.cfg $(subst .,/,${PKGS:%=src/lib/%})
 clean:
 	rm -rf bin
 	rm -f lib
