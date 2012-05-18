@@ -8,6 +8,9 @@ from pycbio.sys import strOps, Trace, PycbioException, Fifo
 # FIXME:
 #    - need to close other files (optional)
 #    - not all stdio data types are supported yet (int, file-like)
+#    - need async reader/write that are a pipe that will not deadlock
+#      but also doesn't just buffer in memory
+#    - this shows a bug: (ChrMLifterBroken) ccds2/modules/gencode/src/progs/gencodeMakeTracks/gencodeGtfToGenePred
 
 try:
     MAXFD = os.sysconf("SC_OPEN_MAX")
