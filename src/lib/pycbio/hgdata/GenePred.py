@@ -552,7 +552,7 @@ class GenePredTbl(list):
             self.rangeMap.add(gene.chrom, gene.txStart, gene.txEnd, gene, gene.strand)
 
 class GenePredReader(object):
-    """Read genePreds from a tab file"""
+    """Read genePreds from a tab file."""
     def __init__(self, fileName):
         self.fh = fileOps.opengz(fileName)
 
@@ -565,6 +565,24 @@ class GenePredReader(object):
             line = self.fh.readline()
             if (line == ""):
                 self.fh.close();
+                raise StopIteration
+            if not ((len(line) == 1) or line.startswith('#')):
+                line = line[0:-1]  # drop newline
+                return GenePred(line.split("\t"))
+
+class GenePredFhReader(object):
+    """Read genePreds from an open."""
+    def __init__(self, fh):
+        self.fh = fh
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        "GPR next"
+        while True:
+            line = self.fh.readline()
+            if (line == ""):
                 raise StopIteration
             if not ((len(line) == 1) or line.startswith('#')):
                 line = line[0:-1]  # drop newline
