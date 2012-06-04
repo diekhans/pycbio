@@ -1,6 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 from pycbio.sys import fileOps
-import os, sys, unittest, difflib, threading, errno, re, glob
+import os, sys, unittest, difflib, threading, errno, re, glob, subprocess
+from pipes import quote
 
 try:
     MAXFD = os.sysconf("SC_OPEN_MAX")
@@ -164,3 +165,11 @@ class TestCaseBase(unittest.TestCase):
             raise self.failureException, \
                   (msg or "'%s' does not match '%s'" % (str(obj), expectRe))
 
+    def __logCmd(self, cmd):
+        cmdStrs = [quote(a) for a in cmd]
+        sys.stderr.write("run: " + " ".join(cmdStrs) + "\n")
+
+    def runProg(self, cmd, stdin=None, stdout=None, stderr=None):
+        "run a program, print the command being executed"
+        self.__logCmd(cmd)
+        subprocess.check_call(cmd, stdin=stdin, stdout=stdout, stderr=stderr)
