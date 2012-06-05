@@ -31,6 +31,16 @@ queries1 = (
     ("chr32", 10,  1000000001, '+', ("val1.5",), ("val1.5", "val1.6",)),
     ("chr32", 1900000001, 2000000002, '+', ("val1.5",), ("val1.5", "val1.6",)),
     )
+
+# potential regression with exact range matches
+data2 = (
+    ("chr1", 100316598, 100387207, '+', "NM_000643.2"),
+    ("chr1", 100316598, 100387207, '+', "NM_000644.2"),
+    )
+queries2 = (
+    ("chr1", 100316598, 100387207, '+', ("NM_000643.2", "NM_000644.2"), ("NM_000643.2", "NM_000644.2")),
+    )
+
 class RangeTests(TestCaseBase):
     def mkRangeFinder(self, data, useStrand):
         rf = RangeFinder()
@@ -51,7 +61,6 @@ class RangeTests(TestCaseBase):
         val = list(rf.overlapping(seqId, start, end, strand))
         val.sort()
         return tuple(val)
-
 
     def doStrandQuery(self, rf, query):
         if rf.haveStrand:
@@ -97,6 +106,11 @@ class RangeTests(TestCaseBase):
         rf = self.mkRangeFinder(data1, True)
         self.doQueries(rf, queries1, False)
 
+    def testExactRange(self):
+        "exact range matches"
+        rf = self.mkRangeFinder(data2, True)
+        self.doQueries(rf, queries2, True)
+        self.doQueries(rf, queries2, False)
         
 def suite():
     suite = unittest.TestSuite()
