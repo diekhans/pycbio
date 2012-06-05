@@ -27,20 +27,18 @@ class Binner(object):
     
     binBasicMaxEnd = 512*1024*1024
     binOffsetToExtended = 4681
-    # FIXME: binLevelsBasic = len(binOffsetsBasic)
-    # FIXME: binLevelsExtended = len(binOffsetsExtended)
 
     @staticmethod
     def __calcBinForOffsets(start, end, baseOffset, offsets):
         "get the bin for a range"
         startBin = start >> Binner.binFirstShift
         endBin = (end-1) >> Binner.binFirstShift
-        for binOff in Binner.binOffsetsExtended:
+        for binOff in offsets:
             if (startBin == endBin):
                 return baseOffset + binOff + startBin
             startBin >>= Binner.binNextShift;
             endBin >>= Binner.binNextShift;
-        raise Exception("can't computer bin: start %d, end %d out of range" % (start, end))
+        raise Exception("can't compute bin: start %d, end %d out of range" % (start, end))
 
     @staticmethod
     def calcBin(start, end):
@@ -103,6 +101,9 @@ class Entry(object):
         "test if the range is overlapped by the entry"
         return (end > self.start) and (start < self.end)
 
+    def __str__(self):
+        return str(self.start) + "-" + str(self.end) + ": " + str(self.value)
+
 class RangeBins(object):
     """Range indexed container for a single sequence.  This using a binning
     scheme that implements spacial indexing. Based on UCSC hg browser binRange
@@ -136,6 +137,13 @@ class RangeBins(object):
         for bin in self.bins.itervalues():
             for entry in bin:
                 yield entry.value
+
+    def dump(self, fh):
+        "print contents for debugging purposes"
+        for bin in self.bins.iterkeys():
+            fh.write(self.seqId + " (" + str(self.strand) + ") bin=" + str(bin) + "\n")
+            for entry in self.bins[bin]:
+                fh.write("\t" + str(entry) + "\n")
 
 class RangeFinder(object):
     """Container index by sequence id, range, and optionally strand.
@@ -192,6 +200,11 @@ class RangeFinder(object):
         for bins in self.seqBins:
             for value in bins.values():
                 yield value
+
+    def dump(self, fh):
+        "print contents for debugging purposes"
+        for bins in self.seqBins.itervalues():
+            bins.dump(fh)
 
 __all__ = (RangeFinder.__name__,)
 
