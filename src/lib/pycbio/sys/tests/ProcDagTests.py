@@ -1,5 +1,5 @@
 # Copyright 2006-2012 Mark Diekhans
-import unittest, sys, string, re
+import unittest, sys, re
 if __name__ == '__main__':
     sys.path.append("../../..")
 from pycbio.sys.Pipeline import ProcDag, ProcException, ProcDagException, Pipe, DataReader, DataWriter, File, PIn, POut

@@ -1,8 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
-import string
 
 # FIXME: danger of bdump, etc, methods conflicting with columns.  maybe
-# a better convention to avoid colisons
+# a better convention to avoid collisions
 # FIXME: need accessor functions for columns
 
 class TSVRow(object):
@@ -86,7 +85,7 @@ class TSVRow(object):
             return self.__fmtNoTypes()
     
     def __str__(self):
-        return string.join(self.getRow(), "\t")
+        return "\t".join(self.getRow())
 
     def getColumns(self, colNames):
         """get a subset of the columns in the row as a list"""

@@ -1,4 +1,4 @@
-LOCUS       NM_013266               3248 bp    mRNA    linear   PRI 26-NOV-2011
+LOCUS       NM_013266               3248 bp    mRNA    linear   PRI 22-APR-2012
 DEFINITION  Homo sapiens catenin (cadherin-associated protein), alpha 3
             (CTNNA3), transcript variant 1, mRNA.
 ACCESSION   NM_013266
@@ -145,13 +145,13 @@ COMMENT     VALIDATED REFSEQ: This record has undergone validation or
             AK313882.1, AF091606.1, BC065819.1 and AK289756.1.
             On May 16, 2008 this sequence version replaced gi:7019570.
             
-            Publication Note:  This RefSeq record includes a subset of the
-            publications that are available for this gene. Please see the Gene
-            record to access additional publications.
-            
             Transcript Variant: This variant (1) utilizes an alternate first
             exon resulting in a distinct 5'UTR. Transcript variants 1 and 2
             encode the same protein isoform.
+            
+            Publication Note:  This RefSeq record includes a subset of the
+            publications that are available for this gene. Please see the Gene
+            record to access additional publications.
 PRIMARY     REFSEQ_SPAN         PRIMARY_IDENTIFIER PRIMARY_SPAN        COMP
             1-22                AK313882.1         3-24
             23-674              AF091606.1         1-652

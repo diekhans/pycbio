@@ -1,5 +1,5 @@
 # Copyright 2006-2012 Mark Diekhans
-import unittest, sys, string, cPickle
+import unittest, sys, cPickle
 if __name__ == '__main__':
     sys.path.append("../../..")
 from pycbio.sys.Color import Color
