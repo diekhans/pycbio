@@ -40,12 +40,12 @@ class EnumValue(object):
             self.strValue = strValue
         #self.mkImmutable()
 
-    def X__getstate__(self):
+    def __getstate__(self):
         # optimize strValue if same as name
         return (self.enum, self.name, self.numValue, (None if self.strValue == self.name else self.strValue))
 
-    def X__setstate__(self, st):
-        Immutable.__init__(self)
+    def __setstate__(self, st):
+        #Immutable.__init__(self)
         (self.enum,  self.name, self.numValue, self.strValue) = st
         if self.strValue == None:
             self.strValue = self.name

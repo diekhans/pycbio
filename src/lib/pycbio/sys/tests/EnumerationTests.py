@@ -115,9 +115,9 @@ class EnumerationTests(TestCaseBase):
     def testPickle2(self):
         self.failUnless(cPickle.HIGHEST_PROTOCOL == 2)
         self.__testPickleProt(2)
-    def FIXME_testPickle1(self):
+    def testPickle1(self):
         self.__testPickleProt(1)
-    def FIXME_testPickle0(self):
+    def testPickle0(self):
         self.__testPickleProt(0)
 
 def suite():
