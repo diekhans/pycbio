@@ -46,6 +46,10 @@ class TestCaseBase(unittest.TestCase):
             testDir = testDir[len(cwd):]
         return testDir
 
+    def getTestRelProg(self, progName):
+        "get path to a program in directory above the test directory"
+        return os.path.join(self.getTestDir(), "..", progName)
+
     def getInputFile(self, fname):
         """Get a path to a file in the test input directory"""
         return self.getTestDir() + "/input/" + fname
