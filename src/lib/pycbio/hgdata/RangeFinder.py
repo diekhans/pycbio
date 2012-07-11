@@ -108,6 +108,7 @@ class RangeBins(object):
     """Range indexed container for a single sequence.  This using a binning
     scheme that implements spacial indexing. Based on UCSC hg browser binRange
     C module.  """
+    __slots__ = ("seqId", "strand", "bins")
 
     def __init__(self, seqId, strand):
         self.seqId = seqId
@@ -151,7 +152,6 @@ class RangeFinder(object):
     have strand.  A query without strand will find all overlapping
     entries on either strand if strand was specified when adding entries.
     """
-
     validStrands = set((None, "+", "-"))
 
     def __init__(self):
