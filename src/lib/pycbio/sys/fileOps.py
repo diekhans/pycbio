@@ -261,8 +261,6 @@ def atomicTmpFile(finalPath):
 
 def atomicInstall(tmpPath, finalPath):
     "atomic install of tmpPath as finalPath"
-    if os.path.exists(finalPath):
-        os.unlink(finalPath)
     os.rename(tmpPath, finalPath)
     
 def uncompressedBase(path):
