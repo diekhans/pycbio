@@ -44,6 +44,7 @@ def _setPgid(pid, pgid):
     # last try, let it return an error
     os.setpgid(pid, pgid)
 
+# FIXME: why not use pipes.quote?
 def _quoteStr(a):
     "return string  with quotes if it contains white space"
     a = str(a).replace('"', '\\"')

@@ -18,6 +18,9 @@ from pycbio.sys.typeOps import isListLike
 #   http://svn.python.org/projects/python/trunk/Demo/newmetaclasses/Enum.py
 # http://www.python.org/cgi-bin/moinmoin/EnumerationProgramming
 # http://techspot.zzzeek.org/2011/01/14/the-enum-recipe/
+#
+# This looks really good.
+# http://stackoverflow.com/questions/100003/what-is-a-metaclass-in-python
 
 # FIXME FIXME FIXME: immutable stuff and solts disabled due to problems with
 # serialization.
