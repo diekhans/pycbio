@@ -264,8 +264,12 @@ class ProcDagTests(TestCaseBase):
         pd.create(("cat", PIn(io)), stdin="/dev/null", stdout=outf)
         pd.wait()
         self.diffExpected(".out")
-        # formatting fails here: (FIXME: improve??), FIXME: doesn't always produce this result?
-        self.commonChecks(nopen, pd, "^tee >\\(cat <\\(tee \\.\\.\\.\\) </dev/null >.+/output/ProcDagTests\\.ProcDagTests\\.testArgToArg\\.out\\) <.+/input/simple1\\.txt >/dev/null ; cat \\.\\.\\.$", isRe=True)
+        # formatting fails here: (FIXME: improve??), FIXME: doesn't always produce same result,
+        # so we check multiple posibilities
+        self.commonChecks(nopen, pd,
+                          "(^tee >\\(cat <\\(tee \\.\\.\\.\\) </dev/null >.+/output/ProcDagTests\\.ProcDagTests\\.testArgToArg\\.out\\) <.+/input/simple1\\.txt >/dev/null ; cat \\.\\.\\.$)" \
+                              + "|(^tee >\\(cat <\\(tee \\.\\.\\.\\) </dev/null >.+/output/ProcDagTests\\.ProcDagTests\\.testArgToArg\\.out\\) <.+/input/simple1\\.txt >/dev/null ; cat \\.\\.\\.$)",
+                          isRe=True)
 
     def testStdioCycleDetect(self):
         "stdio cycle detection"
