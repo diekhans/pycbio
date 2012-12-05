@@ -42,11 +42,15 @@ def rmFiles(files):
                 os.unlink(f)
 
 def rmTree(root):
-    "remove a file hierarchy"
-    for dir, subdirs, files in os.walk(root, topdown=False):
-        for f in files:
-            os.unlink(dir + "/" + f)
-        os.rmdir(dir)
+    "remove a file hierarchy, root can be a file or a directory"
+    if os.path.isdir(root):
+        for dir, subdirs, files in os.walk(root, topdown=False):
+            for f in files:
+                os.unlink(dir + "/" + f)
+            os.rmdir(dir)
+    else:
+        if os.path.lexists(root):
+            os.unlink(root)
 
 def isCompressed(path):
     "determine if a file appears to be compressed by extension"

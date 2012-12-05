@@ -18,7 +18,7 @@ class TestCaseBase(unittest.TestCase):
         clId = self.getClassId()
         od = self.getOutputDir()
         for f in glob.glob(od+"/"+clId + ".*") + glob.glob(od+"/tmp.*."+clId + ".*"):
-            os.unlink(f)
+            fileOps.rmTree(f)
     
     def getClassId(self):
         """Get the first part of the portable test id, consisting 
@@ -41,9 +41,11 @@ class TestCaseBase(unittest.TestCase):
             testDir = "."
         testDir = os.path.realpath(testDir)
         # turn this into a relative directory
-        cwd = os.getcwd() + "/"
+        cwd = os.getcwd()
         if testDir.startswith(cwd):
-            testDir = testDir[len(cwd):]
+            testDir = testDir[len(cwd)+1:]
+            if len(testDir) == 0:
+                testDir = "."
         return testDir
 
     def getTestRelProg(self, progName):
