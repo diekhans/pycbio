@@ -1,7 +1,9 @@
 # Copyright 2006-2012 Mark Diekhans
 """Connect to UCSC genome database using info in .hg.conf """
 from pycbio.hgdata.HgConf import HgConf
-import MySQLdb
+import MySQLdb, warnings
+
+warnings.filterwarnings('error', category=MySQLdb.Warning)
 
 def connect(db=None,  confFile=None):
     """connect to genome mysql server, using confFile or ~/.hg.conf"""
