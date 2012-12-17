@@ -179,3 +179,13 @@ class TestCaseBase(unittest.TestCase):
         "run a program, print the command being executed"
         self.__logCmd(cmd)
         subprocess.check_call(cmd, stdin=stdin, stdout=stdout, stderr=stderr)
+
+    def runProgOut(self, cmd, stdin=None, stderr=None):
+        "run a program and return stdout, print the command being executed"
+        self.__logCmd(cmd)
+        p = subprocess.Popen(cmd, stdin=stdin, stdout=subprocess.PIPE, stderr = stderr)
+        (stdoutText, junk) = p.communicate()
+        exitCode = p.wait()
+        if exitCode:
+            raise subprocess.CalledProcessError(exitCode, cmd)
+        return stdoutText
