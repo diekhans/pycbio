@@ -7,6 +7,11 @@ Base class used to define immutable objects
 # doesn't worth with cPickle format < 2, however other transMap code didn't
 # work with format == 2, so take this out for now.
 
+
+# FIXME: some other ideas:
+# http://code.activestate.com/recipes/576527-freeze-make-any-object-immutable/
+# http://code.activestate.com/recipes/577207-immutable-objectsubclass/
+
 class Immutable(object):
     """Base class to make an object instance immutable.  Call 
     Immutable.__init__(self) after construction to make immutable"""
