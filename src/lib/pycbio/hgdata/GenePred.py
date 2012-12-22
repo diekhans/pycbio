@@ -398,6 +398,10 @@ class GenePred(object):
                 l += cds.end - cds.start
         return l
 
+    def getSpan(self):
+        "get the genomic span (txStart to txEnd length)"
+        return self.txEnd - self.txStart
+
     def getNumCdsExons(self):
         "get the number of exons containing CDS"
         if self.cdsStartIExon == None:
