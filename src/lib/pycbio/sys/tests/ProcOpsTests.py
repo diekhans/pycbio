@@ -39,6 +39,35 @@ class ProcRunTests(TestCaseBase):
         self.failUnlessEqual(ret, 0)
         self.diffExpected(".txt")
 
+    # base script that echos to stdout and stderr
+    shOutErrCmd = ["sh", "-c", """echo "this is stdout" ; echo "this is stderr" >&2"""]
+
+    def testRunOutErrByNum(self):
+        outFile = self.getOutputFile(".stdout")
+        errFile = self.getOutputFile(".stderr")
+        with open(outFile, "w") as outFh, open(errFile, "w") as errFh:
+            ret = procOps.runProc(self.shOutErrCmd, stdout=outFh.fileno(), stderr=errFh.fileno())
+        self.failUnlessEqual(ret, 0)
+        self.diffExpected(".stdout")
+        self.diffExpected(".stderr")
+
+    def testRunOutErrByName(self):
+        outFile = self.getOutputFile(".stdout")
+        errFile = self.getOutputFile(".stderr")
+        ret = procOps.runProc(self.shOutErrCmd, stdout=outFile, stderr=errFile)
+        self.failUnlessEqual(ret, 0)
+        self.diffExpected(".stdout")
+        self.diffExpected(".stderr")
+
+    def testRunOutErrByFile(self):
+        outFile = self.getOutputFile(".stdout")
+        errFile = self.getOutputFile(".stderr")
+        with open(outFile, "w") as outFh, open(errFile, "w") as errFh:
+            ret = procOps.runProc(self.shOutErrCmd, stdout=outFh, stderr=errFh)
+        self.failUnlessEqual(ret, 0)
+        self.diffExpected(".stdout")
+        self.diffExpected(".stderr")
+
     def testRunErr(self):
         ex = None
         try:
