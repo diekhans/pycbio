@@ -68,6 +68,14 @@ class ProcRunTests(TestCaseBase):
         self.diffExpected(".stdout")
         self.diffExpected(".stderr")
 
+    def testRunOutErrSameByFile(self):
+        # same file handle for stdout/stderr; make sure it's not closed too soon
+        outFile = self.getOutputFile(".stdouterr")
+        with open(outFile, "w") as outFh:
+            ret = procOps.runProc(self.shOutErrCmd, stdout=outFh, stderr=outFh)
+        self.failUnlessEqual(ret, 0)
+        self.diffExpected(".stdouterr")
+
     def testRunErr(self):
         ex = None
         try:

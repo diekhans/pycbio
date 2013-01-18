@@ -641,7 +641,7 @@ class Proc(object):
         return cmd
 
     def __stdioSetup(self, spec, stdfd):
-        """setup one of the stdio fds"""
+        """setup one of the stdio fds."""
         fd = None
         if isinstance(spec, PInOut):
             fd = spec.getFd()
@@ -654,7 +654,7 @@ class Proc(object):
             fd = spec
         if (fd != None) and (fd != stdfd):
             os.dup2(fd, stdfd)
-            os.close(fd)
+            # Don't close source file here, must delay closing in case stdout/err is same fd
 
     def __closeFiles(self):
         "clone non-stdio files"
