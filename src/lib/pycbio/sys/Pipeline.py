@@ -591,6 +591,8 @@ class Proc(object):
         """check a stdio spec validity and associate if PInOut or Dev"""
         if (spec == None) or isinstance(spec, int):
             return spec  # passed unchanged
+        if callable(getattr(spec, "fileno", None)):
+            return spec.fileno()  # is file-like
 
         # make spec into PInOut object if needed
         if isinstance(spec, str) or isinstance(spec, unicode):
