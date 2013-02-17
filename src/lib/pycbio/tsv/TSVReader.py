@@ -36,6 +36,10 @@ class TSVReader(object):
     read from a dbapi cursor object (must set allowEmpty to true)
     """
 
+    # FIXME: database reading doesn't work, need to not use csv reader for it
+    # should have separate class for dbapi reading, build on a core
+    # class.
+
     def __readRow(self):
         "read the next row, returning None on EOF"
         if self.reader == None:
