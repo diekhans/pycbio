@@ -337,6 +337,10 @@ class GenePred(object):
                 e.frame = -1
         self.hasExonFrames = True
 
+    def overlaps(self, start, end):
+        "test if a range overlaps the gene range"
+        return (start < self.txEnd) and (end > self.txStart)
+
     def inCds(self, pos):
         "test if a position is in the CDS"
         return (self.cdsStart <= pos) and (pos < self.cdsEnd)
