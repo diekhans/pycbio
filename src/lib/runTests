@@ -92,6 +92,7 @@ dt.add("pycbio.exrun.tests.BigTests")
 dt.add("pycbio.exrun.tests.CmdTests")
 dt.add("pycbio.exrun.tests.BigTests")
 dt.add("pycbio.align.tests.PairAlignTest")
+dt.add("pycbio.hgbrowser.tests.BrowserDirTests")
 dt.run()
 
 opts = CmdOpts()
