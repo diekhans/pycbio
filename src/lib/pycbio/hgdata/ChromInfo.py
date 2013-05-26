@@ -12,6 +12,9 @@ class ChromInfo(object):
         self.chrom = chrom
         self.size = size
 
+    def __str__(self):
+        return self.chrom + " " + str(self.size)
+
 class ChromInfoTbl(dict):
     "object to manage information about chromosomes"
     
@@ -30,7 +33,8 @@ class ChromInfoTbl(dict):
         "Load from chomoInfo table"
         cur = conn.cursor()
         try:
-            for row in cur.execute("select chrom, size from chromInfo"):
+            cur.execute("select chrom, size from chromInfo")
+            for row in cur:
                 self.__addRow(row[0], row[1])
         finally:
             cur.close()

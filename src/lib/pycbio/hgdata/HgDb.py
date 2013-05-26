@@ -3,11 +3,13 @@
 from pycbio.hgdata.HgConf import HgConf
 from pycbio.sys import dbOps
 import MySQLdb
+import MySQLdb.cursors
 
 dbOps.mySqlSetErrorOnWarn()
 
-def connect(db=None,  confFile=None):
+def connect(db=None,  confFile=None, dictCursor=False):
     """connect to genome mysql server, using confFile or ~/.hg.conf"""
     conf = HgConf.obtain(confFile)
-    return MySQLdb.Connect(host=conf["db.host"], user=conf["db.user"], passwd=conf["db.password"], db=db)
+    cursorclass = MySQLdb.cursors.DictCursor if dictCursor else MySQLdb.cursors.Cursor
+    return MySQLdb.Connect(host=conf["db.host"], user=conf["db.user"], passwd=conf["db.password"], db=db, cursorclass=cursorclass)
     
