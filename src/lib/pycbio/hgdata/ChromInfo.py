@@ -18,9 +18,19 @@ class ChromInfoTbl(dict):
     def __init__(self, chromClass=ChromInfo):
         self.chromClass = chromClass
 
+    def __addRow(self, chrom, size):
+        self[chrom] = self.chromClass(chrom, size)
+
     def loadChromSizes(self, chromSizes):
         "Load from chrom.sizes file"
         for row in TabFile(chromSizes):
-            cs = self.chromClass(row[0], int(row[1]))
-            self[cs.chrom] = cs
+            self.__addRow(row[0], int(row[1]))
 
+    def loadChromInfoDb(self, conn):
+        "Load from chomoInfo table"
+        cur = conn.cursor()
+        try:
+            for row in cur.execute("select chrom, size from chromInfo"):
+                self.__addRow(row[0], row[1])
+        finally:
+            cur.close()
