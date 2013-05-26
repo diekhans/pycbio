@@ -90,10 +90,23 @@ def opengz(file, mode="r"):
     else:
         return open(file, mode)
 
+# FIXME: make these consistent and remove redundant code.  Maybe use
+# keyword for flush
+
 def prLine(fh, *objs):
     "write each str(obj) followed by a newline"
     for o in objs:
         fh.write(str(o))
+    fh.write("\n")
+
+def prsLine(fh, *objs):
+    "write each str(obj), seperated by a space followed by a newline"
+    n = 0
+    for o in objs:
+        if n > 0:
+            fh.write(' ')
+        fh.write(str(o))
+        n += 1
     fh.write("\n")
 
 def prOut(*objs):
