@@ -7,6 +7,12 @@ from pycbio.hgbrowser.Coords import Coords
 from pycbio.html.HtmlPage import HtmlPage
 from pycbio.sys import fileOps
 
+# FIXME: need to encode text
+# FIXME: need to have ability set attributes on cells (e.g. heatmap)
+#        this could be done by having full object model of rows.
+# FIXME: subrows is a hack, having full object model can make this go away
+
+
 defaultStyle = """
 TABLE, TR, TH, TD {
     white-space: nowrap;
@@ -43,9 +49,9 @@ class SubRows(object):
 
 class Entry(object):
     "entry in directory"
-    __slots__= ("row", "key", "cssClass", "subRowGroups")
+    __slots__= ("row", "key", "cssClass", "subRowGroups", "tdStyles")
 
-    def __init__(self, row, key=None, cssClass=None, subRows=None):
+    def __init__(self, row, key=None, cssClass=None, subRows=None, tdStyles=None):
         """Entry in directory, key can be some value(s) used in sorting. The
         row should be HTML encoded.  If subRows is not None, it should be a SubRow
         object or list of SubRow objects, used to produce row spanning rows for
@@ -53,12 +59,15 @@ class Entry(object):
         self.row = tuple(row)
         self.key = key
         self.cssClass = cssClass
+        self.tdStyles = tdStyles
         self.subRowGroups = None
         if subRows != None:
             if isinstance(subRows, SubRows):
                 self.subRowGroups = [subRows]
             else: 
                 self.subRowGroups = subRows
+        assert((self.tdStyles == None) or (len(self.tdStyles) == len(row)))
+        assert((self.tdStyles == None) or (self.subRowGroups == None))  # can't have both yet
 
     def __numSubRowGroupCols(self):
         n = 0
@@ -78,27 +87,50 @@ class Entry(object):
         "compute number of columns that will be generated"
         return len(self.row) + self.__numSubRowGroupCols()
 
-    def toHtmlRow(self):
+    def __toHtmlRowWithSubRows(self):
         numSubRowRows = self.__numSubRowGroupRows()
-        h = ["<tr>"]
-        if numSubRowRows > 1:
-            td = "<td rowspan=\""+str(numSubRowRows) + "\">"
-        else:
-            td = "<td>"
+        hrow = ["<tr>"]
+        td = "<td rowspan=\""+str(numSubRowRows) + "\">"
         for c in self.row:
-            h.append(td + str(c))
+            hrow.append(td + str(c))
         if numSubRowRows > 0:
             for subRows in self.subRowGroups:
-                h.append(subRows.toTdRow(0))
-        h.append("</tr>\n")
+                hrow.append(subRows.toTdRow(0))
+        hhrow.append("</tr>\n")
 
         # remaining rows
         for iRow in xrange(1, numSubRowRows):
-            h.append("<tr>\n")
+            hrow.append("<tr>\n")
             for subRows in self.subRowGroups:
-                h.append(subRows.toTdRow(iRow))
-            h.append("</tr>\n")
-        return "".join(h)
+                hrow.append(subRows.toTdRow(iRow))
+            hrow.append("</tr>\n")
+        return "".join(hrow)
+
+    def __toHtmlRowWithStyle(self):
+        hrow = ["<tr>"]
+        for i in xrange(len(self.row)):
+            if self.tdStyles[i] != None:
+                td = '<td style="%s">' % self.tdStyles[i]
+            else:
+                td = "<td>"
+            hrow.append(td + str(self.row[i]))
+        hrow.append("</tr>\n")
+        return "".join(hrow)
+
+    def __toHtmlRowSimple(self):
+        hrow = ["<tr>"]
+        for c in self.row:
+            hrow.append("<td>" + str(c))
+        hrow.append("</tr>\n")
+        return "".join(hrow)
+
+    def toHtmlRow(self):
+        if self.subRowGroups != None:
+            return self.__toHtmlRowWithSubRows()
+        if self.tdStyles != None:
+            return self.__toHtmlRowWithStyle()
+        else:
+            return self.__toHtmlRowSimple()
 
 class BrowserDir(object):
     """Create a frameset and collection of HTML pages that index one or more
@@ -112,7 +144,7 @@ class BrowserDir(object):
         each URL and the initial setting of the frame. The initTracks arg is
         similar, however its only set in the initial frame and not added to
         each URL.
-        A pageSize agr of None creates a single page. If numColumns is greater than 1
+        A pageSize arg of None creates a single page. If numColumns is greater than 1
         create multi-column directories.
         """
         self.browserUrl = browserUrl
@@ -160,15 +192,14 @@ class BrowserDir(object):
             text = str(coords)
         return "<a href=\"" + self.mkUrl(coords) + "\" target=browser>" + text + "</a>"
         
-    def addRow(self, row, key=None, cssClass=None, subRows=None):
+    def addRow(self, row, key=None, cssClass=None, subRows=None, tdStyles=None):
         """add an encoded row, row can be a list or an Entry object"""
         if not isinstance(row, Entry):
-            row = Entry(row, key, cssClass, subRows)
+            row = Entry(row, key, cssClass, subRows, tdStyles)
         self.entries.append(row)
 
     def add(self, coords, name=None):
-        """add a simple row, linking to location. If name is None, it's the
-        location """
+        """add a simple row, linking to location. If name is None, the coords are used"""
         if name == None:
             name = str(coords)
         row = [self.mkAnchor(coords, name)]
