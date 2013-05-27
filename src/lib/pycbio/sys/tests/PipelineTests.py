@@ -6,6 +6,32 @@ from pycbio.sys.Pipeline import *
 from pycbio.sys import procOps
 from pycbio.sys.TestCaseBase import TestCaseBase
 
+# FIXME from: ccds2/modules/gencode/src/progs/gencodeMakeTracks/gencodeGtfToGenePred
+# this doesn't work, nothing is returned by the readers,
+# used to fix Pipeline at some time
+class ChrMLifterBROKEN(object):
+    "Do lifting to of chrM"
+    def __init__(self, liftFile):
+        self.mappedRd = DataReader()
+        self.droppedRd = DataReader()
+        self.pipeline = Pipeline(["liftOver", "-genePred", "stdin", liftFile, self.mappedRd, self.droppedRd], "w")
+
+    def write(self, gp):
+        gp.name = "NC_012920"
+        gp.write(self.pipeline)
+
+    def __checkForDropped(self):
+        "check if anything written to the dropped file"
+        dropped = [gp for gp in GenePredFhReader(StringIO(self.droppedRd.get()))]
+        if len(dropped) > 0:
+            raise Exception("chrM liftOver dropped " + str(len(dropped)) + " records")
+
+    def finishLifting(self, gpOutFh):
+        self.pipeline.wait()
+        for gp in GenePredFhReader(StringIO(self.mappedRd.get())):
+            gp.write(gpOutFh)
+        self.__checkForDropped()
+
 
 class PipelineTests(TestCaseBase):
     def cpFileToPl(self, inName, pl):
