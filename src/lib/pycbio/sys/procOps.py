@@ -37,8 +37,8 @@ def runProc(cmd, stdin="/dev/null", stdout=None, stderr=None, noError=False):
     try:
         pl.wait()
     except Pipeline.ProcException, ex:
-        code = ex.returncode
-        if not noError:
+        code = ex.returncode  # raise exception if None
+        if (not noError) or (code == None):
             raise
     return code
 

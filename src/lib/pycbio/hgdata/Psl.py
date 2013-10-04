@@ -7,6 +7,7 @@ from pycbio.hgdata.RangeFinder import Binner
 from Bio.Seq import reverse_complement
 
 # FIXME: Should have factory rather than __init__ multiplexing nonsense
+# FIXME: should have builder functions
 
 def rcStrand(s):
     "return reverse-complement of a strand character"
@@ -126,6 +127,7 @@ class Psl(object):
                            (row[22] if haveSeqs else None))
 
     def __loadDb(self, row, dbColIdxMap):
+        # FIXME: change to use DictCursor
         self.match = row[dbColIdxMap["matches"]]
         self.misMatch = row[dbColIdxMap["misMatches"]]
         self.repMatch = row[dbColIdxMap["repMatches"]]

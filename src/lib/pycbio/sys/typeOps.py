@@ -81,6 +81,12 @@ def dictObtain(d, key, mkFunc):
         e = d[key]
     return e
 
+def sorted(iterable, cmp=None, key=None, reverse=False):
+    "create new list from iterable and sort it"
+    l = list(iterable)
+    l.sort(cmp=cmp, key=key, reverse=reverse)
+    return l
+
 def sortedKeys(d, sortFunc=cmp):
     "return of keys for dict d, sort by sortFunc, if d is None, return an empty list"
     if d == None:
@@ -90,5 +96,5 @@ def sortedKeys(d, sortFunc=cmp):
         keys.sort(cmp=sortFunc)
         return keys
 
-__all__ = (isListLike.__name__, listInit.__name__, listAppend.__name__, isIterable.__name__, mkiter.__name__, mkset.__name__, noneOrZero.__name__, addUniq.__name__, dictObtain.__name__, sortedKeys.__name__)
+__all__ = (isListLike.__name__, listInit.__name__, listAppend.__name__, isIterable.__name__, mkiter.__name__, mkset.__name__, noneOrZero.__name__, addUniq.__name__, dictObtain.__name__, sorted.__name__, sortedKeys.__name__)
 
