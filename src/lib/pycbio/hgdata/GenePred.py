@@ -337,6 +337,10 @@ class GenePred(object):
                 e.frame = -1
         self.hasExonFrames = True
 
+    def overlaps(self, start, end):
+        "test if a range overlaps the gene range"
+        return (start < self.txEnd) and (end > self.txStart)
+
     def inCds(self, pos):
         "test if a position is in the CDS"
         return (self.cdsStart <= pos) and (pos < self.cdsEnd)
@@ -413,22 +417,19 @@ class GenePred(object):
         "get a exon containing CDS, by CDS exon index"
         return self.exons[self.cdsStartIExon + iCdsExon]
 
-    def getStepping(self):
-        """get (start, stop, step) to step through exons in direction of
-        transcription"""
-        # FIXME this is stupid, just store in both directions
-        if self.inDirectionOfTranscription():
-            return (0, len(self.exons), 1)
-        else:
-            return (len(self.exons)-1, -1, -1)
-
-    def getStepper(self):
-        """generator to step through exon indexes in direction of
-        transcription"""
+    def getSortedExonIndexes(self):
+        "generator for exon indexes sorted in order of transcription"
         if self.inDirectionOfTranscription():
             return xrange(0, len(self.exons), 1)
         else:
             return xrange(len(self.exons)-1, -1, -1)
+
+    def getSortedExons(self):
+        "get list of exons, sorted in order of transcription."
+        if self.inDirectionOfTranscription():
+            return list(self.exons)
+        else:
+            return [self.exons[i] for i in xrange(len(self.exons)-1, -1, -1)]
 
     def getRow(self):
         row = [self.name, self.chrom, self.strand, str(self.txStart), str(self.txEnd), str(self.cdsStart), str(self.cdsEnd)]

@@ -1,4 +1,4 @@
-LOCUS       NM_013266               3248 bp    mRNA    linear   PRI 23-SEP-2012
+LOCUS       NM_013266               3248 bp    mRNA    linear   PRI 07-JAN-2013
 DEFINITION  Homo sapiens catenin (cadherin-associated protein), alpha 3
             (CTNNA3), transcript variant 1, mRNA.
 ACCESSION   NM_013266
@@ -18,6 +18,16 @@ REFERENCE   1  (bases 1 to 3248)
   REMARK    GeneRIF: Low alpha catenin is involved in colorectal cancer
             metastasis.
 REFERENCE   2  (bases 1 to 3248)
+  AUTHORS   Odell,A.F., Hollstein,M., Ponnambalam,S. and Walker,J.H.
+  TITLE     A VE-cadherin-PAR3-alpha-catenin complex regulates the Golgi
+            localization and activity of cytosolic phospholipase A(2)alpha in
+            endothelial cells
+  JOURNAL   Mol. Biol. Cell 23 (9), 1783-1796 (2012)
+   PUBMED   22398721
+  REMARK    GeneRIF: A VE-cadherin-PAR3-alpha-catenin complex regulates the
+            Golgi localization and activity of cytosolic phospholipase
+            A(2)alpha in endothelial cells.
+REFERENCE   3  (bases 1 to 3248)
   AUTHORS   Smith,J.D., Meehan,M.H., Crean,J. and McCann,A.
   TITLE     Alpha T-catenin (CTNNA3): a gene in the hand is worth two in the
             nest
@@ -26,7 +36,7 @@ REFERENCE   2  (bases 1 to 3248)
   REMARK    GeneRIF: Apart from the complexity of its regulation, alterations
             in both CTNNA3 and LRTMM3 are implicated in human disease.
             Review article
-REFERENCE   3  (bases 1 to 3248)
+REFERENCE   4  (bases 1 to 3248)
   AUTHORS   Christensen,A.H., Benn,M., Tybjaerg-Hansen,A., Haunso,S. and
             Svendsen,J.H.
   TITLE     Screening of three novel candidate genes in arrhythmogenic right
@@ -36,7 +46,7 @@ REFERENCE   3  (bases 1 to 3248)
   REMARK    GeneRIF: Our comprehensive mutation scanning did not identify any
             Arrhythmogenic right ventricular cardiomyopathy (ARVC) causing
             mutations.
-REFERENCE   4  (bases 1 to 3248)
+REFERENCE   5  (bases 1 to 3248)
   AUTHORS   Bailey,S.D., Xie,C., Do,R., Montpetit,A., Diaz,R., Mohan,V.,
             Keavney,B., Yusuf,S., Gerstein,H.C., Engert,J.C. and Anand,S.
   CONSRTM   DREAM investigators
@@ -48,15 +58,6 @@ REFERENCE   4  (bases 1 to 3248)
   REMARK    GeneRIF: Observational study of gene-disease association,
             gene-environment interaction, and pharmacogenomic / toxicogenomic.
             (HuGE Navigator)
-REFERENCE   5  (bases 1 to 3248)
-  AUTHORS   Goldstein,B.A., Hubbard,A.E., Cutler,A. and Barcellos,L.F.
-  TITLE     An application of Random Forests to a genome-wide association
-            dataset: methodological considerations & new findings
-  JOURNAL   BMC Genet. 11, 49 (2010)
-   PUBMED   20546594
-  REMARK    GeneRIF: Observational study and genome-wide association study of
-            gene-disease association. (HuGE Navigator)
-            Publication Status: Online-Only
 REFERENCE   6  (bases 1 to 3248)
   AUTHORS   Deloukas,P., Earthrowl,M.E., Grafham,D.V., Rubenfield,M.,
             French,L., Steward,C.A., Sims,S.K., Jones,M.C., Searle,S.,
@@ -173,7 +174,6 @@ FEATURES             Location/Qualifiers
                      /note="catenin (cadherin-associated protein), alpha 3"
                      /db_xref="GeneID:29119"
                      /db_xref="HGNC:2511"
-                     /db_xref="HPRD:09639"
                      /db_xref="MIM:607667"
      exon            1..192
                      /gene="CTNNA3"
@@ -201,7 +201,6 @@ FEATURES             Location/Qualifiers
                      /db_xref="CCDS:CCDS7269.1"
                      /db_xref="GeneID:29119"
                      /db_xref="HGNC:2511"
-                     /db_xref="HPRD:09639"
                      /db_xref="MIM:607667"
                      /translation="MSAETPITLNIDPQDLQVQTFTVEKLLEPLIIQVTTLVNCPQNP
                      SSRKKGRSKRASVLLASVEEATWNLLDKGEKIAQEATVLKDELTASLEEVRKESEALK
@@ -381,6 +380,7 @@ LOCUS       BG187649                 790 bp    mRNA    linear   EST 29-JAN-2011
 DEFINITION  RST6530 Athersys RAGE Library Homo sapiens cDNA, mRNA sequence.
 ACCESSION   BG187649
 VERSION     BG187649.1  GI:13709224
+DBLINK      BioSample: LIBEST_008655
 KEYWORDS    EST.
 SOURCE      Homo sapiens (human)
   ORGANISM  Homo sapiens

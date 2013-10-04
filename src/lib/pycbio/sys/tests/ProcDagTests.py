@@ -251,7 +251,7 @@ class ProcDagTests(TestCaseBase):
         pd.create(("sort","-u"), stdin=sortu, stdout=outf)
         pd.wait()
         self.diffExpected(".out")
-        self.commonChecks(nopen, pd, "^cat <\\(sort -r <.+/tests/input/simple1.txt \\| sort\\) <\\(sort <.+/input/simple1.txt \\| sort -r\\) \\| sort -u >.+/output/ProcDagTests\\.ProcDagTests\\.testJoinPipe2Uniq\\.out$", isRe=True)
+        self.commonChecks(nopen, pd, "^cat <\\(sort -r <.+/input/simple1.txt \\| sort\\) <\\(sort <.+/input/simple1.txt \\| sort -r\\) \\| sort -u >.+/output/ProcDagTests\\.ProcDagTests\\.testJoinPipe2Uniq\\.out$", isRe=True)
 
     def testArgToArg(self):
         "pipe argument to argument of another process"
@@ -268,7 +268,8 @@ class ProcDagTests(TestCaseBase):
         # so we check multiple posibilities
         self.commonChecks(nopen, pd,
                           "(^tee >\\(cat <\\(tee \\.\\.\\.\\) </dev/null >.+/output/ProcDagTests\\.ProcDagTests\\.testArgToArg\\.out\\) <.+/input/simple1\\.txt >/dev/null ; cat \\.\\.\\.$)" \
-                              + "|(^tee >\\(cat <\\(tee \\.\\.\\.\\) </dev/null >.+/output/ProcDagTests\\.ProcDagTests\\.testArgToArg\\.out\\) <.+/input/simple1\\.txt >/dev/null ; cat \\.\\.\\.$)",
+                              + "|(^tee >\\(cat <\\(tee \\.\\.\\.\\) </dev/null >.+/output/ProcDagTests\\.ProcDagTests\\.testArgToArg\\.out\\) <.+/input/simple1\\.txt >/dev/null ; cat \\.\\.\\.$)" \
+                              + "|(^cat <\\(tee >\\(cat \\.\\.\\.\\) <.+/input/simple1\\.txt >/dev/null\\) </dev/null >.+/output/ProcDagTests\\.ProcDagTests\\.testArgToArg\\.out ; tee \\.\\.\\.)",
                           isRe=True)
 
     def testStdioCycleDetect(self):
