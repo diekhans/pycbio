@@ -33,6 +33,12 @@ class ProcRunTests(TestCaseBase):
         self.failUnlessEqual(ret, 0)
         self.diffExpected(".txt")
 
+    def BROKEN_testRunFileOut(self):
+        with open(self.getOutputFile(".txt"), "w") as outfh:
+            ret = procOps.runProc(["sort", self.getInputFile("simple1.txt")], stdout=outfh)
+            self.failUnlessEqual(ret, 0)
+            self.diffExpected(".txt")
+
     def testRunInOut(self):
         outf = self.getOutputFile(".txt")
         ret = procOps.runProc(["sort"], stdin=self.getInputFile("simple1.txt"), stdout=outf)

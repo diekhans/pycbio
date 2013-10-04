@@ -26,6 +26,18 @@ class PipelineTests(TestCaseBase):
         procOps.runProc(("zcat", outfGz), stdout=outf)
         self.diffExpected(".out")
 
+    def BROKEN_testWriteFile(self):
+        outf = self.getOutputFile(".out")
+        outfGz = self.getOutputFile(".out.gz")
+
+        with open(outfGz, "w") as outfGzFh:
+            pl = Pipeline(("gzip", "-1"), "w", otherEnd=outfGzFh)
+            self.cpFileToPl("simple1.txt", pl)
+            pl.wait()
+
+        procOps.runProc(("zcat", outfGz), stdout=outf)
+        self.diffExpected(".out")
+
     def testWriteMult(self):
         outf = self.getOutputFile(".wc")
 
