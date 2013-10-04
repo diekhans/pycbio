@@ -11,6 +11,8 @@ from pycbio.sys import strOps, Trace, PycbioException, Fifo
 #    - need async reader/write that are a pipe that will not deadlock
 #      but also doesn't just buffer in memory
 #    - this shows a bug: (ChrMLifterBroken) ccds2/modules/gencode/src/progs/gencodeMakeTracks/gencodeGtfToGenePred
+#    - passing in a python file or handle is documented but not implemented,
+#    - see ProcOpsTests.py and ProcOpsTests.py BROKEN_
 
 try:
     MAXFD = os.sysconf("SC_OPEN_MAX")
