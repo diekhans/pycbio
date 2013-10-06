@@ -3,24 +3,22 @@
 Pairwise alignment.  All coordinates are strand-specific
 
 """
-import sys,copy,re
-from pycbio.sys.Enumeration import Enumeration
+import copy,re
 from pycbio.hgdata.Psl import PslReader
-from pycbio.hgdata.Frame import frameIncr,frameToPhase
 from pycbio.sys.fileOps import prLine,iterLines
 
-# FIXME: need range/overlap operatores
+# FIXME: need range/overlap operators
 
-_otherStrand = {"+": "-", "-": "+"}
+otherStrand = {"+": "-", "-": "+"}
 
 class Coord(object):
     """A coordinate, which can be either absolute or relative to start of strand.
     """
-    __slots__ = ("id", "start", "end", "size", "strand", "isAbs")
-    def __init__(self, id, start, end, size, strand, isAbs):
+    __slots__ = ("seqId", "start", "end", "size", "strand", "isAbs")
+    def __init__(self, seqId, start, end, size, strand, isAbs):     #pylint: disable=R0913
         assert((start <= end) and (start <= size) and (end <= size))
         assert(strand in ("+", "-"))
-        self.id = id
+        self.seqId = seqId
         self.start = start
         self.end = end
         self.size = size
@@ -28,42 +26,42 @@ class Coord(object):
         self.isAbs = isAbs
 
     def __getstate__(self):
-        return (self.id, self.start, self.end, self.size, self.strand, self.isAbs)
+        return (self.seqId, self.start, self.end, self.size, self.strand, self.isAbs)
 
     def __setstate__(self, st):
-        (self.id, self.start, self.end, self.size, self.strand, self.isAbs) = st
+        (self.seqId, self.start, self.end, self.size, self.strand, self.isAbs) = st
 
     def __str__(self):
-        return self.id + ":" + str(self.start) + "-" + str(self.end) + "(" \
+        return self.seqId + ":" + str(self.start) + "-" + str(self.end) + "(" \
             + self.strand + ("a" if self.isAbs else "r") + ")"
 
     def toAbs(self):
         """create a new coord object that is in absolute coordinates.  Does not change the
         strand"""
         if self.isAbs or (self.strand == "+"):
-            return Coord(self.id, self.start, self.end, self.size, self.strand, True)
+            return Coord(self.seqId, self.start, self.end, self.size, self.strand, True)
         else:
-            return Coord(self.id, (self.size - self.end), (self.size - self.start), self.size, self.strand, True)
+            return Coord(self.seqId, (self.size - self.end), (self.size - self.start), self.size, self.strand, True)
 
     def toRel(self):
         """create a new coord object that is in relative coordinates.  Does not change the
         strand"""
         if (not self.isAbs) or (self.strand == "+"):
-            return Coord(self.id, self.start, self.end, self.size, self.strand, False)
+            return Coord(self.seqId, self.start, self.end, self.size, self.strand, False)
         else:
-            return Coord(self.id, (self.size - self.end), (self.size - self.start), self.size, self.strand, False)
+            return Coord(self.seqId, (self.size - self.end), (self.size - self.start), self.size, self.strand, False)
 
     def toRev(self):
         """create a new coord object that is on the opposite strand, does not change
         coordinate system"""
         if self.isAbs:
-            return Coord(self.id, self.start, self.end, self.size, self.strand, True)
+            return Coord(self.seqId, self.start, self.end, self.size, self.strand, True)
         else:
-            return Coord(self.id, (self.size - self.end), (self.size - self.start), self.size, _otherStrand[self.strand], False)
+            return Coord(self.seqId, (self.size - self.end), (self.size - self.start), self.size, otherStrand[self.strand], False)
 
     def getRange(self, start, end):
         "generate a coord object the same sequence, only using start/end as the bounds"
-        return Coord(self.id, start, end, self.size, self.strand, self.isAbs)
+        return Coord(self.seqId, start, end, self.size, self.strand, self.isAbs)
 
     def overlaps(self, start, end):
         "determine if a range overlaps"
@@ -73,7 +71,7 @@ class Coord(object):
 
     def coordOver(self, coord):
         "does another coordinate overlap this one"
-        if coord.id != self.id:
+        if coord.seqId != self.seqId:
             return False
         elif (self.isAbs or (self.strand == '+')) and (coord.isAbs or (coord.strand == '+')):
             # can compare directly
@@ -94,8 +92,8 @@ class Seq(Coord):
     """Sequence in an alignment, coordinates are relative."""
 
     __slots__ = ("cds")
-    def __init__(self, id, start, end, size, strand, cds=None):
-        Coord.__init__(self, id, start, end, size, strand, True)
+    def __init__(self, seqId, start, end, size, strand, cds=None):   #pylint: disable=R0913
+        Coord.__init__(self, seqId, start, end, size, strand, True)
         self.cds = cds
 
     def __getstate__(self):
@@ -125,10 +123,10 @@ class Seq(Coord):
         "return a reverse complment of this object"
         cds = self.cds.revCmpl(self.size) if self.cds != None else None
         strand = '-' if (self.strand == '+') else '+'
-        return Seq(self.id, self.size-self.end, self.size-self.start, self.size, strand, cds)
+        return Seq(self.seqId, self.size-self.end, self.size-self.start, self.size, strand, cds)
 
     def __str__(self):
-        return self.id + ":" + str(self.start) + "-" + str(self.end) + "/" \
+        return self.seqId + ":" + str(self.start) + "-" + str(self.end) + "/" \
             + self.strand + " sz: " + str(self.size) + " cds: " + str(self.cds)
 
     def __len__(self):
@@ -144,7 +142,7 @@ class Seq(Coord):
         else:
             self.cds.start = min(self.cds.start, cdsStart)
             self.cds.end = max(self.cds.end, cdsEnd)
-    
+
 class SubSeq(object):
     "subsequence in alignment"
     __slots__ = ("seq", "start", "end", "cds")
@@ -171,8 +169,8 @@ class SubSeq(object):
 
     def locStr(self):
         "get string describing location"
-        return self.seq.id + ":" + str(self.start) + "-" + str(self.end)
-        
+        return self.seq.seqId + ":" + str(self.start) + "-" + str(self.end)
+
     def revCmpl(self, revSeq):
         "return a reverse complment of this object for revSeq"
         cds = self.cds.revCmpl(revSeq.size) if self.cds != None else None
@@ -207,6 +205,7 @@ class SubSeqs(list):
     to for functions that can operate on either side of alignment."""
     __slots__ = ("seq")
     def __init__(self, seq):
+        list.__init__(self)
         self.seq = seq
 
     def __getstate__(self):
@@ -256,11 +255,11 @@ class Cds(object):
 
     def __str__(self):
         return str(self.start) + "-" + str(self.end)
-        
+
     def __len__(self):
         "get CDS length"
         return self.end-self.start
-    
+
 class Block(object):
     """Block in alignment, query or target SubSeq can be None.  Links allow
     for simple traversing"""
@@ -300,9 +299,9 @@ class Block(object):
 
     def __subToRow(self, seq, sub):
         if sub != None:
-            return [seq.id, sub.start, sub.end]
+            return [seq.seqId, sub.start, sub.end]
         else:
-            return [seq.id, None, None]
+            return [seq.seqId, None, None]
 
     def toRow(self):
         "convert to list of query and target coords"
@@ -337,7 +336,7 @@ class PairAlign(list):
             daln.addBlk(sblk.q.copy(daln.qSeq) if (sblk.q != None) else None,
                         sblk.t.copy(daln.tSeq) if (sblk.t != None) else None)
         return daln
-        
+
     def addBlk(self, q, t):
         blk = Block(self, q, t)
         if len(self) > 0:
@@ -361,7 +360,7 @@ class PairAlign(list):
 
     def anyTOverlap(self, other):
         "determine if the any target blocks overlap"
-        if (self.tSeq.id != other.tSeq.id) or (self.tSeq.strand != other.tSeq.strand):
+        if (self.tSeq.seqId != other.tSeq.seqId) or (self.tSeq.strand != other.tSeq.strand):
             return False
         oblk = other[0]
         for blk in self:
@@ -398,7 +397,7 @@ class PairAlign(list):
 
     def targetOverlap(self, o):
         "do the target ranges overlap"
-        return ((self.tSeq.id == o.tSeq.id)
+        return ((self.tSeq.seqId == o.tSeq.seqId)
                 and (self.tSeq.strand == o.tSeq.strand)
                 and (self.tSeq.start < o.tSeq.end)
                 and (self.tSeq.end > o.tSeq.start))
@@ -465,7 +464,7 @@ class PairAlign(list):
         end of mapped CDS"""
         assert(srcSeq.cds != None)
         assert((destSeq == self.qSeq) or (destSeq == self.tSeq))
-        assert((srcSeq.id == destSeq.id) and (srcSeq.strand == destSeq.strand))
+        assert((srcSeq.seqId == destSeq.seqId) and (srcSeq.strand == destSeq.strand))
         srcSubSeqs = srcAln.__getSubseq(srcSeq)
         destSubSeqs = self.__getSubseq(destSeq)
         destSubSeqs.clearCds()
@@ -545,7 +544,7 @@ class CdsTable(dict):
         for line in iterLines(cdsFile):
             if not line.startswith('#'):
                 self.__parseCds(line)
-    
+
     __parseRe = re.compile("^([^\t]+)\t([0-9]+)\\.\\.([0-9]+)$")
     def __parseCds(self, line):
         m = self.__parseRe.match(line)
