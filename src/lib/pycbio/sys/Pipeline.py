@@ -694,7 +694,10 @@ class Proc(object):
         # first process is process leader.
         if self.dag.pgid == None:
             self.dag.pgid = self.pid
-        _setPgid(self.pid, self.dag.pgid)
+        try:
+            _setPgid(self.pid, self.dag.pgid)
+        except OSError, e:
+            pass # igore error if child has already come and gone
         self.statusPipe.postForkParent()
 
     def __start(self):
