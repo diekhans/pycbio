@@ -282,6 +282,35 @@ class Psl(object):
                 cmp = psl1.tEnd - psl2.tEnd
         return cmp
 
+    def __eq__(self, other):
+        "compare for equality of alignment"
+        if (type(self) != type(other)
+            or (self.match != other.match)
+            or (self.misMatch != other.misMatch)
+            or (self.repMatch != other.repMatch)
+            or (self.nCount != other.nCount)
+            or (self.qNumInsert != other.qNumInsert)
+            or (self.qBaseInsert != other.qBaseInsert)
+            or (self.tNumInsert != other.tNumInsert)
+            or (self.tBaseInsert != other.tBaseInsert)
+            or (self.strand != other.strand)
+            or (self.qName != other.qName)
+            or (self.qSize != other.qSize)
+            or (self.qStart != other.qStart)
+            or (self.qEnd != other.qEnd)
+            or (self.tName != other.tName)
+            or (self.tSize != other.tSize)
+            or (self.tStart != other.tStart)
+            or (self.tEnd != other.tEnd)
+            or (self.blockCount != other.blockCount)
+            or (self.qSeq != other.qSeq)
+            or (self.tSeq != other.tSeq)):
+            return False
+        for i in xrange(self.blockCount):
+            if not self.blocks[i].sameAlign(other.blocks[i]):
+                return False
+        return True
+
     def sameAlign(self, other):
         "compare for equality of alignment.  The stats fields are not compared."
         if ((other == None) 
@@ -294,7 +323,9 @@ class Psl(object):
             or (self.tSize != other.tSize)
             or (self.tStart != other.tStart)
             or (self.tEnd != other.tEnd)
-            or (self.blockCount != other.blockCount)):
+            or (self.blockCount != other.blockCount)
+            or (self.qSeq != other.qSeq)
+            or (self.tSeq != other.tSeq)):
             return False
         for i in xrange(self.blockCount):
             if not self.blocks[i].sameAlign(other.blocks[i]):
