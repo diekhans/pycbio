@@ -95,7 +95,7 @@ class BedTbl(TabFile):
     """Table of BED objects loaded from a tab-file
     """
 
-    def _mkNameIdx(self):
+    def __mkNameIdx(self):
         self.nameMap = MultiDict()
         for bed in self:
             self.nameMap.add(bed.name, bed)
@@ -104,5 +104,5 @@ class BedTbl(TabFile):
         TabFile.__init__(self, fileName, rowClass=Bed, hashAreComments=True)
         self.nameMap = None
         if nameIdx:
-            self._nameIdx()
+            self.__mkNameIdx()
 
