@@ -72,8 +72,8 @@ class Bed(object):
             for blk in self.blocks:
                 relStarts.append(str(blk.relStart))
                 sizes.append(str(blk.size))
-            row.append(intArrayJoin(self.relStart))
-            row.append(intArrayJoin(self.sizes))
+            row.append(intArrayJoin(relStarts))
+            row.append(intArrayJoin(sizes))
         return row
 
     def __str__(self):
