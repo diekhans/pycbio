@@ -65,7 +65,7 @@ class PslBlock(object):
 
     def sameAlign(self, other):
         "compare for equality of alignment."
-        return (other != None) and (self.qStart == other.qStart) and (self.tStart == other.tStart) and (self.size == other.size)
+        return (other != None) and (self.qStart == other.qStart) and (self.tStart == other.tStart) and (self.size == other.size) and (self.qSeq == other.qSeq) and (self.tSeq == other.tSeq)
 
     def reverseComplement(self, newPsl):
         "construct a block that is the reverse complement of this block"
@@ -284,7 +284,7 @@ class Psl(object):
 
     def __eq__(self, other):
         "compare for equality of alignment"
-        if (type(self) != type(other)
+        if ((not isinstance(other, self.__class__))
             or (self.match != other.match)
             or (self.misMatch != other.misMatch)
             or (self.repMatch != other.repMatch)
@@ -302,14 +302,15 @@ class Psl(object):
             or (self.tSize != other.tSize)
             or (self.tStart != other.tStart)
             or (self.tEnd != other.tEnd)
-            or (self.blockCount != other.blockCount)
-            or (self.qSeq != other.qSeq)
-            or (self.tSeq != other.tSeq)):
+            or (self.blockCount != other.blockCount)):
             return False
         for i in xrange(self.blockCount):
             if not self.blocks[i].sameAlign(other.blocks[i]):
                 return False
         return True
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def sameAlign(self, other):
         "compare for equality of alignment.  The stats fields are not compared."
@@ -323,9 +324,7 @@ class Psl(object):
             or (self.tSize != other.tSize)
             or (self.tStart != other.tStart)
             or (self.tEnd != other.tEnd)
-            or (self.blockCount != other.blockCount)
-            or (self.qSeq != other.qSeq)
-            or (self.tSeq != other.tSeq)):
+            or (self.blockCount != other.blockCount)):
             return False
         for i in xrange(self.blockCount):
             if not self.blocks[i].sameAlign(other.blocks[i]):
