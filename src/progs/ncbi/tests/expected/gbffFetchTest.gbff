@@ -1,103 +1,115 @@
-LOCUS       NM_013266               3248 bp    mRNA    linear   PRI 07-JAN-2013
+LOCUS       NM_013266               3248 bp    mRNA    linear   PRI 09-FEB-2014
 DEFINITION  Homo sapiens catenin (cadherin-associated protein), alpha 3
             (CTNNA3), transcript variant 1, mRNA.
 ACCESSION   NM_013266
 VERSION     NM_013266.2  GI:188497715
-KEYWORDS    .
+KEYWORDS    RefSeq.
 SOURCE      Homo sapiens (human)
   ORGANISM  Homo sapiens
             Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
             Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini;
             Catarrhini; Hominidae; Homo.
 REFERENCE   1  (bases 1 to 3248)
-  AUTHORS   Zhu,L., Chen,H., Zhou,D., Li,D., Bai,R., Zheng,S. and Ge,W.
-  TITLE     MicroRNA-9 up-regulation is involved in colorectal cancer
-            metastasis via promoting cell motility
-  JOURNAL   Med. Oncol. 29 (2), 1037-1043 (2012)
-   PUBMED   21562850
-  REMARK    GeneRIF: Low alpha catenin is involved in colorectal cancer
-            metastasis.
+  AUTHORS   Wang H, St Julien KR, Stevenson DK, Hoffmann TJ, Witte JS,
+            Lazzeroni LC, Krasnow MA, Quaintance CC, Oehlert JW,
+            Jelliffe-Pawlowski LL, Gould JB, Shaw GM and O'Brodovich HM.
+  TITLE     A genome-wide association study (GWAS) for bronchopulmonary
+            dysplasia
+  JOURNAL   Pediatrics 132 (2), 290-297 (2013)
+   PUBMED   23897914
 REFERENCE   2  (bases 1 to 3248)
-  AUTHORS   Odell,A.F., Hollstein,M., Ponnambalam,S. and Walker,J.H.
-  TITLE     A VE-cadherin-PAR3-alpha-catenin complex regulates the Golgi
-            localization and activity of cytosolic phospholipase A(2)alpha in
-            endothelial cells
-  JOURNAL   Mol. Biol. Cell 23 (9), 1783-1796 (2012)
-   PUBMED   22398721
-  REMARK    GeneRIF: A VE-cadherin-PAR3-alpha-catenin complex regulates the
-            Golgi localization and activity of cytosolic phospholipase
-            A(2)alpha in endothelial cells.
+  AUTHORS   Anttila V, Winsvold BS, Gormley P, Kurth T, Bettella F, McMahon G,
+            Kallela M, Malik R, de Vries B, Terwindt G, Medland SE, Todt U,
+            McArdle WL, Quaye L, Koiranen M, Ikram MA, Lehtimaki T, Stam AH,
+            Ligthart L, Wedenoja J, Dunham I, Neale BM, Palta P, Hamalainen E,
+            Schurks M, Rose LM, Buring JE, Ridker PM, Steinberg S, Stefansson
+            H, Jakobsson F, Lawlor DA, Evans DM, Ring SM, Farkkila M, Artto V,
+            Kaunisto MA, Freilinger T, Schoenen J, Frants RR, Pelzer N, Weller
+            CM, Zielman R, Heath AC, Madden PA, Montgomery GW, Martin NG, Borck
+            G, Gobel H, Heinze A, Heinze-Kuhn K, Williams FM, Hartikainen AL,
+            Pouta A, van den Ende J, Uitterlinden AG, Hofman A, Amin N,
+            Hottenga JJ, Vink JM, Heikkila K, Alexander M, Muller-Myhsok B,
+            Schreiber S, Meitinger T, Wichmann HE, Aromaa A, Eriksson JG,
+            Traynor BJ, Trabzuni D, Rossin E, Lage K, Jacobs SB, Gibbs JR,
+            Birney E, Kaprio J, Penninx BW, Boomsma DI, van Duijn C, Raitakari
+            O, Jarvelin MR, Zwart JA, Cherkas L, Strachan DP, Kubisch C,
+            Ferrari MD, van den Maagdenberg AM, Dichgans M, Wessman M, Smith
+            GD, Stefansson K, Daly MJ, Nyholt DR, Chasman DI and Palotie A.
+  CONSRTM   North American Brain Expression Consortium; UK Brain Expression
+            Consortium; International Headache Genetics Consortium
+  TITLE     Genome-wide meta-analysis identifies new susceptibility loci for
+            migraine
+  JOURNAL   Nat. Genet. 45 (8), 912-917 (2013)
+   PUBMED   23793025
 REFERENCE   3  (bases 1 to 3248)
-  AUTHORS   Smith,J.D., Meehan,M.H., Crean,J. and McCann,A.
-  TITLE     Alpha T-catenin (CTNNA3): a gene in the hand is worth two in the
-            nest
-  JOURNAL   Cell. Mol. Life Sci. 68 (15), 2493-2498 (2011)
-   PUBMED   21598020
-  REMARK    GeneRIF: Apart from the complexity of its regulation, alterations
-            in both CTNNA3 and LRTMM3 are implicated in human disease.
-            Review article
+  AUTHORS   Fingerlin TE, Murphy E, Zhang W, Peljto AL, Brown KK, Steele MP,
+            Loyd JE, Cosgrove GP, Lynch D, Groshong S, Collard HR, Wolters PJ,
+            Bradford WZ, Kossen K, Seiwert SD, du Bois RM, Garcia CK, Devine
+            MS, Gudmundsson G, Isaksson HJ, Kaminski N, Zhang Y, Gibson KF,
+            Lancaster LH, Cogan JD, Mason WR, Maher TM, Molyneaux PL, Wells AU,
+            Moffatt MF, Selman M, Pardo A, Kim DS, Crapo JD, Make BJ, Regan EA,
+            Walek DS, Daniel JJ, Kamatani Y, Zelenika D, Smith K, McKean D,
+            Pedersen BS, Talbert J, Kidd RN, Markin CR, Beckman KB, Lathrop M,
+            Schwarz MI and Schwartz DA.
+  TITLE     Genome-wide association study identifies multiple susceptibility
+            loci for pulmonary fibrosis
+  JOURNAL   Nat. Genet. 45 (6), 613-620 (2013)
+   PUBMED   23583980
+  REMARK    Erratum:[Nat Genet. 2013 Nov;45(11):1409]
 REFERENCE   4  (bases 1 to 3248)
-  AUTHORS   Christensen,A.H., Benn,M., Tybjaerg-Hansen,A., Haunso,S. and
-            Svendsen,J.H.
-  TITLE     Screening of three novel candidate genes in arrhythmogenic right
-            ventricular cardiomyopathy
-  JOURNAL   Genet Test Mol Biomarkers 15 (4), 267-271 (2011)
-   PUBMED   21254927
-  REMARK    GeneRIF: Our comprehensive mutation scanning did not identify any
-            Arrhythmogenic right ventricular cardiomyopathy (ARVC) causing
-            mutations.
+  AUTHORS   Borglum AD, Demontis D, Grove J, Pallesen J, Hollegaard MV,
+            Pedersen CB, Hedemand A, Mattheisen M, Uitterlinden A, Nyegaard M,
+            Orntoft T, Wiuf C, Didriksen M, Nordentoft M, Nothen MM, Rietschel
+            M, Ophoff RA, Cichon S, Yolken RH, Hougaard DM, Mortensen PB and
+            Mors O.
+  CONSRTM   GROUP investigators
+  TITLE     Genome-wide study of association and interaction with maternal
+            cytomegalovirus infection suggests new schizophrenia loci
+  JOURNAL   Mol. Psychiatry (2013) In press
+   PUBMED   23358160
+  REMARK    Publication Status: Available-Online prior to print
 REFERENCE   5  (bases 1 to 3248)
-  AUTHORS   Bailey,S.D., Xie,C., Do,R., Montpetit,A., Diaz,R., Mohan,V.,
-            Keavney,B., Yusuf,S., Gerstein,H.C., Engert,J.C. and Anand,S.
-  CONSRTM   DREAM investigators
-  TITLE     Variation at the NFATC2 locus increases the risk of
-            thiazolidinedione-induced edema in the Diabetes REduction
-            Assessment with ramipril and rosiglitazone Medication (DREAM) study
-  JOURNAL   Diabetes Care 33 (10), 2250-2253 (2010)
-   PUBMED   20628086
-  REMARK    GeneRIF: Observational study of gene-disease association,
-            gene-environment interaction, and pharmacogenomic / toxicogenomic.
-            (HuGE Navigator)
+  AUTHORS   Comuzzie AG, Cole SA, Laston SL, Voruganti VS, Haack K, Gibbs RA
+            and Butte NF.
+  TITLE     Novel genetic loci identified for the pathophysiology of childhood
+            obesity in the Hispanic population
+  JOURNAL   PLoS ONE 7 (12), E51954 (2012)
+   PUBMED   23251661
 REFERENCE   6  (bases 1 to 3248)
-  AUTHORS   Deloukas,P., Earthrowl,M.E., Grafham,D.V., Rubenfield,M.,
-            French,L., Steward,C.A., Sims,S.K., Jones,M.C., Searle,S.,
-            Scott,C., Howe,K., Hunt,S.E., Andrews,T.D., Gilbert,J.G.,
-            Swarbreck,D., Ashurst,J.L., Taylor,A., Battles,J., Bird,C.P.,
-            Ainscough,R., Almeida,J.P., Ashwell,R.I., Ambrose,K.D.,
-            Babbage,A.K., Bagguley,C.L., Bailey,J., Banerjee,R., Bates,K.,
-            Beasley,H., Bray-Allen,S., Brown,A.J., Brown,J.Y., Burford,D.C.,
-            Burrill,W., Burton,J., Cahill,P., Camire,D., Carter,N.P.,
-            Chapman,J.C., Clark,S.Y., Clarke,G., Clee,C.M., Clegg,S., Corby,N.,
-            Coulson,A., Dhami,P., Dutta,I., Dunn,M., Faulkner,L., Frankish,A.,
-            Frankland,J.A., Garner,P., Garnett,J., Gribble,S., Griffiths,C.,
-            Grocock,R., Gustafson,E., Hammond,S., Harley,J.L., Hart,E.,
-            Heath,P.D., Ho,T.P., Hopkins,B., Horne,J., Howden,P.J., Huckle,E.,
-            Hynds,C., Johnson,C., Johnson,D., Kana,A., Kay,M., Kimberley,A.M.,
-            Kershaw,J.K., Kokkinaki,M., Laird,G.K., Lawlor,S., Lee,H.M.,
-            Leongamornlert,D.A., Laird,G., Lloyd,C., Lloyd,D.M., Loveland,J.,
-            Lovell,J., McLaren,S., McLay,K.E., McMurray,A.,
-            Mashreghi-Mohammadi,M., Matthews,L., Milne,S., Nickerson,T.,
-            Nguyen,M., Overton-Larty,E., Palmer,S.A., Pearce,A.V., Peck,A.I.,
-            Pelan,S., Phillimore,B., Porter,K., Rice,C.M., Rogosin,A.,
-            Ross,M.T., Sarafidou,T., Sehra,H.K., Shownkeen,R., Skuce,C.D.,
-            Smith,M., Standring,L., Sycamore,N., Tester,J., Thorpe,A.,
-            Torcasso,W., Tracey,A., Tromans,A., Tsolas,J., Wall,M., Walsh,J.,
-            Wang,H., Weinstock,K., West,A.P., Willey,D.L., Whitehead,S.L.,
-            Wilming,L., Wray,P.W., Young,L., Chen,Y., Lovering,R.C.,
-            Moschonas,N.K., Siebert,R., Fechtel,K., Bentley,D., Durbin,R.,
-            Hubbard,T., Doucette-Stamm,L., Beck,S., Smith,D.R. and Rogers,J.
+  AUTHORS   Deloukas P, Earthrowl ME, Grafham DV, Rubenfield M, French L,
+            Steward CA, Sims SK, Jones MC, Searle S, Scott C, Howe K, Hunt SE,
+            Andrews TD, Gilbert JG, Swarbreck D, Ashurst JL, Taylor A, Battles
+            J, Bird CP, Ainscough R, Almeida JP, Ashwell RI, Ambrose KD,
+            Babbage AK, Bagguley CL, Bailey J, Banerjee R, Bates K, Beasley H,
+            Bray-Allen S, Brown AJ, Brown JY, Burford DC, Burrill W, Burton J,
+            Cahill P, Camire D, Carter NP, Chapman JC, Clark SY, Clarke G, Clee
+            CM, Clegg S, Corby N, Coulson A, Dhami P, Dutta I, Dunn M, Faulkner
+            L, Frankish A, Frankland JA, Garner P, Garnett J, Gribble S,
+            Griffiths C, Grocock R, Gustafson E, Hammond S, Harley JL, Hart E,
+            Heath PD, Ho TP, Hopkins B, Horne J, Howden PJ, Huckle E, Hynds C,
+            Johnson C, Johnson D, Kana A, Kay M, Kimberley AM, Kershaw JK,
+            Kokkinaki M, Laird GK, Lawlor S, Lee HM, Leongamornlert DA, Laird
+            G, Lloyd C, Lloyd DM, Loveland J, Lovell J, McLaren S, McLay KE,
+            McMurray A, Mashreghi-Mohammadi M, Matthews L, Milne S, Nickerson
+            T, Nguyen M, Overton-Larty E, Palmer SA, Pearce AV, Peck AI, Pelan
+            S, Phillimore B, Porter K, Rice CM, Rogosin A, Ross MT, Sarafidou
+            T, Sehra HK, Shownkeen R, Skuce CD, Smith M, Standring L, Sycamore
+            N, Tester J, Thorpe A, Torcasso W, Tracey A, Tromans A, Tsolas J,
+            Wall M, Walsh J, Wang H, Weinstock K, West AP, Willey DL, Whitehead
+            SL, Wilming L, Wray PW, Young L, Chen Y, Lovering RC, Moschonas NK,
+            Siebert R, Fechtel K, Bentley D, Durbin R, Hubbard T,
+            Doucette-Stamm L, Beck S, Smith DR and Rogers J.
   TITLE     The DNA sequence and comparative analysis of human chromosome 10
   JOURNAL   Nature 429 (6990), 375-381 (2004)
    PUBMED   15164054
 REFERENCE   7  (bases 1 to 3248)
-  AUTHORS   Busby,V., Goossens,S., Nowotny,P., Hamilton,G., Smemo,S.,
-            Harold,D., Turic,D., Jehu,L., Myers,A., Womick,M., Woo,D.,
-            Compton,D., Doil,L.M., Tacey,K.M., Lau,K.F., Al-Saraj,S.,
-            Killick,R., Pickering-Brown,S., Moore,P., Hollingworth,P.,
-            Archer,N., Foy,C., Walter,S., Lendon,C., Iwatsubo,T., Morris,J.C.,
-            Norton,J., Mann,D., Janssens,B., Hardy,J., O'Donovan,M., Jones,L.,
-            Williams,J., Holmans,P., Owen,M.J., Grupe,A., Powell,J., van
-            Hengel,J., Goate,A., Van Roy,F. and Lovestone,S.
+  AUTHORS   Busby V, Goossens S, Nowotny P, Hamilton G, Smemo S, Harold D,
+            Turic D, Jehu L, Myers A, Womick M, Woo D, Compton D, Doil LM,
+            Tacey KM, Lau KF, Al-Saraj S, Killick R, Pickering-Brown S, Moore
+            P, Hollingworth P, Archer N, Foy C, Walter S, Lendon C, Iwatsubo T,
+            Morris JC, Norton J, Mann D, Janssens B, Hardy J, O'Donovan M,
+            Jones L, Williams J, Holmans P, Owen MJ, Grupe A, Powell J, van
+            Hengel J, Goate A, Van Roy F and Lovestone S.
   TITLE     Alpha-T-catenin is expressed in human brain and interacts with the
             Wnt signaling pathway but is not responsible for linkage to
             chromosome 10 in Alzheimer's disease
@@ -108,10 +120,9 @@ REFERENCE   7  (bases 1 to 3248)
             these SNPs associated with Abeta deposition in brain. CTNNA3 is
             unlikely to account for the susceptibility locus on chromosome 10
 REFERENCE   8  (bases 1 to 3248)
-  AUTHORS   Ertekin-Taner,N., Ronald,J., Asahara,H., Younkin,L., Hella,M.,
-            Jain,S., Gnida,E., Younkin,S., Fadale,D., Ohyagi,Y., Singleton,A.,
-            Scanlin,L., de Andrade,M., Petersen,R., Graff-Radford,N., Hutton,M.
-            and Younkin,S.
+  AUTHORS   Ertekin-Taner N, Ronald J, Asahara H, Younkin L, Hella M, Jain S,
+            Gnida E, Younkin S, Fadale D, Ohyagi Y, Singleton A, Scanlin L, de
+            Andrade M, Petersen R, Graff-Radford N, Hutton M and Younkin S.
   TITLE     Fine mapping of the alpha-T catenin gene to a quantitative trait
             locus on chromosome 10 in late-onset Alzheimer's disease pedigrees
   JOURNAL   Hum. Mol. Genet. 12 (23), 3133-3143 (2003)
@@ -120,9 +131,8 @@ REFERENCE   8  (bases 1 to 3248)
             and contribute to the previously reported linkage for plasma
             Abeta42 in late-onset Alzheimer's disease families.
 REFERENCE   9  (bases 1 to 3248)
-  AUTHORS   Janssens,B., Mohapatra,B., Vatta,M., Goossens,S., Vanpoucke,G.,
-            Kools,P., Montoye,T., van Hengel,J., Bowles,N.E., van Roy,F. and
-            Towbin,J.A.
+  AUTHORS   Janssens B, Mohapatra B, Vatta M, Goossens S, Vanpoucke G, Kools P,
+            Montoye T, van Hengel J, Bowles NE, van Roy F and Towbin JA.
   TITLE     Assessment of the CTNNA3 gene encoding human alpha T-catenin
             regarding its involvement in dilated cardiomyopathy
   JOURNAL   Hum. Genet. 112 (3), 227-236 (2003)
@@ -132,8 +142,8 @@ REFERENCE   9  (bases 1 to 3248)
             family showing dilated cardiomyopathy (DCM)linkage to the 10q21-q23
             locus, however, has not detected any DCM-linked CTNNA3 mutations
 REFERENCE   10 (bases 1 to 3248)
-  AUTHORS   Janssens,B., Goossens,S., Staes,K., Gilbert,B., van Hengel,J.,
-            Colpaert,C., Bruyneel,E., Mareel,M. and van Roy,F.
+  AUTHORS   Janssens B, Goossens S, Staes K, Gilbert B, van Hengel J, Colpaert
+            C, Bruyneel E, Mareel M and van Roy F.
   TITLE     alphaT-catenin: a novel tissue-specific beta-catenin-binding
             protein mediating strong cell-cell adhesion
   JOURNAL   J. Cell. Sci. 114 (PT 17), 3177-3188 (2001)
@@ -151,10 +161,11 @@ COMMENT     VALIDATED REFSEQ: This record has undergone validation or
             publications that are available for this gene. Please see the Gene
             record to access additional publications.
             
-            ##RefSeq-Attributes-START##
-            Transcript_exon_combination_evidence :: AK313882.1, AF091606.1
-                                                    [ECO:0000332]
-            ##RefSeq-Attributes-END##
+            ##Evidence-Data-START##
+            Transcript exon combination :: AK313882.1, AF091606.1 [ECO:0000332]
+            RNAseq introns              :: mixed/partial sample support
+                                           ERS025082, ERS025084 [ECO:0000350]
+            ##Evidence-Data-END##
 PRIMARY     REFSEQ_SPAN         PRIMARY_IDENTIFIER PRIMARY_SPAN        COMP
             1-22                AK313882.1         3-24
             23-674              AF091606.1         1-652
@@ -170,28 +181,26 @@ FEATURES             Location/Qualifiers
                      /map="10q22.2"
      gene            1..3248
                      /gene="CTNNA3"
-                     /gene_synonym="VR22"
+                     /gene_synonym="ARVD13; VR22"
                      /note="catenin (cadherin-associated protein), alpha 3"
                      /db_xref="GeneID:29119"
                      /db_xref="HGNC:2511"
                      /db_xref="MIM:607667"
      exon            1..192
                      /gene="CTNNA3"
-                     /gene_synonym="VR22"
-                     /inference="alignment:Splign"
-                     /number=1
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:1.39.8"
      misc_feature    159..161
                      /gene="CTNNA3"
-                     /gene_synonym="VR22"
+                     /gene_synonym="ARVD13; VR22"
                      /note="upstream in-frame stop codon"
      exon            193..296
                      /gene="CTNNA3"
-                     /gene_synonym="VR22"
-                     /inference="alignment:Splign"
-                     /number=3
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:1.39.8"
      CDS             198..2885
                      /gene="CTNNA3"
-                     /gene_synonym="VR22"
+                     /gene_synonym="ARVD13; VR22"
                      /note="alpha-catenin-like protein; alpha-T-catenin; alpha
                      T-catenin; cadherin-associated protein"
                      /codon_start=1
@@ -220,101 +229,78 @@ FEATURES             Location/Qualifiers
                      PLIKREKPEETCAAVRRGSAKKKIHPLQVMSEFRGRQIY"
      misc_feature    2106..2108
                      /gene="CTNNA3"
-                     /gene_synonym="VR22"
+                     /gene_synonym="ARVD13; VR22"
                      /experiment="experimental evidence, no additional details
                      recorded"
                      /note="Phosphoserine; propagated from UniProtKB/Swiss-Prot
                      (Q9UI47.2); phosphorylation site"
-     misc_feature    2796..2798
-                     /gene="CTNNA3"
-                     /gene_synonym="VR22"
-                     /experiment="experimental evidence, no additional details
-                     recorded"
-                     /note="Phosphothreonine; propagated from
-                     UniProtKB/Swiss-Prot (Q9UI47.2); phosphorylation site"
      exon            297..489
                      /gene="CTNNA3"
-                     /gene_synonym="VR22"
-                     /inference="alignment:Splign"
-                     /number=4
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:1.39.8"
      exon            490..656
                      /gene="CTNNA3"
-                     /gene_synonym="VR22"
-                     /inference="alignment:Splign"
-                     /number=5
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:1.39.8"
      exon            657..776
                      /gene="CTNNA3"
-                     /gene_synonym="VR22"
-                     /inference="alignment:Splign"
-                     /number=6
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:1.39.8"
      exon            777..1040
                      /gene="CTNNA3"
-                     /gene_synonym="VR22"
-                     /inference="alignment:Splign"
-                     /number=7
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:1.39.8"
      exon            1041..1244
                      /gene="CTNNA3"
-                     /gene_synonym="VR22"
-                     /inference="alignment:Splign"
-                     /number=8
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:1.39.8"
      exon            1245..1325
                      /gene="CTNNA3"
-                     /gene_synonym="VR22"
-                     /inference="alignment:Splign"
-                     /number=9
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:1.39.8"
      exon            1326..1478
                      /gene="CTNNA3"
-                     /gene_synonym="VR22"
-                     /inference="alignment:Splign"
-                     /number=10
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:1.39.8"
      exon            1479..1571
                      /gene="CTNNA3"
-                     /gene_synonym="VR22"
-                     /inference="alignment:Splign"
-                     /number=11
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:1.39.8"
      exon            1572..1728
                      /gene="CTNNA3"
-                     /gene_synonym="VR22"
-                     /inference="alignment:Splign"
-                     /number=12
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:1.39.8"
      exon            1729..1929
                      /gene="CTNNA3"
-                     /gene_synonym="VR22"
-                     /inference="alignment:Splign"
-                     /number=13
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:1.39.8"
      exon            1930..2081
                      /gene="CTNNA3"
-                     /gene_synonym="VR22"
-                     /inference="alignment:Splign"
-                     /number=14
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:1.39.8"
      exon            2082..2174
                      /gene="CTNNA3"
-                     /gene_synonym="VR22"
-                     /inference="alignment:Splign"
-                     /number=15
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:1.39.8"
      exon            2175..2356
                      /gene="CTNNA3"
-                     /gene_synonym="VR22"
-                     /inference="alignment:Splign"
-                     /number=16
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:1.39.8"
      exon            2357..2462
                      /gene="CTNNA3"
-                     /gene_synonym="VR22"
-                     /inference="alignment:Splign"
-                     /number=17
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:1.39.8"
      exon            2463..2597
                      /gene="CTNNA3"
-                     /gene_synonym="VR22"
-                     /inference="alignment:Splign"
-                     /number=18
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:1.39.8"
      exon            2598..3248
                      /gene="CTNNA3"
-                     /gene_synonym="VR22"
-                     /inference="alignment:Splign"
-                     /number=19
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:1.39.8"
      STS             2656..3162
                      /gene="CTNNA3"
-                     /gene_synonym="VR22"
+                     /gene_synonym="ARVD13; VR22"
                      /standard_name="CTNNA3_4652"
                      /db_xref="UniSTS:462847"
 ORIGIN      

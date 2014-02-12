@@ -4,7 +4,7 @@ from pycbio.hgdata.AutoSql import intArraySplit, intArrayJoin
 from pycbio.sys.MultiDict import MultiDict
 
 
-# FIXME: not complete
+# FIXME: not complete, needs tests
 
 class Bed(object):
     """Object wrapper for a parsing a BED record"""
