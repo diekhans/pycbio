@@ -11,6 +11,8 @@ BIN_PROGS = \
 	bin/profStats \
 	bin/vennChart
 
+PYTHON = python
+
 progsWithTests = gbff ncbi
 
 PKGS =  pycbio.align pycbio.distrib pycbio.exrun pycbio.hgbrowser pycbio.hgdata \
@@ -23,7 +25,7 @@ lib:
 	ln -sf src/lib lib
 
 libcomp:
-	PYTHONPATH=src/lib python -m compileall -l $(subst .,/,${PKGS:%=src/lib/%})
+	PYTHONPATH=src/lib ${PYTHON} -m compileall -l $(subst .,/,${PKGS:%=src/lib/%})
 
 bin/%: %
 	@mkdir -p bin
@@ -32,7 +34,7 @@ bin/%: %
 test:  libTests ${progsWithTests:%=%.progtest}
 
 libTests:
-	(cd src/lib && ./runTests)
+	(cd src/lib && ${PYTHON} ./runTests)
 
 %.progtest:
 	(cd src/progs/$*/tests && ${MAKE} test)
