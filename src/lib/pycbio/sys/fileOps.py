@@ -274,7 +274,10 @@ def tmpFileGet(prefix=None, suffix="tmp", tmpDir=None):
 
 def atomicTmpFile(finalPath):
     "return a tmp file to use with atomicInstall.  This will be in the same directory as finalPath"
-    return tmpFileGet(prefix=os.path.basename(finalPath), suffix="tmp"+os.path.splitext(finalPath)[1], tmpDir=os.path.dirname(finalPath))
+    finalPathDir = os.path.dirname(finalPath)
+    if finalPathDir == "":
+        finalPathDir = '.'
+    return tmpFileGet(prefix=os.path.basename(finalPath), suffix="tmp"+os.path.splitext(finalPath)[1], tmpDir=finalPathDir)
 
 def atomicInstall(tmpPath, finalPath):
     "atomic install of tmpPath as finalPath"

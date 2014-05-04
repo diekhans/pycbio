@@ -595,10 +595,10 @@ class GenePredFhReader(object):
 
 class GenePredDbReader(object):
     """Read genePreds from a db query"""
-    def __init__(self, conn, query):
+    def __init__(self, conn, query, queryArgs=None):
         self.cur = conn.cursor()
         try:
-            self.cur.execute(query)
+            self.cur.execute(query, queryArgs)
         except:
             try:
                 self.cur.close()
