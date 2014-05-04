@@ -13,7 +13,7 @@ BIN_PROGS = \
 
 PYTHON = python
 
-progsWithTests = gbff ncbi
+progsWithTests = gbff ncbi geneCheckStats
 
 PKGS =  pycbio.align pycbio.distrib pycbio.exrun pycbio.hgbrowser pycbio.hgdata \
 	pycbio.html pycbio.ncbi pycbio.stats pycbio.sys pycbio.tsv

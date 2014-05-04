@@ -7,7 +7,7 @@ sys.path.append(myBinDir + "/../lib")
 from optparse import OptionParser
 from pycbio.sys.fileOps import prRowv
 from pycbio.sys.Enumeration import Enumeration
-from pycbio.hgdata.GeneCheck import GeneCheckTbl, GeneCheck
+from pycbio.hgdata import GeneCheck
 
 ProbType = Enumeration("ProbType",
                        ("ok", "any", "start", "stop", "orfStop",
@@ -36,7 +36,7 @@ class CmdOpts(object):
 
 class CountChks(object):
     def __init__(self, geneChks):
-        self.chks = GeneCheckTbl(geneChks);
+        self.chks = GeneCheck.GeneCheckTbl(geneChks);
         self.cnt = 0
         self.probGeneCnts = {}
         self.probInstCnts = {}

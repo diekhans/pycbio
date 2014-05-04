@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2006-2012 Mark Diekhans
+# Copyright 2014-2014 Mark Diekhans
 
 import sys, os
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
@@ -7,40 +7,50 @@ sys.path.append(myBinDir + "/../lib")
 from optparse import OptionParser
 from pycbio.hgdata.GenePred import GenePred
 from pycbio.tsv.TabFile import TabFile
-from pycbio.sys import fileOps
+from pycbio.sys import fileOps, MultiDict
+
+# methods of flattening
+methodUniqExons = "uniqExons"
+
+allMethods = frozenset([methodUniqExons])
 
 class CmdOpts(object):
-    usage="""%prog [options] [genePredIn] [genePredOut]
+    usage="""%prog [options] method [genePredIn] [genePredOut]
 
-    Select clusters based on the criteria specified by the options.
-    By default, output a clusterGenes file with just the selected
-    records.  If multiple select criteria are specified, they all
-    must be be true to select a gene."""
+    Flatten exon structure of genePreds in a variety of ways.
+
+    method:
+      o uniqExons - build map of uniq exons
+    """
 
     def __init__(self):
         parser = OptionParser(usage=CmdOpts.usage)
-        parser.add_option("--singleExon", action="store_true", dest="singleExon", default=False,
-                          help="""select genes that have a single exon""")
-        parser.add_option("--multiExon", action="store_true", dest="multiExon", default=False,
-                          help="""select genes that have multiple exons""")
-        parser.add_option("--singleCdsExon", action="store_true", dest="singleCdsExon", default=False,
-                          help="""select genes that have a single CDS exon""")
-        parser.add_option("--multiCdsExon", action="store_true", dest="multiCdsExon", default=False,
-                          help="""select genes that have multiple CDS exons""")
-        parser.add_option("--geneIds", action="append", dest="geneIdFiles", default=None,
-                          help="""select genes with these gene ids""")
+        parser.add_option("--dropNames", action="store_true", dest="dropNames", default=False,
+                          help="""make name empty, which can be overwhelming in browser display""")
         (opts, args) = parser.parse_args()
-        if len(args) > 2:
+        if (len(args) < 1) or (len(args) > 2):
             parser.error("wrong number of arguments")
-        if len(args) > 0:
-            self.genePredIn = args[0]
-        else:
-            self.genePredIn = "/dev/stdin"
-        if len(args) > 1:
-            self.genePredOut = args[1]
-        else:
-            self.genePredOut = "/dev/stdout"
+        self.method = args[0]
+        self.genePredIn = args[1] if len(args) > 1 else "/dev/stdin"
+        self.genePredOut = args[2] if len(args) > 2 else "/dev/stdout"
         self.__dict__.update(opts.__dict__)
+        if self.method not in allMethods:
+            paser.error("invalid method \"" + self.method + "\", expected on of: " + ",".join(allMethods))
+
+class GeneSet(object):
+    def __init__(self, genePredFile):
+        allTrans = [t for t in GenePred.GenePredReader(genePredFile)]
+        self.byGene = None
+        if (len(allTrans) > 0) and (allTrans[0].name2 != None):
+            __buildByGeneMap(allTrans)
+
+    def __buildByGeneMap(self, allTrans):
+        self.byGene = MultiDict()
+        for t in allTrans:
+            self.byGene.add(name2, t)
+
+
+        
 
 class GenePredSelect(object):
     def __init__(self, opts):

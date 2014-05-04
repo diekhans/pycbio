@@ -27,20 +27,12 @@ def callProcLines(cmd):
     out = callProc(cmd)
     return out.split("\n")
 
-def runProc(cmd, stdin="/dev/null", stdout=None, stderr=None, noError=False):
+def runProc(cmd, stdin="/dev/null", stdout=None, stderr=None):
     """run a process, with I/O redirection to specified file paths or open
     file objects. None specifies inheriting. If noError is True, then
     the exit code is returned rather than generating an error"""
-    # FIXME: drop noError???
     pl = Pipeline.Procline(cmd, stdin=stdin, stdout=stdout, stderr=stderr)
-    code = 0
-    try:
-        pl.wait()
-    except Pipeline.ProcException, ex:
-        code = ex.returncode  # raise exception if None
-        if (not noError) or (code == None):
-            raise
-    return code
+    pl.wait()
 
 def which(prog, makeAbs=False):
     "search PATH for prog, optionally generating an absolute path.  Exception if not found."
