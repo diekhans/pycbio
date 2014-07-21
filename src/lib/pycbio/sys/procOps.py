@@ -29,10 +29,10 @@ def callProcLines(cmd):
 
 def runProc(cmd, stdin="/dev/null", stdout=None, stderr=None):
     """run a process, with I/O redirection to specified file paths or open
-    file objects. None specifies inheriting. If noError is True, then
-    the exit code is returned rather than generating an error"""
+    file objects. None specifies inheriting open file."""
     pl = Pipeline.Procline(cmd, stdin=stdin, stdout=stdout, stderr=stderr)
     pl.wait()
+    
 
 def which(prog, makeAbs=False):
     "search PATH for prog, optionally generating an absolute path.  Exception if not found."

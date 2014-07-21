@@ -29,20 +29,17 @@ class ProcRunTests(TestCaseBase):
 
     def testRunOut(self):
         outf = self.getOutputFile(".txt")
-        ret = procOps.runProc(["sort", self.getInputFile("simple1.txt")], stdout=outf)
-        self.failUnlessEqual(ret, 0)
+        procOps.runProc(["sort", self.getInputFile("simple1.txt")], stdout=outf)
         self.diffExpected(".txt")
 
     def BROKEN_testRunFileOut(self):
         with open(self.getOutputFile(".txt"), "w") as outfh:
-            ret = procOps.runProc(["sort", self.getInputFile("simple1.txt")], stdout=outfh)
-            self.failUnlessEqual(ret, 0)
+            procOps.runProc(["sort", self.getInputFile("simple1.txt")], stdout=outfh)
             self.diffExpected(".txt")
 
     def testRunInOut(self):
         outf = self.getOutputFile(".txt")
-        ret = procOps.runProc(["sort"], stdin=self.getInputFile("simple1.txt"), stdout=outf)
-        self.failUnlessEqual(ret, 0)
+        procOps.runProc(["sort"], stdin=self.getInputFile("simple1.txt"), stdout=outf)
         self.diffExpected(".txt")
 
     # base script that echos to stdout and stderr
@@ -52,16 +49,14 @@ class ProcRunTests(TestCaseBase):
         outFile = self.getOutputFile(".stdout")
         errFile = self.getOutputFile(".stderr")
         with open(outFile, "w") as outFh, open(errFile, "w") as errFh:
-            ret = procOps.runProc(self.shOutErrCmd, stdout=outFh.fileno(), stderr=errFh.fileno())
-        self.failUnlessEqual(ret, 0)
+            procOps.runProc(self.shOutErrCmd, stdout=outFh.fileno(), stderr=errFh.fileno())
         self.diffExpected(".stdout")
         self.diffExpected(".stderr")
 
     def testRunOutErrByName(self):
         outFile = self.getOutputFile(".stdout")
         errFile = self.getOutputFile(".stderr")
-        ret = procOps.runProc(self.shOutErrCmd, stdout=outFile, stderr=errFile)
-        self.failUnlessEqual(ret, 0)
+        procOps.runProc(self.shOutErrCmd, stdout=outFile, stderr=errFile)
         self.diffExpected(".stdout")
         self.diffExpected(".stderr")
 
@@ -69,8 +64,7 @@ class ProcRunTests(TestCaseBase):
         outFile = self.getOutputFile(".stdout")
         errFile = self.getOutputFile(".stderr")
         with open(outFile, "w") as outFh, open(errFile, "w") as errFh:
-            ret = procOps.runProc(self.shOutErrCmd, stdout=outFh, stderr=errFh)
-        self.failUnlessEqual(ret, 0)
+            procOps.runProc(self.shOutErrCmd, stdout=outFh, stderr=errFh)
         self.diffExpected(".stdout")
         self.diffExpected(".stderr")
 
@@ -78,8 +72,7 @@ class ProcRunTests(TestCaseBase):
         # same file handle for stdout/stderr; make sure it's not closed too soon
         outFile = self.getOutputFile(".stdouterr")
         with open(outFile, "w") as outFh:
-            ret = procOps.runProc(self.shOutErrCmd, stdout=outFh, stderr=outFh)
-        self.failUnlessEqual(ret, 0)
+            procOps.runProc(self.shOutErrCmd, stdout=outFh, stderr=outFh)
         self.diffExpected(".stdouterr")
 
     def testRunErr(self):
