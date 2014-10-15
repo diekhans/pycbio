@@ -9,7 +9,7 @@ def _getPipelineClass():
     first use"""
     global _pipelineMod
     if _pipelineMod == None:
-        _pipelineMod = __import__("pycbio.sys.Pipeline", fromlist=["pycbio.sys.Pipeline"])
+        _pipelineMod = __import__("pycbio.sys.pipeline", fromlist=["pycbio.sys.pipeline"])
     return _pipelineMod.Pipeline
 
 def ensureDir(dir):

@@ -3,13 +3,13 @@
 
 import sys, os, re
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
-sys.path.insert(0, myBinDir + "/../     lib")
+sys.path.insert(0, myBinDir + "/../lib")
 
 from optparse import OptionParser
 from pycbio.tsv import TSVReader,TSVError
 
 from matplotlib.patches import Circle
-from matplotlib import.pyplot
+from matplotlib import pyplot
 
 class CmdOpts(object):
     usage = """%prog [options] inStats outImage

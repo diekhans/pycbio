@@ -6,8 +6,8 @@ myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.append(myBinDir + "/../lib")
 from optparse import OptionParser
 from pycbio.sys.fileOps import prRowv
-from pycbio.sys.Enumeration import Enumeration
-from pycbio.hgdata import GeneCheck
+from pycbio.sys.enumeration import Enumeration
+from pycbio.hgdata import geneCheck
 
 ProbType = Enumeration("ProbType",
                        ("ok", "any", "start", "stop", "orfStop",
@@ -36,7 +36,7 @@ class CmdOpts(object):
 
 class CountChks(object):
     def __init__(self, geneChks):
-        self.chks = GeneCheck.GeneCheckTbl(geneChks);
+        self.chks = geneCheck.GeneCheckTbl(geneChks);
         self.cnt = 0
         self.probGeneCnts = {}
         self.probInstCnts = {}
@@ -76,11 +76,11 @@ class CountChks(object):
             self._cnt(ProbType.cdsNonCanonSplice, gene.cdsNonCanonSplice)
         if gene.utrNonCanonSplice > 0:
             self._cnt(ProbType.utrNonCanonSplice, gene.utrNonCanonSplice)
-        if gene.frame == GeneCheck.Frame.bad:
+        if gene.frame == geneCheck.Frame.bad:
             self._cnt(ProbType.frameBad, 1)
-        elif gene.frame == GeneCheck.Frame.mismatch:
+        elif gene.frame == geneCheck.Frame.mismatch:
             self._cnt(ProbType.frameMismatch, 1)
-        elif gene.frame == GeneCheck.Frame.noCDS:
+        elif gene.frame == geneCheck.Frame.noCDS:
             self._cnt(ProbType.noCDS, 1)
 
     def count(self, statsOut):
