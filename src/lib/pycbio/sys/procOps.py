@@ -6,15 +6,15 @@
 # FIXME: names are a bit too verbose (callLines instead of callProcLines)
 
 import os, re
-from pycbio.sys import Pipeline
+from pycbio.sys import pipeline
 
 
 def callProc(cmd, keepLastNewLine=False):
     """call a process and return stdout, exception with stderr in message.
     The  cmd is either a list of command and arguments, or pipeline, specified by
     a list of lists of commands and arguments."""
-    stdout = Pipeline.DataReader()
-    pl = Pipeline.Procline(cmd, stdin="/dev/null", stdout=stdout)
+    stdout = pipeline.DataReader()
+    pl = pipeline.Procline(cmd, stdin="/dev/null", stdout=stdout)
     pl.wait()
     out = stdout.get()
     if (not keepLastNewLine) and (len(out) > 0) and (out[-1] == "\n"):
@@ -30,7 +30,7 @@ def callProcLines(cmd):
 def runProc(cmd, stdin="/dev/null", stdout=None, stderr=None):
     """run a process, with I/O redirection to specified file paths or open
     file objects. None specifies inheriting open file."""
-    pl = Pipeline.Procline(cmd, stdin=stdin, stdout=stdout, stderr=stderr)
+    pl = pipeline.Procline(cmd, stdin=stdin, stdout=stdout, stderr=stderr)
     pl.wait()
     
 

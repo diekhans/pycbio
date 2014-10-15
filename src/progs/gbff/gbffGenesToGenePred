@@ -9,11 +9,11 @@ import warnings
 from Bio import SeqIO
 from optparse import OptionParser
 from pycbio.sys import fileOps, setOps, typeOps
-from pycbio.sys.Enumeration import Enumeration
+from pycbio.sys.enumeration import Enumeration
 from pycbio.sys.fileOps import prLine
 from pycbio.tsv import TSVReader, TabFileReader
-from pycbio.hgdata.GenePred import GenePred,CdsStat
-from pycbio.ncbi.Gbff import *
+from pycbio.hgdata.genePred import GenePred,CdsStat
+from pycbio.ncbi.gbff import *
 
 # FIXME: too many special cases in code, simplify.
 

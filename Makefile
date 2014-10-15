@@ -13,7 +13,8 @@ BIN_PROGS = \
 
 PYTHON = python
 
-progsWithTests = gbff ncbi geneCheckStats
+progsWithTests = gbff geneCheck ncbi
+# FIXME: not done: vennChart
 
 PKGS =  pycbio.align pycbio.distrib pycbio.exrun pycbio.hgbrowser pycbio.hgdata \
 	pycbio.html pycbio.ncbi pycbio.stats pycbio.sys pycbio.tsv
@@ -31,10 +32,12 @@ bin/%: %
 	@mkdir -p bin
 	ln -sf ../$< $@
 
-test:  libTests ${progsWithTests:%=%.progtest}
+test:  libTests progTests
 
 libTests:
 	(cd src/lib && ${PYTHON} ./runTests)
+
+progTests: ${progsWithTests:%=%.progtest}
 
 %.progtest:
 	(cd src/progs/$*/tests && ${MAKE} test)

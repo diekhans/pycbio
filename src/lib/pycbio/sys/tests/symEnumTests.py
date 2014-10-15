@@ -3,7 +3,7 @@ import unittest, sys, cPickle
 if __name__ == '__main__':
     sys.path.append("../../..")
 from pycbio.sys.symEnum import SymEnum
-from pycbio.sys.TestCaseBase import TestCaseBase
+from pycbio.sys.testCaseBase import TestCaseBase
 
 class Color(SymEnum):
     red = 1

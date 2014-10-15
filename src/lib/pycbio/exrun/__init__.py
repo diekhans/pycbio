@@ -85,9 +85,9 @@ class Verb(object):
             self.__prIndent(msg)
 
 # make classes commonly used externally part of top module
-from pycbio.exrun.Graph import Target, Production, Rule
-from pycbio.exrun.CmdRule import CmdRule, Cmd, FileOut, FileIn, FileOut, File
-from pycbio.exrun.ExRun import ExRun
+from pycbio.exrun.graph import Target, Production, Rule
+from pycbio.exrun.cmdRule import CmdRule, Cmd, FileOut, FileIn, FileOut, File
+from pycbio.exrun.exRun import ExRun
 
 
 __all__ = (ExRunException.__name__, Verb.__name__, Production.__name__,
