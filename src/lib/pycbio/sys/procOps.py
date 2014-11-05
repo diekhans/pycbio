@@ -23,8 +23,10 @@ def callProc(cmd, keepLastNewLine=False):
 
 def callProcLines(cmd):
     """call a process and return stdout, split into a list of lines, exception
-    with stderr in message"""
+    with stderr in message."""
     out = callProc(cmd)
+    if len(out) == 0:
+        return []  # split creates a list of one empty string from an empty string
     return out.split("\n")
 
 def runProc(cmd, stdin="/dev/null", stdout=None, stderr=None):

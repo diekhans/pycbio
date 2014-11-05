@@ -164,7 +164,7 @@ class BrowserDir(object):
         self.trackArgs = self.__mkTracksArgs(tracks)
         self.initTrackArgs = self.__mkTracksArgs(initTracks)
         if customTrackUrl != None:
-            self.tracksArgs += "&hgt.customText=" + self.customTrackUrl
+            self.trackArgs += "&hgt.customText=" + self.customTrackUrl
             
 
     def __mkTracksArgs(self, initialTracks):
