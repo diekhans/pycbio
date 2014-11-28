@@ -34,8 +34,21 @@ def runProc(cmd, stdin="/dev/null", stdout=None, stderr=None):
     file objects. None specifies inheriting open file."""
     pl = pipeline.Procline(cmd, stdin=stdin, stdout=stdout, stderr=stderr)
     pl.wait()
-    
 
+def runProcCode(cmd, stdin="/dev/null", stdout=None, stderr=None):
+    """run a process, with I/O redirection to specified file paths or open
+    file objects. None specifies inheriting open file.  Return exit code rather
+    than raising exception"""
+    try:
+        pl = pipeline.Procline(cmd, stdin=stdin, stdout=stdout, stderr=stderr)
+        pl.wait()
+    except pipeline.ProcException, ex:
+        if ex.returncode != None:
+            return ex.returncode
+        else:
+            raise ex
+    return 0
+    
 def which(prog, makeAbs=False):
     "search PATH for prog, optionally generating an absolute path.  Exception if not found."
     for d in os.environ["PATH"].split(":"):
