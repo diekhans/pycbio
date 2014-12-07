@@ -7,11 +7,7 @@ import typeOps
 
 def setJoin(s, sep=" "):
     "join a set into a sorted string, converting each element to a string"
-    l = []
-    for i in s:
-        l.append(str(i))
-    l.sort()
-    return sep.join(l)
+    return sep.join(sorted([str(e) for e in s]))
 
 def itemsInSet(seq, setFilter):
     "generator over all elements of sequence that are in the setFilter"
