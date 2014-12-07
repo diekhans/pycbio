@@ -26,6 +26,11 @@ class SymEnumTests(TestCaseBase):
         self.failUnless(Color.green == Color("green"))
         self.failUnless(Color.green != Color("red"))
 
+    def testStrings(self):
+        self.failUnless(str(Color.red) == "red")
+        self.failUnless(str(Color.green) == "green")
+        self.failUnless(sorted([str(c) for c in Color]), ["red", "green", "blue"])
+
     def testAliases(self):
         class Name(SymEnum):
             Fred = 1
@@ -40,34 +45,6 @@ class SymEnumTests(TestCaseBase):
         self.failUnless(Name("Fred") == Name.Fred)
         self.failUnless(Name("Fred") is Name.Fred)
         self.failUnlessEqual([n for n in Name], [Name.Fred, Name.Rick, Name.Bill])
-
-    def XXtestAliasesBug1(self):
-        "forgot comma in one-element tuple"
-        try:
-            Stat = Enumeration("Stat",
-                               ["okay",
-                                ("notConserved","notConserved", ("no_alignment")),
-                                "bad_3_splice", "bad_5_splice"])
-            if __debug__:
-                self.fail("should have raised exception")
-        except TypeError:
-            pass
-        
-    def XXXtestBitSetValues(self):
-        Stat = Enumeration("Stat",
-                           ["okay",
-                            ("notConserved","notConserved", ("no_alignment",)),
-                            "bad_3_splice", "bad_5_splice"],
-                           bitSetValues=True)
-        self.failUnlessEqual(Stat.okay, 1)
-        self.failUnlessEqual(Stat.notConserved, 2)
-        self.failUnlessEqual(Stat.bad_5_splice, 8)
-        self.failUnlessEqual(int(Stat.bad_5_splice), 8)
-        self.failUnlessEqual(Stat.maxNumValue, 8)
-        vals = Stat.getValues(9)
-        self.failUnlessEqual(len(vals), 2)
-        self.failUnless(vals[0] is Stat.okay)
-        self.failUnless(vals[1] is Stat.bad_5_splice)
 
     def testSetOps(self):
         colSet = set([Color.blue, Color.green])
