@@ -2,7 +2,7 @@
 import unittest, sys, cPickle
 if __name__ == '__main__':
     sys.path.append("../../..")
-from pycbio.sys.symEnum import SymEnum
+from pycbio.sys.symEnum import SymEnum, SymEnumValue
 from pycbio.sys.testCaseBase import TestCaseBase
 
 class Color(SymEnum):
@@ -10,26 +10,33 @@ class Color(SymEnum):
     green = 2
     blue = 3
 
+class GeneFeature(SymEnum):
+    promoter = 1
+    utr5 = SymEnumValue(2, "5'UTR")
+    cds = SymEnumValue(3, "CDS")
+    utr3 = SymEnumValue(4, "3'UTR")
+    coding = cds
+
 class SymEnumTests(TestCaseBase):
     def testBasics(self):
-        self.failUnlessEqual(Color.red.name, "red")
-        self.failUnlessEqual(Color.green.name, "green")
-        self.failUnlessEqual(Color.blue.name, "blue")
-        self.failUnless(Color.red < Color.blue)
-        self.failUnless(Color.red == Color.red)
-        self.failUnless(Color.red != Color.blue)
-        self.failUnless(Color.red != None)
-        self.failUnless(None != Color.red)
+        self.assertEqual(Color.red.name, "red")
+        self.assertEqual(Color.green.name, "green")
+        self.assertEqual(Color.blue.name, "blue")
+        self.assertTrue(Color.red < Color.blue)
+        self.assertTrue(Color.red == Color.red)
+        self.assertTrue(Color.red != Color.blue)
+        self.assertTrue(Color.red != None)
+        self.assertTrue(None != Color.red)
 
     def testLookup(self):
-        self.failUnless(Color.red == Color("red"))
-        self.failUnless(Color.green == Color("green"))
-        self.failUnless(Color.green != Color("red"))
+        self.assertTrue(Color.red == Color("red"))
+        self.assertTrue(Color.green == Color("green"))
+        self.assertTrue(Color.green != Color("red"))
 
     def testStrings(self):
-        self.failUnless(str(Color.red) == "red")
-        self.failUnless(str(Color.green) == "green")
-        self.failUnless(sorted([str(c) for c in Color]), ["red", "green", "blue"])
+        self.assertTrue(str(Color.red) == "red")
+        self.assertTrue(str(Color.green) == "green")
+        self.assertTrue(sorted([str(c) for c in Color]), ["red", "green", "blue"])
 
     def testAliases(self):
         class Name(SymEnum):
@@ -37,19 +44,19 @@ class SymEnumTests(TestCaseBase):
             Rick = 2
             Richard = Dick = HeyYou = Rick
             Bill = 3
-        self.failUnless(Name("Richard") is Name.Rick)
-        self.failUnlessEqual(Name("Dick"), Name.Rick)
-        self.failUnless(Name("Dick") is Name.Rick)
-        self.failUnless(Name("Rick") == Name.Rick)
-        self.failUnless(Name("HeyYou") == Name.Rick)
-        self.failUnless(Name("Fred") == Name.Fred)
-        self.failUnless(Name("Fred") is Name.Fred)
-        self.failUnlessEqual([n for n in Name], [Name.Fred, Name.Rick, Name.Bill])
+        self.assertTrue(Name("Richard") is Name.Rick)
+        self.assertEqual(Name("Dick"), Name.Rick)
+        self.assertTrue(Name("Dick") is Name.Rick)
+        self.assertTrue(Name("Rick") == Name.Rick)
+        self.assertTrue(Name("HeyYou") == Name.Rick)
+        self.assertTrue(Name("Fred") == Name.Fred)
+        self.assertTrue(Name("Fred") is Name.Fred)
+        self.assertEqual([n for n in Name], [Name.Fred, Name.Rick, Name.Bill])
 
     def testSetOps(self):
         colSet = set([Color.blue, Color.green])
-        self.failUnless(Color.green in colSet)
-        self.failIf(Color.red in colSet)
+        self.assertTrue(Color.green in colSet)
+        self.assertFalse(Color.red in colSet)
 
     def testNumberDef(self):
         class NumDef(SymEnum):
@@ -58,26 +65,60 @@ class SymEnumTests(TestCaseBase):
             pos= 2
             big = 3
         values = [(v.name, v.value) for v in NumDef]
-        self.failUnlessEqual(values, [('neg', -2), ('zero', 0), ('pos', 2), ('big', 3)])
-        self.failUnlessEqual(NumDef(2), NumDef.pos)
+        self.assertEqual(values, [('neg', -2), ('zero', 0), ('pos', 2), ('big', 3)])
+        self.assertEqual(NumDef(2), NumDef.pos)
 
-    def __testPickleProtocol(self, protocol):
-        stuff = {}
-        stuff[Color.red] = "red one"
-        stuff[Color.green] = "green one"
+    def __testColorPickleProtocol(self, protocol):
+        stuff = {Color.red: "red one",
+                 Color.green: "green one"}
+
         world = cPickle.dumps((Color, stuff,), protocol)
         color, stuff2 = cPickle.loads(world)
 
-        self.failUnless(Color.red in stuff2)
-        self.failUnless(Color.green in stuff2)
+        self.assertTrue(Color.red in stuff2)
+        self.assertTrue(Color.green in stuff2)
+    def testColorPickle2(self):
+        self.assertTrue(cPickle.HIGHEST_PROTOCOL == 2)
+        self.__testColorPickleProtocol(2)
+    def testColorPickle1(self):
+        self.__testColorPickleProtocol(1)
+    def testColorPickle0(self):
+        self.__testColorPickleProtocol(0)
 
-    def testPickle2(self):
-        self.failUnless(cPickle.HIGHEST_PROTOCOL == 2)
-        self.__testPickleProtocol(2)
-    def testPickle1(self):
-        self.__testPickleProtocol(1)
-    def testPickle0(self):
-        self.__testPickleProtocol(0)
+    def testExtNameLookup(self):
+        self.assertEqual(GeneFeature.promoter, GeneFeature("promoter"))
+        self.assertEqual(GeneFeature.utr5, GeneFeature("5'UTR"))
+        self.assertEqual(GeneFeature.utr5, GeneFeature("utr5"))
+        self.assertEqual(GeneFeature.cds, GeneFeature("CDS"))
+        self.assertEqual(GeneFeature.utr3, GeneFeature("3'UTR"))
+        self.assertEqual(GeneFeature.utr3, GeneFeature("utr3"))
+        self.assertEqual(GeneFeature.cds, GeneFeature("coding"))
+
+    def testExtNameStrings(self):
+        self.assertEqual(str(GeneFeature.promoter), "promoter")
+        self.assertEqual(str(GeneFeature.utr5), "5'UTR")
+        self.assertEqual(str(GeneFeature.cds), "CDS")
+        self.assertEqual(str(GeneFeature.utr3), "3'UTR")
+        self.assertNotEqual(str(GeneFeature.utr3), "utr3")
+        self.assertEqual(str(GeneFeature.coding), "CDS")
+        self.assertEqual(sorted([str(c) for c in GeneFeature]), ["3'UTR", "5'UTR", "CDS", "promoter"])
+
+    def __testGeneFeaturePickleProtocol(self, protocol):
+        stuff = {GeneFeature.utr3: "UTR'3 one",
+                 GeneFeature.cds: "CDS one"}
+        world = cPickle.dumps((GeneFeature, stuff,), protocol)
+        geneFeature, stuff2 = cPickle.loads(world)
+
+        self.assertTrue(GeneFeature.utr3 in stuff2)
+        self.assertTrue(GeneFeature.cds in stuff2)
+
+    def testGeneFeaturePickle2(self):
+        self.assertTrue(cPickle.HIGHEST_PROTOCOL == 2)
+        self.__testGeneFeaturePickleProtocol(2)
+    def testGeneFeaturePickle1(self):
+        self.__testGeneFeaturePickleProtocol(1)
+    def testGeneFeaturePickle0(self):
+        self.__testGeneFeaturePickleProtocol(0)
 
 def suite():
     suite = unittest.TestSuite()
