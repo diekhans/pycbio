@@ -7,7 +7,7 @@ import MySQLdb.cursors
 
 dbOps.mySqlSetErrorOnWarn()
 
-def connect(db=None,  confFile=None, dictCursor=False):
+def connect(db="",  confFile=None, dictCursor=False):
     """connect to genome mysql server, using confFile or ~/.hg.conf"""
     conf = HgConf.obtain(confFile)
     cursorclass = MySQLdb.cursors.DictCursor if dictCursor else MySQLdb.cursors.Cursor

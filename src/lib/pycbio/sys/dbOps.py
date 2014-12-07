@@ -24,3 +24,17 @@ def cursorColIdxMap(cur):
     for i in xrange(len(cur.description)):
         m[cur.description[i][0]] = i
     return m
+
+def queryConnection(conn, sql):
+    "generator to run an SQL query on a connection"
+    cur = conn.cursor()
+    try:
+        cur.execute(sql)
+        for row in cur:
+            yield row
+    finally:
+        cur.close()
+
+def haveTableLike(conn, pattern, db=None):
+    frm = "" if db == None else " from " + db
+    return len(list(queryConnection(conn, 'show tables' + frm + ' like "' + pattern + '";'))) > 0
