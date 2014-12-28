@@ -1,5 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 
+# FIXME: defaultdict seems to fill the same niche.
+
 class AutoDict(dict):
     """Dictionary where entries can be automatically allocated.  Normally used
     for dict of dicts or other contained"""

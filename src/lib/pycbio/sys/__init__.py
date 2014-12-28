@@ -12,10 +12,13 @@ class PycbioException(Exception):
           tb = sys.exc_info()[2]
           ...
           raise PycbioException("more stuff", ex), None, tb
-
     or 
        except Exception, ex:
           raise PycbioException("more stuff", ex), None, sys.exc_info()[2]
+    or 
+       except:
+          exi = sys.exc_info()
+          raise PycbioException("more stuff", exi[1]), None, exi[2]
     """
     def __init__(self, msg, cause=None):
         """Constructor."""
