@@ -12,7 +12,7 @@ class DbDictTests(TestCaseBase):
         keyValues = [(k, dbd[k]) for k in dbd.keys()]
         keyValues.sort(key=lambda kv: kv[0])
         keyValues = tuple(keyValues)
-        self.failUnlessEqual(keyValues, expect)
+        self.assertEqual(keyValues, expect)
 
     def testBasic(self):
         dbfile = self.getOutputFile("basic.sqlite")

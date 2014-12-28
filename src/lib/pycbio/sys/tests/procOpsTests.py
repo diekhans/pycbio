@@ -8,24 +8,20 @@ from pycbio.sys.testCaseBase import TestCaseBase
 class ProcRunTests(TestCaseBase):
     def testCallSimple(self):
         out = procOps.callProc(["sort", self.getInputFile("simple1.txt")])
-        self.failUnlessEqual(out, "five\nfour\none\nsix\nthree\ntwo")
+        self.assertEqual(out, "five\nfour\none\nsix\nthree\ntwo")
 
     def testCallKeepNL(self):
         out = procOps.callProc(["sort", self.getInputFile("simple1.txt")], keepLastNewLine=True)
-        self.failUnlessEqual(out, "five\nfour\none\nsix\nthree\ntwo\n")
+        self.assertEqual(out, "five\nfour\none\nsix\nthree\ntwo\n")
 
     def testCallErr(self):
-        ex = None
-        try:
+        with self.assertRaises(pipeline.ProcException) as cm:
             procOps.callProc(["false"])
-        except Exception, ex:
-            pass
-        self.failUnless(isinstance(ex, pipeline.ProcException))
-        self.failUnlessEqual(str(ex), 'process exited 1: false')
+        self.assertEqual(str(cm.exception), 'process exited 1: false')
 
     def testCallLines(self):
         out = procOps.callProcLines(["sort", self.getInputFile("simple1.txt")])
-        self.failUnlessEqual(out, ['five', 'four', 'one', 'six', 'three', 'two'])
+        self.assertEqual(out, ['five', 'four', 'one', 'six', 'three', 'two'])
 
     def testRunOut(self):
         outf = self.getOutputFile(".txt")
@@ -76,13 +72,9 @@ class ProcRunTests(TestCaseBase):
         self.diffExpected(".stdouterr")
 
     def testRunErr(self):
-        ex = None
-        try:
+        with self.assertRaises(pipeline.ProcException) as cm:
             procOps.runProc(["false"], stdin=self.getInputFile("simple1.txt"))
-        except Exception, ex:
-            pass
-        self.failUnless(isinstance(ex, pipeline.ProcException))
-        self.failUnlessEqual(str(ex), 'process exited 1: false')
+        self.assertEqual(str(cm.exception), 'process exited 1: false')
 
 class ShellQuoteTests(TestCaseBase):
     # set of test words and expected response string
@@ -95,13 +87,13 @@ class ShellQuoteTests(TestCaseBase):
     def testQuotesBash(self):
         for (words, expect) in self.testData:
             out = procOps.callProc(["sh", "-c", "/bin/echo " + " ".join(procOps.shQuote(words))])
-            self.failUnlessEqual(out, expect)
+            self.assertEqual(out, expect)
         
     def testQuotesCsh(self):
         # must use /bin/echo, as some csh echos expand backslash sequences
         for (words, expect) in self.testData:
             out = procOps.callProc(["csh", "-c", "/bin/echo " + " ".join(procOps.shQuote(words))])
-            self.failUnlessEqual(out, expect)
+            self.assertEqual(out, expect)
         
 
 def suite():

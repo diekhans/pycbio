@@ -286,21 +286,17 @@ class CmdCompressTests(ExRunTestCaseBase):
         ofp2 = er.getFile(self.getOutputFile(".txt"))
         r1 = er.addCmd((["sort", "-r", FileIn(ifp)], ["tee", FileOut(ofp1)]), stdout="/dev/null")
         r2 = er.addCmd((["zcat", FileIn(ofp1, autoDecompress=False)], ["false"]), stdout=FileOut(ofp2))
-        ex = None
-        try:
+        with self.assertRaises(ExRunException) as cm:
             er.run()
-        except ExRunException, ex:
-            self.failUnlessEqual("Experiment failed: 1 error(s) encountered", str(ex))
-            ex1 = er.errors[0]
-            self.failUnless(isinstance(ex1, ExRunException))
-            ex2 = ex1.cause
-            self.failUnless(isinstance(ex2, ExRunException))
-            ex3 = ex2.cause
-            self.failUnless(isinstance(ex3, ProcException))
-            exre = "process exited 1: false"
-            self.failUnless(str(ex3),exre)
-        if ex == None:
-            self.fail("expected ProcException")
+        self.assertEqual("Experiment failed: 1 error(s) encountered", str(cm.exception))
+        ex1 = er.errors[0]
+        self.assertTrue(isinstance(ex1, ExRunException))
+        ex2 = ex1.cause
+        self.assertTrue(isinstance(ex2, ExRunException))
+        ex3 = ex2.cause
+        self.assertTrue(isinstance(ex3, ProcException))
+        exre = "process exited 1: false"
+        self.assertTrue(str(ex3),exre)
         self.checkGraphStates(er,
                               ((ofp1, ProdState.current),
                                (ofp2, ProdState.failed),
