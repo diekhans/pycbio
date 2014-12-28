@@ -8,8 +8,6 @@ try:
 except:
     MAXFD = 256
 
-# FIXME change fail* to assert* to match new conventions
-
 class TestCaseBase(unittest.TestCase):
     """Base class for test case with various test support functions"""
 
@@ -98,7 +96,7 @@ class TestCaseBase(unittest.TestCase):
         for l in diff:
             print l,
             cnt += 1
-        self.failUnless(cnt == 0)
+        self.assertTrue(cnt == 0)
 
     def createOutputFile(self, ext, contents=""):
         """create an output file, filling it with contents."""
@@ -115,13 +113,13 @@ class TestCaseBase(unittest.TestCase):
         compare to the expected contents of the file."""
         fpath = self.getOutputFile(ext)
         self.mustExist(fpath)
-        self.failUnless(os.path.isfile(fpath))
+        self.assertTrue(os.path.isfile(fpath))
         fh = open(fpath)
         try:
             got = fh.read()
         finally:
             fh.close()
-        self.failUnlessEqual(got, expectContents)
+        self.assertEqual(got, expectContents)
 
     @staticmethod
     def numRunningThreads():
@@ -132,11 +130,11 @@ class TestCaseBase(unittest.TestCase):
                 n += 1
         return n
 
-    def failIfMultipleThreads(self):
+    def assertSingleThread(self):
         "fail if more than one thread is running"
-        self.failUnlessEqual(self.numRunningThreads(), 1)
+        self.assertEqual(self.numRunningThreads(), 1)
 
-    def failIfChildProcs(self):
+    def assertNoChildProcs(self):
         "fail if there are any running or zombie child process"
         e = None
         try:
@@ -158,20 +156,16 @@ class TestCaseBase(unittest.TestCase):
                 n += 1
         return MAXFD-n
 
-    def failIfNumOpenFilesChanged(self, prevNumOpen):
-        "fail if the number of open files changed"
+    def assertNumOpenFilesSame(self, prevNumOpen):
+        "assert that the number of open files has not changed"
         numOpen = self.numOpenFiles()
         if numOpen != prevNumOpen:
             self.fail("number of open files changed, was " + str(prevNumOpen) + ", now it's " + str(numOpen))
 
-    def failUnlessMatch(self, obj, expectRe, msg=None):
-        """Fail if the str(obj) does not match expectRe
-           operator.
-        """
-        # FIXME replace function with assertRegexpMatches or  assertRaisesRegexp
+    def assertRegexpMatchesDotAll(self, obj, expectRe, msg=None):
+        """Fail if the str(obj) does not match expectRe operator, including `.' matching newlines"""
         if not re.match(expectRe, str(obj), re.DOTALL):
-            raise self.failureException, \
-                  (msg or "'%s' does not match '%s'" % (str(obj), expectRe))
+            raise self.failureException, (msg or "'%s' does not match '%s'" % (str(obj), expectRe))
 
     def __logCmd(self, cmd):
         cmdStrs = [quote(a) for a in cmd]

@@ -44,7 +44,7 @@ class SchedTests(TestCaseBase):
             sched.addTask(t.run, grp)
         sched.run()
         for t in tasks:
-            self.failUnless(t.ran)
+            self.assertTrue(t.ran)
 
     def testSimpleGrps(self):
         "simple tasks in groups"
@@ -57,7 +57,7 @@ class SchedTests(TestCaseBase):
             sched.addTask(t.run, grp)
         sched.run()
         for t in tasks:
-            self.failUnless(t.ran)
+            self.assertTrue(t.ran)
 
     def testMoveGrps(self):
         "tasks moving between groups"
@@ -70,8 +70,8 @@ class SchedTests(TestCaseBase):
             sched.addTask(t.run, grp)
         sched.run()
         for t in tasks:
-            self.failUnless(t.ran)
-            self.failUnless(t.moved)
+            self.assertTrue(t.ran)
+            self.assertTrue(t.moved)
 
 def suite():
     suite = unittest.TestSuite()

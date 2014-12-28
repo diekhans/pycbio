@@ -17,14 +17,10 @@ class ExceptTests(TestCaseBase):
         def fn3():
             raise TestExcept("testing 1 2 3")
 
-        ex = None
-        try:
+        with self.assertRaises(TestExcept) as cm:
             fn1()
-        except Exception, e:
-            ex = e
-        self.failUnless(ex != None)
-        self.failUnlessEqual(str(ex), "testing 1 2 3")
-        self.failUnlessMatch(ex.format(), """^TestExcept: testing 1 2 3.+in testBasicExcept.+fn1\(\).+fn2\(\).+fn3\(\).+raise TestExcept\("testing 1 2 3"\)\n$""")
+        self.assertEqual(str(cm.exception), "testing 1 2 3")
+        self.assertRegexpMatchesDotAll(cm.exception.format(), """^TestExcept: testing 1 2 3.+in testBasicExcept.+fn1\(\).+fn2\(\).+fn3\(\).+raise TestExcept\("testing 1 2 3"\)\n$""")
         
     def testChainedExcept(self):
         def fn1():
@@ -51,14 +47,10 @@ class ExceptTests(TestCaseBase):
         def fn7():
             raise OSError("OS meltdown")
 
-        ex = None
-        try:
+        with self.assertRaises(TestExcept) as cm:
             fn1()
-        except Exception, e:
-            ex = e
-        self.failUnless(ex != None)
-        self.failUnlessEqual(str(ex), "in-fn1,\n    caused by: TestExcept: in-fn3,\n    caused by: TestExcept: in-fn6,\n    caused by: OSError: OS meltdown")
-        self.failUnlessMatch(ex.format(), """^TestExcept: in-fn1.+fn1\(\).+raise TestExcept\("in-fn1", e\).+caused by: TestExcept: in-fn3.+fn3\(\).+caused by: TestExcept: in-fn6.+fn4\(\).+fn5\(\).+fn6\(\).+caused by: OSError: OS meltdown.+fn7\(\).+raise OSError\("OS meltdown"\)$""")
+        self.assertEqual(str(cm.exception), "in-fn1,\n    caused by: TestExcept: in-fn3,\n    caused by: TestExcept: in-fn6,\n    caused by: OSError: OS meltdown")
+        self.assertRegexpMatchesDotAll(cm.exception.format(), """^TestExcept: in-fn1.+fn1\(\).+raise TestExcept\("in-fn1", e\).+caused by: TestExcept: in-fn3.+fn3\(\).+caused by: TestExcept: in-fn6.+fn4\(\).+fn5\(\).+fn6\(\).+caused by: OSError: OS meltdown.+fn7\(\).+raise OSError\("OS meltdown"\)$""")
         
 def suite():
     suite = unittest.TestSuite()

@@ -14,14 +14,9 @@ class ImmutableTests(TestCaseBase):
                 self.mkImmutable()
 
         obj = DictClass(10)
-        ex = None
-        try:
+        with self.assertRaises(TypeError) as cm:
             obj.val = 111
-        except Exception, ex:
-            pass
-        
-        self.failUnlessEqual(obj.val, 10)
-        self.failUnless(isinstance(ex, TypeError))
+        self.assertEqual(obj.val, 10)
 
     def testSlotsClass(self):
         class SlotsClass(Immutable):
@@ -31,14 +26,9 @@ class ImmutableTests(TestCaseBase):
                 self.val = val
                 self.mkImmutable()
         obj = SlotsClass(10)
-        ex = None
-        try:
+        with self.assertRaises(TypeError) as cm:
             obj.val = 111
-        except Exception, ex:
-            pass
-        
-        self.failUnlessEqual(obj.val, 10)
-        self.failUnless(isinstance(ex, TypeError))
+        self.assertEqual(obj.val, 10)
 
 def suite():
     suite = unittest.TestSuite()
