@@ -8,6 +8,7 @@ try:
 except:
     MAXFD = 256
 
+# FIXME change fail* to assert* to match new conventions
 
 class TestCaseBase(unittest.TestCase):
     """Base class for test case with various test support functions"""
@@ -167,6 +168,7 @@ class TestCaseBase(unittest.TestCase):
         """Fail if the str(obj) does not match expectRe
            operator.
         """
+        # FIXME replace function with assertRegexpMatches or  assertRaisesRegexp
         if not re.match(expectRe, str(obj), re.DOTALL):
             raise self.failureException, \
                   (msg or "'%s' does not match '%s'" % (str(obj), expectRe))
