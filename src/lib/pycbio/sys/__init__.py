@@ -26,7 +26,7 @@ class PycbioException(Exception):
             # store stack trace in other Exceptions
             exi = sys.exc_info()
             if exi != None:
-                cause.__dict__["stackTrace"] = traceback.format_list(traceback.extract_tb(exi[2]))
+                setattr(cause, "stackTrace", traceback.format_list(traceback.extract_tb(exi[2])))
         Exception.__init__(self, msg)
         self.msg = msg
         self.cause = cause
