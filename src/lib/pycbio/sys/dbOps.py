@@ -37,4 +37,6 @@ def queryConnection(conn, sql):
 
 def haveTableLike(conn, pattern, db=None):
     frm = "" if db == None else " from " + db
+    # FIXME: mysql-specific
     return len(list(queryConnection(conn, 'show tables' + frm + ' like "' + pattern + '";'))) > 0
+
