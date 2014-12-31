@@ -18,7 +18,7 @@ class TSVRow(object):
             self.__parse(row)
         else:
             for i in xrange(len(self._columns_)):
-                self.__dict__[self._columns_[i]] = row[i]
+                setattr(self, self._columns_[i], row[i])
 
     def __parse(self, row):
         for i in xrange(len(self._columns_)):
@@ -28,28 +28,28 @@ class TSVRow(object):
                 col = ct[0](col)
             elif ct:
                 col = ct(col)
-            self.__dict__[self._columns_[i]] = col
+            setattr(self, self._columns_[i], col)
 
     def __getitem__(self, key):
         "access a column by string key or numeric index"
         if isinstance(key, int):
-            return self.__dict__[self._columns_[key]]
+            return getattr(self, self._columns_[key])
         else:
-            return self.__dict__[key]
+            return getattr(self, key)
 
     def __setitem__(self, key, val):
         "set a column by string key or numeric index"
         if isinstance(key, int):
-            self.__dict__[self._columns_[key]] = val
+            setattr(self, self._columns_[key], val)
         else:
-            self.__dict__[key] = val
+            setattr(self, key, val)
 
     def __len__(self):
         return len(self._columns_)
 
     def __iter__(self):
         for col in self._columns_:
-            yield self.__dict__[col]
+            yield getattr(self, col)
 
     def __contains__(self, key):
         return key in self._colMap_
@@ -57,7 +57,7 @@ class TSVRow(object):
     def __fmtWithTypes(self):
         row = []
         for i in xrange(len(self._columns_)):
-            col = self.__dict__[self._columns_[i]]
+            col = getattr(self, self._columns_[i])
             ct = self._colTypes_[i]
             if col == None:
                 col = ""
@@ -71,7 +71,7 @@ class TSVRow(object):
     def __fmtNoTypes(self):
         row = []
         for cn in self._columns_:
-            col = self.__dict__[cn]
+            col = getattr(self, cn)
             if col == None:
                 row.append("")
             else:

@@ -16,12 +16,12 @@ class TSVTable(list):
         """object with attribute for each key column"""
 
         def __getitem__(self, key):
-            return self.__dict__[key]
+            return getattr(self, key)
 
     def __addIndex(self, keyCol, dictClass):
         if not keyCol in self.colMap:
             raise TSVError("key column \"" + keyCol + "\" is not defined"), None, sys.exc_info()[2]
-        self.idx.__dict__[keyCol] = dictClass()
+        setattr(self.idx, keyCol, dictClass())
         
     def __createIndices(self, keyCols, dictClass):
         "keyCols maybe string or seq of strings"
@@ -42,11 +42,11 @@ class TSVTable(list):
     def __buildColDictTbl(self):
         """build an array, index by column number, of dict objects, or None if not
         indexed.  Used when loading rows. """
-        if len(self.idx.__dict__) == 0:
+        if len(vars(self.idx)) == 0:
             return None
         tbl = []
         for iCol in xrange(len(self.columns)):
-            tbl.append(self.idx.__dict__.get(self.columns[iCol]))
+            tbl.append(getattr(self.idx, self.columns[iCol], None))
         return tbl
 
     def __indexCol(self, iCol, colDict, col, row):
@@ -119,7 +119,7 @@ class TSVTable(list):
 
         # add column to each row
         for row in self:
-            row.__dict__[colName] = initValue
+            setattr(row, colName, initValue)
 
     def write(self, fh):
         fh.write(str.join("\t", self.columns))

@@ -119,7 +119,7 @@ class Enumeration(object):
 
     def __createValue(self, valueClass, name, numValue, strValue):
         val = valueClass(self, name, numValue, strValue)
-        self.__dict__[name] = val
+        setattr(self, name, val)
         self.aliases[name] = val
         if strValue != None:
             self.aliases[strValue] = val
@@ -152,7 +152,7 @@ class Enumeration(object):
         Immutable.__init__(self)
         (self.name, self.aliases, self.values, self.maxNumValue) = st
         for val in self.values:
-            self.__dict__[val.name] = val
+            setattr(self, val.name, val)
         #self.mkImmutable()
 
     def lookup(self, name):

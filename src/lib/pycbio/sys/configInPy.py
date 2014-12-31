@@ -61,5 +61,5 @@ def evalConfigObj(configPyFile, extraEnv=None):
     configObj = Config()
     for key in configEnv.keys():
         if _includeField(key, configEnv[key]):
-            configObj.__dict__[key] = configEnv[key]
+            setattr(configObj, key, configEnv[key])
     return configObj

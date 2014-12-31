@@ -22,8 +22,8 @@ except:
 def _getSigName(num):
     "get name for a signal number"
     # find name in signal namespace
-    for key in signal.__dict__.iterkeys():
-        if (signal.__dict__[key] == num) and key.startswith("SIG") and (key.find("_") < 0):
+    for key in vars(signal):
+        if (getattr(signal, key) == num) and key.startswith("SIG") and (key.find("_") < 0):
             return key
     return "signal"+str(num)
 

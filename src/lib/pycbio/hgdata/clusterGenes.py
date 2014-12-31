@@ -64,7 +64,7 @@ class Cluster(list):
         else:
             self.start = min(self.start, row.txStart)
             self.end = max(self.end, row.txEnd)
-        if "hasExonConflicts" in row.__dict__:
+        if "hasExonConflicts" in vars(row):
             self.hasExonConflicts = row.hasExonConflicts
             self.hasCdsConflicts = row.hasCdsConflicts
         self.tableSet.add(row.table)
