@@ -12,36 +12,42 @@ class CoordsError(Exception):
 class Coords(Immutable):
     """Browser coordinates
     Fields:
-       chr, start, end
-       db - optional genome database
+       chrom, start, end - start/end maybe None to indicate a full chromosome
+       db - optional genome assembly database
+       chromSize - optional size of chromosome
     """
-
-    def __parse__(self, coordsStr):
-        "parse chr:start-end"
+    __slots__ = ("chrom", "start", "end", "db", "chromSize")
+    def __parseCombined__(self, coordsStr):
+        "parse chrom:start-end "
         try:
-            self.chr, rng = str.split(coordsStr, ":")
+            self.chrom, rng = str.split(coordsStr, ":")
             self.start, self.end = str.split(rng, "-")
             self.start = int(self.start)
             self.end = int(self.end)
         except Exception, e:
             raise CoordsError("invalid coordinates: \"" + str(coordsStr) + "\": " + str(e))
 
-    def __init__(self, *args, **opts):
+    def __parseThree__(self, chrom, start, end):
+        "parse chrom, start, end. start/end maybe strings, int or None  "
+        try:
+            self.chrom = chrom
+            self.start = int(start) if start != None else None
+            self.end = int(end) if end != None else None
+        except Exception, e:
+            raise CoordsError("invalid coordinates: \"" + str(coordsStr) + "\": " + str(e))
+
+    def __init__(self, *args, **kwargs):
         """args are either one argument in the form chr:start-end, or
-        chr, start, end. options are db="""
+        chr, start, end. options are db= and chromSize="""
         Immutable.__init__(self)
         if len(args) == 1:
-            self.__parse__(args[0])
+            self.__parseCombined__(args[0])
         elif len(args) == 3:
-            try:
-                self.chr = args[0]
-                self.start = int(args[1])
-                self.end = int(args[2])
-            except Exception, e:
-                raise CoordsError("invalid coordinates: \"" + str(args) + "\": " + str(e))
+            self.__parseThree__(args[0], args[1], args[2])
         else:
             raise CoordsError("Coords() excepts either one or three arguments")
-        self.db = opts.get("db")
+        self.db = kwargs.get("db")
+        self.chromSize = kwargs.get("chromSize")
         self.mkImmutable()
 
     def __str__(self):
