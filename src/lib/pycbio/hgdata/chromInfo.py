@@ -18,8 +18,13 @@ class ChromInfo(object):
 class ChromInfoTbl(dict):
     "object to manage information about chromosomes"
     
-    def __init__(self, chromClass=ChromInfo):
+    def __init__(self, chromSizes=None, conn=None, chromClass=ChromInfo):
+        "loads from either chromSizes file or database conn 2chromInfo table"
         self.chromClass = chromClass
+        if chromSizes != None:
+            self.loadChromSizes(chromSizes)
+        elif conn != None:
+            self.loadChromInfoDb(conn)
 
     def __addRow(self, chrom, size):
         self[chrom] = self.chromClass(chrom, size)
