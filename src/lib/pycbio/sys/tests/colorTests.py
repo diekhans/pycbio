@@ -51,9 +51,9 @@ class ColorTests(TestCaseBase):
 # FIXME: many more tests needed
 
 def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(ColorTests))
-    return suite
+    ts = unittest.TestSuite()
+    ts.addTest(unittest.makeSuite(ColorTests))
+    return ts
 
 if __name__ == '__main__':
     unittest.main()

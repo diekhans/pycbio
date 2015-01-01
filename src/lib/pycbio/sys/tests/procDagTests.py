@@ -282,9 +282,9 @@ class ProcDagTests(TestCaseBase):
         self.commonChecks(nopen, pd, "{CYCLE}: cat ; cat ; cat /dev/stdin <([Pipe])")
 
 def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(ProcDagTests))
-    return suite
+    ts = unittest.TestSuite()
+    ts.addTest(unittest.makeSuite(ProcDagTests))
+    return ts
 
 if __name__ == '__main__':
     unittest.main()

@@ -23,7 +23,7 @@ class ExRunTestCaseBase(TestCaseBase):
             if n.state != expect:
                 self.fail("State of " + str(n.__class__) + " " +  n.name
                           + " state " + str(n.state)+ " != expected " + str(expect))
-        
+
     def checkGraphStates(self, er, notOkSpecs=()):
         """check states of productions and rules nodes, ones that are
         expected to be non-ok should have entries in notOk specs.

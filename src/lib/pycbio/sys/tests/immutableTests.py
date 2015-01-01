@@ -31,9 +31,9 @@ class ImmutableTests(TestCaseBase):
         self.assertEqual(obj.val, 10)
 
 def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(ImmutableTests))
-    return suite
+    ts = unittest.TestSuite()
+    ts.addTest(unittest.makeSuite(ImmutableTests))
+    return ts
 
 if __name__ == '__main__':
     unittest.main()

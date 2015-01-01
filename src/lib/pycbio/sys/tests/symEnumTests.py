@@ -121,9 +121,9 @@ class SymEnumTests(TestCaseBase):
         self.__testGeneFeaturePickleProtocol(0)
 
 def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(SymEnumTests))
-    return suite
+    ts = unittest.TestSuite()
+    ts.addTest(unittest.makeSuite(SymEnumTests))
+    return ts
 
 if __name__ == '__main__':
     unittest.main()

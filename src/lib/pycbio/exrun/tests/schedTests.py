@@ -1,10 +1,9 @@
 # Copyright 2006-2012 Mark Diekhans
 "test of Sched class independent of rest of ExRun"
 
-import unittest, sys, os, time
+import unittest, sys
 if __name__ == '__main__':
     sys.path.append("../../..")
-from pycbio.sys import fileOps
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.exrun.sched import Sched
 
@@ -74,9 +73,9 @@ class SchedTests(TestCaseBase):
             self.assertTrue(t.moved)
 
 def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(SchedTests))
-    return suite
+    ts = unittest.TestSuite()
+    ts.addTest(unittest.makeSuite(SchedTests))
+    return ts
 
 if __name__ == '__main__':
     unittest.main()

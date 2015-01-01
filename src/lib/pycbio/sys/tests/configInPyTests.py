@@ -59,9 +59,9 @@ class ConfigInPyTests(TestCaseBase):
         self.assertEqual(self.__getFields(c), ['configPyFile', "passedInModule", 'value1', 'value2'])
 
 def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(ConfigInPyTests))
-    return suite
+    ts = unittest.TestSuite()
+    ts.addTest(unittest.makeSuite(ConfigInPyTests))
+    return ts
 
 if __name__ == '__main__':
     unittest.main()

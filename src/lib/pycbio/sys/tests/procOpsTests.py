@@ -97,10 +97,10 @@ class ShellQuoteTests(TestCaseBase):
         
 
 def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(ProcRunTests))
-    suite.addTest(unittest.makeSuite(ShellQuoteTests))
-    return suite
+    ts = unittest.TestSuite()
+    ts.addTest(unittest.makeSuite(ProcRunTests))
+    ts.addTest(unittest.makeSuite(ShellQuoteTests))
+    return ts
 
 if __name__ == '__main__':
     unittest.main()

@@ -109,10 +109,10 @@ class QueryToTargetTests(TestCaseBase):
         self.assertEqual(got, (('gap', 'NM_017651', None, 0, 0, 1, None, None), ('blk', 'NM_017651', 0, 1, 100, 135605109, 135605208)))
 
 def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TargetToQueryTests))
-    suite.addTest(unittest.makeSuite(QueryToTargetTests))
-    return suite
+    ts = unittest.TestSuite()
+    ts.addTest(unittest.makeSuite(TargetToQueryTests))
+    ts.addTest(unittest.makeSuite(QueryToTargetTests))
+    return ts
 
 if __name__ == '__main__':
     unittest.main()

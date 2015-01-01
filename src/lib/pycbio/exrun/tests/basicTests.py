@@ -17,7 +17,7 @@ verbFlags=set((Verb.error,))
 
 class ProdSet(object):
     "set of file productions and contents; deletes files if they exist"
-    
+
     def __init__(self, exRun, tester, exts):
         self.tester = tester
         self.prods = []
@@ -44,7 +44,6 @@ class TouchRule(Rule):
     def _touch(self, fp):
         "create a file product"
         self.tester.assertTrue(isinstance(fp, File))
-        ext = os.path.splitext(fp.path)[1]
         fileOps.ensureFileDir(fp.getOutPath())
         fh = open(fp.getOutPath(), "w")
         try:
@@ -99,7 +98,7 @@ class TouchTests(ExRunTestCaseBase):
             self.low2Tar = low2Tar
 
     def twoLevelSetup(self, er, makeTargets=False):
-        "setup for tests using two levels of rules" 
+        "setup for tests using two levels of rules"
         # lower level, 2 productions and rules
         low1Pset = ProdSet(er, self, (".low1a", ".low1b", ".low1c"))
         low1Rule = TouchRule("low1Rule", self, low1Pset)
@@ -107,12 +106,12 @@ class TouchTests(ExRunTestCaseBase):
         low2Pset = ProdSet(er, self, (".low2a", ".low2b", ".low2c"))
         low2Rule = TouchRule("low2Rule", self, low2Pset)
         er.addRule(low2Rule)
-        
+
         # top level, dependent on intermediates
         topPset = ProdSet(er, self, (".top1", ".top2", ".top3"))
         topRule = TouchRule("top", self, topPset, requires=low1Pset.prods+low2Pset.prods)
         er.addRule(topRule)
-        
+
         if makeTargets:
             topTar = er.obtainTarget("topTar", topPset.prods)
             low1Tar = er.obtainTarget("low1Tar", low1Pset.prods)
@@ -207,10 +206,10 @@ class MiscTests(ExRunTestCaseBase):
         self.checkGraphStates(er)
 
 def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(TouchTests))
-    suite.addTest(unittest.makeSuite(MiscTests))
-    return suite
+    ts = unittest.TestSuite()
+    ts.addTest(unittest.makeSuite(TouchTests))
+    ts.addTest(unittest.makeSuite(MiscTests))
+    return ts
 
 if __name__ == '__main__':
     unittest.main()

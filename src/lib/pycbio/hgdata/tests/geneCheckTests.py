@@ -35,9 +35,9 @@ class ReadTests(TestCaseBase):
         self._checkDmp(checks)
         
 def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(ReadTests))
-    return suite
+    ts = unittest.TestSuite()
+    ts.addTest(unittest.makeSuite(ReadTests))
+    return ts
 
 if __name__ == '__main__':
     unittest.main()

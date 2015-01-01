@@ -1,5 +1,5 @@
 # Copyright 2006-2012 Mark Diekhans
-import unittest, sys, copy
+import unittest, sys
 if __name__ == '__main__':
     sys.path.append("../../..")
 from pycbio.sys.testCaseBase import TestCaseBase
@@ -24,7 +24,7 @@ class PairAlignPsl(TestCaseBase):
             pa.dump(fh)
         fh.close()
         self.diffExpected(suffix)
-        
+
     def testLoad(self):
         alns = loadPslFile(self.getInputFile("hsRefSeq.psl"),
                            self.getInputFile("hsRefSeq.cds"))
@@ -32,7 +32,7 @@ class PairAlignPsl(TestCaseBase):
 
     def testRevCmpl(self):
         alns = loadPslFile(self.getInputFile("hsRefSeq.psl"),
-                               self.getInputFile("hsRefSeq.cds"))
+                           self.getInputFile("hsRefSeq.cds"))
         ralns = []
         rralns = []
         for pa in alns:
@@ -97,9 +97,9 @@ class PairAlignPsl(TestCaseBase):
         self.doTestMapCds(contained=True)
 
 def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(PairAlignPsl))
-    return suite
+    ts = unittest.TestSuite()
+    ts.addTest(unittest.makeSuite(PairAlignPsl))
+    return ts
 
 if __name__ == '__main__':
     unittest.main()

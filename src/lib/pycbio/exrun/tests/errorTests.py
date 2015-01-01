@@ -1,7 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 "test of error conditions"
 
-import unittest, sys, os
+import unittest, sys
 if __name__ == '__main__':
     sys.path.append("../../..")
 from pycbio.exrun import ExRun, ExRunException, Rule, Verb
@@ -58,10 +58,10 @@ class ErrorTests(ExRunTestCaseBase):
         # order is not predictable
         expect = "cycle detected:\n  cycleAll3 ->\n  errorTests.ErrorTests.testCycleAll.file3 ->\n  cycleAll2 ->\n  errorTests.ErrorTests.testCycleAll.file2 ->\n  cycleAll1 ->\n  errorTests.ErrorTests.testCycleAll.file1 ->"
         self.assertEqual(_sortMsg(str(cm.exception)), _sortMsg(expect))
-        
+
     def testCycle(self):
         "entry node and cycle"
-        # can't build this graph due to linking sanity checks            
+        # can't build this graph due to linking sanity checks
         id = self.getId()
         with self.assertRaises(ExRunException) as cm:
             er = ExRun(verbFlags=verbFlags)
@@ -92,11 +92,11 @@ class ErrorTests(ExRunTestCaseBase):
                                (f3, ProdState.bad),
                                (r1, RuleState.blocked),
                                (r2, RuleState.blocked)))
-        
+
 def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(ErrorTests))
-    return suite
+    ts = unittest.TestSuite()
+    ts.addTest(unittest.makeSuite(ErrorTests))
+    return ts
 
 if __name__ == '__main__':
     unittest.main()

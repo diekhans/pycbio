@@ -1,15 +1,13 @@
 # Copyright 2006-2012 Mark Diekhans
 "tests of basic functionality"
 
-import unittest, sys, os, time
+import unittest, sys, time
 if __name__ == '__main__':
     sys.path.append("../../..")
 from pycbio.sys import typeOps
-from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.exrun import ExRun, Target, Rule, Production, Verb
-from pycbio.exrun.graph import RuleState, ProdState, negInf
+from pycbio.exrun import ExRun, Rule, Production, Verb
+from pycbio.exrun.graph import RuleState
 from pycbio.exrun.tests import ExRunTestCaseBase
-import threading
 
 # change this for debugging:
 verbFlags=set((Verb.error,))
@@ -76,11 +74,11 @@ class ExprBuilder(object):
         if prod.producedBy != None:
             raise Exception("duplicate production def: " + pName)
         rule.linkProduces(prod)
-        
+
     def __addRequires(self, rule, rName):
         prod = self.__obtainProd(rName)
         rule.linkRequires(prod)
-            
+
     def __obtainProd(self, pName):
         prod = self.graph.productionsByName.get(pName)
         if prod == None:
@@ -91,31 +89,31 @@ class BigTests(ExRunTestCaseBase):
     def testNoLeaves(self):
         "no leaf productions"
         eb = ExprBuilder([
-                RuleDef("r1", (), ("p1.1","p1.2")),
-                RuleDef("r2", ("p1.1","p1.2"), ("p2.1","p2.2")),
-                ], verbFlags=verbFlags)
+            RuleDef("r1", (), ("p1.1","p1.2")),
+            RuleDef("r2", ("p1.1","p1.2"), ("p2.1","p2.2")),
+        ], verbFlags=verbFlags)
         eb.er.run()
         self.checkGraphStates(eb.er)
 
     def testLeaves(self):
         "leaf productions"
         eb = ExprBuilder([
-                RuleDef("r1", ("p0.1","p0.2","p0.3"), ("p1.1","p1.2")),
-                RuleDef("r2", ("p1.1","p1.2"), ("p2.1","p2.2")),
-                ], verbFlags=verbFlags)
+            RuleDef("r1", ("p0.1","p0.2","p0.3"), ("p1.1","p1.2")),
+            RuleDef("r2", ("p1.1","p1.2"), ("p2.1","p2.2")),
+        ], verbFlags=verbFlags)
         eb.er.run()
         self.checkGraphStates(eb.er)
 
     def testDiamond(self):
         "graph with a diamond and crossed dependencies"
         eb = ExprBuilder([
-                RuleDef("r1", ("p0.1","p0.2","p0.3"), ("p1.1","p1.2","p1.3")),
-                RuleDef("r2.1", ("p1.1",), ("p2.1.1","p2.1.2")),
-                RuleDef("r2.2", ("p1.2",), ("p2.2.1","p2.2.2")),
-                RuleDef("r3.1", ("p2.1.1","p2.2.1"), ("p3.1.1","p3.1.2")),
-                RuleDef("r3.2", ("p2.1.2","p2.2.2"), ("p3.2.1","p3.2.2")),
-                RuleDef("r4", ("p3.1.1","p3.1.2", "p3.2.1","p3.2.2"), ("p4",))
-                ], verbFlags=verbFlags)
+            RuleDef("r1", ("p0.1","p0.2","p0.3"), ("p1.1","p1.2","p1.3")),
+            RuleDef("r2.1", ("p1.1",), ("p2.1.1","p2.1.2")),
+            RuleDef("r2.2", ("p1.2",), ("p2.2.1","p2.2.2")),
+            RuleDef("r3.1", ("p2.1.1","p2.2.1"), ("p3.1.1","p3.1.2")),
+            RuleDef("r3.2", ("p2.1.2","p2.2.2"), ("p3.2.1","p3.2.2")),
+            RuleDef("r4", ("p3.1.1","p3.1.2", "p3.2.1","p3.2.2"), ("p4",))
+        ], verbFlags=verbFlags)
         eb.er.run()
         self.checkGraphStates(eb.er)
 
@@ -132,7 +130,7 @@ class BigTests(ExRunTestCaseBase):
         prod = rname + "#prod"+str(level)
         rules.append(RuleDef(rname, reqs, prod))
         return prod
-    
+
     def testMany(self):
         "graph with a many independent rules in a tree"
         rules =  []
@@ -142,9 +140,9 @@ class BigTests(ExRunTestCaseBase):
         self.checkGraphStates(eb.er)
 
 def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(BigTests))
-    return suite
+    ts = unittest.TestSuite()
+    ts.addTest(unittest.makeSuite(BigTests))
+    return ts
 
 if __name__ == '__main__':
     unittest.main()

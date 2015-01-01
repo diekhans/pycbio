@@ -34,9 +34,9 @@ class CoordsTests(TestCaseBase):
         self.assertEqual(c.chromSize, 50818468)
 
 def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(CoordsTests))
-    return suite
+    ts = unittest.TestSuite()
+    ts.addTest(unittest.makeSuite(CoordsTests))
+    return ts
 
 if __name__ == '__main__':
     unittest.main()

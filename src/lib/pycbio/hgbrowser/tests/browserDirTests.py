@@ -12,9 +12,9 @@ class BrowserDirTests(TestCaseBase):
     pass
 
 def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(BrowserDirTests))
-    return suite
+    ts = unittest.TestSuite()
+    ts.addTest(unittest.makeSuite(BrowserDirTests))
+    return ts
 
 if __name__ == '__main__':
     unittest.main()

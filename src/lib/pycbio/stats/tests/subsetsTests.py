@@ -30,9 +30,9 @@ class SubsetsTests(TestCaseBase):
 
 
 def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(SubsetsTests))
-    return suite
+    ts = unittest.TestSuite()
+    ts.addTest(unittest.makeSuite(SubsetsTests))
+    return ts
 
 if __name__ == '__main__':
     unittest.main()
