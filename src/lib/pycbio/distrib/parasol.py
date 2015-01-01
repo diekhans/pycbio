@@ -3,7 +3,7 @@
 import sys, os.path
 from pycbio.sys import procOps,fileOps
 
-# FIXME: shell has multiple quoting hell issues; maybe something like 
+# FIXME: shell has multiple quoting hell issues; maybe something like
 # fsh (http://www.lysator.liu.se/fsh/) would fix this, and make it faster.
 # or maybe netpipes, or libssh
 
@@ -71,10 +71,10 @@ class BatchStats(object):
 
     def hasParasolErrs(self):
         return self.subErrors or self.queueErrors or self.trackingErrors or self.paraResultsErrors
-    
+
     def succeeded(self):
         return (not self.hasParasolErrs()) and (self.ranOk == self.totalJobs)
-        
+
 class Para(object):
     "interface to the parasol para command"
     def __init__(self, paraHost, paraDir, jobFile=None):

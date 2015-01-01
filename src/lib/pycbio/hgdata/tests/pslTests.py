@@ -86,10 +86,10 @@ class OpsTests(TestCaseBase):
         self.__swapDropImplicitTest(OpsTests.psTransNegNeg, "47	4	0	0	1	46	1	122	--	chr6	170899992	29962882	29962979	AA608343.1b	186	5	178	2	30,21,	140937013,140937089,	8,160,")
 
 def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(ReadTests))
-    suite.addTest(unittest.makeSuite(OpsTests))
-    return suite
+    ts = unittest.TestSuite()
+    ts.addTest(unittest.makeSuite(ReadTests))
+    ts.addTest(unittest.makeSuite(OpsTests))
+    return ts
 
 if __name__ == '__main__':
     unittest.main()

@@ -137,7 +137,7 @@ class File(Production):
             return fileOps.openz(path, "w")
         else:
             return open(path, "w")
-        
+
     def openIn(self, autoDecompress=True):
         """open the input file for reading in the ExRun process"""
         path = self.__setupIn()
@@ -175,7 +175,7 @@ class File(Production):
 
 class Cmd(list):
     """A command in a CmdRule. Contains a list of lists of command words,
-    which will either be any type of object or FileIn/FileOut objects.  
+    which will either be any type of object or FileIn/FileOut objects.
     The stdin,stdout, stderr arguments are used for redirect I/O.
     stdin/out/err can be open files, strings, or File production objects.
     If they are File objects, the atomic file handling methods are used
@@ -185,6 +185,7 @@ class Cmd(list):
     def __init__(self, cmd, stdin=None, stdout=None, stderr=None):
         """The str() function is called on each word when assembling arguments
         to a comand, so arguments do not need to be strings."""
+        list.__init__(self)
         if isinstance(cmd[0], list) or isinstance(cmd[0], tuple):
             for scmd in cmd:
                 self.__addSimple(scmd)
@@ -201,7 +202,8 @@ class Cmd(list):
             scmd = tuple(scmd)
         self.append(scmd)
 
-    def __getInput(self, pdag, fspec):
+    @staticmethod
+    def __getInput(pdag, fspec):
         """Get an input file. If fspec can be None, File or FileIn, or any
         object that can be converted to a string.  Return the appropriate PIn
         object, None, or a string. Adds decompression process if needed."""
@@ -284,7 +286,7 @@ class Cmd(list):
 class PersistentFlag(Production):
     """Object representing a flag file indicating that a rules has succeeded.
     These are stored in the experiment control directory."""
-    
+    pass
 
 class CmdRule(Rule):
     """Rule to execute processes.  Automatically installs File producions after
@@ -297,7 +299,7 @@ class CmdRule(Rule):
     This can be used it two ways, either give a lists of commands which are
     executed, or a rule class can be derived from this that executes the
     command when the rule is evaluated.
-    
+
     If commands are specified to the constructor, they are either a Cmd object
     or a list of Cmd objects.  If the input of the Cmd are File objects, they
     are added to the requires, and output of type File are added to the

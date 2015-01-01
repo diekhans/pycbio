@@ -111,9 +111,9 @@ class EnumerationTests(TestCaseBase):
         self.__testPickleProt(0)
 
 def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(EnumerationTests))
-    return suite
+    ts = unittest.TestSuite()
+    ts.addTest(unittest.makeSuite(EnumerationTests))
+    return ts
 
 if __name__ == '__main__':
     unittest.main()

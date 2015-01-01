@@ -297,7 +297,8 @@ class Block(object):
         "is this block a target insert?"
         return (self.q == None) and (self.t != None)
 
-    def __subToRow(self, seq, sub):
+    @staticmethod
+    def __subToRow(seq, sub):
         if sub != None:
             return [seq.seqId, sub.start, sub.end]
         else:
@@ -316,6 +317,7 @@ class PairAlign(list):
     """List of alignment blocks"""
     __slots__ = ("qSeq", "tSeq", "qSubSeqs", "tSubSeqs")
     def __init__(self, qSeq, tSeq):
+        list.__init__(self)
         self.qSeq = qSeq
         self.tSeq = tSeq
         self.qSubSeqs = SubSeqs(qSeq)
@@ -412,7 +414,7 @@ class PairAlign(list):
         to subseqs between beginning and end of projected CDS"""
         PairAlign.__projectCds(self.tSubSeqs, self.qSubSeqs, contained)
 
-    def __getSubseq(self, seq):
+    def getSubseq(self, seq):
         "find the corresponding subSeq array"
         if seq == self.qSeq:
             return self.qSubSeqs
@@ -451,8 +453,8 @@ class PairAlign(list):
     @staticmethod
     def __mapCdsForContained(srcSubSeqs, destSubSeqs):
         "assign CDS for all blks contained in srcSubSeq CDS range"
-        cdsStart = srcSubSeqs[PairAlign.__findFirstCds(srcSubSeqs)].cds.start
-        cdsEnd = srcSubSeqs[PairAlign.__findLastCds(srcSubSeqs)].cds.end
+        cdsStart = srcSubSeqs[PairAlign.findFirstCdsIdx(srcSubSeqs)].cds.start
+        cdsEnd = srcSubSeqs[PairAlign.findLastCdsIdx(srcSubSeqs)].cds.end
         for destSs in destSubSeqs:
             if (destSs != None) and destSs.overlaps(cdsStart, cdsEnd):
                 destSs.updateCds(max(cdsStart, destSs.start),
@@ -465,8 +467,8 @@ class PairAlign(list):
         assert(srcSeq.cds != None)
         assert((destSeq == self.qSeq) or (destSeq == self.tSeq))
         assert((srcSeq.seqId == destSeq.seqId) and (srcSeq.strand == destSeq.strand))
-        srcSubSeqs = srcAln.__getSubseq(srcSeq)
-        destSubSeqs = self.__getSubseq(destSeq)
+        srcSubSeqs = srcAln.getSubseq(srcSeq)
+        destSubSeqs = self.getSubseq(destSeq)
         destSubSeqs.clearCds()
         if contained:
             PairAlign.__mapCdsForOverlap(srcSubSeqs, destSubSeqs)
@@ -541,6 +543,7 @@ class CdsTable(dict):
     """
 
     def __init__(self, cdsFile):
+        dict.__init__(self)
         for line in iterLines(cdsFile):
             if not line.startswith('#'):
                 self.__parseCds(line)

@@ -53,10 +53,10 @@ class DbReadTests(TestCaseBase):
                 self.fail("qName not in refSeqAli select, maybe have to update test if RefSeq changed: " + qName)
 
 def suite():
-    suite = unittest.TestSuite()
+    ts = unittest.TestSuite()
     if onTestHost:
-        suite.addTest(unittest.makeSuite(DbReadTests))
-    return suite
+        ts.addTest(unittest.makeSuite(DbReadTests))
+    return ts
 
 if __name__ == '__main__' and onTestHost:
     unittest.main()

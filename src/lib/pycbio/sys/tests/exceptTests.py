@@ -53,9 +53,9 @@ class ExceptTests(TestCaseBase):
         self.assertRegexpMatchesDotAll(cm.exception.format(), """^TestExcept: in-fn1.+fn1\(\).+raise TestExcept\("in-fn1", e\).+caused by: TestExcept: in-fn3.+fn3\(\).+caused by: TestExcept: in-fn6.+fn4\(\).+fn5\(\).+fn6\(\).+caused by: OSError: OS meltdown.+fn7\(\).+raise OSError\("OS meltdown"\)$""")
         
 def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(ExceptTests))
-    return suite
+    ts = unittest.TestSuite()
+    ts.addTest(unittest.makeSuite(ExceptTests))
+    return ts
 
 if __name__ == '__main__':
     unittest.main()

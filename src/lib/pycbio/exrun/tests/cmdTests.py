@@ -1,12 +1,12 @@
 # Copyright 2006-2012 Mark Diekhans
 "tests of CmdRule"
 
-import unittest, sys, os, re
+import unittest, sys
 if __name__ == '__main__':
     sys.path.append("../../..")
 from pycbio.sys import strOps,fileOps
 from pycbio.sys.pipeline import ProcException
-from pycbio.exrun import ExRunException, ExRun, CmdRule, Cmd, File, FileIn, FileOut, Verb
+from pycbio.exrun import ExRunException, ExRun, CmdRule, Cmd, FileIn, FileOut
 from pycbio.exrun.graph import ProdState,RuleState
 from pycbio.exrun.tests import ExRunTestCaseBase
 
@@ -229,7 +229,7 @@ class CmdSubclassTests(ExRunTestCaseBase):
                 self.call(Cmd((("wc", "-l"), ("sed", "-e", "s/ //g")),
                               stdin=self.ifp, stdout=self.ofp))
 
-        
+
         er = ExRun(verbFlags=verbFlags)
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp1 = er.getFile(self.getOutputFile(".txt"))
@@ -262,7 +262,7 @@ class CmdCompressTests(ExRunTestCaseBase):
             raise
         self.diffExpected(".txt")
         self.checkGraphStates(er)
-        
+
     def testArgs(self):
         er = ExRun(verbFlags=verbFlags)
         ifp = er.getFile(self.getInputFile("numbers.txt"))
@@ -302,7 +302,7 @@ class CmdCompressTests(ExRunTestCaseBase):
                                (ofp2, ProdState.failed),
                                (r1,   RuleState.ok),
                                (r2,   RuleState.failed)))
-            
+
     def testCmdSigPipe(self):
         "test command recieving SIGPIPE with no error"
         er = ExRun(verbFlags=verbFlags)
@@ -318,7 +318,8 @@ class CmdCompressTests(ExRunTestCaseBase):
 
 class CmdMiscTests(ExRunTestCaseBase):
     "misc tests, regressions, etc"
-    def __mkDependOnNoDepend(self, priFile, secFile, secContents):
+    @staticmethod
+    def __mkDependOnNoDepend(priFile, secFile, secContents):
         ex = ExRun(verbFlags=verbFlags)
         priFp = ex.getFile(priFile)
         secFp = ex.getFile(secFile)
@@ -339,14 +340,14 @@ class CmdMiscTests(ExRunTestCaseBase):
         self.__mkDependOnNoDepend(priFile, secFile, "two")
         self.verifyOutputFile(".secondary.txt", "one\n")
 
-            
+
 def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(CmdSuppliedTests))
-    suite.addTest(unittest.makeSuite(CmdSubclassTests))
-    suite.addTest(unittest.makeSuite(CmdCompressTests))
-    suite.addTest(unittest.makeSuite(CmdMiscTests))
-    return suite
+    ts = unittest.TestSuite()
+    ts.addTest(unittest.makeSuite(CmdSuppliedTests))
+    ts.addTest(unittest.makeSuite(CmdSubclassTests))
+    ts.addTest(unittest.makeSuite(CmdCompressTests))
+    ts.addTest(unittest.makeSuite(CmdMiscTests))
+    return ts
 
 if __name__ == '__main__':
     unittest.main()

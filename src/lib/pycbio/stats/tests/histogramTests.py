@@ -32,9 +32,9 @@ class HistoTests(TestCaseBase):
                               (1, 0.0, 2.0, 2.0, 1, 0.0)])
 
 def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(HistoTests))
-    return suite
+    ts = unittest.TestSuite()
+    ts.addTest(unittest.makeSuite(HistoTests))
+    return ts
 
 if __name__ == '__main__':
     unittest.main()

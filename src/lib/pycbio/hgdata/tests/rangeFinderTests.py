@@ -113,10 +113,9 @@ class RangeTests(TestCaseBase):
         self.doQueries(rf, queries2, False)
         
 def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(RangeTests))
-
-    return suite
+    ts = unittest.TestSuite()
+    ts.addTest(unittest.makeSuite(RangeTests))
+    return ts
 
 if __name__ == '__main__':
     unittest.main()

@@ -6,9 +6,9 @@
 
 import sys,traceback,types
 from pycbio.sys import typeOps, PycbioException
-                                
+
 class ExRunException(PycbioException):
-    "Exceptions thrown bye exrun module derive from this object" 
+    "Exceptions thrown bye exrun module derive from this object"
     def __init__(self, msg, cause=None):
         PycbioException.__init__(self, msg, cause)
 
@@ -18,7 +18,7 @@ class Verb(object):
     any object passed to print routines with the following exceptions:
       traceback - stack is formatted
     """
-    
+
     # flag values
     error = intern("error")     # output errors
     trace = intern("trace")     # basic tracing
@@ -91,5 +91,5 @@ from pycbio.exrun.exRun import ExRun
 
 
 __all__ = (ExRunException.__name__, Verb.__name__, Production.__name__,
-           Rule.__name__, CmdRule.__name__, Cmd.__name__, 
+           Rule.__name__, CmdRule.__name__, Cmd.__name__,
            File.__name__, FileIn.__name__, FileOut.__name__, ExRun.__name__)
