@@ -51,13 +51,13 @@ class Coords(Immutable):
         self.mkImmutable()
 
     def __str__(self):
-        return self.chr + ":" + str(self.start) + "-" + str(self.end)
+        return self.chrom + ":" + str(self.start) + "-" + str(self.end)
 
     def size(self):
         return self.end-self.start
 
     def overlaps(self, other):
-        return ((self.chr == other.chr) and (self.start < other.end) and (self.end > other.start))
+        return ((self.chrom == other.chrom) and (self.start < other.end) and (self.end > other.start))
 
     def pad(self, frac=0.05, minBases=5):
         """return Coords, padded with a fraction of the range."""
@@ -67,14 +67,14 @@ class Coords(Immutable):
         st = self.start - amt
         if st < 0:
             st = 0
-        return Coords(self.chr, st, self.end+amt)
+        return Coords(self.chrom, st, self.end+amt)
 
     def __cmp__(self, other):
         if other == None:
             return -1
         d = cmp(self.db, other.db)
         if d == 0:
-            d = cmp(self.chr, other.chr)
+            d = cmp(self.chrom, other.chrom)
         if d == 0:
             d = cmp(self.start, other.start)
         if d == 0:
@@ -82,4 +82,4 @@ class Coords(Immutable):
         return d
 
     def __hash__(self):
-        return hash(self.db) + hash(self.chr) + hash(self.start)
+        return hash(self.db) + hash(self.chrom) + hash(self.start)
