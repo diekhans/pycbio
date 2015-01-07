@@ -3,7 +3,7 @@ from pycbio.tsv.tsvRow import TSVRow
 from pycbio.tsv.tsvTable import TSVTable
 from pycbio.tsv.tsvReader import TSVReader
 from pycbio.hgdata.autoSql import strArrayType
-from pycbio.sys.enumeration import Enumeration
+from pycbio.sys.symEnum import SymEnum
 
 def statParse(val):
     "parse a value of the stat column (ok or err)"
@@ -59,8 +59,8 @@ nmdType = (nmdParse, nmdFmt)
 
 
 # frame status
-Frame = Enumeration("FrameStat",
-                    ["ok", "bad", "mismatch", "discontig", "noCDS"])
+FrameStat = SymEnum("FrameStat",
+                    ("ok", "bad", "mismatch", "discontig", "noCDS"))
 
 
 #acc	chr	chrStart	chrEnd	strand	stat	frame	start	stop	orfStop	cdsGap	cdsMult3Gap	utrGap	cdsUnknownSplice	utrUnknownSplice	cdsNonCanonSplice	utrNonCanonSplice	numExons	numCds	numUtr5	numUtr3	numCdsIntrons	numUtrIntrons	nmd	causes
@@ -69,7 +69,7 @@ typeMap = {"acc": intern,
            "chrEnd": int,
            "strand": intern,
            "stat": statType,
-           "frame": Frame,
+           "frame": FrameStat,
            "start": startStopType,
            "stop": startStopType,
            "orfStop": int,

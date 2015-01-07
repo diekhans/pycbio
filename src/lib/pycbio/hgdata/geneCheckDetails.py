@@ -2,7 +2,6 @@
 from pycbio.tsv.tsvRow import TSVRow
 from pycbio.tsv.tsvTable import TSVTable
 from pycbio.tsv.tsvReader import TSVReader
-from pycbio.sys.enumeration import Enumeration
 
 def strOrNone(val):
     "return None if val is zero length otherwise val"

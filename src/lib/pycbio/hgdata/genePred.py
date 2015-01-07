@@ -2,13 +2,13 @@
 import copy
 from pycbio.sys import fileOps, dbOps
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin
-from pycbio.sys.enumeration import Enumeration
+from pycbio.sys.symEnum import SymEnum, SymEnumValue
 
-CdsStat = Enumeration("CdsStat", [
-    ("none", "none"),             # No CDS (non-coding)
-    ("unknown", "unk"),           # CDS is unknown (coding, but not known)
-    ("incomplete", "incmpl"),     # CDS is not complete at this end
-    ("complete", "cmpl")])        # CDS is complete at this end
+class CdsStat(SymEnum):
+    none = SymEnumValue("none", "none")                # No CDS (non-coding)
+    unknown = SymEnumValue("unknown", "unk")           # CDS is unknown (coding, but not known)
+    incomplete = SymEnumValue("incomplete", "incmpl")  # CDS is not complete at this end
+    complete = SymEnumValue("complete", "cmpl")        # CDS is complete at this end
 
 genePredColumns = ("name", "chrom", "strand", "txStart", "txEnd", "cdsStart", "cdsEnd", "exonCount", "exonStarts", "exonEnds", "score", "name2", "cdsStartStat", "cdsEndStat", "exonFrames")
 genePredExtColumns = ("name", "chrom", "strand", "txStart", "txEnd", "cdsStart", "cdsEnd", "exonCount", "exonStarts", "exonEnds")
