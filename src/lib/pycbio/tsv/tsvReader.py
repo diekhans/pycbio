@@ -20,6 +20,8 @@ from pycbio.tsv.tsvError import TSVError
 # FIXME: make a column object.
 # FIXME: save original column names before mapping for output
 
+# FIXME: switch row to deriving from named tuple or using properties?
+
 # typeMap converter for str types were empty represents None
 strOrNoneType = (lambda v: None if (v == "") else v,
                  lambda v: "" if (v == None) else v)
