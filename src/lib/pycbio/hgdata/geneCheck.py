@@ -127,5 +127,10 @@ class GeneCheckTbl(TSVTable):
                     return chk
         return None
             
+    def getById(self, id):
+        """get check record by id or None if not found.  If idIsUniq was not specified,
+        a list is returned"""
+        return self.idIndex.get(id)
+
     def getByGenePred(self, gp):
         return self.getByGeneLoc(gp.name, gp.chrom, gp.txStart, gp.txEnd)
