@@ -55,7 +55,7 @@ class SymEnumMeta(EnumMeta):
         else:
             return EnumMeta.__new__(metacls, cls, bases, classdict)
 
-    def __call__(cls, value, names=None, module=None, type=None):
+    def __call__(cls, value, names=None, module=None, typ=None):
         "look up a value object, either by name of value,"
         if (names is None) and isinstance(value, str):
             # map string name to instance, check for external name
@@ -66,7 +66,7 @@ class SymEnumMeta(EnumMeta):
             else:
                 return member
         else:
-            return EnumMeta.__call__(cls, value, names, module, type)
+            return EnumMeta.__call__(cls, value, names, module, typ)
 
 class SymEnum(Enum):
     """
