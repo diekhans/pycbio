@@ -4,6 +4,8 @@ import string
 
 def strArraySplit(commaStr):
      "parser for comma-separated string list into a list"
+     if len(commaStr) == 0:
+          return []
      strs = commaStr.split(",")
      if commaStr.endswith(","):
           strs = strs[0:-1]
