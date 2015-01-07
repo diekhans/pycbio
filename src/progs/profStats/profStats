@@ -6,7 +6,7 @@ myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.append(myBinDir + "/../lib")
 from optparse import OptionParser
 import pstats
-from pycbio.sys.Enumeration import Enumeration
+from pycbio.sys.enumeration import Enumeration
 
 validSortKeys = ('calls', 'cumulative', 'file', 'module', 'pcalls', 'line',
                  'name', 'nfl', 'stdname', 'time')

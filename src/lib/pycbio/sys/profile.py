@@ -1,13 +1,5 @@
 # Copyright 2006-2012 Mark Diekhans
-import cProfile, signal
-
-sigProfObject = None
-
-def sigHandler(signum, frame):
-    "signal handler to stop logging and terminate process"
-    sigProfObject.finishUp()
-    sys.stderr("Warning: profiler exiting on signal\n")
-    sys.exit(1)
+import cProfile, signal, argparse
 
 class Profile(object):
     """Wrapper to make adding optional support for profiling easy.
@@ -27,20 +19,32 @@ class Profile(object):
     at the end of the program:
         xxx.profiler.finishUp()
 
-    use the program profStats to create reports.
+    Use the program profStats to create reports.  This works with both optparse and argparse
     """
 
     def __init__(self, cmdParser):
-        cmdParser.add_option("--profile", dest="profile", action="store",
-                             default=None, type="string",
-                             help="enable profiling, logging to this file")
-        cmdParser.add_option("--profile-signal", dest="signal", action="store",
-                             default=None, type="int",
-                             help="specify signal number that will stop logging and exit program")
+        profileHelp = "enable profiling, logging to this file"
+        profileSignalHelp = "specify signal number that will stop logging and exit program"
+        if isinstance(cmdParser, argparse.ArgumentParser):
+            cmdParser.add_argument("--profile", dest="profile", action="store", default=None, help=profileHelp)
+            cmdParser.add_argument("--profile-signal", dest="signal", action="store", default=None, type=int, help=profileSignalHelp)
+        else:
+            cmdParser.add_option("--profile", dest="profile", action="store", default=None, help=profileHelp)
+            cmdParser.add_option("--profile-signal", dest="signal", action="store", default=None, type="int", help=profileSignalHelp)
         self.profiler = None
         self.logFile = None
         self.signum = None
 
+    def __sigHandler(self, signum, frame):
+        "signal handler to stop logging and terminate process"
+        self.finishUp()
+        sys.stderr("Warning: profiler exiting on signal\n")
+        sys.exit(1)
+
+    def __setupSignalHandler(self, signum):
+        self.signum = signum
+        signal.signal(self.signum, self.__sigHandler)
+        
     def setup(self, opts):
         """initializing profiling, if requested"""
         if opts.profile == None:
@@ -48,21 +52,20 @@ class Profile(object):
                 raise Exception("can't specify --profile-signal without --profile")
         else:
             if opts.signal != None:
-                global sigProfObject
-                sigProfObject = self
-                self.signum = opts.signal
-                signal.signal(self.signum, sigHandler)
+                self.__setupSignalHandler(opts.signal)
             self.logFile = opts.profile
             self.profiler = cProfile.Profile()
             self.profiler.enable()
 
+    def __finishupSignal(self):
+        signal.signal(self.signum, signal.SIG_IGN)
+        self.signum = None
+                
     def finishUp(self):
         "if profiling is enabled, stop and close log file"
         if self.profiler != None:
             self.profiler.disable()
             if self.signum != None:
-                signal.signal(self.signum, signal.SIG_IGN)
-                sigProfObject = None
-                self.signum = None
+                self.__finishupSignal()
             self.profiler.dump_stats(self.logFile)
                 
