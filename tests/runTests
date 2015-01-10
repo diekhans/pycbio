@@ -1,0 +1,101 @@
+#!/usr/bin/env python
+# Copyright 2006-2012 Mark Diekhans
+
+import unittest, sys, os
+from optparse import OptionParser
+sys.path.extend(["..", "."])
+from pycbio.sys import fileOps,strOps
+
+class CmdOpts(object):
+    usage = """%prog
+
+    run all tests
+"""
+    def __init__(self):
+        parser = OptionParser(usage=CmdOpts.usage)
+        (opts, args) = parser.parse_args()
+        if len(args) != 0:
+            parser.error("wrong number of arguments")
+
+
+class DynTest(object):
+    "dynamic loading and executing of test"
+    def __init__(self):
+        self.suites = []
+        self.importErrCnt = 0
+        self.pkgs = set()
+
+    def add(self, name):
+        "add a module, continuing past import error"
+        pkgName, modName = name.rsplit(".", 1)
+        self.pkgs.add(pkgName)
+        try:
+            mod = __import__(pkgName,  globals(), None, [modName])
+            mod = getattr(mod, modName)
+            self.suites.append(mod.suite())
+        except ImportError, e:
+            self.importErrCnt += 1
+            sys.stderr.write("Error: import failed for: " + name + ": " + str(e) + "\n")
+
+    bar = strOps.dup(70, "=") + "\n"
+
+    def run(self):
+        alltests = unittest.TestSuite(self.suites)
+        runner = unittest.TextTestRunner(sys.stdout, verbosity=2)
+        result = runner.run(alltests)
+        sys.stdout.flush()
+        sys.stderr.flush()
+        sys.stderr.write(self.bar)
+        if not (result.wasSuccessful() and (self.importErrCnt == 0)):
+            sys.stderr.write("Error summary:\n")
+            if self.importErrCnt > 0:
+                sys.stderr.write("\timport errors: "+str(self.importErrCnt)+"\n")
+            if len(result.failures) > 0:
+                sys.stderr.write("\ttest failures: "+str(len(result.failures))+"\n")
+            if len(result.errors) > 0:
+                sys.stderr.write("\ttest errors: "+str(len(result.errors))+"\n")
+            sys.exit(1)
+        else:
+            sys.stderr.write("Tests successful\n")
+
+    def cleanup(self):
+        "clean up output directories from all test packages"
+        for pkg in self.pkgs:
+            pkgOutDir = pkg.replace(".", "/") + "/output"
+            if os.path.isdir(pkgOutDir):
+                fileOps.rmTree(pkgOutDir)
+
+dt = DynTest()
+dt.add("libtests.pycbio.tsv.tsvTests")
+dt.add("libtests.pycbio.tsv.tabFileTests")
+dt.add("libtests.pycbio.sys.enumerationTests")
+dt.add("libtests.pycbio.sys.configInPyTests")
+dt.add("libtests.pycbio.sys.symEnumTests")
+dt.add("libtests.pycbio.sys.immutableTests")
+dt.add("libtests.pycbio.sys.exceptTests")
+dt.add("libtests.pycbio.sys.procDagTests")
+dt.add("libtests.pycbio.sys.pipelineTests")
+dt.add("libtests.pycbio.sys.procOpsTests")
+dt.add("libtests.pycbio.sys.colorTests")
+dt.add("libtests.pycbio.sys.dbDictTests")
+dt.add("libtests.pycbio.hgdata.genePredTests")
+dt.add("libtests.pycbio.hgdata.geneCheckTests")
+dt.add("libtests.pycbio.hgdata.pslTests")
+dt.add("libtests.pycbio.hgdata.pslDbTests")
+dt.add("libtests.pycbio.hgdata.pslMapTests")
+dt.add("libtests.pycbio.hgdata.clusterGenesTests")
+#FIXME: dt.add("libtests.pycbio.stats.histoTests")
+dt.add("libtests.pycbio.stats.subsetsTests")
+dt.add("libtests.pycbio.stats.vennTests")
+dt.add("libtests.pycbio.exrun.basicTests")
+dt.add("libtests.pycbio.exrun.errorTests")
+dt.add("libtests.pycbio.exrun.schedTests")
+dt.add("libtests.pycbio.exrun.bigTests")
+dt.add("libtests.pycbio.exrun.cmdTests")
+dt.add("libtests.pycbio.align.pairAlignTest")
+dt.add("libtests.pycbio.hgbrowser.browserDirTests")
+dt.add("libtests.pycbio.hgbrowser.coordsTests")
+dt.run()
+
+opts = CmdOpts()
+dt.cleanup()
