@@ -1,0 +1,99 @@
+#!/usr/bin/env python
+# Copyright 2006-2012 Mark Diekhans
+
+import sys, os
+myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
+sys.path.append(myBinDir + "/../lib")
+from optparse import OptionParser
+from pycbio.sys.fileOps import prRowv
+from pycbio.sys.enumeration import Enumeration
+from pycbio.hgdata import geneCheck
+
+ProbType = Enumeration("ProbType",
+                       ("ok", "any", "start", "stop", "orfStop",
+                        "cdsGap","cdsMult3Gap","utrGap",
+                        "cdsUnknownSplice", "utrUnknownSplice",
+                        "cdsNonCanonSplice", "utrNonCanonSplice",
+                        "frameBad", "frameMismatch", "noCDS"))
+def fmtRate(cnt, tot):
+    if (tot == 0):
+        return "0"
+    else:
+        return "%0.3f" % (float(cnt)/float(tot))
+
+class CmdOpts(object):
+    usage = """%prog geneChk statsOut
+
+    get stats on gene-check
+"""
+    def __init__(self):
+        parser = OptionParser(usage=CmdOpts.usage)
+        (opts, args) = parser.parse_args()
+        if len(args) != 2:
+            parser.error("wrong number of arguments")
+        (self.geneChks, self.statsOut) = args
+        self.__dict__.update(opts.__dict__)
+
+class CountChks(object):
+    def __init__(self, geneChks):
+        self.chks = geneCheck.GeneCheckTbl(geneChks);
+        self.cnt = 0
+        self.probGeneCnts = {}
+        self.probInstCnts = {}
+        for v in ProbType.values:
+            self.probGeneCnts[v] = 0
+            self.probInstCnts[v] = 0
+
+    def _cnt(self, type, num):
+        if num > 0:
+            self.probGeneCnts[type] += 1
+            self.probInstCnts[type] += num
+
+    def countGene(self, gene):
+        self.cnt += 1
+        if not gene.stat:
+            self._cnt(ProbType.any, 1)
+        else:
+            self._cnt(ProbType.ok, 1)
+        if not gene.start:
+            self._cnt(ProbType.start, 1)
+        if not gene.stop:
+            self._cnt(ProbType.stop, 1)
+        if gene.orfStop > 0:
+            self._cnt(ProbType.orfStop, gene.orfStop)
+        cdsGap = gene.cdsGap - gene.cdsMult3Gap
+        if cdsGap > 0:
+            self._cnt(ProbType.cdsGap, cdsGap)
+        if gene.cdsMult3Gap > 0:
+            self._cnt(ProbType.cdsMult3Gap, gene.cdsMult3Gap)
+        if gene.utrGap > 0:
+            self._cnt(ProbType.utrGap, gene.utrGap)
+        if gene.cdsUnknownSplice > 0:
+            self._cnt(ProbType.cdsUnknownSplice, gene.cdsUnknownSplice)
+        if gene.utrUnknownSplice > 0:
+            self._cnt(ProbType.utrUnknownSplice, gene.utrUnknownSplice)
+        if gene.cdsNonCanonSplice > 0:
+            self._cnt(ProbType.cdsNonCanonSplice, gene.cdsNonCanonSplice)
+        if gene.utrNonCanonSplice > 0:
+            self._cnt(ProbType.utrNonCanonSplice, gene.utrNonCanonSplice)
+        if gene.frame == geneCheck.FrameStat.bad:
+            self._cnt(ProbType.frameBad, 1)
+        elif gene.frame == geneCheck.FrameStat.mismatch:
+            self._cnt(ProbType.frameMismatch, 1)
+        elif gene.frame == geneCheck.FrameStat.noCDS:
+            self._cnt(ProbType.noCDS, 1)
+
+    def count(self, statsOut):
+        for gene in self.chks:
+            self.countGene(gene)
+        outFh = open(statsOut, "w")
+        prRowv(outFh, "probCat", "gene", "rate", "numProbs")
+        prRowv(outFh, "total", self.cnt, "1.0", self.cnt)
+        for v in ProbType.values:
+            prRowv(outFh, v, self.probGeneCnts[v], fmtRate(self.probGeneCnts[v], self.cnt),
+                   self.probInstCnts[v])
+        outFh.close()
+
+opts = CmdOpts()
+counter = CountChks(opts.geneChks)
+counter.count(opts.statsOut)
