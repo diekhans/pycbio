@@ -9,7 +9,7 @@ from pycbio.sys import fileOps
 from pycbio.hgdata.ClusterGenes import ClusterGenes
 from pycbio.stats.Venn import Venn
 from pycbio.sys.fileOps import prRowv
-from pycbio.tsv.TabFile import TabFile
+from pycbio.tsv.tabFile import TabFile
 
 class CmdOpts(object):
     usage="""%prog [options] clusterFile statsFile

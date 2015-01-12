@@ -76,11 +76,11 @@ class CountChks(object):
             self._cnt(ProbType.cdsNonCanonSplice, gene.cdsNonCanonSplice)
         if gene.utrNonCanonSplice > 0:
             self._cnt(ProbType.utrNonCanonSplice, gene.utrNonCanonSplice)
-        if gene.frame == geneCheck.Frame.bad:
+        if gene.frame == geneCheck.FrameStat.bad:
             self._cnt(ProbType.frameBad, 1)
-        elif gene.frame == geneCheck.Frame.mismatch:
+        elif gene.frame == geneCheck.FrameStat.mismatch:
             self._cnt(ProbType.frameMismatch, 1)
-        elif gene.frame == geneCheck.Frame.noCDS:
+        elif gene.frame == geneCheck.FrameStat.noCDS:
             self._cnt(ProbType.noCDS, 1)
 
     def count(self, statsOut):
