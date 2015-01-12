@@ -2,7 +2,6 @@
 from pycbio.tsv.tsvRow import TSVRow
 from pycbio.tsv.tsvTable import TSVTable
 from pycbio.tsv.tsvReader import TSVReader
-from pycbio.hgdata.autoSql import strArrayType
 from pycbio.sys.symEnum import SymEnum
 
 def statParse(val):
@@ -57,6 +56,22 @@ def nmdFmt(val):
         return "nmd"
 nmdType = (nmdParse, nmdFmt)
 
+def strListSplit(commaStr):
+     "parser for comma-separated string list into a list"
+     if len(commaStr) == 0:
+          return []
+     strs = commaStr.split(",")
+     return strs
+
+def strListJoin(strs):
+     "formatter for a list into a comma seperated string"
+     if strs != None:
+          return string.join(strs,",")
+     else:
+          return ""
+
+strListType = (strListSplit, strListJoin)
+
 
 # frame status
 FrameStat = SymEnum("FrameStat",
@@ -89,7 +104,7 @@ typeMap = {"acc": intern,
            "numCdsIntrons": int,
            "numUtrIntrons": int, 
            "nmd": nmdType, 
-           "causes": strArrayType
+           "causes": strListType
     }
 
 
