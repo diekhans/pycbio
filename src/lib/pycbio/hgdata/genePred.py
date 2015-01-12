@@ -545,7 +545,7 @@ class GenePredTbl(list):
             self.names[row.name] = row
 
     def __buildIdx(self):
-        from pycbio.sys.MultiDict import MultiDict
+        from pycbio.sys.multiDict import MultiDict
         self.names = MultiDict()
         for row in self:
             self.names.add(row.name, row)
