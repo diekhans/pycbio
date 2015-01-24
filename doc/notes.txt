@@ -5,3 +5,11 @@
 
 - document generators:
   http://codespeak.net/~mwh/pydoctor/ - discussion of others
+
+- 2bit parser:
+  https://github.com/tomclegg/get-evidence/blob/master/server/utils/twobit.py
+      - requires cython, ian had good luck
+          I had to make the following change on line 111 of the .pyx file for it
+          to handle Ns properly:
+
+              memset(dna + s - fragStart, 'N'[0], e - s) -> memset(dna + s - fragStart, c'N', e - s)
