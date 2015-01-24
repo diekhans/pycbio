@@ -66,7 +66,7 @@ def strListSplit(commaStr):
 def strListJoin(strs):
      "formatter for a list into a comma seperated string"
      if strs != None:
-          return string.join(strs,",")
+          return ",".join(strs)
      else:
           return ""
 
