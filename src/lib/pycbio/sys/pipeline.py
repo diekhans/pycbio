@@ -13,6 +13,10 @@ from pycbio.sys import strOps, trace, PycbioException, fifo
 #    - this shows a bug: (ChrMLifterBroken) ccds2/modules/gencode/src/progs/gencodeMakeTracks/gencodeGtfToGenePred
 #    - passing in a python file or handle is documented but not implemented,
 #    - see ProcOpsTests.py and ProcOpsTests.py BROKEN_
+#    - add dup of stdout and err
+# Why better that subprocess:
+#   - natural pipeline
+#   - stderr thrown as excpetion
 
 try:
     MAXFD = os.sysconf("SC_OPEN_MAX")
