@@ -611,7 +611,7 @@ class GenePredDbReader(object):
         return self
 
     def next(self):
-        "GPR next"
+        "read the next record next"
         while True:
             row = self.cur.fetchone()
             if row == None:
