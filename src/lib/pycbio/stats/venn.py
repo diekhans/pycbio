@@ -106,15 +106,18 @@ class Venn(object):
             t += self.getSubsetCounts(subset)
         return t
 
+    def __getSubsetName(self, subset, subsetNameSeparator):
+        return subsetNameSeparator.join(sorted([str(s) for s in subset]))
+
     def writeCounts(self, fh, subsetNameSeparator=" "):
         "write TSV of subset counts to an open file"
         fileOps.prRowv(fh, "subset", "count")
         for subset in self.subsets.getSubsets():
-            fileOps.prRowv(fh, subsetNameSeparator.join(subset), self.getSubsetCounts(subset))
-        
+            fileOps.prRowv(fh, self.__getSubsetName(subset, subsetNameSeparator), self.getSubsetCounts(subset))
+
     def writeSets(self, fh, subsetNameSeparator=" "):
         "write TSV of subsets and ids to an open file"
         fileOps.prRowv(fh, "subset", "ids")
         for subset in self.subsets.getSubsets():
-            fileOps.prRowv(fh, subsetNameSeparator.join(subset), self.getSubsetCounts(subset))
+            fileOps.prRowv(fh, self.__getSubsetName(subset, subsetNameSeparator), self.getSubsetCounts(subset))
         
