@@ -25,7 +25,8 @@ def setupLogger(handler):
     """add handle to logger and set logger level to the minimum of it's
     current and the handler level"""
     logger = logging.getLogger()
-    logger.setLevel(min(handler.level, logger.level))
+    if handler.level != None:
+        logger.setLevel(min(handler.level, logger.level))
     logger.addHandler(handler)
 
 def setupStreamLogger(level, fh):
@@ -48,3 +49,10 @@ def setupSyslogLogger(facility, level, programName=None):
     handler.setLevel(level)
     setupLogger(handler)
     
+def setupNullLogger(level=None):
+    "configure discard logging"
+    handler = logging.NullHandler()
+    if level != None:
+        handler.setLevel(level)
+    setupLogger(handler)
+                                    
