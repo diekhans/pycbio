@@ -10,13 +10,20 @@ class VennTests(TestCaseBase):
     def _checkVenn(self, venn):
         with open(self.getOutputFile(".vinfo"), "w") as viFh:
             venn.writeSets(viFh)
-        self.diffExpected(".vinfo")
         with open(self.getOutputFile(".vcnts"), "w") as viFh:
             venn.writeCounts(viFh)
+        self.diffExpected(".vinfo")
         self.diffExpected(".vcnts")
         
     def testVenn1(self):
         venn = Venn()
+        venn.addItems("A", (1, 2, 3))
+        venn.addItems("B", (3, 4, 5))
+        venn.addItems("C", (3, 5, 6))
+        self._checkVenn(venn)
+
+    def testVenn2(self):
+        venn = Venn(isInclusive=True)
         venn.addItems("A", (1, 2, 3))
         venn.addItems("B", (3, 4, 5))
         venn.addItems("C", (3, 5, 6))
