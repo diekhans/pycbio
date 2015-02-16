@@ -9,21 +9,12 @@ class PycbioException(Exception):
        try:
           ...
        except Exception, ex:
-          tb = sys.exc_info()[2]
-          ...
-          raise PycbioException("more stuff", ex), None, tb
-    or 
-       except Exception, ex:
-          raise PycbioException("more stuff", ex), None, sys.exc_info()[2]
-    or 
-       except:
-          exi = sys.exc_info()
-          raise PycbioException("more stuff", exi[1]), None, exi[2]
+          raise PycbioException("more stuff", ex)
     """
     def __init__(self, msg, cause=None):
         """Constructor."""
         if (cause != None) and (not isinstance(cause, PycbioException)):
-            # store stack trace in other Exceptions
+            # store stack trace in other Exception types
             exi = sys.exc_info()
             if exi != None:
                 setattr(cause, "stackTrace", traceback.format_list(traceback.extract_tb(exi[2])))
