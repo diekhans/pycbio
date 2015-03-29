@@ -74,8 +74,8 @@ class Venn(object):
         "build as inclusive subsets"
         self.venn = SetDict(self.subsets.getSubsets())
 
-        for item in self.itemNames.iterkeys():
-            setName = self.itemNames[item]
+        for item in self.itemToNames.iterkeys():
+            setName = frozenset(self.itemToNames[item])
             for iss in self.subsets.getInclusiveSubsets(setName):
                 self.venn.add(iss, item)
 
@@ -106,15 +106,19 @@ class Venn(object):
             t += self.getSubsetCounts(subset)
         return t
 
-    def writeCounts(self, fh, subsetNameSeparator=" "):
+    @staticmethod
+    def formatSubsetName(subset, subsetNameSeparator=" ", setNameFormatter=str):
+        return subsetNameSeparator.join(sorted([setNameFormatter(s) for s in subset]))
+
+    def writeCounts(self, fh, subsetNameSeparator=" ", setNameFormatter=str):
         "write TSV of subset counts to an open file"
         fileOps.prRowv(fh, "subset", "count")
         for subset in self.subsets.getSubsets():
-            fileOps.prRowv(fh, subsetNameSeparator.join(subset), self.getSubsetCounts(subset))
-        
-    def writeSets(self, fh, subsetNameSeparator=" "):
+            fileOps.prRowv(fh, self.formatSubsetName(subset, subsetNameSeparator, setNameFormatter), self.getSubsetCounts(subset))
+
+    def writeSets(self, fh, subsetNameSeparator=" ", setNameFormatter=str):
         "write TSV of subsets and ids to an open file"
         fileOps.prRowv(fh, "subset", "ids")
         for subset in self.subsets.getSubsets():
-            fileOps.prRowv(fh, subsetNameSeparator.join(subset), self.getSubsetCounts(subset))
+            fileOps.prRowv(fh, self.formatSubsetName(subset, subsetNameSeparator, setNameFormatter), self.getSubsetCounts(subset))
         

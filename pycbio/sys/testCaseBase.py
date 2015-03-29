@@ -179,7 +179,7 @@ class TestCaseBase(unittest.TestCase):
     def runProgOut(self, cmd, stdin=None, stderr=None):
         "run a program and return stdout, print the command being executed"
         self.__logCmd(cmd)
-        p = subprocess.Popen(cmd, stdin=stdin, stdout=subprocess.PIPE, stderr = stderr)
+        p = subprocess.Popen(cmd, stdin=stdin, stdout=subprocess.PIPE, stderr=stderr)
         (stdoutText, junk) = p.communicate()
         exitCode = p.wait()
         if exitCode:
