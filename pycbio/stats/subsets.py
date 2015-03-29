@@ -92,9 +92,9 @@ class Subsets(object):
         return tuple(inclSubsets)
 
 
-    # get the inclusive subsets for particular subset; that is all subsets
-    # that contain all of the specified sets.
     def getInclusiveSubsets(self, subset):
+        """Get the inclusive subsets for particular subset; that is all subsets
+        that contain all of the specified sets."""
         if self.inclusiveSubsets == None:
             self.inclusiveSubsets = dict()
         inclSubsets = self.inclusiveSubsets.get(subset)

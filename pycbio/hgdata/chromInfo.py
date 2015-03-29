@@ -35,7 +35,7 @@ class ChromInfoTbl(dict):
             self.__addRow(row[0], int(row[1]))
 
     def loadChromInfoDb(self, conn):
-        "Load from chomoInfo table"
+        "Load from chromoInfo table"
         cur = conn.cursor()
         try:
             cur.execute("select chrom, size from chromInfo")
