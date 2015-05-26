@@ -25,11 +25,19 @@ def cursorColIdxMap(cur):
         m[cur.description[i][0]] = i
     return m
 
-def queryConnection(conn, sql):
+def execute(conn, sql, args=None):
+    "execute SQL query on a connection that returns no result"
+    cur = conn.cursor()
+    try:
+        cur.execute(sql, args)
+    finally:
+        cur.close()
+
+def query(conn, sql, args=None):
     "generator to run an SQL query on a connection"
     cur = conn.cursor()
     try:
-        cur.execute(sql)
+        cur.execute(sql, args)
         for row in cur:
             yield row
     finally:
@@ -38,5 +46,5 @@ def queryConnection(conn, sql):
 def haveTableLike(conn, pattern, db=None):
     frm = "" if db == None else " from " + db
     # FIXME: mysql-specific
-    return len(list(queryConnection(conn, 'show tables' + frm + ' like "' + pattern + '";'))) > 0
+    return len(list(query(conn, 'show tables' + frm + ' like "' + pattern + '";'))) > 0
 
