@@ -2,8 +2,8 @@
 BIN_DIR = ../../../../bin
 ncbiGbFetch = ${BIN_DIR}/ncbiGbFetch
 
-# refseq mRNA est
-testAccver = NM_013266.2  AK289756.1 BG187649.1
+# refseq mRNAs, ESTs
+testAccver = NM_013266.2 AK289756.1 BG187649.1 U14680.1
 
 test: gbffFetchTest faFetchTest faSimpleFetchTest
 
