@@ -11,11 +11,14 @@ def _evalConfigFile(configPyFile, extraEnv=None):
     if extraEnv != None:
         configEnv.update(extraEnv)
     try:
-        execfile(configPyFile, configEnv)
+        execfile(configPyFile, configEnv, configEnv)
     except:
         ei = sys.exc_info()
         raise PycbioException("Error evaluating configuration file: " + configPyFile, ei[0]), None, ei[2]
     return configEnv
+
+# FIXME: now that configEnv has locals, we could get by varname.
+# getFuncArgs could be handled by functools.partial much more elegently
 
 def evalConfigFunc(configPyFile, getFuncName="getConfig", getFuncArgs=[], getFuncKwargs={}, extraEnv=None):
     """Evaluate the specified configuration file and call the specified function

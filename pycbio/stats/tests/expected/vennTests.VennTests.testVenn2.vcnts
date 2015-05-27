@@ -1,0 +1,8 @@
+subset	count
+A	3
+B	3
+C	3
+A B	1
+A C	1
+B C	2
+A B C	1
