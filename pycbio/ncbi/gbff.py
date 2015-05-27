@@ -174,18 +174,19 @@ class Coords(list):
             oi += 1
         return True
 
-    def __cnvSeqFeature(self, feat):
-        self.append(Coord.fromFeatureLocation(feat.location, feat.strand))
+    def __cnvSeqFeature(self, location, strand):
+        self.append(Coord.fromFeatureLocation(location, strand))
 
     @staticmethod
     def fromSeqFeature(feat):
         """Convert Biopython SeqFeature object to Coords. This will handle sub_features"""
         isinstance(feat, SeqFeature.SeqFeature)
         coords = Coords()
-        if len(feat.sub_features) == 0:
-            coords.__cnvSeqFeature(feat)
+        if isinstance(feat.location, SeqFeature.CompoundLocation):
+            for location in feat.location.parts:
+                coords.__cnvSeqFeature(location, feat.strand)
         else:
-            for sf in feat.sub_features:
-                coords.__cnvSeqFeature(sf)
+            coords.__cnvSeqFeature(feat.location, feat.strand)
+        coords.sort()
         return coords
             

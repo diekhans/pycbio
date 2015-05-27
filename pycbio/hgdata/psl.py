@@ -6,7 +6,7 @@ from pycbio.sys.multiDict import MultiDict
 from pycbio.hgdata.rangeFinder import Binner
 from Bio.Seq import reverse_complement
 
-# FIXME: Should have factory rather than __init__ multiplexing nonsense
+# FIXME: Should have factory rather than __init__ multiplexing nonsense **
 # FIXME: should have builder functions
 
 def rcStrand(s):

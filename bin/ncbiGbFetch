@@ -57,6 +57,7 @@ give accessions or other ids understood by efetch server.
 
 # >gi|37590707|gb|AAH59029.1| RIKEN cDNA A930017N06 gene [Mus musculus]
 # >gi|14424222|sp|O94933|SLIK3_HUMAN SLIT and NTRK-like protein 3 precursor
+# >gi|555931|gb|U14680.1|HSU14680 Homo sapiens breast and ovarian cancer susceptibility (BRCA1) mRNA, complete cds
 
 faIdSplitRe = re.compile(r"^>([^\s]+)(\s.*)", re.DOTALL)
 def simplifyFastaId(ent):
@@ -69,13 +70,10 @@ def simplifyFastaId(ent):
     id = m.group(1)
     # split into parts
     parts = id.split('|')
-    if len(parts) < 2:
-        Exception("not a genbank fasta id: " + id)
-    if len(parts[-1]) == 0:
-        sid = parts[-2]  # id ends with '|'
-    else:
-        sid = parts[-1]
-    return ">" + sid + m.group(2)
+    if len(parts) < 3:
+        Exception("not a GENBANK/RefSeq fasta id: " + id)
+    acc = parts[3]
+    return ">" + acc + m.group(2)
     
 def efetch(opts, gbid, outFh):
     "fetch a genbank entry or fasta"
