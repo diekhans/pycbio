@@ -185,3 +185,12 @@ class TestCaseBase(unittest.TestCase):
         if exitCode:
             raise subprocess.CalledProcessError(exitCode, cmd)
         return stdoutText
+
+    def brokenOnOSX(self):
+        "If this is OS/X, output message to indicate this test is broken and return True "
+        # FIXME: this is temporary
+        if sys.platform == "darwin":
+            sys.stderr.write("WARNING: test %s broken on OS/X\n" % self.id())
+            return True
+        else:
+            return False
