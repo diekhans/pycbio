@@ -1,7 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 import unittest, sys
 if __name__ == '__main__':
-    sys.path.append(["../../..", "../../../.."])
+    sys.path.append("../../../..")
 from pycbio.stats.subsets import Subsets
 from pycbio.sys.testCaseBase import TestCaseBase
 

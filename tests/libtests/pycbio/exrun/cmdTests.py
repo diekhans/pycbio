@@ -3,7 +3,7 @@
 
 import unittest, sys
 if __name__ == '__main__':
-    sys.path.append(["../../..", "../../../.."])
+    sys.path.append("../../../..")
 from pycbio.sys import strOps,fileOps
 from pycbio.sys.pipeline import ProcException
 from pycbio.exrun import ExRunException, ExRun, CmdRule, Cmd, FileIn, FileOut
