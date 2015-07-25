@@ -1,7 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 import unittest, sys, re
 if __name__ == '__main__':
-    sys.path.append(["../../..", "../../../.."])
+    sys.path.append("../../../..")
 
 from pycbio.hgbrowser.browserDir import BrowserDir
 from pycbio.sys.testCaseBase import TestCaseBase

@@ -3,7 +3,7 @@
 
 import unittest, sys
 if __name__ == '__main__':
-    sys.path.append(["../../..", "../../../.."])
+    sys.path.append("../../../..")
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.exrun.sched import Sched
 

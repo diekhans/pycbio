@@ -3,7 +3,7 @@
 
 import unittest, sys, os, time
 if __name__ == '__main__':
-    sys.path.append(["../../..", "../../../.."])
+    sys.path.append("../../../..")
 from pycbio.sys import fileOps
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.exrun import ExRunException, ExRun, File, Target, Rule, Production, Verb

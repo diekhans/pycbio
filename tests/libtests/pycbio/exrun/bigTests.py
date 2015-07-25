@@ -3,7 +3,7 @@
 
 import unittest, sys, time
 if __name__ == '__main__':
-    sys.path.append(["../../..", "../../../.."])
+    sys.path.append("../../../..")
 from pycbio.sys import typeOps
 from pycbio.exrun import ExRun, Rule, Production, Verb
 from pycbio.exrun.graph import RuleState
