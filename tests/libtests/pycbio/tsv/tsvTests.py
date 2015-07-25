@@ -1,7 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 import unittest, sys, string
 if __name__ == '__main__':
-    sys.path.append(["../../..", "../../../.."])
+    sys.path.append("../../../..")
 from pycbio.tsv import TSVTable
 from pycbio.tsv import TSVError
 from pycbio.tsv import TSVReader
