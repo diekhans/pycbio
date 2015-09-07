@@ -4,7 +4,7 @@
 # a better convention to avoid collisions
 # FIXME: need accessor functions for columns
 
-class TSVRow(object):
+class TsvRow(object):
     "Row of a TSV where columns are fields."
     # n.b.: doesn't inherit from list, as this results in columns in two
     # places when they are stored as fields

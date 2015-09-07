@@ -1,12 +1,12 @@
 # Copyright 2006-2012 Mark Diekhans
-from pycbio.tsv.tsvReader import TSVReader
-from pycbio.tsv.tsvError import TSVError
+from pycbio.tsv.tsvReader import TsvReader
+from pycbio.tsv.tsvError import TsvError
 from pycbio.sys.multiDict import MultiDict
 import sys,csv
 
 # FIX: maybe make each index it's own class to handle uniq check, etc.
 
-class TSVTable(list):
+class TsvTable(list):
     """Class for reading and writing TSV files. Stores rows as a list of Row
     objects. Columns are indexed by name.
 
@@ -20,7 +20,7 @@ class TSVTable(list):
 
     def __addIndex(self, keyCol, dictClass):
         if not keyCol in self.colMap:
-            raise TSVError("key column \"" + keyCol + "\" is not defined"), None, sys.exc_info()[2]
+            raise TsvError("key column \"" + keyCol + "\" is not defined"), None, sys.exc_info()[2]
         setattr(self.idx, keyCol, dictClass())
         
     def __createIndices(self, keyCols, dictClass):
@@ -32,7 +32,7 @@ class TSVTable(list):
                 self.__addIndex(kc, dictClass)
 
     def __buildIndices(self, uniqKeyCols, multiKeyCols):
-        self.idx = TSVTable.Indices()
+        self.idx = TsvTable.Indices()
         self.indices = self.idx # FIXME: old name, delete 
         if uniqKeyCols != None:
             self.__createIndices(uniqKeyCols, dict)
@@ -78,7 +78,7 @@ class TSVTable(list):
         multiKeyCols - name or names of columns to index, allowing multiple keys.
             can be string or sequence
         rowClass - class or class factory function to use for a row. Must take
-            TSVReader and list of string values of columns.
+            TsvReader and list of string values of columns.
         typeMap - if specified, it maps column names to the type objects to
             use to convert the column.  Unspecified columns will not be
             converted. Key is the column name, value can be either a type
@@ -94,7 +94,7 @@ class TSVTable(list):
         allowEmpty - an empty input results in an EOF rather than an error.
           Should specify this if reading from a database query.
         """
-        reader = TSVReader(fileName, rowClass=rowClass, typeMap=typeMap, defaultColType=defaultColType, isRdb=isRdb, columns=columns, columnNameMapper=columnNameMapper, ignoreExtraCols=ignoreExtraCols, inFh=inFh, allowEmpty=allowEmpty, dialect=dialect)
+        reader = TsvReader(fileName, rowClass=rowClass, typeMap=typeMap, defaultColType=defaultColType, isRdb=isRdb, columns=columns, columnNameMapper=columnNameMapper, ignoreExtraCols=ignoreExtraCols, inFh=inFh, allowEmpty=allowEmpty, dialect=dialect)
         try:
             self.columns = reader.columns
             self.colTypes = reader.colTypes
@@ -102,12 +102,12 @@ class TSVTable(list):
             self.__buildIndices(uniqKeyCols, multiKeyCols)
             self.__readBody(reader)
         except Exception, e:
-            raise TSVError("load failed", reader=reader, cause=e), None, sys.exc_info()[2]
+            raise TsvError("load failed", reader=reader, cause=e), None, sys.exc_info()[2]
 
     def addColumn(self, colName, initValue=None, colType=None):
         "add a column to all rows in the table"
         if colName in self.colMap:
-            raise TSVError("column \"" + colName + "\" is already defined"), None, sys.exc_info()[2]
+            raise TsvError("column \"" + colName + "\" is already defined"), None, sys.exc_info()[2]
 
         self.colMap[colName] = len(self.columns)
         if colType:

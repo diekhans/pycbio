@@ -2,19 +2,19 @@
 """TSV reading classes"""
 import sys,csv
 from pycbio.sys import fileOps
-from pycbio.tsv.tsvRow import TSVRow
-from pycbio.tsv.tsvError import TSVError
+from pycbio.tsv.tsvRow import TsvRow
+from pycbio.tsv.tsvError import TsvError
 
 # FIXME:  pass owndership of row to Row instead of having Row inherit from list
 # FIXME: create error with file name/line number
 # FIMXE: carefully consider naming of functions in Row, as they could
 #  conflict with fields.  Maybe put in a base-class??
 # FIXME: put in same module as TSV
-# FIXME: TSVError and preserving the traceback is a pain
+# FIXME: TsvError and preserving the traceback is a pain
 # FIXME: is colMap needed any more???
 # FIXME: need to add write stuff. (see GeneCheck), where str() is called on
 #        alfor all column ty
-# FIXME: change TSVRow to be based on collections.namedtuple **** (thanks Max)
+# FIXME: change TsvRow to be based on collections.namedtuple **** (thanks Max)
 #
 # rename  typeMap -> colTypes
 # FIXME: make a column object.
@@ -30,7 +30,7 @@ strOrNoneType = (lambda v: None if (v == "") else v,
 intOrNoneType = (lambda v: None if (v == "") else int(v),
                  lambda v: "" if (v == None) else str(v))
 
-class TSVReader(object):
+class TsvReader(object):
     """Class for reading TSV files.  Reads header and builds column name to
     column index map.  After a next, object contains a row and each column
     becomes a field name.  It is also indexable by column name or int index.
@@ -61,7 +61,7 @@ class TSVReader(object):
         row = self.__readRow()
         if row == None:
             if not allowEmpty:
-                raise TSVError("empty TSV file", reader=self), None, sys.exc_info()[2]
+                raise TsvError("empty TSV file", reader=self), None, sys.exc_info()[2]
         else:
             if self.isRdb:
                 self.__readRow() # skip format line
@@ -78,7 +78,7 @@ class TSVReader(object):
             col = intern(col)
             self.columns.append(col)
             if col in self.colMap:
-                raise TSVError("Duplicate column name: " + col), None, sys.exc_info()[2]
+                raise TsvError("Duplicate column name: " + col), None, sys.exc_info()[2]
             self.colMap[col] = i
             i += 1
 
@@ -102,7 +102,7 @@ class TSVReader(object):
 
         fileName - name of file, opened unless inFh is specified
         rowClass - class or class factory function to use for a row. Must take
-            TSVReader and list of string values of columns.
+            TsvReader and list of string values of columns.
         typeMap - if specified, it maps column names to the type objects to
             use to convert the column.  Unspecified columns will not be
             converted. Key is the column name, value can be either a type
@@ -126,7 +126,7 @@ class TSVReader(object):
         self.lineNum = 0
         self.rowClass = rowClass
         if rowClass == None:
-            self.rowClass = TSVRow
+            self.rowClass = TsvRow
         self.columnNameMapper = columnNameMapper
         self.isRdb = isRdb
         self.colTypes = None
@@ -161,18 +161,18 @@ class TSVReader(object):
         try:
             row = self.__readRow()
         except Exception,ex:
-            raise TSVError("Error reading TSV row", self, ex), None, sys.exc_info()[2]
+            raise TsvError("Error reading TSV row", self, ex), None, sys.exc_info()[2]
         if row == None:
             raise StopIteration
         if ((self.ignoreExtraCols and (len(row) < len(self.columns)))
             or ((not self.ignoreExtraCols) and (len(row) != len(self.columns)))):
             # FIXME: will hang: self.close()
-            raise TSVError("row has %d columns, expected %d" %
+            raise TsvError("row has %d columns, expected %d" %
                            (len(row), len(self.columns)),
                            reader=self), None, sys.exc_info()[2]
         try:
             return self.rowClass(self, row)
         except Exception,ex:
-            raise TSVError("Error converting TSV row to object", self, ex), None, sys.exc_info()[2]
+            raise TsvError("Error converting TSV row to object", self, ex), None, sys.exc_info()[2]
 
 
