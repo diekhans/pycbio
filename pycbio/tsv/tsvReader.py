@@ -3,7 +3,7 @@
 import sys,csv
 from pycbio.sys import fileOps
 from pycbio.tsv.tsvRow import TsvRow
-from pycbio.tsv.tsvError import TsvError
+from pycbio.tsv import TsvError
 
 # FIXME:  pass owndership of row to Row instead of having Row inherit from list
 # FIXME: create error with file name/line number
