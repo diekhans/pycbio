@@ -1,6 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
 from pycbio.tsv.tsvReader import TsvReader
-from pycbio.tsv.tsvError import TsvError
+from pycbio.tsv import TsvError
 from pycbio.sys.multiDict import MultiDict
 import sys,csv
 
