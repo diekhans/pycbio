@@ -1,7 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 from pycbio.sys import PycbioException
 
-class TSVError(PycbioException):
+class TsvError(PycbioException):
     "Error from reading or parsing a TSV file"
     def __init__(self, msg, reader=None, cause=None):
         if (reader != None):

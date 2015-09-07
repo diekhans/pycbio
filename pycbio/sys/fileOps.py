@@ -56,8 +56,9 @@ def isCompressed(path):
     "determine if a file appears to be compressed by extension"
     return path.endswith(".gz") or path.endswith(".bz2") or path.endswith(".Z")
 
-def compressCmd(path):
-    "return get the command to compress the path, or None if not compressed"
+def compressCmd(path, default="cat"):
+    """return the command to compress the path, or default if not compressed, which defaults
+    to the `cat' command, so that it just gets written through"""
     if path.endswith(".Z"):
         raise Exception("writing compress .Z files not supported")
     elif path.endswith(".gz"):
@@ -65,16 +66,17 @@ def compressCmd(path):
     elif path.endswith(".bz2"):
         return "bzip2"
     else:
-        return None
+        return default
 
-def decompressCmd(path):
-    "return the command to decompress the file to stdout, or None if not compressed"
+def decompressCmd(path, default="cat"):
+    """"return the command to decompress the file to stdout, or default if not compressed, which defaults
+    to the `cat' command, so that it just gets written through"""
     if path.endswith(".Z") or path.endswith(".gz"):
         return "zcat"
     elif path.endswith(".bz2"):
         return "bzcat"
     else:
-        return None
+        return default
 
 # FIXME: should this use python gzip/bzip2 classes??
 def opengz(file, mode="r"):
