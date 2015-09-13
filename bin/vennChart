@@ -6,7 +6,7 @@ myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, myBinDir + "/../lib")
 
 from optparse import OptionParser
-from pycbio.tsv import TSVReader,TSVError
+from pycbio.tsv import TsvReader,TsvError
 
 from matplotlib.patches import Circle
 from matplotlib import pyplot
@@ -16,7 +16,7 @@ class CmdOpts(object):
 
 Generate a simple Venn diagram.
 
-The Boolean set TSV input format consists of a columns
+The Boolean set Tsv input format consists of a columns
 for each input set with a boolean value indicating if
 the row includes that set, along with a column of counts.
 
@@ -34,11 +34,11 @@ Output defaults to PDF format.
         self.__dict__.update(opts.__dict__)
 
 class BoolStats(object):
-    "stats extract from boolean TSV"
+    "stats extract from boolean Tsv"
     def __init__(self, statsFile, countsCol):
-        reader = TSVReader(statsFile, typeMap={countsCol: int}, defaultColType=bool)
+        reader = TsvReader(statsFile, typeMap={countsCol: int}, defaultColType=bool)
         if not countsCol in reader.colMap:
-            raise TSVReader("counts column \"" + countsCol + "\" not found", reader)
+            raise TsvReader("counts column \"" + countsCol + "\" not found", reader)
 
 class VennCircle(object):
     diameter = 1.0

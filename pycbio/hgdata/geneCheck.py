@@ -1,7 +1,5 @@
 # Copyright 2006-2012 Mark Diekhans
-from pycbio.tsv.tsvRow import TSVRow
-from pycbio.tsv.tsvTable import TSVTable
-from pycbio.tsv.tsvReader import TSVReader
+from pycbio.tsv import TsvRow, TsvTable, TsvReader
 from pycbio.sys.symEnum import SymEnum
 
 def statParse(val):
@@ -108,12 +106,12 @@ typeMap = {"acc": intern,
     }
 
 
-class GeneCheckReader(TSVReader):
+class GeneCheckReader(TsvReader):
     def __init__(self, fileName, isRdb=False):
-        TSVReader.__init__(self, fileName, typeMap=typeMap, isRdb=isRdb)
+        TsvReader.__init__(self, fileName, typeMap=typeMap, isRdb=isRdb)
 
-class GeneCheckTbl(TSVTable):
-    """Table of GeneCheck objects loaded from a TSV or RDB.  acc index is build
+class GeneCheckTbl(TsvTable):
+    """Table of GeneCheck objects loaded from a Tsv or RDB.  acc index is build
     """
     
     def __init__(self, fileName, isRdb=False, idIsUniq=False):
@@ -124,7 +122,7 @@ class GeneCheckTbl(TSVTable):
         else:
             uniqKeyCols=None
             multiKeyCols="acc"
-        TSVTable.__init__(self, fileName, typeMap=typeMap, isRdb=isRdb, uniqKeyCols=uniqKeyCols, multiKeyCols=multiKeyCols)
+        TsvTable.__init__(self, fileName, typeMap=typeMap, isRdb=isRdb, uniqKeyCols=uniqKeyCols, multiKeyCols=multiKeyCols)
         self.idIndex = self.indices.acc
 
     def _sameLoc(self, chk, chrom, start, end):
