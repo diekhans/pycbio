@@ -1,6 +1,8 @@
 # Copyright 2006-2012 Mark Diekhans
 import sys, traceback
 
+# FIXME: wanted to move this up a level, see doc/notes.txt as why this didn't work
+
 class PycbioException(Exception):
     """Base class for exceptions.  This implements exception chaining and
     stores a stack trace.
