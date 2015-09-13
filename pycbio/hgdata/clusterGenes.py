@@ -2,7 +2,7 @@
 """Module to access output of ClusterGenes"""
 
 from pycbio.hgdata.autoSql import strArrayType
-from pycbio.tsv.tsvReader import TSVReader
+from pycbio.tsv import TsvReader
 from pycbio.sys.multiDict import MultiDict
 
 def cgBoolParse(val):
@@ -97,7 +97,7 @@ class ClusterGenes(list):
     """
     def __init__(self, clusterGenesOut):
         self.genes = MultiDict()
-        tsv = TSVReader(clusterGenesOut, typeMap=typeMap)
+        tsv = TsvReader(clusterGenesOut, typeMap=typeMap)
         self.columns = tsv.columns
         self.tableSet = set()
         for gene in tsv:
