@@ -12,13 +12,12 @@ myBinDir = os.path.dirname(os.path.realpath(sys.argv[0]))
 sys.path.insert(0, myBinDir + "/../lib")
 from optparse import OptionParser
 from pycbio.sys import fileOps
-from pycbio.tsv.TSVReader import TSVReader
-from pycbio.tsv.TSVTable import tsvPrRow
+from pycbio.tsv import TsvReader, TsvTable
 cmdOpts = None
 
 def openTsv(col, tsv):
-    "create a TSVReader, ensuring that it contains col"
-    rd = TSVReader(tsv)
+    "create a TsvReader, ensuring that it contains col"
+    rd = TsvReader(tsv)
     if not col in rd.colMap:
         raise Exception("column \"" + col + " not found in " + tsv)
 
@@ -32,7 +31,7 @@ def selectById(selectCol, selectTsv, inCol, inTsv, outTsv):
     selectTbl = loadSelect(selectCol, selectTsv)
     rd = openTsv(inCol, inTsv)
     outFh = file(outTsv, "w")
-    tsvPrRow(outFh, rd.columns)
+    TsvTable.tsvPrRow(outFh, rd.columns)
     for row in rd:
         if row[inCol] in selectTbl:
             row.write(rd)
