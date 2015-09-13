@@ -13,3 +13,7 @@
           to handle Ns properly:
 
               memset(dna + s - fragStart, 'N'[0], e - s) -> memset(dna + s - fragStart, c'N', e - s)
+
+- rename pycbio.sys, it prevent moving PycbioException up one level, since PycbioException imports
+  standard sys. Specifying absolute import still breaks pipeline because pickle of exceptions doesn't
+  work.
