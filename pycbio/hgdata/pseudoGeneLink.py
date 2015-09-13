@@ -1,11 +1,12 @@
 # Copyright 2006-2012 Mark Diekhans
 """ Object to load PseudoGeneLink table"""
 
-from pycbio.tsv.tsvTable import TSVTable
+# FIXME: this has never been used, maybe drop"
+from pycbio.tsv.tsvTable import TsvTable
 from pycbio.hgdata.autoSql import intArrayType
 
-class PseudoGeneLink(TSVTabl):
-    """TSV of PseudoGeneLink table"""
+class PseudoGeneLink(TsvTable):
+    """Tsv of PseudoGeneLink table"""
 
     _typeMap = {"chrom": str, "name": str, "strand": str,
                 "blockSizes": intArrayType,
@@ -18,7 +19,7 @@ class PseudoGeneLink(TSVTabl):
                 "adaBoost": float, "posConf": float, "negConf": float}
     
     def __init__(self, pglFile):
-        TSV.__init__(self, pglFile, multiKeyCols="name", typeMap=PseudoGeneLink._typeMap, defaultColType=int)
+        TsvTable.__init__(self, pglFile, multiKeyCols="name", typeMap=PseudoGeneLink._typeMap, defaultColType=int)
 
     def getNameIter(self, name):
         """get iter over rows for name"""

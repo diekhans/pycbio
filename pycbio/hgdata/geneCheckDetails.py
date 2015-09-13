@@ -1,7 +1,5 @@
 # Copyright 2006-2012 Mark Diekhans
-from pycbio.tsv.tsvRow import TSVRow
-from pycbio.tsv.tsvTable import TSVTable
-from pycbio.tsv.tsvReader import TSVReader
+from pycbio.tsv import TsvRow, TsvTable, TsvReader
 
 def strOrNone(val):
     "return None if val is zero length otherwise val"
@@ -26,13 +24,13 @@ def cmpByLocation(gcd1, gcd2):
             d = cmp(gcd1.chrEnd, gcd2.chrEnd)
     return d
 
-class GeneCheckDetailsReader(TSVReader):
+class GeneCheckDetailsReader(TsvReader):
     def __init__(self, fileName, isRdb=False):
-        TSVReader.__init__(self, fileName, typeMap=typeMap, isRdb=isRdb)
+        TsvReader.__init__(self, fileName, typeMap=typeMap, isRdb=isRdb)
 
-class GeneCheckDetailsTbl(TSVTable):
-    """Table of GeneCheckDetails objects loaded from a TSV.    """
+class GeneCheckDetailsTbl(TsvTable):
+    """Table of GeneCheckDetails objects loaded from a Tsv.    """
     
     def __init__(self, fileName, isRdb=False):
-        TSVTable.__init__(self, fileName, typeMap=typeMap, isRdb=isRdb)
+        TsvTable.__init__(self, fileName, typeMap=typeMap, isRdb=isRdb)
         

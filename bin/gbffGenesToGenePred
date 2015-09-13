@@ -11,7 +11,7 @@ from optparse import OptionParser
 from pycbio.sys import fileOps, setOps, typeOps
 from pycbio.sys.enumeration import Enumeration
 from pycbio.sys.fileOps import prLine
-from pycbio.tsv import TSVReader, TabFileReader
+from pycbio.tsv import TsvReader, TabFileReader
 from pycbio.hgdata.genePred import GenePred,CdsStat
 from pycbio.ncbi.gbff import *
 
@@ -143,7 +143,7 @@ class RnaCdsMap(object):
 
     def __loadRnaq(self, rnaqFile):
         #rna_accession	rna_gi	prot_accession	prot_gi	gene_id	unigene_id	bases	strain	source_db	defline
-        for row in TSVReader(rnaqFile):
+        for row in TsvReader(rnaqFile):
             self.rnaProtMap[row.rna_accession] = row.prot_accession
             self.protRnaMap[row.prot_accession] = row.rna_accession
 
