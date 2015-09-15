@@ -179,9 +179,18 @@ class TestCaseBase(unittest.TestCase):
     def runProgOut(self, cmd, stdin=None, stderr=None):
         "run a program and return stdout, print the command being executed"
         self.__logCmd(cmd)
-        p = subprocess.Popen(cmd, stdin=stdin, stdout=subprocess.PIPE, stderr = stderr)
+        p = subprocess.Popen(cmd, stdin=stdin, stdout=subprocess.PIPE, stderr=stderr)
         (stdoutText, junk) = p.communicate()
         exitCode = p.wait()
         if exitCode:
             raise subprocess.CalledProcessError(exitCode, cmd)
         return stdoutText
+
+    def brokenOnOSX(self):
+        "If this is OS/X, output message to indicate this test is broken and return True "
+        # FIXME: this is temporary
+        if sys.platform == "darwin":
+            sys.stderr.write("WARNING: test %s broken on OS/X\n" % self.id())
+            return True
+        else:
+            return False
