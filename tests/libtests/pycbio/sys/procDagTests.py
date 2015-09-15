@@ -1,11 +1,10 @@
 # Copyright 2006-2012 Mark Diekhans
-import unittest, sys, re
+import unittest, sys, re, os
 if __name__ == '__main__':
     sys.path.extend(["../../..", "../../../.."])
 from pycbio.sys.pipeline import ProcDag, ProcException, ProcDagException, Pipe, DataReader, DataWriter, File, PIn, POut
 from pycbio.sys import procOps
 from pycbio.sys.testCaseBase import TestCaseBase
-
 
 class ProcDagTests(TestCaseBase):
 
@@ -97,6 +96,8 @@ class ProcDagTests(TestCaseBase):
 
     def testInArgMem(self):
         "write from memory to a pipe argument"
+        if self.brokenOnOSX():
+            return
         nopen = self.numOpenFiles()
         pd = ProcDag()
         dw = DataWriter("one\ntwo\nthree\n")
@@ -137,6 +138,8 @@ class ProcDagTests(TestCaseBase):
 
     def testStdoutToArg(self):
         "stdout to a pipe argument"
+        if self.brokenOnOSX():
+            return
         nopen = self.numOpenFiles()
         pd = ProcDag()
         inf = self.getInputFile("simple1.txt")
@@ -202,6 +205,8 @@ class ProcDagTests(TestCaseBase):
 
     def testJoinPipe2(self):
         "cat from two pipeline of two sorts each "
+        if self.brokenOnOSX():
+            return
         nopen = self.numOpenFiles()
         pd = ProcDag()
         inf = self.getInputFile("simple1.txt")
@@ -222,6 +227,8 @@ class ProcDagTests(TestCaseBase):
 
     def testJoinPipe2Uniq(self):
         "cat from two pipeline of two sorts each, results pipe to sort -u"
+        if self.brokenOnOSX():
+            return
         nopen = self.numOpenFiles()
         pd = ProcDag()
         inf = self.getInputFile("simple1.txt")
@@ -244,6 +251,8 @@ class ProcDagTests(TestCaseBase):
 
     def testArgToArg(self):
         "pipe argument to argument of another process"
+        if self.brokenOnOSX():
+            return
         nopen = self.numOpenFiles()
         pd = ProcDag()
         inf = self.getInputFile("simple1.txt")
