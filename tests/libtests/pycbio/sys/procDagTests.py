@@ -1,11 +1,10 @@
 # Copyright 2006-2012 Mark Diekhans
-import unittest, sys, re
+import unittest, sys, re, os
 if __name__ == '__main__':
     sys.path.extend(["../../..", "../../../.."])
 from pycbio.sys.pipeline import ProcDag, ProcException, ProcDagException, Pipe, DataReader, DataWriter, File, PIn, POut
 from pycbio.sys import procOps
 from pycbio.sys.testCaseBase import TestCaseBase
-
 
 class ProcDagTests(TestCaseBase):
 
