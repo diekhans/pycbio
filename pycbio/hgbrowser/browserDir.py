@@ -162,17 +162,18 @@ class BrowserDir(object):
         self.style = style
         self.customTrackUrl = customTrackUrl
         self.trackArgs = self.__mkTracksArgs(tracks)
+        # FIXME: initTrackArgs not used.
         self.initTrackArgs = self.__mkTracksArgs(initTracks)
         if customTrackUrl != None:
             self.trackArgs += "&hgt.customText=" + self.customTrackUrl
             
 
-    def __mkTracksArgs(self, initialTracks):
-        if (initialTracks == None) or (len(initialTracks) == 0):
+    def __mkTracksArgs(self, tracks):
+        if (tracks == None) or (len(tracks) == 0):
             return ""
         l = []
-        for t in initialTracks:
-            l.append(t + "=" + initialTracks[t])
+        for t in tracks:
+            l.append(t + "=" + tracks[t])
         return "&" + "&".join(l)
         
     def mkDefaultUrl(self):
@@ -187,10 +188,10 @@ class BrowserDir(object):
         url += "&position=" + str(coords) + self.trackArgs
         return url
 
-    def mkAnchor(self, coords, text=None):
+    def mkAnchor(self, coords, text=None, target="browser"):
         if text == None:
             text = str(coords)
-        return "<a href=\"" + self.mkUrl(coords) + "\" target=browser>" + text + "</a>"
+`        return "<a href=\"" + self.mkUrl(coords) + "\" target="+target+">" + text + "</a>"
         
     def addRow(self, row, key=None, cssClass=None, subRows=None, tdStyles=None):
         """add an encoded row, row can be a list or an Entry object"""
