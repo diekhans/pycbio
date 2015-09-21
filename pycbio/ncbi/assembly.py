@@ -34,16 +34,33 @@ class AssemblyReport(object):
             
     expectedHeader = "# Sequence-Name	Sequence-Role	Assigned-Molecule	Assigned-Molecule-Location/Type	GenBank-Accn	Relationship	RefSeq-Accn	Assembly-Unit	Sequence-Length	UCSC-style-name"
     def __init__(self, asmReport):
+        self.metaData = dict()  # main headers at started
         self.seqs = []
         self.bySequenceName = dict()
         self.byGenBankAccn = dict()
         self.byRefSeqAccn = dict()
         self.byUcscStyleName = dict()
         with open(asmReport, "rU") as fh:
-            self.__skipToHeader(fh)
+            self.__parseMetaData(fh)
+            self.__skipToSeqTable(fh)
             self.__parseRecords(fh)
 
-    def __skipToHeader(self, fh):
+    def __parseMetaData(self, fh):
+        "parse metaData records at start"
+        # Assembly Name:  GRCh38.p2
+        for line in fh:
+            line = line[0:-1]
+            if line == "#":
+                break
+            self.__parseMetaDataLine(line)
+
+    def __parseMetaDataLine(self, line):
+        colon = line.find(":")
+        if colon < 0:
+            raise Exception("invalid metaData line:" + line)
+        self.metaData[line[2:colon]] = line[colon+1:].strip()
+
+    def __skipToSeqTable(self, fh):
         "skip past header line before sequence records"
         for line in fh:
             if line[0:-1] == self.expectedHeader:

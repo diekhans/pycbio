@@ -29,6 +29,10 @@ class NcbiParseTests(TestCaseBase):
         self.assertEquals(str(asmReport.byRefSeqAccn['NT_187670.1']), expectLine)
         self.assertEquals(str(asmReport.byUcscStyleName['chr19_KI270916v1_alt']), expectLine)
 
+        metaData = [(name, asmReport.metaData[name]) for name in sorted(asmReport.metaData.iterkeys())]
+        self.assertEquals(metaData,
+                          [('Assembly Name', 'GRCh38.p2'), ('Assembly level', 'Chromosome'), ('Assembly type', 'haploid-with-alt-loci'), ('Date', '2014-12-5'), ('Description', 'Genome Reference Consortium Human Build 38 patch release 2 (GRCh38.p2)'), ('GenBank Assembly Accession', 'GCA_000001405.17 (replaced)'), ('Genome representation', 'full'), ('Organism name', 'Homo sapiens'), ('RefSeq Assembly Accession', 'GCF_000001405.28 (species-representative replaced)'), ('RefSeq Assembly and GenBank Assemblies Identical', 'yes'), ('Release type', 'patch'), ('Submitter', 'Genome Reference Consortium'), ('Taxid', '9606')])
+
 def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(NcbiParseTests))
