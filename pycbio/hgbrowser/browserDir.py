@@ -162,7 +162,6 @@ class BrowserDir(object):
         self.style = style
         self.customTrackUrl = customTrackUrl
         self.trackArgs = self.__mkTracksArgs(tracks)
-        # FIXME: initTrackArgs not used.
         self.initTrackArgs = self.__mkTracksArgs(initTracks)
         if customTrackUrl != None:
             self.trackArgs += "&hgt.customText=" + self.customTrackUrl
@@ -191,10 +190,11 @@ class BrowserDir(object):
     def mkAnchor(self, coords, text=None, target="browser"):
         if text == None:
             text = str(coords)
-`        return "<a href=\"" + self.mkUrl(coords) + "\" target="+target+">" + text + "</a>"
+        return "<a href=\"" + self.mkUrl(coords) + "\" target="+target+">" + text + "</a>"
         
     def addRow(self, row, key=None, cssClass=None, subRows=None, tdStyles=None):
         """add an encoded row, row can be a list or an Entry object"""
+        # FIXME: hacky, have two add functions
         if not isinstance(row, Entry):
             row = Entry(row, key, cssClass, subRows, tdStyles)
         self.entries.append(row)
