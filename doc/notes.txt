@@ -1,3 +1,6 @@
+*** NASTY BUG:  calling pipeline in a loop agaisnt an open file truncates it each exec
+    ouch, this happens with subprocess.call_check too
+
 
 - TSV levels:
   - Row - container for a row
