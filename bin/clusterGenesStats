@@ -34,7 +34,7 @@ class CmdOpts(object):
         if len(args) != 2:
             parser.error("wrong number of arguments")
         (self.clusterFile, self.statsFile) = args
-        if opts.lociCatsFile != None:
+        if opts.lociCatsFile is not None:
             self.lociCats = self._readLociCats(opts.lociCatsFile)
         else:
             self.lociCats = None
@@ -70,7 +70,7 @@ class Total(object):
 class ClusterStats(object):
     def __init__(self, clusterFile, lociCats=None, omitZero=False):
         self.clusters = ClusterGenes(clusterFile)
-        if lociCats == None:
+        if lociCats is None:
             self.lociCats = {} # empty
         else:
             self.lociCats = lociCats
@@ -81,7 +81,7 @@ class ClusterStats(object):
 
     def _getLocusTableCat(self, gene):
         locusCat = self.lociCats.get(gene.clusterObj.clusterId)
-        if (locusCat != None):
+        if (locusCat is not None):
             return intern(locusCat + "+" + gene.table)
         else:
             return gene.table
@@ -102,7 +102,7 @@ class ClusterStats(object):
         
     def _getSetTotal(self, name):
         t = self.setTotals.get(name)
-        if t == None:
+        if t is None:
             self.setTotals[name] = t = Total(name)
         return t
 
@@ -147,7 +147,7 @@ class ClusterStats(object):
         fh.close()
 
     def saveSetTotals(self, totalsFile):
-        if self.setTotals == None:
+        if self.setTotals is None:
             self._buildSetTotals()
         fh = file(totalsFile, "w")
         prRowv(fh, "set", "loci", "transcripts")
@@ -168,7 +168,7 @@ class ClusterStats(object):
 opts = CmdOpts()
 clStats = ClusterStats(opts.clusterFile, opts.lociCats, opts.omitZero)
 clStats.saveVenn(opts.statsFile, opts.total)
-if opts.totalsOut != None:
+if opts.totalsOut is not None:
     clStats.saveSetTotals(opts.totalsOut)
 if opts.geneSubsetOut:
     clStats.saveGeneSubsets(opts.geneSubsetOut)

@@ -159,7 +159,7 @@ class Sched(object):
         """
         with self.lock:
             grp = self.groups.get(grpName)
-            if grp == None:
+            if grp is None:
                 grp = self.groups[grpName] = Group(grpName, maxConcurrent, self)
             elif maxConcurrent > grp.maxConcurrent:
                 grp.maxConcurrent = maxConcurrent

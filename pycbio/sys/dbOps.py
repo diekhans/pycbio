@@ -44,7 +44,7 @@ def query(conn, sql, args=None):
         cur.close()
 
 def haveTableLike(conn, pattern, db=None):
-    frm = "" if db == None else " from " + db
+    frm = "" if db is None else " from " + db
     # FIXME: mysql-specific
     return len(list(query(conn, 'show tables' + frm + ' like "' + pattern + '";'))) > 0
 

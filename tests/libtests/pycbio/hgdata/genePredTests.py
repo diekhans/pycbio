@@ -39,8 +39,8 @@ chromSizes = {"chr1": 247249719,
 
 def featRangeEq(featRange, expectRange):
     "compare a feature range and an expected range tuple, either maybe None"
-    if ((featRange == None) or (expectRange == None)):
-        return ((featRange == None) and (expectRange == None))
+    if ((featRange is None) or (expectRange is None)):
+        return ((featRange is None) and (expectRange is None))
     else:
         return ((featRange.start == expectRange[0]) and
                 (featRange.end == expectRange[1]))
@@ -51,7 +51,7 @@ def featureEq(feat, expected):
 
 def featureExpectedSwap1(feat, chromSize):
     "swap either (start, end) or pass back none"
-    if feat == None:
+    if feat is None:
         return None
     else:
         return (chromSize - feat[1], chromSize - feat[0])

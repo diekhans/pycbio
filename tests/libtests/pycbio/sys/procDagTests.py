@@ -13,7 +13,7 @@ class ProcDagTests(TestCaseBase):
         against expectStr, which can be a string, or an regular expression if
         isRe==True, or None to not check."""
         s = str(pd)
-        if expectStr != None:
+        if expectStr is not None:
             if isRe:
                 if not re.search(expectStr, s):
                     self.fail("'" +s+ "' doesn't match RE '" + expectStr + "'")

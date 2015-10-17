@@ -29,7 +29,7 @@ def mkfzset(item):
         return item
     elif isinstance(item, set):
         return frozenset(item)
-    elif item == None:
+    elif item is None:
         return frozenset()
     elif typeOps.isIterable(item):
         return frozenset(item)

@@ -49,7 +49,7 @@ class GenePredSelect(object):
         self.multiExon = opts.multiExon
         self.singleCdsExon = opts.singleCdsExon
         self.multiCdsExon = opts.multiCdsExon
-        if opts.geneIdFiles != None:
+        if opts.geneIdFiles is not None:
             self.geneIds = self._loadIdFiles(opts.geneIdFiles)
             
     def _loadIdFiles(self, idFiles):
@@ -60,7 +60,7 @@ class GenePredSelect(object):
         return ids
 
     def _selected(self, gp):
-        if (self.geneIds != None) and not gp.name in geneIds:
+        if (self.geneIds is not None) and not gp.name in geneIds:
             return False
         if self.singleExon and (len(gp.exons) != 1):
             return False

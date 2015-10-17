@@ -21,9 +21,9 @@ class ChromInfoTbl(dict):
     def __init__(self, chromSizes=None, conn=None, chromClass=ChromInfo):
         "loads from either chromSizes file or database conn 2chromInfo table"
         self.chromClass = chromClass
-        if chromSizes != None:
+        if chromSizes is not None:
             self.loadChromSizes(chromSizes)
-        elif conn != None:
+        elif conn is not None:
             self.loadChromInfoDb(conn)
 
     def __addRow(self, chrom, size):

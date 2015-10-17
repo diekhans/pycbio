@@ -63,15 +63,15 @@ class ProcException(PycbioException):
     def __init__(self, procDesc, returncode=None, stderr=None, cause=None):
         self.returncode = returncode
         self.stderr = stderr
-        if returncode == None:
+        if returncode is None:
             msg = "exec failed"
         elif (returncode < 0):
             msg = "process signaled: " + _getSigName(-returncode)
         else:
             msg = "process exited " + str(returncode)
-        if procDesc != None:
+        if procDesc is not None:
             msg += ": " + procDesc
-        if (stderr != None) and (len(stderr) != 0):
+        if (stderr is not None) and (len(stderr) != 0):
             msg += ":\n" + stderr
         PycbioException.__init__(self, msg, cause=cause)
 
@@ -136,19 +136,19 @@ class PInOut(object):
 
     def __radd__(self, argPrefix):
         "string concatiation operator that sets the argPrefix"
-        assert(self.argPrefix == None)
+        assert(self.argPrefix is None)
         self.argPrefix = argPrefix
         return self
 
     def assocByPath(self, proc):
         "associate Dev with a Proc that will access it by path"
-        assert(self.proc == None)
+        assert(self.proc is None)
         self.proc = proc
         self.named = True
 
     def assocByFd(self, proc):
         "associate Dev with a Proc that will access it by file descriptor"
-        assert(self.proc == None)
+        assert(self.proc is None)
         self.proc = proc
         self.named = False
 
@@ -179,7 +179,7 @@ class PInOut(object):
 
     def getArg(self):
         "get path with optional argument prefix"
-        if self.argPrefix == None:
+        if self.argPrefix is None:
             return self.getPath()
         else:
             return self.argPrefix + self.getPath()
@@ -192,7 +192,7 @@ class PInOut(object):
         """return input file argument"""
         if not self.named:
             return str(self.dev.getFd(self))
-        elif self.argPrefix == None:
+        elif self.argPrefix is None:
             return self.dev.getPath(self)
         else:
             return self.argPrefix + self.dev.getPath(self)
@@ -205,7 +205,7 @@ class PInOut(object):
     @staticmethod
     def pHasProc(obj):
         "test if obj is a PInOut object with a proc"
-        return isinstance(obj, PInOut) and (obj.proc != None)
+        return isinstance(obj, PInOut) and (obj.proc is not None)
 
     @staticmethod
     def pHasOtherProc(obj):
@@ -258,11 +258,11 @@ class Dev(object):
     def _addPio(self, pio):
         "add a PInOut object"
         if isinstance(pio, PIn):
-            if (self.pin != None) and (self.pin != pio):
+            if (self.pin is not None) and (self.pin != pio):
                 raise Exception("PIn object already associated with Dev")
             self.pin = pio
         elif isinstance(pio, POut):
-            if (self.pout != None) and (self.pout != pio):
+            if (self.pout is not None) and (self.pout != pio):
                 raise Exception("POut object already associated with Dev")
             self.pout = pio
         else:
@@ -270,8 +270,8 @@ class Dev(object):
 
     def needNamed(self):
         """does this device need a named pipe?"""
-        return (((self.pin != None) and (self.pin.named))
-                or ((self.pout != None) and (self.pout.named)))
+        return (((self.pin is not None) and (self.pin.named))
+                or ((self.pout is not None) and (self.pout.named)))
 
     def preFork(self):
         """pre-fork setup."""
@@ -314,11 +314,11 @@ class DataReader(Dev):
 
     def __del__(self):
         "finalizer"
-        if self.thread != None:
+        if self.thread is not None:
             try:
                 self.thread.join()
             except: pass
-        if self.fifo != None:
+        if self.fifo is not None:
             try:
                 self.fifo.close()
             except: pass
@@ -328,7 +328,7 @@ class DataReader(Dev):
 
     def preFork(self):
         "pre-fork setup"
-        if self.pin != None:
+        if self.pin is not None:
             raise Exception(self.__class__.__name__ + " can't be used for process input")
         self.fifo = fifo.factory()
 
@@ -341,9 +341,9 @@ class DataReader(Dev):
         
     def finish(self):
         "called in parent when processing is complete"
-        if self.fifo != None:
+        if self.fifo is not None:
             self.fifo.wclose()  # call before join thread so it sees EOF
-            if self.thread != None:
+            if self.thread is not None:
                 self.thread.join()
                 self.thread = None
             self.fifo.close()
@@ -378,11 +378,11 @@ class DataWriter(Dev):
 
     def __del__(self):
         "finalizer"
-        if self.thread != None:
+        if self.thread is not None:
             try:
                 self.thread.join()
             except: pass
-        if self.fifo != None:
+        if self.fifo is not None:
             try:
                 self.fifo.close()
             except: pass
@@ -392,7 +392,7 @@ class DataWriter(Dev):
 
     def preFork(self):
         "pre-fork setup"
-        if self.pout != None:
+        if self.pout is not None:
             raise Exception(self.__class__.__name__ + " can't be used for process output")
         self.fifo = fifo.factory()
 
@@ -405,10 +405,10 @@ class DataWriter(Dev):
         
     def finish(self):
         "called in parent when processing is complete"
-        if self.thread != None:
+        if self.thread is not None:
             self.thread.join()
             self.thread = None
-        if self.fifo != None:
+        if self.fifo is not None:
             self.fifo.close()
 
     def __writer(self):
@@ -441,7 +441,7 @@ class Pipe(Dev):
 
     def __del__(self):
         "finalizer"
-        if self.fifo != None:
+        if self.fifo is not None:
             try:
                 self.fifo.close()
             except: pass
@@ -457,9 +457,9 @@ class Pipe(Dev):
         "called to do any post-exec handling in the parent"
         # only close if side is associated with a pipe to a proc, keep
         # open if pipe is to use
-        if (not self.pout.named) and (self.pout.proc != None):
+        if (not self.pout.named) and (self.pout.proc is not None):
             self.fifo.wclose()
-        if (not self.pin.named) and (self.pin.proc != None):
+        if (not self.pin.named) and (self.pin.proc is not None):
             self.fifo.rclose()
         
     def close(self, pio):
@@ -474,7 +474,7 @@ class Pipe(Dev):
 
     def finish(self):
         "called in parent when processing is complete"
-        if self.fifo != None:
+        if self.fifo is not None:
             self.fifo.close()
 
     def getFd(self, pio):
@@ -514,7 +514,7 @@ class File(Dev):
 
     def getFd(self, pio):
         "get file descriptor for given PInOut object"
-        if self.fd == None:
+        if self.fd is None:
             if isinstance(pio, PIn):
                 self.fd = os.open(self.path, os.O_RDONLY)
             elif self.append:
@@ -595,7 +595,7 @@ class Proc(object):
 
     def __stdioAssoc(self, spec, mode):
         """check a stdio spec validity and associate if PInOut or Dev"""
-        if (spec == None) or isinstance(spec, int):
+        if (spec is None) or isinstance(spec, int):
             return spec  # passed unchanged
         if callable(getattr(spec, "fileno", None)):
             return spec.fileno()  # is file-like
@@ -658,7 +658,7 @@ class Proc(object):
                 fd = os.open(spec, os.O_WRONLY|os.O_CREAT|os.O_TRUNC, 0666)
         elif isinstance(spec, int):
             fd = spec
-        if (fd != None) and (fd != stdfd):
+        if (fd is not None) and (fd != stdfd):
             os.dup2(fd, stdfd)
             # Don't close source file here, must delay closing in case stdout/err is same fd
 
@@ -674,7 +674,7 @@ class Proc(object):
     def __doChildStart(self):
         "guts of start child process"
         self.statusPipe.postForkChild()
-        _setPgid(os.getpid(), self.dag.pgid if (self.dag.pgid != None) else os.getpid())
+        _setPgid(os.getpid(), self.dag.pgid if (self.dag.pgid is not None) else os.getpid())
         cmd = self.__buildCmd()
         self.__stdioSetup(self.stdin, 0)
         self.__stdioSetup(self.stdout, 1)
@@ -696,7 +696,7 @@ class Proc(object):
     def __parentStart(self):
         "start in parent process"
         # first process is process leader.
-        if self.dag.pgid == None:
+        if self.dag.pgid is None:
             self.dag.pgid = self.pid
         try:
             _setPgid(self.pid, self.dag.pgid)
@@ -723,7 +723,7 @@ class Proc(object):
             self.__start()
         except:
             self.exceptInfo = sys.exc_info()
-        if self.exceptInfo != None:
+        if self.exceptInfo is not None:
             self.raiseIfExcept()
 
     def _execWait(self):
@@ -742,7 +742,7 @@ class Proc(object):
         "a root has no input pipes"
         # don't count pipes to parent
         for pin in self.pins:
-            if pin.isPipe() and (pin.dev.pout.proc != None):
+            if pin.isPipe() and (pin.dev.pout.proc is not None):
                 return False
         return True
 
@@ -750,13 +750,13 @@ class Proc(object):
         "a leaf has no output pipes"
         # don't count pipes to parent
         for pout in self.pouts:
-            if pout.isPipe() and (pout.dev.pin.proc != None):
+            if pout.isPipe() and (pout.dev.pin.proc is not None):
                 return False
         return True
 
     def raiseIfExcept(self):
         """raise exception if one is saved, otherwise do nothing"""
-        if self.exceptInfo != None:
+        if self.exceptInfo is not None:
             raise self.exceptInfo[0], self.exceptInfo[1], self.exceptInfo[2]
 
     def __handleErrExit(self):
@@ -804,7 +804,7 @@ class Proc(object):
 
     def failed(self):
         "check if process failed, call after poll() or wait()"
-        return (self.exceptInfo != None)
+        return (self.exceptInfo is not None)
 
 class _ProcDagDesc(object):
     """Generate a description of a ProcDag for debugging purposes."""
@@ -874,7 +874,7 @@ class _ProcDagDesc(object):
 
     def __descPInOutArg(self, pio):
         "generate a description of PInOut argument"
-        arg = pio.argPrefix if (pio.argPrefix != None) else ""
+        arg = pio.argPrefix if (pio.argPrefix is not None) else ""
         s = self.__descPInOut(pio)
         if isinstance(pio.dev, Pipe):
             if isinstance(pio, PIn):
@@ -889,7 +889,7 @@ class _ProcDagDesc(object):
     @staticmethod
     def __nonPipeStdioDesc(spec, stdfd, sym):
         "get description to use for a stdio fd when not a pipe"
-        if spec == None:
+        if spec is None:
             return ""  # defaulted
         elif isinstance(spec, int):
             if spec != stdfd:
@@ -1008,7 +1008,7 @@ class ProcDag(object):
             raise ProcDagException("cycle detected: entering: " + str(proc))
         seen.add(proc)
         for pout in proc.pouts:
-            if (pout.dev.pin != None) and (pout.dev.pin.proc != None):
+            if (pout.dev.pin is not None) and (pout.dev.pin.proc is not None):
                 self.__dfsValidate(pout.dev.pin.proc, seen)
 
     def __validateRoot(self, root):
@@ -1057,7 +1057,7 @@ class ProcDag(object):
         except Exception, e:
             # FIXME: make optional, or record, or something
             exi = sys.exc_info()
-            stack = "" if exi == None else "".join(traceback.format_list(traceback.extract_tb(exi[2])))+"\n"
+            stack = "" if exi is None else "".join(traceback.format_list(traceback.extract_tb(exi[2])))+"\n"
             sys.stderr.write("ProcDag dev cleanup exception: " +str(e)+"\n"+stack)
 
     def __cleanupProc(self, proc):
@@ -1172,7 +1172,7 @@ class Procline(ProcDag):
         
     def _createProc(self, cmd, prevPipe, isLastCmd, stdinFirst, stdoutLast, stderr):
         """create one process"""
-        if (prevPipe == None):
+        if (prevPipe is None):
             stdin = stdinFirst  # first process in pipeline
         else:
             stdin = PIn(prevPipe)
@@ -1219,11 +1219,11 @@ class Pipeline(Procline):
 
         (otherFh, closeOther) = self._getOtherFh()
         if mode == "r":
-            firstIn = otherFh if (otherFh != None) else 0
+            firstIn = otherFh if (otherFh is not None) else 0
             self.pio = PIn(Pipe())
             lastOut = POut(self.pio.dev)
         else:
-            lastOut = otherFh if (otherFh != None) else 1
+            lastOut = otherFh if (otherFh is not None) else 1
             self.pio = POut(Pipe())
             firstIn = PIn(self.pio.dev)
         Procline.__init__(self, cmds, stdin=firstIn, stdout=lastOut)
@@ -1241,7 +1241,7 @@ class Pipeline(Procline):
     def _getOtherFh(self):
         """get the other end of the pipeline, return (otherFh, closeOther), with otherFh
         being None if the other end was not opened"""
-        if self.otherEnd == None:
+        if self.otherEnd is None:
             otherFh = None
             closeOther = False
         elif isinstance(self.otherEnd, str):
@@ -1291,7 +1291,7 @@ class Pipeline(Procline):
     def wait(self):
         """wait to for processes to complete, generate an exception if one
         exits no-zero"""
-        if self.fh != None:
+        if self.fh is not None:
             self.pio.close()
             self.fh = None
         Procline.wait(self)

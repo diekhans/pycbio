@@ -21,10 +21,10 @@ class Range(object):
         self.end = end
 
     def __eq__(self, other):
-        return (other != None) and (self.start == other.start) and (self.end == other.end)
+        return (other is not None) and (self.start == other.start) and (self.end == other.end)
 
     def __ne__(self, other):
-        return (other == None) or (self.start != other.start) or (self.end != other.end)
+        return (other is None) or (self.start != other.start) or (self.end != other.end)
 
     def size(self):
         return self.end - self.start
@@ -80,12 +80,12 @@ class Exon(object):
 
     def __str__(self):
         s = str(self.start) + "-" + str(self.end)
-        if self.frame != None:
+        if self.frame is not None:
             s += "/" + str(self.frame)
         return s
 
     def getCdsExonIdx(self):
-        if (self.gene.cdsStartIExon != None) and (self.gene.cdsStartIExon <= self.iExon) and (self.iExon <= self.gene.cdsEndIExon):
+        if (self.gene.cdsStartIExon is not None) and (self.gene.cdsStartIExon <= self.iExon) and (self.iExon <= self.gene.cdsEndIExon):
             return self.iExon - self.gene.cdsStartIExon
         else:
             return None
@@ -163,7 +163,7 @@ class GenePred(object):
         self.cdsStartIExon = None
         self.cdsEndIExon = None
         for i in xrange(len(exonStarts)):
-            if exonFrames != None:
+            if exonFrames is not None:
                 frame = exonFrames[i]
             self.addExon(exonStarts[i], exonEnds[i], frame)
 
@@ -205,7 +205,7 @@ class GenePred(object):
     @staticmethod
     def __colOrNone(row, dbColIdxMap, colName, typeCnv):
         idx = dbColIdxMap.get(colName)
-        return None if (idx == None) else typeCnv(row[idx])
+        return None if (idx is None) else typeCnv(row[idx])
 
     def __initDb(self, row, dbColIdxMap):
         self.name = row[dbColIdxMap["name"]]
@@ -223,7 +223,7 @@ class GenePred(object):
         self.cdsStartStat = self.__colOrNone(row, dbColIdxMap, "cdsStartStat", CdsStat)
         self.cdsEndStat = self.__colOrNone(row, dbColIdxMap, "cdsEndStat", CdsStat)
         exonFrames = self.__colOrNone(row, dbColIdxMap, "exonFrames", intArraySplit)
-        self.hasExonFrames = (exonFrames != None)
+        self.hasExonFrames = (exonFrames is not None)
         self.__buildExons(exonStarts, exonEnds, exonFrames)
 
     def __initEmpty(self):
@@ -285,9 +285,9 @@ class GenePred(object):
 
     def __init__(self, row=None, dbColIdxMap=None, noInitialize=False):
         "If row is not None, parse a row, otherwise initialize to empty state"
-        if dbColIdxMap != None:
+        if dbColIdxMap is not None:
             self.__initDb(row, dbColIdxMap)
-        elif row != None:
+        elif row is not None:
             self.__initParse(row)
         elif not noInitialize:
             self.__initEmpty()
@@ -312,7 +312,7 @@ class GenePred(object):
         i = len(self.exons)
         self.exons.append(Exon(self, i, exonStart, exonEnd, frame))
         if (self.cdsStart < self.cdsEnd) and (exonStart < self.cdsEnd) and (exonEnd > self.cdsStart):
-            if self.cdsStartIExon == None:
+            if self.cdsStartIExon is None:
                 self.cdsStartIExon = i
             self.cdsEndIExon = i
 
@@ -330,7 +330,7 @@ class GenePred(object):
         for i in xrange(iStart, iEnd, iDir):
             e = self.exons[i]
             c = e.getCds()
-            if c != None:
+            if c is not None:
                 e.frame = cdsOff%3
                 cdsOff += (c.end-c.start)
             else:
@@ -347,7 +347,7 @@ class GenePred(object):
 
     def overlapsCds(self, startOrRange, end=None):
         "test if a position is in the CDS. startOrRange is a Range or Exon if end is None"
-        if end == None:
+        if end is None:
             return (startOrRange.start < self.cdsEnd) and (startOrRange.end > self.cdsStart)
         else:
             return (startOrRange < self.cdsEnd) and (end > self.cdsStart)
@@ -377,7 +377,7 @@ class GenePred(object):
         return True
 
     def hasCds(self):
-        return (self.cdsStartIExon != None)
+        return (self.cdsStartIExon is not None)
 
     def getCds(self):
         "get Range of CDS, or None if there isn't any"
@@ -398,7 +398,7 @@ class GenePred(object):
         l = 0
         for e in self.exons:
             cds = e.getCds()
-            if cds != None:
+            if cds is not None:
                 l += cds.end - cds.start
         return l
 
@@ -408,7 +408,7 @@ class GenePred(object):
 
     def getNumCdsExons(self):
         "get the number of exons containing CDS"
-        if self.cdsStartIExon == None:
+        if self.cdsStartIExon is None:
             return 0
         else:
             return (self.cdsEndIExon - self.cdsStartIExon)+1
@@ -442,17 +442,17 @@ class GenePred(object):
         row.append(intArrayJoin(starts))
         row.append(intArrayJoin(ends))
 
-        hasExt = (self.score != None) or (self.name2 != None) or (self.cdsStartStat != None) or self.hasExonFrames
+        hasExt = (self.score is not None) or (self.name2 is not None) or (self.cdsStartStat is not None) or self.hasExonFrames
 
-        if self.score != None:
+        if self.score is not None:
             row.append(str(self.score))
         elif hasExt:
             row.append("0");
-        if self.name2 != None:
+        if self.name2 is not None:
             row.append(self.name2)
         elif hasExt:
             row.append("");
-        if self.cdsStartStat != None:
+        if self.cdsStartStat is not None:
             row.append(str(self.cdsStartStat))
             row.append(str(self.cdsEndStat))
         elif hasExt:
@@ -492,9 +492,9 @@ class GenePred(object):
         cnt = 0
         for e1 in self.exons:
             f1 = e1.featureSplit()
-            if f1.cds != None:
+            if f1.cds is not None:
                 for f2 in feats2:
-                    if f2.cds != None:
+                    if f2.cds is not None:
                         cnt += f1.cds.overlapAmt(f2.cds)
         return cnt
 
@@ -614,7 +614,7 @@ class GenePredDbReader(object):
         "read the next record next"
         while True:
             row = self.cur.fetchone()
-            if row == None:
+            if row is None:
                 self.cur.close()
                 self.cur = None
                 raise StopIteration

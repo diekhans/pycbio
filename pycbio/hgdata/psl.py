@@ -65,13 +65,13 @@ class PslBlock(object):
 
     def sameAlign(self, other):
         "compare for equality of alignment."
-        return (other != None) and (self.qStart == other.qStart) and (self.tStart == other.tStart) and (self.size == other.size) and (self.qSeq == other.qSeq) and (self.tSeq == other.tSeq)
+        return (other is not None) and (self.qStart == other.qStart) and (self.tStart == other.tStart) and (self.size == other.size) and (self.qSeq == other.qSeq) and (self.tSeq == other.tSeq)
 
     def reverseComplement(self, newPsl):
         "construct a block that is the reverse complement of this block"
         return PslBlock(newPsl, self.psl.qSize-self.qEnd, self.psl.tSize-self.tEnd, self.size,
-                        (reverse_complement(self.qSeq) if (self.qSeq != None) else None),
-                        (reverse_complement(self.tSeq) if (self.tSeq != None) else None))
+                        (reverse_complement(self.qSeq) if (self.qSeq is not None) else None),
+                        (reverse_complement(self.tSeq) if (self.tSeq is not None) else None))
 
     def swapSides(self, newPsl):
         "construct a block with query and target swapped "
@@ -80,8 +80,8 @@ class PslBlock(object):
     def swapSidesReverseComplement(self, newPsl):
         "construct a block with query and target swapped and reverse complemented "
         return PslBlock(newPsl, self.psl.tSize-self.tEnd, self.psl.qSize-self.qEnd, self.size,
-                        (reverse_complement(self.tSeq) if (self.tSeq != None) else None),
-                        (reverse_complement(self.qSeq) if (self.qSeq != None) else None))
+                        (reverse_complement(self.tSeq) if (self.tSeq is not None) else None),
+                        (reverse_complement(self.qSeq) if (self.qSeq is not None) else None))
 
 class Psl(object):
     """Object containing data from a PSL record."""
@@ -93,7 +93,7 @@ class Psl(object):
         blockSizes = intArraySplit(blockSizesStr)
         qStarts = intArraySplit(qStartsStr)
         tStarts = intArraySplit(tStartsStr)
-        haveSeqs = (qSeqsStr != None)
+        haveSeqs = (qSeqsStr is not None)
         if haveSeqs:
             qSeqs = strArraySplit(qSeqsStr)
             tSeqs = strArraySplit(tSeqsStr)
@@ -176,9 +176,9 @@ class Psl(object):
         """construct a new PSL, either parsing a row, loading a row from a
         dbapi cursor (dbColIdxMap created by sys.dbOpts.cursorColIdxMap), or
         creating an empty one."""
-        if dbColIdxMap != None:
+        if dbColIdxMap is not None:
             self.__loadDb(row, dbColIdxMap)
-        elif row != None:
+        elif row is not None:
             self.__parse(row)
         else:
             self.__empty()
@@ -252,7 +252,7 @@ class Psl(object):
                intArrayJoin([b.size for b in self.blocks]),
                intArrayJoin([b.qStart for b in self.blocks]),
                intArrayJoin([b.tStart for b in self.blocks])]
-        if self.blocks[0].qSeq != None:
+        if self.blocks[0].qSeq is not None:
             row.append(strArrayJoin([b.qSeq for b in self.blocks]))
             row.append(strArrayJoin([b.tSeq for b in self.blocks]))
         return str.join("\t", row)
@@ -314,7 +314,7 @@ class Psl(object):
 
     def sameAlign(self, other):
         "compare for equality of alignment.  The stats fields are not compared."
-        if ((other == None) 
+        if ((other is None) 
             or (self.strand != other.strand)
             or (self.qName != other.qName)
             or (self.qSize != other.qSize)
@@ -432,7 +432,7 @@ class PslReader(object):
         self.fh = fileOps.opengz(fileName)
 
     def __del__(self):
-        if self.fh != None:
+        if self.fh is not None:
             self.fh.close()
 
     def __iter__(self):
@@ -470,7 +470,7 @@ class PslDbReader(object):
         self.colIdxMap = dbOps.cursorColIdxMap(self.cur)
 
     def close(self):
-        if self.cur != None:
+        if self.cur is not None:
             self.cur.close()
         self.cur = None
 
@@ -484,7 +484,7 @@ class PslDbReader(object):
         "read next PSL"
         while True:
             row = self.cur.fetchone()
-            if row == None:
+            if row is None:
                 self.cur.close()
                 self.cur = None
                 raise StopIteration
@@ -528,12 +528,12 @@ class PslTbl(list):
         return self.qNameMap.iterkeys()
 
     def haveQName(self, qName):
-        return (self.qNameMap.get(qName) != None)
+        return (self.qNameMap.get(qName) is not None)
         
     def getByQName(self, qName):
         """generator to get all PSL with a give qName"""
         ent = self.qNameMap.get(qName)
-        if ent != None:
+        if ent is not None:
             if isinstance(ent, list):
                 for psl in ent:
                     yield psl
@@ -544,12 +544,12 @@ class PslTbl(list):
         return self.tNameMap.iterkeys()
 
     def haveTName(self, tName):
-        return (self.tNameMap.get(qName) != None)
+        return (self.tNameMap.get(qName) is not None)
         
     def getByTName(self, tName):
         """generator to get all PSL with a give tName"""
         ent = self.tNameMap.get(tName)
-        if ent != None:
+        if ent is not None:
             if isinstance(ent, list):
                 for psl in ent:
                     yield psl

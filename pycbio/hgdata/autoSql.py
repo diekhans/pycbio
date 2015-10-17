@@ -13,7 +13,7 @@ def strArraySplit(commaStr):
 
 def strArrayJoin(strs):
      "formatter for a list into a comma seperated string"
-     if strs != None:
+     if strs is not None:
           return string.join(strs,",") + ","
      else:
           return ","
@@ -30,7 +30,7 @@ def intArraySplit(commaStr):
 
 def intArrayJoin(ints):
      "formatter for a list of ints into a comma seperated string"
-     if ints != None:
+     if ints is not None:
           strs = []
           for i in ints:
                strs.append(str(i))

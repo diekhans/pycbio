@@ -59,7 +59,7 @@ class Node(object):
     def __init__(self, name, shortName):
         assert(isinstance(name, str))
         self.name = name
-        self.shortName = shortName if (shortName != None) else name
+        self.shortName = shortName if (shortName is not None) else name
         self.graph = None # set when added to graph
         # these set when added to graph
         self.exrun = None
@@ -110,9 +110,9 @@ class Production(Node):
 
     def computeState(self):
         "compute and update state from producing rule state"
-        if self.producedBy == None:
+        if self.producedBy is None:
             # no rule to produce, must exist
-            if prod.getLocalTime() == None:
+            if prod.getLocalTime() is None:
                 prod._transition(ProdState.bad)
             else:
                 prod._transition(ProdState.current)
@@ -121,7 +121,7 @@ class Production(Node):
 
     def nextNodes(self):
         "generator for traversing tree"
-        if self.producedBy != None:
+        if self.producedBy is not None:
             yield self.producedBy
 
     def prevNodes(self):
@@ -131,7 +131,7 @@ class Production(Node):
 
     def linkProducedBy(self, producedBy):
         "set producedBy link, and link back to this object"
-        if self.producedBy != None:
+        if self.producedBy is not None:
             raise ExRunException("Production " + str(self) + " producedBy link already set")
         if not isinstance(producedBy, Rule):
             raise ExRunException("Production " + str(self) + " producedBy can only be linked to a Rule, attempt to link to: " + str(producedBy))
@@ -183,7 +183,7 @@ class Production(Node):
         number.  This is the oldest time recursive times of any of the requirements.
         If the production does not exist, returns None. """
         pt = self.getLocalTime()
-        if (pt == None) or (self.producedBy == None):
+        if (pt is None) or (self.producedBy is None):
             return None # short-circuit
         else:
             return min(pt, self.producedBy.getUpdateTime())
@@ -197,9 +197,9 @@ class Rule(Node):
         self.state = RuleState.unknown
         self.requires = set()
         self.produces = set()
-        if requires != None:
+        if requires is not None:
             self.linkRequires(requires)
-        if produces != None:
+        if produces is not None:
             self.linkProduces(produces)
         # set when task is associated
         self.task = None
@@ -228,7 +228,7 @@ class Rule(Node):
         rtime = negInf
         for r in self.requires:
             rt = r.getLocalTime()
-            if rt == None:
+            if rt is None:
                 return posInf
             elif rt > rtime:
                 rtime = rt
@@ -242,7 +242,7 @@ class Rule(Node):
         ptime = posInf
         for p in self.produces:
             pt = p.getLocalTime()
-            if pt == None:
+            if pt is None:
                 return negInf
             elif pt < ptime:
                 ptime = pt
@@ -265,15 +265,15 @@ class Rule(Node):
         # bottom up
         rtime = self.__getRequiresTime()  # or None or +Inf
         ptime = self.__getProducesTime()  # or None or -Inf
-        if rtime == None:
+        if rtime is None:
             # no requires
-            if ptime == None:
+            if ptime is None:
                 return RuleState.failed  # should never happen
             elif ptime < 0:
                 return RuleState.outdated
             else:
                 return RuleState.ok  # exists
-        elif (ptime == None) or (ptime < rtime):
+        elif (ptime is None) or (ptime < rtime):
             return RuleState.outdated
         else:
             return RuleState.ok
@@ -281,7 +281,7 @@ class Rule(Node):
     def computeState(self):
         """Compute and update state from requires and produces Productions"""
         newState = self.__stateFromRequiresState(self.__getRequiresStates())
-        if newState == None:
+        if newState is None:
             newState = self.__stateFromReqProdTimes()
         self._transition(newState)
 
@@ -300,7 +300,7 @@ class Rule(Node):
                 pstate = ProdState.blocked
             else:
                 raise ExRunException("BUG: Rule.setState() invalid state:" + str(state))
-            if pstate != None:
+            if pstate is not None:
                 for p in self.produces:
                     p.setState(pstate)
             self.verb.leave() # FIXME
@@ -347,7 +347,7 @@ class Rule(Node):
         rt = posInf
         for r in self.requires:
             pt = r.getUpdateTime()
-            if pt == None:
+            if pt is None:
                 return None # short-circuit
             rt = min(rt, pt)
         return rt
@@ -357,7 +357,7 @@ class Rule(Node):
         if no requires, +Inf one doesn exist """
         # FIXME: needed
         pt = prod.getLocalTime()
-        return (pt == None) or ((rtime != None) and ((pt < rtime) or (rtime < 0)))
+        return (pt is None) or ((rtime is not None) and ((pt < rtime) or (rtime < 0)))
 
     def getOutdated(self):
         """Get list of productions that are out of date relative to requires"""
@@ -401,7 +401,7 @@ class Target(Node):
         name does not have to be unique and defaults to name."""
         Node.__init__(self, name, shortName)
         self.requires = set()
-        if requires != None:
+        if requires is not None:
             self.linkRequires(requires)
         
     def linkRequires(self, requires):
@@ -483,7 +483,7 @@ class Graph(object):
         "setup entry points info"
         self.entryProds = self.__findEntryProductions()
         if (len(self.targets) == 0) and (len(self.entryProds) > 0):
-            if (defaultTargetName != None):
+            if (defaultTargetName is not None):
                 self.addTarget(Target(defaultTargetName, self.entryProds))
             else:
                 raise ExRunException("graph does not contain any targets")
@@ -500,7 +500,7 @@ class Graph(object):
 
         for n in node.nextNodes():
             cycle = self.__cycleCheckNode(visited, allVisited, n)
-            if cycle != None:
+            if cycle is not None:
                 if node == cycle[0]:
                     # back at start of cycle
                     cycle.reverse()
@@ -515,7 +515,7 @@ class Graph(object):
     def __cycleCheck(self, root, allVisited):
         """check for cycles, starting at a root, update set of all visited"""
         cycle = self.__cycleCheckNode(set(), allVisited, root)
-        if cycle != None:
+        if cycle is not None:
             raise CycleException(cycle) # should never happen
 
     def __getCheckEntries(self):
@@ -552,9 +552,9 @@ class Graph(object):
 
     def __initProdStates(self, prod):
         "recursively initial production states"
-        if prod.producedBy == None:
+        if prod.producedBy is None:
             # no rule to produce, must exist
-            if prod.getLocalTime() == None:
+            if prod.getLocalTime() is None:
                 prod._transition(ProdState.bad)
             else:
                 prod._transition(ProdState.current)
@@ -581,7 +581,7 @@ class Graph(object):
     def __stateCheck(self):
         "check for various things after state initialized"
         bad = self.__getBadProds()
-        if bad != None:
+        if bad is not None:
             raise ExRunException("No rule to build production(s): " + Node.joinNames(bad))
         
     def complete(self, defaultTargetName=None):
@@ -599,7 +599,7 @@ class Graph(object):
         targets = []
         for tn in targetNames:
             t = self.targetsByName.get(tn)
-            if t == None:
+            if t is None:
                 raise ExRunException("no Target named: " + tn)
             targets.append(t)
         return targets
@@ -624,7 +624,7 @@ class Graph(object):
             for r in root.requires:
                 self.__getReady(r, ready)
         elif isinstance(root, Production):
-            if root.producedBy != None:
+            if root.producedBy is not None:
                 self.__getReady(root.producedBy, ready)
         elif isinstance(root, Rule):
             if root.isReady():

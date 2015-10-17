@@ -5,7 +5,7 @@ class Subsets(object):
 
     def __init__(self, elements=None):
         """initialize set, optionally defining elements from a list or set of elements"""
-        if elements != None:
+        if elements is not None:
             self.elements = set(elements)
         else:
             self.elements = set()
@@ -70,13 +70,13 @@ class Subsets(object):
 
     def getSubsets(self):
         "get the subsets, building if needed"
-        if self.subsets == None:
+        if self.subsets is None:
             self.subsets = self.__makeSubsets(self.elements)
         return self.subsets
 
     def getSubset(self, wantSet):
         "search for the specified subset object, error if it doesn't exist"
-        if self.subsets == None:
+        if self.subsets is None:
             self.subsets = self.__makeSubsets(self.elements)
         for ss in self.subsets:
             if ss == wantSet:
@@ -95,10 +95,10 @@ class Subsets(object):
     def getInclusiveSubsets(self, subset):
         """Get the inclusive subsets for particular subset; that is all subsets
         that contain all of the specified sets."""
-        if self.inclusiveSubsets == None:
+        if self.inclusiveSubsets is None:
             self.inclusiveSubsets = dict()
         inclSubsets = self.inclusiveSubsets.get(subset)
-        if inclSubsets == None:
+        if inclSubsets is None:
             inclSubsets = self.__makeInclusiveSubset(subset)
             self.inclusiveSubsets[subset] = inclSubsets
         return inclSubsets

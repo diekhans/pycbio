@@ -17,20 +17,20 @@ class _Fifo(object):
 
     def getRfh(self):
         "get read file object"
-        if self.rfh == None:
+        if self.rfh is None:
             self.rfh = os.fdopen(self.rfd)
         return self.rfh
 
     def getWfh(self):
         "get write file object"
-        if self.wfh == None:
+        if self.wfh is None:
             self.wfh = os.fdopen(self.wfd, "w")
         return self.wfh
 
     def rclose(self):
         "close read side if open"
-        if self.rfd != None:
-            if self.rfh != None:
+        if self.rfd is not None:
+            if self.rfh is not None:
                 self.rfh.close()
             else:
                 os.close(self.rfd)
@@ -38,8 +38,8 @@ class _Fifo(object):
 
     def wclose(self):
         "close write side, if open"
-        if self.wfd != None:
-            if self.wfh != None:
+        if self.wfd is not None:
+            if self.wfh is not None:
                 self.wfh.close()
             else:
                 os.close(self.wfd)
@@ -48,9 +48,9 @@ class _Fifo(object):
     def close(self):
         "close if open"
         # do write side first to ensure EOF if in single process
-        if self.wfd != None:
+        if self.wfd is not None:
             self.wclose()
-        if self.rfd != None:
+        if self.rfd is not None:
             self.rclose()
 
 class _LinuxFifo(_Fifo):
@@ -66,7 +66,7 @@ class _LinuxFifo(_Fifo):
     @staticmethod
     def __mkFdPath(fd):
         "get linux /proc path for an fd"
-        assert(fd != None)
+        assert(fd is not None)
         p = "/proc/" + str(os.getpid()) + "/fd/" + str(fd)
         if not os.path.exists(p):
             raise IOError(errno.ENOENT, os.strerror(errno.ENOENT), p)
@@ -100,7 +100,7 @@ class _NamedFifo(_Fifo):
     def __fifoMk(suffix="tmp", tmpDir=None):
         "create a FIFO with a unique name in tmp directory"
         # FIXME: don't need suffix/tmpDir, unless this made of part the Fifo API
-        if tmpDir == None:
+        if tmpDir is None:
             tmpDir = os.getenv("TMPDIR", "/var/tmp")
         prefix = tmpDir + "/" + socket.gethostname() + "." + str(os.getpid())
         maxTries=1000
@@ -138,7 +138,7 @@ class _NamedFifo(_Fifo):
     def close(self):
         "close if open"
         _Fifo.close(self)
-        if self.rpath != None:
+        if self.rpath is not None:
             os.unlink(self.rpath)
             self.rpath = self.wpath = None
 
@@ -146,7 +146,7 @@ _fifoClass = None
 def factory():
     "get a FIFO object of the correct type for this OS"
     global _fifoClass
-    if _fifoClass == None:
+    if _fifoClass is None:
         if os.path.exists("/proc/self/fd"):
             _fifoClass = _LinuxFifo
         else:

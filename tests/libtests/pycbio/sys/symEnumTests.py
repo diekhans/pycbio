@@ -25,7 +25,7 @@ class SymEnumTests(TestCaseBase):
         self.assertTrue(Color.red < Color.blue)
         self.assertTrue(Color.red == Color.red)
         self.assertTrue(Color.red != Color.blue)
-        self.assertTrue(Color.red != None)
+        self.assertTrue(Color.red is not None)
         self.assertTrue(None != Color.red)
 
     def testLookup(self):

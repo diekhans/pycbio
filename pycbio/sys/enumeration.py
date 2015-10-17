@@ -37,7 +37,7 @@ class EnumValue(object):
         self.enum = enum
         self.name = name
         self.numValue = numValue
-        if strValue == None:
+        if strValue is None:
             self.strValue = name
         else:
             self.strValue = strValue
@@ -50,7 +50,7 @@ class EnumValue(object):
     def __setstate__(self, st):
         #Immutable.__init__(self)
         (self.enum,  self.name, self.numValue, self.strValue) = st
-        if self.strValue == None:
+        if self.strValue is None:
             self.strValue = self.name
         #self.mkImmutable()
 
@@ -70,7 +70,7 @@ class EnumValue(object):
     def __cmp__(self, otherVal):
         # FIXME: attempt to work around enum pickle problem in GenomeDefs, compare names rather than
         # class objects.  Below should test be: not (isinstance(otherVal, EnumValue) and (otherVal.enum == self.enum)):
-        if otherVal == None:
+        if otherVal is None:
             return -1
         elif type(otherVal) == int:
             return cmp(self.numValue, otherVal)
@@ -121,7 +121,7 @@ class Enumeration(object):
         val = valueClass(self, name, numValue, strValue)
         setattr(self, name, val)
         self.aliases[name] = val
-        if strValue != None:
+        if strValue is not None:
             self.aliases[strValue] = val
         self.numValueMap[numValue] = val
         self.maxNumValue = max(self.maxNumValue, numValue)
@@ -135,11 +135,11 @@ class Enumeration(object):
             return self.__createValue(valueClass, valueDef, numValue, valueDef)
 
     def __defListValue(self, valueClass, valueDef, numValue):
-        if (len(valueDef) > 3) and (valueDef[3] != None):
+        if (len(valueDef) > 3) and (valueDef[3] is not None):
             numValue = valueDef[3]
             assert(isinstance(numValue, int))
         val = self.__createValue(valueClass, valueDef[0], numValue, valueDef[1])
-        if (len(valueDef) > 2) and (valueDef[2] != None):
+        if (len(valueDef) > 2) and (valueDef[2] is not None):
             if not isListLike(valueDef[2]):
                 raise TypeError("valueDef[2] must be None, a list or tuple, found: " + str(valueDef[2]))
             for a in valueDef[2]:

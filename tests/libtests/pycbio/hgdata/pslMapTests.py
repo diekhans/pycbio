@@ -17,7 +17,7 @@ class MapTester(object):
 
     @staticmethod
     def __iBlkOrNone(blk):
-        return blk.iBlk if blk != None else None
+        return blk.iBlk if blk is not None else None
 
     def mapGap(self, psl, prevBlk, nextBlk, qRngStart, qRngEnd, tRngStart, tRngEnd):
         self.mappings.append(("gap", psl.qName, MapTester.__iBlkOrNone(prevBlk), MapTester.__iBlkOrNone(nextBlk), qRngStart, qRngEnd, tRngStart, tRngEnd))

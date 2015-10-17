@@ -12,9 +12,9 @@ def _prLine(fh, *objs):
 
 def lsOpen(msg=None, fh=sys.stderr, pid=None):
     """list open files, mostly for debugging"""
-    if msg != None:
+    if msg is not None:
         _prLine(fh, msg)
-    if pid == None:
+    if pid is None:
         pid = os.getpid()
     fddir = "/proc/" + str(pid) + "/fd/"
     fds = posix.listdir(fddir)

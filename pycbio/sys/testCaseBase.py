@@ -142,7 +142,7 @@ class TestCaseBase(unittest.TestCase):
         except OSError, e:
             if e.errno != errno.ECHILD:
                 raise
-        if e == None:
+        if e is None:
             self.fail("pending child processes or zombies: " + str(s))
 
     @staticmethod

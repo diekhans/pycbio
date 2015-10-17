@@ -75,7 +75,7 @@ class IntervalSkipList(object):
         # Step down to bottom level
         for i in xrange(self.maxLevel-1, -1, -1):
             # Search forward on current level as far as possible.
-            while (x.forward[i] != None) and (x.forward[i].start < start):
+            while (x.forward[i] is not None) and (x.forward[i].start < start):
                 x = x.forward[i]
                 
             # Pick up interval markers on edge when dropping down a level.
@@ -84,12 +84,12 @@ class IntervalSkipList(object):
 
         # Scan forward on bottom level to find location where search key will
         # lie.
-        while (x.forward[0] != None) and (x.forward[0].start < start):
+        while (x.forward[0] is not None) and (x.forward[0].start < start):
             x = x.forward[0]
 
         # If K is not in list, pick up interval markers on edge, otherwise
         # pick up markers on node with value = K.
-        if (x.forward[0] == None) or (x.forward[0].start != start):
+        if (x.forward[0] is None) or (x.forward[0].start != start):
             val |= x.markers[0]
         else: 
             val |= x.forward[0].eqMarkers

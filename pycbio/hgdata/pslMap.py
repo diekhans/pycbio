@@ -65,7 +65,7 @@ class PslMap(object):
         for blk in psl.blocks:
             if  tRngNext >= tRngEnd:
                 break
-            if prevBlk != None:
+            if prevBlk is not None:
                 tRngNext = self.__t2qProcessGap(psl, prevBlk, blk, tRngNext, tRngEnd)
             if tRngNext < tRngEnd:
                 tRngNext = self.__t2qProcessBlk(psl, blk, tRngNext, tRngEnd)
@@ -121,7 +121,7 @@ class PslMap(object):
         for blk in psl.blocks:
             if  qRngNext >= qRngEnd:
                 break
-            if prevBlk != None:
+            if prevBlk is not None:
                 qRngNext = self.__q2tProcessGap(psl, prevBlk, blk, qRngNext, qRngEnd)
             if qRngNext < qRngEnd:
                 qRngNext = self.__q2tProcessBlk(psl, blk, qRngNext, qRngEnd)

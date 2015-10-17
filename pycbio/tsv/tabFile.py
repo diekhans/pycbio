@@ -41,7 +41,7 @@ class TabFileReader(object):
 
     def __readRow(self):
         "read the next row, returning None on EOF"
-        if self.csvRdr == None:
+        if self.csvRdr is None:
             return None
         try:
             row = self.csvRdr.next()
@@ -68,17 +68,17 @@ class TabFileReader(object):
     def next(self):
         while True:
             row = self.__readRow()
-            if row == None:
+            if row is None:
                 raise StopIteration
             if self.__keepRow(row):
-                if self.rowClass != None:
+                if self.rowClass is not None:
                     return self.rowClass(row)
                 else:
                     return row
 
     def close(self):
         "close file, called automatically on EOF"
-        if self.inFh != None:
+        if self.inFh is not None:
             self.inFh.close()
             self.inFh = None
             self.csvRdr = None

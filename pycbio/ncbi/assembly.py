@@ -8,7 +8,7 @@ def _noneIfNa(name):
     return None if name == "na" else name
 
 def _naIfNone(name):
-    return "na" if name == None else name
+    return "na" if name is None else name
 
 class AssemblyReport(object):
     """Parse assembly reports files, e.g.
@@ -78,9 +78,9 @@ class AssemblyReport(object):
         rec = self.Record(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], int(row[8]), row[9])
         self.seqs.append(rec)
         self.bySequenceName[rec.sequenceName] = rec
-        if rec.genBankAccn != None:
+        if rec.genBankAccn is not None:
             self.byGenBankAccn[rec.genBankAccn] = rec
-        if rec.refSeqAccn != None:
+        if rec.refSeqAccn is not None:
             self.byRefSeqAccn[rec.refSeqAccn] = rec
-        if rec.ucscStyleName != None:
+        if rec.ucscStyleName is not None:
             self.byUcscStyleName[rec.ucscStyleName] = rec

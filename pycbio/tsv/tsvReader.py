@@ -24,11 +24,11 @@ from pycbio.tsv import TsvError
 
 # typeMap converter for str types were empty represents None
 strOrNoneType = (lambda v: None if (v == "") else v,
-                 lambda v: "" if (v == None) else v)
+                 lambda v: "" if (v is None) else v)
 
 # typeMap converter for int types were empty represents None
 intOrNoneType = (lambda v: None if (v == "") else int(v),
-                 lambda v: "" if (v == None) else str(v))
+                 lambda v: "" if (v is None) else str(v))
 
 class TsvReader(object):
     """Class for reading TSV files.  Reads header and builds column name to
@@ -44,7 +44,7 @@ class TsvReader(object):
 
     def __readRow(self):
         "read the next row, returning None on EOF"
-        if self.reader == None:
+        if self.reader is None:
             return None
         try:
             row = self.reader.next()
@@ -59,7 +59,7 @@ class TsvReader(object):
 
     def __readHeader(self, allowEmpty):
         row = self.__readRow()
-        if row == None:
+        if row is None:
             if not allowEmpty:
                 raise TsvError("empty TSV file", reader=self), None, sys.exc_info()[2]
         else:
@@ -73,7 +73,7 @@ class TsvReader(object):
         # n.b. columns could be passed in from client, must copy
         i = 0
         for col in columns:
-            if self.columnNameMapper != None:
+            if self.columnNameMapper is not None:
                 col = self.columnNameMapper(col)
             col = intern(col)
             self.columns.append(col)
@@ -84,12 +84,12 @@ class TsvReader(object):
 
     def __initColTypes(self, typeMap, defaultColType):
         "save col types as column indexed list"
-        if typeMap != None:
+        if typeMap is not None:
             # build from type map
             self.colTypes = []
             for col in self.columns:
                 self.colTypes.append(typeMap.get(col, defaultColType))
-        elif defaultColType != None:
+        elif defaultColType is not None:
             # fill in colTypes from default
             self.colTypes = []
             for i in xrange(len(self.columns)):
@@ -125,13 +125,13 @@ class TsvReader(object):
         self.fileName = fileName
         self.lineNum = 0
         self.rowClass = rowClass
-        if rowClass == None:
+        if rowClass is None:
             self.rowClass = TsvRow
         self.columnNameMapper = columnNameMapper
         self.isRdb = isRdb
         self.colTypes = None
         self.ignoreExtraCols = ignoreExtraCols
-        if inFh != None:
+        if inFh is not None:
             self.inFh = inFh
         else:
             self.inFh = fileOps.opengz(fileName, "r")
@@ -149,7 +149,7 @@ class TsvReader(object):
     def close(self):
         """close file, keeping column map around.  Called automatically
         by iter on EOF."""
-        if self.inFh != None:
+        if self.inFh is not None:
             self.inFh.close()
             self.inFh = None
             self.reader = None
@@ -162,7 +162,7 @@ class TsvReader(object):
             row = self.__readRow()
         except Exception,ex:
             raise TsvError("Error reading TSV row", self, ex), None, sys.exc_info()[2]
-        if row == None:
+        if row is None:
             raise StopIteration
         if ((self.ignoreExtraCols and (len(row) < len(self.columns)))
             or ((not self.ignoreExtraCols) and (len(row) != len(self.columns)))):

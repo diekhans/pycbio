@@ -90,7 +90,7 @@ You will also need to lift the contigs to chromosomes.
             parser.error("wrong number of arguments")
         (self.gbff, self.genePredFile) = args
         self.__dict__.update(opts.__dict__)
-        if (self.rnaq != None) and (self.mrnaProtMap != None):
+        if (self.rnaq is not None) and (self.mrnaProtMap is not None):
             parser.error("can only specify one of -rnaq or -mrnaProtMap")
         if self.allGenes:
             self.protGenes = self.rnaGenes = self.other = self.immunoglobulins = True
@@ -134,7 +134,7 @@ class RnaCdsMap(object):
     def __init__(self,  rnaqFile=None, mrnaProtFile=None):
         self.rnaProtMap = dict()
         self.protRnaMap = dict()
-        if rnaqFile != None:
+        if rnaqFile is not None:
             self.src = rnaqFile
             self.__loadRnaq(rnaqFile)
         else:
@@ -172,55 +172,55 @@ class TransFeatures(object):
 
     def getTransId(self):
         "get transcript id, or gene id if transcript id is None"
-        if self.transId != None:
+        if self.transId is not None:
             return self.transId
         else:
             return self.gene.geneSym
 
     def getCdsId(self):
-        return (featGetCdsId(self.cdsFt) if self.cdsFt != None else None)
+        return (featGetCdsId(self.cdsFt) if self.cdsFt is not None else None)
 
     def addMRna(self, mrnaFt):
-        if self.mrnaFt != None:
+        if self.mrnaFt is not None:
             raise GbffExcept("transcript already has mRNA: " + self.getTransId())
         self.mrnaFt = mrnaFt
 
     def getMRnaCoords(self):
         "get mRNA coordinates, or None"
-        if (self.mrnaFt != None) and (self.mrnaCoords == None):
+        if (self.mrnaFt is not None) and (self.mrnaCoords is None):
             self.mrnaCoords = Coords.fromSeqFeature(self.mrnaFt)
         return self.mrnaCoords
 
     def addMiscRna(self, rnaFt):
-        if self.miscRnaFt != None:
+        if self.miscRnaFt is not None:
             raise GbffExcept("transcript already has misc RNA: " + get.getTransId())
         self.miscRnaFt = rnaFt
 
     def getMiscRnaCoords(self):
         "get misc RNA coordinates, or None"
-        if (self.miscRnaFt != None) and (self.miscRnaCoords == None):
+        if (self.miscRnaFt is not None) and (self.miscRnaCoords is None):
             self.miscRnaCoords = Coords.fromSeqFeature(self.miscRnaFt)
         return self.miscRnaCoords
 
     def addCds(self, cdsFt):
-        if self.cdsFt != None:
+        if self.cdsFt is not None:
             raise GbffExcept("transcript already has CDS: " + self.getTransId())
         self.cdsFt = cdsFt
 
     def getCdsCoords(self):
         "get coordindates defined by CDS feature, or none"
-        if (self.cdsFt != None) and (self.cdsCoords == None):
+        if (self.cdsFt is not None) and (self.cdsCoords is None):
             self.cdsCoords = Coords.fromSeqFeature(self.cdsFt)
         return self.cdsCoords
 
     def addExon(self, exonFt):
-        if self.exonFts == None:
+        if self.exonFts is None:
             self.exonFts =[]
         self.exonFts.append(exonFt)
 
     def getExonCoords(self):
         "get exon coordinates, or None"
-        if (self.exonFts != None) and (self.exonCoords == None):
+        if (self.exonFts is not None) and (self.exonCoords is None):
             self.exonCoords = Coords()
             for ef in self.exonFts:
                 self.exonCoords.extend(Coords.fromSeqFeature(ef))
@@ -261,7 +261,7 @@ class TransFeatures(object):
 
     refSeqAccRe = re.compile("^[NX][MRP]_[0-9]+(\\.[0-9]+)?$")
     def isRefSeq(self):
-        return (self.transId != None) and (self.refSeqAccRe.match(self.transId) != None)
+        return (self.transId is not None) and (self.refSeqAccRe.match(self.transId) is not None)
 
     def dump(self):
         prLine(sys.stderr, "\ttranscript: ", self.transId, " gene: ", self.gene.geneSym)
@@ -327,8 +327,8 @@ class GeneFeatures(object):
         mRNA, as there is no way of knowing if a mRNA should have a CDS"""
         for cdsFt in self.cdsFts:
             # FIXME: None checkl is immunoglobulins
-            if featGetCdsId(cdsFt) != None:
-                if rnaCdsMap != None:
+            if featGetCdsId(cdsFt) is not None:
+                if rnaCdsMap is not None:
                     self.__tblAssocCds(cdsFt, rnaCdsMap)
                 else:
                     self.__matchAssocCds(cdsFt)
@@ -336,11 +336,11 @@ class GeneFeatures(object):
     def __tblAssocCds(self, cdsFt, rnaCdsMap):
         "associated cds with a transcript using the in map"
         transId = rnaCdsMap.protRnaMap.get(featGetCdsId(cdsFt))
-        if transId == None:
+        if transId is None:
             prWarn("can't find entry for CDS", featGetCdsId(cdsFt), "in", rnaCdsMap.src)
         else:
             trans = self.__transById(transId)
-            if trans != None:
+            if trans is not None:
                 trans.addCds(cdsFt)
             else:
                 prWarn("can't find mRNA", transId, "for CDS", featGetCdsId(cdsFt))
@@ -354,7 +354,7 @@ class GeneFeatures(object):
     def __matchAssocCds(self, cdsFt):
         """associate CDS with transcripts via longest matched"""
         trans = self.__findLongestCdsMatch(cdsFt)
-        if trans != None:
+        if trans is not None:
             trans.addCds(cdsFt)
         else:
             prWarn("can't find matching mRNA for CDS", featGetCdsId(cdsFt), "gene:", self)
@@ -366,7 +366,7 @@ class GeneFeatures(object):
         bestTrans = None
         for trans in self.mrnaTrans:
             sz = self.__checkCdsTransMatch(cdsFt, trans)
-            if (sz != None) and (sz > bestSize):
+            if (sz is not None) and (sz > bestSize):
                 bestSize = sz
                 bestTrans = trans
         return bestTrans
@@ -374,7 +374,7 @@ class GeneFeatures(object):
     def __checkCdsTransMatch(self, cdsFt, trans):
         """return size, or None is no match, or transcript already has a CDS,
         also skip NR/XRs"""
-        if trans.getTransId().startswith("NR_") or trans.getTransId().startswith("XR_") or (trans.cdsFt != None) or not GeneFeatures.__cdsMatches(trans, cdsFt):
+        if trans.getTransId().startswith("NR_") or trans.getTransId().startswith("XR_") or (trans.cdsFt is not None) or not GeneFeatures.__cdsMatches(trans, cdsFt):
             return None
         else:
             return Coords.fromSeqFeature(cdsFt).size()
@@ -384,14 +384,14 @@ class GeneFeatures(object):
         return trans.getMRnaCoords().isContained(Coords.fromSeqFeature(cdsFt))
     
     def getCoords(self):
-        if self.coords == None:
+        if self.coords is None:
             self.coords = Coords.fromSeqFeature(self.geneFt)
         return self.coords
 
     def getTrans(self, transId):
         "get transcript by id, create new one if needed.  transId maybe none "
         trans = self.transTbl.get(transId)
-        if trans == None:
+        if trans is None:
             trans = TransFeatures(self, transId)
             self.transTbl[transId] = trans
         return trans
@@ -445,7 +445,7 @@ class GeneFeatures(object):
     def addExon(self, exonFt):
         # should always get the default transcript
         trans = self.__getFtTrans(exonFt, required=False)
-        assert(trans.transId == None)
+        assert(trans.transId is None)
         trans.addExon(exonFt)
         self.__flagIfPseudoFt(exonFt)
 
@@ -533,10 +533,10 @@ class RecProcessor(object):
             geneId = featMustGetGeneId(feat)
         else:
             geneId = featGetGeneId(feat)
-            if (geneId == None):
+            if (geneId is None):
                 return None
         gene = self.genesById.get(geneId)
-        if (gene == None):
+        if (gene is None):
             raise GbffExcept("no gene for " + geneId + ", referenced by " + feat.type + " " + feat.location)
         return gene
             
@@ -545,14 +545,14 @@ class RecProcessor(object):
             self.genesBySym[featMustGetQual1(feat, qualName)]
         else:
             geneSym = featGetQual1(feat, qualName)
-            if (geneSym != None) and (geneSym in self.genesBySym):
+            if (geneSym is not None) and (geneSym in self.genesBySym):
                 return self.genesBySym[geneSym]
             else:
                 return None
 
     def __procExonFt(self, exonFt):
         gene = self.__getGeneObjBySym(exonFt, required=False)
-        if gene != None:
+        if gene is not None:
             gene.addExon(exonFt)
 
     def __procCdsFt(self, cdsFt):
@@ -562,9 +562,9 @@ class RecProcessor(object):
     def __getRnaGene(self, rnaFt):
         # generally by transcript id, but also try gene
         gene = self.__getGeneObjById(rnaFt, required=False)
-        if (gene == None):
+        if (gene is None):
             gene = self.__getGeneObjBySym(rnaFt, qualName="gene", required=False)
-        if (gene == None):
+        if (gene is None):
             featRaiseNeedAQual(rnaFt, ("transcript_id", "gene"))
         return gene
 
@@ -578,9 +578,9 @@ class RecProcessor(object):
         # some V_segment have /standard_name= to reference gene sym
         # instead of /gene=, try both
         gene = self.__getGeneObjBySym(igFt, qualName="gene", required=False)
-        if gene == None:
+        if gene is None:
             gene = self.__getGeneObjBySym(igFt, qualName="standard_name", required=False)
-        if gene == None:
+        if gene is None:
             featRaiseNeedAQual(igFt, ("gene", "standard_name"))
         gene.addIg(igFt)
         gene.flagImmunoglobulin()
@@ -605,7 +605,7 @@ class GenePredBuilder(object):
             self.gp.cdsEndStat = CdsStat.unknown
 
     def finish(self):
-        if self.gp.cdsStart == None:
+        if self.gp.cdsStart is None:
             self.gp.cdsStart = self.gp.cdsEnd = self.gp.txEnd
         if self.mkExt:
             self.gp.assignFrames()
@@ -622,7 +622,7 @@ class GenePredBuilder(object):
     def __addExon(self, coord, prevStart, prevEnd):
         assert(coord.start < coord.end)
         # adjust tx range to contain exon
-        if self.gp.txStart == None:
+        if self.gp.txStart is None:
             self.gp.txStart = coord.start
             self.gp.txEnd = coord.end
             self.gp.strand = coord.strand
@@ -630,11 +630,11 @@ class GenePredBuilder(object):
             self.gp.txStart = min(self.gp.txStart, coord.start)
             self.gp.txEnd = max(self.gp.txEnd, coord.end)
             
-        if (prevStart != None) and (coord.start <= prevEnd):
+        if (prevStart is not None) and (coord.start <= prevEnd):
             # merge adjacent or overlapping exons
             prevEnd = max(prevEnd, coord.end)
         else:
-            if prevStart != None:
+            if prevStart is not None:
                 self.gp.addExon(prevStart, prevEnd)
             prevStart = coord.start
             prevEnd = coord.end
@@ -648,7 +648,7 @@ class GenePredBuilder(object):
         for coord in coords:
             prevStart, prevEnd = self.__addExon(coord, prevStart, prevEnd)
         # last exon
-        if prevStart != None:
+        if prevStart is not None:
             self.gp.addExon(prevStart, prevEnd)
 
 class GeneConverter(object):
@@ -668,20 +668,20 @@ class GeneConverter(object):
         gpb = GenePredBuilder(self.gene.geneSym, trans.getTransId(), (self.gene.rec.name if self.dropLocusVer else self.gene.rec.id), self.mkExt)
 
         # get exons from one of the sources
-        if trans.mrnaFt != None:
-            if trans.cdsFt != None:
+        if trans.mrnaFt is not None:
+            if trans.cdsFt is not None:
                 gpb.addExons(trans.getMergedMRnaCdsCoords())
             else:
                 gpb.addExons(trans.getMRnaCoords())
-        elif trans.miscRnaFt != None:
+        elif trans.miscRnaFt is not None:
             gpb.addExons(trans.getMiscRnaCoords())
-        elif trans.cdsFt != None:
+        elif trans.cdsFt is not None:
             gpb.addExons(trans.getCdsCoords())
-        elif trans.exonFts != None:
+        elif trans.exonFts is not None:
             gpb.addExons(trans.getExonCoords())
-        elif trans.cdsFt != None:
+        elif trans.cdsFt is not None:
             gpb.addExons(trans.getCdsCoords())
-        elif trans.gene != None:
+        elif trans.gene is not None:
             gpb.addExons(trans.gene.getCoords())
         else:
             raise Exception("don't know how to convert: " + str(trans))
@@ -691,7 +691,7 @@ class GeneConverter(object):
                 cds = Coords.fromSeqFeature(self.gene.cdsFts[0])
         else:
             cds = trans.getCdsCoords()
-        if cds != None:
+        if cds is not None:
             gpb.setCds(cds.getRange())
         gpb.finish()
         gpb.gp.write(self.outFh)
@@ -720,7 +720,7 @@ class GbffToGenes(object):
             trans = gene.transTbl[transId]
             if self.opts.verbose >= 2:
                 prLine(sys.stderr, "    trans: ", trans.getTransId(), " ", 
-                       (trans.getMRnaCoords() if trans.mrnaFt != None else trans.getMiscRnaCoords()))
+                       (trans.getMRnaCoords() if trans.mrnaFt is not None else trans.getMiscRnaCoords()))
                 prLine(sys.stderr, "    CDS:   ", trans.getCdsId(), " ", trans.getCdsCoords())
             else:
                 prLine(sys.stderr, "    trans: ", trans.getTransId(), " CDS: ", trans.getCdsId())
@@ -765,9 +765,9 @@ if opts.ignoreShortSequence:
     warnings.filterwarnings("ignore", ".*Expected sequence length.* found.*", UserWarning, "Bio.GenBank")
 
 rnaCdsMap = None
-if opts.rnaq != None:
+if opts.rnaq is not None:
     rnaCdsMap = RnaCdsMap(rnaqFile=opts.rnaq)
-elif opts.mrnaProtMap != None:
+elif opts.mrnaProtMap is not None:
     rnaCdsMap = RnaCdsMap(mrnaProtFile=opts.mrnaProtMap)
 gbffConvert = GbffToGenes(opts, rnaCdsMap)
 gbffConvert.convert(opts.genePredFile)

@@ -90,7 +90,7 @@ class Histogram(object):
         self.binFloorUse = None  # min to actually use for indexing
         self.binCeilUse = None   # max to actually use for indexing
         self.bins = None         # computed by build()
-        if (data != None):
+        if (data is not None):
             self.data.extend(data)
 
     def addItem(self, item):
@@ -117,22 +117,22 @@ class Histogram(object):
         "Calculate binning paramters"
         self.data.compute()
         self.binMinUse = self.binMin
-        if self.binMinUse == None:
+        if self.binMinUse is None:
             self.binMinUse = self.data.min
 
         self.binMaxUse = self.binMax
-        if self.binMaxUse == None:
+        if self.binMaxUse is None:
             self.binMaxUse = self.data.max
 
         self.numBinsUse = self.numBins
         self.binSizeUse = self.binSize
-        if (self.numBinsUse == None) and (self.binSizeUse == None):
+        if (self.numBinsUse is None) and (self.binSizeUse is None):
             # default num bins and compute bin size from it below
             self.numBinsUse = 10
 
-        if self.binMinUse == None:
+        if self.binMinUse is None:
             self.binSizeUse = self.binFloorUse = self.binCeilUse = 0
-        elif self.binSizeUse == None:
+        elif self.binSizeUse is None:
             # compute bin size from num bins
             estBinSize = float(self.binMaxUse-self.binMinUse)/float(self.numBinsUse-1)
             self.binSizeUse = float(self.binMaxUse-self.binMinUse+estBinSize)/float(self.numBinsUse)
@@ -164,13 +164,13 @@ class Histogram(object):
     def __binTupleData(self):
         for item in self.data:
             iBin = self.__getBinIdx(item[0])
-            if iBin != None:
+            if iBin is not None:
                 self.bins[iBin].cnt += item[1]
 
     def __binScalarData(self):
         for item in self.data:
             iBin = self.__getBinIdx(item)
-            if iBin != None:
+            if iBin is not None:
                 self.bins[iBin].cnt += 1
 
     def __computeFreqs(self):
@@ -198,7 +198,7 @@ class Histogram(object):
 
     def dump(self, fh, desc=None):
         self.__calcParams()
-        if desc != None:
+        if desc is not None:
             prLine(fh, desc)
         prLine(fh, "  data:  len: ", len(self.data), "  min: ", self.data.min, "  max: ", self.data.max)
         prLine(fh, "  bins:  num: ", self.numBins, "  size: ", self.binSize, "  min: ", self.binMin, "  max: ", self.binMax)

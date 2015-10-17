@@ -41,7 +41,7 @@ class FileIn(object):
 
     def __str__(self):
         """return input file argument"""
-        if self.prefix == None:
+        if self.prefix is None:
             return self.file.getInPath(self.autoDecompress)
         else:
             return self.prefix + self.file.getInPath(self.autoDecompress)
@@ -70,7 +70,7 @@ class FileOut(object):
 
     def __str__(self):
         """return input file argument"""
-        if self.prefix == None:
+        if self.prefix is None:
             return self.file.getOutPath(self.autoCompress)
         else:
             return self.prefix + self.file.getOutPath(self.autoCompress)
@@ -114,7 +114,7 @@ class File(Production):
         to be opened in the ExRun process, use openOut() instead."""
         if self.installed:
             raise ExRunException("output file already installed: " + self.path)
-        if self.outPath == None:
+        if self.outPath is None:
             fileOps.ensureFileDir(self.path)
             self.outPath = self.exrun.getAtomicPath(self.path)
         return self.outPath
@@ -125,7 +125,7 @@ class File(Production):
         return, otherwise path is returned.  One wants to use FileIn() to
         define a command argument.  This should not be used to get the path to
         a file to be opened in the ExRun process, use openIn() instead. """
-        if (not self.installed) and (self.outPath != None):
+        if (not self.installed) and (self.outPath is not None):
             return self.outPath
         else:
             return self.path
@@ -156,7 +156,7 @@ class File(Production):
         self.done()
         if self.installed:
             raise ExRunException("output file already installed: " + self.path)
-        if self.outPath == None:
+        if self.outPath is None:
             raise ExRunException("getOutPath() never called for: " + self.path)
         if not os.path.exists(self.outPath):
             raise ExRunException("output file as not created: " + self.outPath)
@@ -207,7 +207,7 @@ class Cmd(list):
         """Get an input file. If fspec can be None, File or FileIn, or any
         object that can be converted to a string.  Return the appropriate PIn
         object, None, or a string. Adds decompression process if needed."""
-        if fspec == None:
+        if fspec is None:
             return None
         if isinstance(fspec, File):
             fspec = FileIn(fspec)
@@ -228,7 +228,7 @@ class Cmd(list):
         """Get an output file. If fspec can be None, File or FileOut, or any
         object that can be converted to a string.  Return the appropriate Pout
         object, None, or a string. Adds compression process if needed."""
-        if fspec == None:
+        if fspec is None:
             return None
         if isinstance(fspec, File):
             fspec = FileOut(fspec)
@@ -331,14 +331,14 @@ class CmdRule(Rule):
         # deal with commands before super init, so all requires and produces
         # are there for the name generation
         self.cmds = None
-        if cmds != None:
+        if cmds is not None:
             self.cmds = []
             if isinstance(cmds, Cmd):
                 self.__addCmd(cmds, requires, produces)
             else:
                 for cmd in cmds:
                     self.__addCmd(cmd, requires, produces)
-        if name == None:
+        if name is None:
             name = CmdRule.__mkName(requires, produces)
         Rule.__init__(self, name, requires, produces)
 
@@ -356,7 +356,7 @@ class CmdRule(Rule):
         for fspec in typeOps.mkiter(fspecs):
             if  (isinstance(fspec, FileIn) or isinstance(fspec, FileOut)):
                 fspec = fspec.file  # get File object for reference
-            if (isinstance(fspec, File) and ((exclude == None) or (fspec not in exclude))):
+            if (isinstance(fspec, File) and ((exclude is None) or (fspec not in exclude))):
                 specSet.add(fspec)
 
     def __addCmdArgFiles(self, cmd, requires, produces):
@@ -384,7 +384,7 @@ class CmdRule(Rule):
         "call done method on files, to close pipes"
         for f in files:
             ex = self.__callDone(f)
-            if (ex != None) and (firstEx == None):
+            if (ex is not None) and (firstEx is None):
                 firstEx = ex
         return firstEx
 
@@ -401,12 +401,12 @@ class CmdRule(Rule):
         finally:
             firstEx = self.__closeFiles(self.requires, firstEx)
             firstEx = self.__closeFiles(self.produces, firstEx)
-        if firstEx != None:
+        if firstEx is not None:
             raise firstEx
 
     def runCmds(self):
         "run commands supplied in the constructor"
-        if self.cmds == None:
+        if self.cmds is None:
             raise ExRunException("no commands specified and run() not overridden for CmdRule: " + self.name)
         for cmd in self.cmds:
             self.call(cmd)

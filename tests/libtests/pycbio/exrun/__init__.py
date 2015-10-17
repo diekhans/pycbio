@@ -18,7 +18,7 @@ class ExRunTestCaseBase(TestCaseBase):
         "check states of one time of nodes"
         for n in nodes:
             expect = notOkStates.get(n)
-            if expect == None:
+            if expect is None:
                 expect = defaultState
             if n.state != expect:
                 self.fail("State of " + str(n.__class__) + " " +  n.name

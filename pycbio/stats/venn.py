@@ -12,7 +12,7 @@ class SetDict(dict):
     def __init__(self, subsets=None):
         """sets can be pre-defined to allow for empty sets or shared subsets
         objects"""
-        if subsets != None:
+        if subsets is not None:
             for ss in subsets:
                 self[ss] = set()
 
@@ -34,7 +34,7 @@ class Venn(object):
         # is this a standard venn or inclusive?
         self.isInclusive = isInclusive
         self.subsets = subsets
-        if self.subsets == None:
+        if self.subsets is None:
             self.subsets = Subsets()
 
         # Tables mappings set name to items and items to set names
@@ -81,7 +81,7 @@ class Venn(object):
 
     def __update(self):
         "build venn or inclusive venn, if it doesn't exists"
-        if self.venn == None:
+        if self.venn is None:
             if self.isInclusive:
                 self.__buildInclusive()
             else:
@@ -91,7 +91,7 @@ class Venn(object):
         "get ids for the specified subset"
         self.__update()
         ids = self.venn.get(subset)
-        if ids == None:
+        if ids is None:
             ids = []
         return ids
 

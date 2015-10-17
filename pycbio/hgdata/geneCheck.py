@@ -63,7 +63,7 @@ def strListSplit(commaStr):
 
 def strListJoin(strs):
      "formatter for a list into a comma seperated string"
-     if strs != None:
+     if strs is not None:
           return ",".join(strs)
      else:
           return ""
@@ -126,7 +126,7 @@ class GeneCheckTbl(TsvTable):
         self.idIndex = self.indices.acc
 
     def _sameLoc(self, chk, chrom, start, end):
-        return (chk != None) and (chk.chr == chrom) and (chk.chrStart == start) and (chk.chrEnd == end)
+        return (chk is not None) and (chk.chr == chrom) and (chk.chrStart == start) and (chk.chrEnd == end)
 
     def getByGeneLoc(self, id, chrom, start, end):
         "get check record by id and location, or None if not found"

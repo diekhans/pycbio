@@ -61,7 +61,7 @@ class SymEnumMeta(EnumMeta):
             # map string name to instance, check for external name
             value = cls.__extNameMap__.toIntName(value)
             member = cls._member_map_.get(value)
-            if member == None:
+            if member is None:
                 raise ValueError("'%s' is not a member or alias of %s" % (value, cls.__name__))
             else:
                 return member

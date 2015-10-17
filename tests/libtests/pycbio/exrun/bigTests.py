@@ -32,7 +32,7 @@ class MemRule(Rule):
     def execute(self):
         for p in self.produces:
             time.sleep(0.00001) # allow other threads to run
-            if (p.time != None) and (p.time > 0.0):
+            if (p.time is not None) and (p.time > 0.0):
                 raise Exception("production already done: " + p.name)
             p.time = time.time()
 
@@ -57,7 +57,7 @@ class ExprBuilder(object):
             self.__addRuleDef(rdef)
         # set times leaf productions
         for p in self.graph.productions:
-            if p.producedBy == None:
+            if p.producedBy is None:
                 p.time = time.time()
 
     def __addRuleDef(self, rdef):
@@ -71,7 +71,7 @@ class ExprBuilder(object):
 
     def __addProduces(self, rule, pName):
         prod = self.__obtainProd(pName)
-        if prod.producedBy != None:
+        if prod.producedBy is not None:
             raise Exception("duplicate production def: " + pName)
         rule.linkProduces(prod)
 
@@ -81,7 +81,7 @@ class ExprBuilder(object):
 
     def __obtainProd(self, pName):
         prod = self.graph.productionsByName.get(pName)
-        if prod == None:
+        if prod is None:
             prod = self.er.addProd(MemProd(pName))
         return prod
 

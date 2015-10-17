@@ -118,7 +118,7 @@ class RangeBins(object):
     def add(self, start, end, value):
         bin = Binner.calcBin(start, end)
         entries = self.bins.get(bin)
-        if (entries == None):
+        if (entries is None):
            self.bins[bin] = entries = []
         entries.append(Entry(start, end, value))
 
@@ -128,7 +128,7 @@ class RangeBins(object):
             for bins in Binner.getOverlappingBins(start, end):
                 for j in xrange(bins[0], bins[1]+1):
                     bin = self.bins.get(j)
-                    if (bin != None):
+                    if (bin is not None):
                         for entry in bin:
                             if entry.overlaps(start, end):
                                 yield entry.value
@@ -160,15 +160,15 @@ class RangeFinder(object):
 
     def add(self, seqId, start, end, value, strand=None):
         "add an entry for a sequence and range, and optional strand"
-        if self.haveStrand == None:
-            self.haveStrand = (strand != None)
-        elif self.haveStrand != (strand != None):
+        if self.haveStrand is None:
+            self.haveStrand = (strand is not None)
+        elif self.haveStrand != (strand is not None):
             raise Exception("all RangeFinder entries must either have strand or not have strand")
         if strand not in self.validStrands:
             raise Exception("invalid strand: " + str(strand))
         key = (seqId, strand)
         bins = self.seqBins.get(key)
-        if bins == None:
+        if bins is None:
            self.seqBins[key] = bins = RangeBins(seqId, strand)
         bins.add(start, end, value)
 
@@ -176,14 +176,14 @@ class RangeFinder(object):
         "generator over values overlaping the specified range on seqId, optional strand"
         if strand not in self.validStrands:
             raise Exception("invalid strand: " + str(strand))
-        if self.haveStrand and (strand == None):
+        if self.haveStrand and (strand is None):
             # must try both strands
             bins = self.seqBins.get((seqId, "+"))
-            if bins != None:
+            if bins is not None:
                 for value in bins.overlapping(start, end):
                     yield value
             bins = self.seqBins.get((seqId, "-"))
-            if bins != None:
+            if bins is not None:
                 for value in bins.overlapping(start, end):
                     yield value
         else:
@@ -191,7 +191,7 @@ class RangeFinder(object):
             if not self.haveStrand:
                 strand = None  # no strand to check
             bins = self.seqBins.get((seqId, strand))
-            if bins != None:
+            if bins is not None:
                 for value in bins.overlapping(start, end):
                     yield value
             

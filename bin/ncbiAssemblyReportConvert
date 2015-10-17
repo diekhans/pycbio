@@ -33,12 +33,12 @@ Id types based on columns in file, or special handling for gencode naming.
     parser.add_argument('outFile', type=str, help="output of the specified type")
     args = parser.parse_args()
     if args.outputType == OUTPUT_LIFT:
-        if (args.fromIdType == None) or (args.toIdType == None):
+        if (args.fromIdType is None) or (args.toIdType is None):
             parser.error("output of " + OUTPUT_LIFT + " requires --fromIdType and --toIdType")
     elif args.outputType == OUTPUT_SIZES:
-        if args.fromIdType == None:
+        if args.fromIdType is None:
             parser.error("output of " + OUTPUT_SIZES + " requires --fromIdType")
-        if args.toIdType != None:
+        if args.toIdType is not None:
             parser.error("--toIdType not valid with output of " + OUTPUT_SIZES)
     return args
 
@@ -62,14 +62,14 @@ def createLift(asmReport, fromIdType, toIdType, outFh):
     for seq in asmReport.seqs:
         fromId =  getId(seq, fromIdType)
         toId =  getId(seq, toIdType)
-        if (fromId != None) and (toId != None):
+        if (fromId is not None) and (toId is not None):
             fileOps.prRowv(outFh, 0, fromId, seq.sequenceLength, toId, seq.sequenceLength)
 
 def createSizes(asmReport, fromIdType, outFh):
     "create a size file for the id type"
     for seq in asmReport.seqs:
         fromId = getId(seq, fromIdType)
-        if fromId != None:
+        if fromId is not None:
             fileOps.prRowv(outFh, fromId, seq.sequenceLength)
 
 args = parseArgs()
