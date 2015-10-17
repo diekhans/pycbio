@@ -16,8 +16,8 @@ def ensureDir(dir):
     """Ensure that a directory exists, creating it (and parents) if needed."""
     try: 
         os.makedirs(dir)
-    except OSError, e:
-        if e.errno != errno.EEXIST:
+    except OSError as ex:
+        if ex.errno != errno.EEXIST:
             raise e
 
 def ensureFileDir(fname):

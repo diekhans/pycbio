@@ -48,9 +48,9 @@ class TsvReader(object):
             return None
         try:
             row = self.reader.next()
-        except Exception, e:
+        except Exception as ex:
             self.close()
-            if isinstance(e, StopIteration):
+            if isinstance(ex, StopIteration):
                 return None
             else:
                 raise
@@ -142,7 +142,7 @@ class TsvReader(object):
             else:
                 self.__readHeader(allowEmpty)
             self.__initColTypes(typeMap, defaultColType)
-        except Exception, e:
+        except Exception:
             self.close()
             raise
 
@@ -160,7 +160,7 @@ class TsvReader(object):
     def next(self):
         try:
             row = self.__readRow()
-        except Exception,ex:
+        except Exception as ex:
             raise TsvError("Error reading TSV row", self, ex), None, sys.exc_info()[2]
         if row is None:
             raise StopIteration
@@ -172,7 +172,7 @@ class TsvReader(object):
                            reader=self), None, sys.exc_info()[2]
         try:
             return self.rowClass(self, row)
-        except Exception,ex:
+        except Exception as ex:
             raise TsvError("Error converting TSV row to object", self, ex), None, sys.exc_info()[2]
 
 

@@ -10,7 +10,7 @@ class PycbioException(Exception):
     To chain an exception
        try:
           ...
-       except Exception, ex:
+       except Exception as ex:
           raise PycbioException("more stuff", ex)
     """
     def __init__(self, msg, cause=None):

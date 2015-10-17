@@ -43,7 +43,7 @@ def _setPgid(pid, pgid):
         try:
             os.setpgid(pid, pgid)
             return
-        except OSError, e:
+        except OSError:
             if os.getpgid(pid) == pgid:
                 return
             time.sleep(0.25) # sleep for retry
@@ -416,8 +416,8 @@ class DataWriter(Dev):
         try:
             self.fifo.getWfh().write(self.data)
             self.fifo.wclose()
-        except IOError, e:
-            if e.errno != errno.EPIPE:
+        except IOError as ex:
+            if ex.errno != errno.EPIPE:
                 raise
 
     def getFd(self, pio):
@@ -687,7 +687,7 @@ class Proc(object):
         "start in child process"
         try:
             self.__doChildStart()
-        except Exception, ex:
+        except Exception as ex:
             # FIXME: use isinstance(ex, ProcException) causes error in python
             if type(ex) != ProcException:
                 ex = ProcException(str(self), cause=ex)
@@ -700,7 +700,7 @@ class Proc(object):
             self.dag.pgid = self.pid
         try:
             _setPgid(self.pid, self.dag.pgid)
-        except OSError, e:
+        except OSError:
             pass # igore error if child has already come and gone
         self.statusPipe.postForkParent()
 
@@ -1054,18 +1054,18 @@ class ProcDag(object):
     def __cleanupDev(self, dev):
         try:
             dev.finish()
-        except Exception, e:
+        except Exception as ex:
             # FIXME: make optional, or record, or something
             exi = sys.exc_info()
             stack = "" if exi is None else "".join(traceback.format_list(traceback.extract_tb(exi[2])))+"\n"
-            sys.stderr.write("ProcDag dev cleanup exception: " +str(e)+"\n"+stack)
+            sys.stderr.write("ProcDag dev cleanup exception: " +str(ex)+"\n"+stack)
 
     def __cleanupProc(self, proc):
         try:
             proc._forceFinish()
-        except Exception, e:
+        except Exception as ex:
             # FIXME: make optional
-            sys.stderr.write("ProcDag proc cleanup exception: " +str(e)+"\n")
+            sys.stderr.write("ProcDag proc cleanup exception: " +str(ex)+"\n")
         
     def __cleanup(self):
         """forced cleanup of child processed after failure"""
@@ -1114,8 +1114,8 @@ class ProcDag(object):
         "wait on the next process in group to complete, return False if no more"
         try:
             w = os.waitpid(-self.pgid, 0)
-        except OSError, e:
-            if e.errno == errno.ECHILD:
+        except OSError as ex:
+            if ex.errno == errno.ECHILD:
                 return False
             raise
         p = self.byPid[w[0]]
