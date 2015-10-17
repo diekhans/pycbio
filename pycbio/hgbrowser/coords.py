@@ -31,8 +31,8 @@ class Coords(Immutable):
         "parse chrom, start, end. start/end maybe strings, int or None  "
         try:
             self.chrom = chrom
-            self.start = int(start) if start != None else None
-            self.end = int(end) if end != None else None
+            self.start = int(start) if start is not None else None
+            self.end = int(end) if end is not None else None
         except Exception, e:
             raise CoordsError("invalid coordinates: \"" + str(coordsStr) + "\": " + str(e))
 
@@ -70,7 +70,7 @@ class Coords(Immutable):
         return Coords(self.chrom, st, self.end+amt)
 
     def __cmp__(self, other):
-        if other == None:
+        if other is None:
             return -1
         d = cmp(self.db, other.db)
         if d == 0:

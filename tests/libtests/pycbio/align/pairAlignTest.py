@@ -80,9 +80,9 @@ class PairAlignPsl(TestCaseBase):
         mappedAlns = []
         for destAln in destAlns:
             for srcAln in srcAlns:
-                if srcAln.qSeq.cds == None:
+                if srcAln.qSeq.cds is None:
                     raise Exception("no qCDS: " + srcAln.qSeq.id + " <=> " + srcAln.tSeq.id)
-                if srcAln.tSeq.cds == None:
+                if srcAln.tSeq.cds is None:
                     raise Exception("no tCDS: " + srcAln.qSeq.id + " <=> " + srcAln.tSeq.id)
                 if srcAln.targetOverlap(destAln):
                     ma = destAln.copy()

@@ -22,7 +22,7 @@ class DbReadTests(TestCaseBase):
     hgConf = None  # load on first use
 
     def __connect(self):
-        if self.hgConf == None:
+        if self.hgConf is None:
             self.hgConf = HgConf()
         import MySQLdb
         return MySQLdb.connect(host=self.hgConf["db.host"], user=self.hgConf["db.user"], passwd=self.hgConf["db.password"], db=testDb)

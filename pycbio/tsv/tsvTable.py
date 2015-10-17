@@ -34,9 +34,9 @@ class TsvTable(list):
     def __buildIndices(self, uniqKeyCols, multiKeyCols):
         self.idx = TsvTable.Indices()
         self.indices = self.idx # FIXME: old name, delete 
-        if uniqKeyCols != None:
+        if uniqKeyCols is not None:
             self.__createIndices(uniqKeyCols, dict)
-        if multiKeyCols != None:
+        if multiKeyCols is not None:
             self.__createIndices(multiKeyCols, MultiDict)
 
     def __buildColDictTbl(self):
@@ -57,7 +57,7 @@ class TsvTable(list):
             
     def __indexRow(self, colDictTbl, row):
         for i in xrange(len(row)):
-            if colDictTbl[i] != None:
+            if colDictTbl[i] is not None:
                 self.__indexCol(i, colDictTbl[i], row[i], row)
 
     # FIXME: need add row function, but colDict stuff conflicts, make member
@@ -65,7 +65,7 @@ class TsvTable(list):
         colDictTbl = self.__buildColDictTbl()
         for row in reader:
             self.append(row)
-            if colDictTbl != None:
+            if colDictTbl is not None:
                 self.__indexRow(colDictTbl, row)
 
     def __init__(self, fileName, uniqKeyCols=None, multiKeyCols=None, rowClass=None, typeMap=None,

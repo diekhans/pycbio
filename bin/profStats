@@ -44,7 +44,7 @@ class CmdOpts(object):
 
 
 opts = CmdOpts()
-outFh = sys.stdout if opts.profOut == None else open(opts.profOut, "w")
+outFh = sys.stdout if opts.profOut is None else open(opts.profOut, "w")
 profStats = pstats.Stats(opts.profLog, stream=outFh)
 if opts.stripDirs:
     profStats.strip_dirs()

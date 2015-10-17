@@ -5,7 +5,7 @@ from pycbio.sys import PycbioException
 class TsvError(PycbioException):
     "Error from reading or parsing a TSV file"
     def __init__(self, msg, reader=None, cause=None):
-        if (reader != None):
+        if (reader is not None):
             msg = str(reader.fileName) + ":" + str(reader.lineNum) + ": " + msg
         PycbioException.__init__(self, msg, cause)
 

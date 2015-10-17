@@ -16,7 +16,7 @@ class Color(Immutable):
         self.mkImmutable()
 
     def __eq__(self, o):
-        if o == None:
+        if o is None:
             return False
         else:
             return (self.__r == o.__r) and (self.__g == o.__g) and (self.__b == o.__b)

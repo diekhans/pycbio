@@ -7,7 +7,7 @@ spaceRe = re.compile("[ \t\n\v\f\r]+")
 
 def hasSpaces(s):
     "test if there are any whitespace characters in a string"
-    return spaceRe.search(s) != None
+    return spaceRe.search(s) is not None
 
 def splitAtSpaces(s):
     "split a string at one or more contiguous whitespaces"
@@ -22,11 +22,11 @@ def dup(n, s):
 
 def emptyOrNone(s):
     "is a string empty of None"
-    return (s == None) or (len(s) == 0)
+    return (s is None) or (len(s) == 0)
 
 def emptyForNone(s):
     "return an empty string if s is None, else s"
-    return "" if s == None else s
+    return "" if s is None else s
 
 def noneForEmpty(s):
     "return non if s is a empty string, else s"

@@ -17,7 +17,7 @@ class EnumerationTests(TestCaseBase):
         self.assertTrue(Colors.red < Colors.blue)
         self.assertTrue(Colors.red == Colors.red)
         self.assertTrue(Colors.red != Colors.blue)
-        self.assertTrue(Colors.red != None)
+        self.assertTrue(Colors.red is not None)
         self.assertTrue(None != Colors.red)
 
     def testBasics(self):

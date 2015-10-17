@@ -25,9 +25,9 @@ class MultiDict(dict):
 
     def itervalues(self, key=None):
         """get iter over all values, or values for a key"""
-        if key != None:
+        if key is not None:
             vals = self.get(key)
-            if vals != None:
+            if vals is not None:
                 for val in vals:
                     yield val
         else:

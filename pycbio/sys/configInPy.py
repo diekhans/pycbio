@@ -8,7 +8,7 @@ from pycbio.sys import PycbioException
 def _evalConfigFile(configPyFile, extraEnv=None):
     "evaluate file and return environment"
     configEnv = {"configPyFile": configPyFile}
-    if extraEnv != None:
+    if extraEnv is not None:
         configEnv.update(extraEnv)
     try:
         execfile(configPyFile, configEnv, configEnv)
@@ -32,7 +32,7 @@ def evalConfigFunc(configPyFile, getFuncName="getConfig", getFuncArgs=[], getFun
     """
     configEnv = _evalConfigFile(configPyFile, extraEnv)
     configFunc = configEnv.get(getFuncName)
-    if configFunc == None:
+    if configFunc is None:
         raise PycbioException("configuration script does not define function %s(): %s " % (getFuncName, configPyFile))
     if not isinstance(configFunc, FunctionType):
         raise PycbioException("configuration script defines %s, however it is not a function: %s " % (getFuncName, configPyFile))

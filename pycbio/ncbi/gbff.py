@@ -16,7 +16,7 @@ def featGetQual1(feat, key):
     """get the single valued qualifier, or None if not found.  Returns first
     value and error if qualifier has more than one value"""
     val = feat.qualifiers.get(key)
-    if val == None:
+    if val is None:
         return None
     if len(val) != 1:
         raise GbffExcept("qualifier \"" + key + "\" has multiple values")
@@ -24,7 +24,7 @@ def featGetQual1(feat, key):
         
 def featMustGetQual1(feat, key):
     val = featGetQual1(feat, key)
-    if val == None:
+    if val is None:
         raise GbffExcept("qualifier \""+key+"\" not found in feature: " + str(feat))
     return val
 
@@ -32,14 +32,14 @@ def featGetQual1ByKeys(feat, keys):
     "get single-valued qualifier based on first matching key"
     for key in keys:
         val = featGetQual1(feat, key)
-        if val != None:
+        if val is not None:
             return val
     return None
     
 def featMustGetQual1ByKeys(feat, keys):
     "get a single valued qualifier based on first matching key, or error"
     val = featGetQual1ByKeys(feat, keys)
-    if val == None:
+    if val is None:
         featRaiseNeedAQual(feat, keys)
     return val
 
@@ -51,7 +51,7 @@ def featRaiseNeedAQual(feat, quals):
 def featGetDbXRef(feat, dbXRefPrefix):
     "return a dbXRef starting with dbXRefPrefix (include `:' in key), or None if not found"
     dbXRefs = feat.qualifiers.get("db_xref")
-    if dbXRefs != None:
+    if dbXRefs is not None:
         for dbXRef in dbXRefs:
             if dbXRef.startswith(dbXRefPrefix):
                 return dbXRef[len(dbXRefPrefix):]
@@ -65,7 +65,7 @@ def featMustGetGeneId(feat):
     """get a db_ref qualifier for GeneID or error if not found"""
     # FIXME: at one point returned locus id if gene id not found still needed?
     val = featGetGeneId(feat)
-    if val == None:
+    if val is None:
         raise GbffExcept("db_xref GeneID not found in feature: " + str(feat))
     return val
 
@@ -125,7 +125,7 @@ class Coords(list):
     "List of Coord objects"
 
     def __init__(self, init=None):
-        if init != None:
+        if init is not None:
             list.__init__(self, init)
             assert((len(self)==0) or isinstance(self[0], Coord))
         else:

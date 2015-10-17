@@ -25,7 +25,7 @@ class Trace(object):
         self.callIndent = callIndent
         self.depth = 0
         self.ignoreMods = set()
-        if ignoreMods != None:
+        if ignoreMods is not None:
             for m in ignoreMods:
                 if type(m) == types.ModuleType:
                     m = m.__name__
@@ -33,7 +33,7 @@ class Trace(object):
 
     def enable(self):
         """enable logging on all threads."""
-        assert(self.fh != None)
+        assert(self.fh is not None)
         sys.settrace(self.__callback)
         threading.settrace(self.__callback)
 
@@ -44,7 +44,7 @@ class Trace(object):
 
     def close(self):
         "disable and close log file"
-        if self.fh != None:
+        if self.fh is not None:
             self.disable()
             _activeTraceFds.remove(self.fh.fileno())
             self.fh.close()
@@ -76,7 +76,7 @@ class Trace(object):
         if not self.callIndent:
             return ""
         i = Trace.__indentStrs.get(self.depth)
-        if i == None:
+        if i is None:
             i = Trace.__indentStrs[self.depth] = "".ljust(4*self.depth)
         return i
 

@@ -37,7 +37,7 @@ give accessions or other ids understood by efetch server.
         self._loadIdFiles()
         if len(self.ids) == 0:
             parser.error("no ids specified on command line or with --idFile, specify --help for usage")
-        if self.email == None:
+        if self.email is None:
             self.email = self.__getEmail()
 
     def _loadIdFiles(self):
@@ -65,7 +65,7 @@ def simplifyFastaId(ent):
 
     # split id from rest of entry
     m = faIdSplitRe.match(ent)
-    if m == None:
+    if m is None:
         Exception("not a fasta record: " + ent)
     id = m.group(1)
     # split into parts
@@ -94,7 +94,7 @@ def doFetch(opts, outFh):
         efetch(opts, gbid, outFh)
 
 opts = CmdOpts()
-if opts.out != None:
+if opts.out is not None:
     outFh = open(opts.out, "w")
 else:
     outFh = sys.stdout

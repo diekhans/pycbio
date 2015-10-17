@@ -47,11 +47,11 @@ class Profile(object):
         
     def setup(self, opts):
         """initializing profiling, if requested"""
-        if opts.profile == None:
-            if opts.signal != None:
+        if opts.profile is None:
+            if opts.signal is not None:
                 raise Exception("can't specify --profile-signal without --profile")
         else:
-            if opts.signal != None:
+            if opts.signal is not None:
                 self.__setupSignalHandler(opts.signal)
             self.logFile = opts.profile
             self.profiler = cProfile.Profile()
@@ -63,9 +63,9 @@ class Profile(object):
                 
     def finishUp(self):
         "if profiling is enabled, stop and close log file"
-        if self.profiler != None:
+        if self.profiler is not None:
             self.profiler.disable()
-            if self.signum != None:
+            if self.signum is not None:
                 self.__finishupSignal()
             self.profiler.dump_stats(self.logFile)
                 

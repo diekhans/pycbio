@@ -13,16 +13,16 @@ class HtmlPage(list):
 
     def __init__(self, title=None, headExtra=None, inStyle=None, fragment=False, framesetAttrs=None):
         """Start a new page."""
-        self.frameSet = (framesetAttrs != None)
+        self.frameSet = (framesetAttrs is not None)
         self.title = title
         if not fragment:
             self.append('<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">')
             self.append("<html><head>")
-            if title != None:
+            if title is not None:
                 self.add("<title>" + title + "</title>")
-            if headExtra != None:
+            if headExtra is not None:
                 self.add(headExtra)
-            if inStyle != None:
+            if inStyle is not None:
                 self.append('<style type="text/css">')
                 self.add(inStyle)
                 self.append("</style>")
@@ -62,9 +62,9 @@ class HtmlPage(list):
 
     def span(self, text, id=None, hclasses=None):
         line = "<span"
-        if id != None:
+        if id is not None:
             line += ' id="' + id + '"'
-        if hclasses != None:
+        if hclasses is not None:
             line += ' class="' + hclasses + '"'
         line += ">" + text + "</span>"
         self.append(line)
@@ -78,15 +78,15 @@ class HtmlPage(list):
     def tableStart(self, caption=None, attrs=("border",), style=None, hclass=None):
         "start a table"
         tag = "<table"
-        if attrs != None:
+        if attrs is not None:
             tag += " " + " ".join(attrs)
-        if style != None:
+        if style is not None:
             tag += ' style="' + style + '"'
-        if hclass != None:
+        if hclass is not None:
             tag += ' class="' + hclass + '"'
         tag += ">"
         self.append(tag)
-        if caption != None:
+        if caption is not None:
             self.append("<caption>"+ caption + "</caption>")
 
     def __addTableRow(self, cell, row, hclasses=None):
@@ -103,15 +103,15 @@ class HtmlPage(list):
         i = 0
         for c in row:
             hrow += "<" + cell
-            if (hclasses != None) and (hclasses[i] != None):
+            if (hclasses is not None) and (hclasses[i] is not None):
                 hrow += ' classes=\"' + hclasses[i] + '"'
             if isinstance(c, list) or isinstance(c, tuple):
                 hrow += " " + " ".join(c[1:])
                 c = c[0]
             hrow += ">"
-            if (c != None):
+            if (c is not None):
                 c = str(c)
-            if (c == "") or (c == None):
+            if (c == "") or (c is None):
                 hrow += "&nbsp;"
             else:
                 hrow += c
@@ -130,7 +130,7 @@ class HtmlPage(list):
 
     def table(self, rows, header=None, caption=None):
         self.tableStart(caption=caption)
-        if header != None:
+        if header is not None:
             self.tableHeader(header)
         for row in rows:
             self.tableRow(row)
@@ -138,7 +138,7 @@ class HtmlPage(list):
 
     def tsvTable(self, rows, cols=None, caption=None):
         self.tableStart(caption=caption)
-        if (cols != None):
+        if (cols is not None):
             self.tableHeader(cols)
             for row in rows:
                 self.tableRow(row.getColumns(cols))

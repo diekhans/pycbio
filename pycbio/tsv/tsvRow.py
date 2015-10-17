@@ -59,7 +59,7 @@ class TsvRow(object):
         for i in xrange(len(self._columns_)):
             col = getattr(self, self._columns_[i])
             ct = self._colTypes_[i]
-            if col == None:
+            if col is None:
                 col = ""
             elif type(ct) == tuple:
                 col = ct[1](col)
@@ -72,7 +72,7 @@ class TsvRow(object):
         row = []
         for cn in self._columns_:
             col = getattr(self, cn)
-            if col == None:
+            if col is None:
                 row.append("")
             else:
                 row.append(str(col))

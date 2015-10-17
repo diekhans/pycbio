@@ -32,7 +32,7 @@ class Verb(object):
     def __init__(self, flags=None, fh=sys.stderr):
         self.fh = fh
         self.flags = flags
-        if self.flags == None:
+        if self.flags is None:
             self.flags = set([Verb.error, Verb.trace])
         else:
             self.flags = set(flags)

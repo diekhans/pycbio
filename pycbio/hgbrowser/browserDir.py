@@ -61,24 +61,24 @@ class Entry(object):
         self.cssClass = cssClass
         self.tdStyles = tdStyles
         self.subRowGroups = None
-        if subRows != None:
+        if subRows is not None:
             if isinstance(subRows, SubRows):
                 self.subRowGroups = [subRows]
             else: 
                 self.subRowGroups = subRows
-        assert((self.tdStyles == None) or (len(self.tdStyles) == len(row)))
-        assert((self.tdStyles == None) or (self.subRowGroups == None))  # can't have both yet
+        assert((self.tdStyles is None) or (len(self.tdStyles) == len(row)))
+        assert((self.tdStyles is None) or (self.subRowGroups is None))  # can't have both yet
 
     def __numSubRowGroupCols(self):
         n = 0
-        if self.subRowGroups != None:
+        if self.subRowGroups is not None:
             for subRows in self.subRowGroups:
                 n += subRows.numCols
         return n
 
     def __numSubRowGroupRows(self):
         n = 0
-        if self.subRowGroups != None:
+        if self.subRowGroups is not None:
             for subRows in self.subRowGroups:
                 n = max(n, subRows.getNumRows())
         return n
@@ -109,7 +109,7 @@ class Entry(object):
     def __toHtmlRowWithStyle(self):
         hrow = ["<tr>"]
         for i in xrange(len(self.row)):
-            if self.tdStyles[i] != None:
+            if self.tdStyles[i] is not None:
                 td = '<td style="%s">' % self.tdStyles[i]
             else:
                 td = "<td>"
@@ -125,9 +125,9 @@ class Entry(object):
         return "".join(hrow)
 
     def toHtmlRow(self):
-        if self.subRowGroups != None:
+        if self.subRowGroups is not None:
             return self.__toHtmlRowWithSubRows()
-        if self.tdStyles != None:
+        if self.tdStyles is not None:
             return self.__toHtmlRowWithStyle()
         else:
             return self.__toHtmlRowSimple()
@@ -163,12 +163,12 @@ class BrowserDir(object):
         self.customTrackUrl = customTrackUrl
         self.trackArgs = self.__mkTracksArgs(tracks)
         self.initTrackArgs = self.__mkTracksArgs(initTracks)
-        if customTrackUrl != None:
+        if customTrackUrl is not None:
             self.trackArgs += "&hgt.customText=" + self.customTrackUrl
             
 
     def __mkTracksArgs(self, tracks):
-        if (tracks == None) or (len(tracks) == 0):
+        if (tracks is None) or (len(tracks) == 0):
             return ""
         l = []
         for t in tracks:
@@ -180,7 +180,7 @@ class BrowserDir(object):
 
     def mkUrl(self, coords):
         url = self.browserUrl + "/cgi-bin/hgTracks?db="
-        if coords.db != None:
+        if coords.db is not None:
             url += coords.db
         else:
             url += self.defaultDb
@@ -188,7 +188,7 @@ class BrowserDir(object):
         return url
 
     def mkAnchor(self, coords, text=None, target="browser"):
-        if text == None:
+        if text is None:
             text = str(coords)
         return "<a href=\"" + self.mkUrl(coords) + "\" target="+target+">" + text + "</a>"
         
@@ -201,7 +201,7 @@ class BrowserDir(object):
 
     def add(self, coords, name=None):
         """add a simple row, linking to location. If name is None, the coords are used"""
-        if name == None:
+        if name is None:
             name = str(coords)
         row = [self.mkAnchor(coords, name)]
         self.addRow(row, key=coords)
@@ -264,7 +264,7 @@ class BrowserDir(object):
         """add one set of rows to the page.  In multi-column mode, this
         will be contained in a higher-level table"""
         pg.tableStart()
-        if self.colNames != None:
+        if self.colNames is not None:
             pg.tableHeader(self.colNames)
         numColumns = None
         for ent in pgEntries:
@@ -306,7 +306,7 @@ class BrowserDir(object):
             title += ": " + self.title
         pg = HtmlPage(title=title, inStyle=self.style)
         pg.h3(title)
-        if self.pageDesc != None:
+        if self.pageDesc is not None:
             pg.add(self.pageDesc)
             pg.add("<br><br>")
         pg.add(self.__getPageLinks(pageNum, numPages, False))
@@ -320,7 +320,7 @@ class BrowserDir(object):
         if len(self.entries) == 0:
             # at least write an empty page
             self.__writeDirPage(outDir, [], 1, 0)
-        elif self.pageSize == None:
+        elif self.pageSize is None:
             # single page
             self.__writeDirPage(outDir, self.entries, 1, 1)
         else:

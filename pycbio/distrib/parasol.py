@@ -25,7 +25,7 @@ class BatchStats(object):
 
     def _parseLine(self, words):
         fld = self._simpleParse.get(words[0])
-        if fld != None:
+        if fld is not None:
             setattr(self, fld, int(words[1]))
             return True
         elif words[0] == "para.results":

@@ -56,7 +56,7 @@ class Cluster(list):
     def add(self, row):
         self.append(row)
         row.clusterObj = self
-        if (self.chrom == None):
+        if (self.chrom is None):
             self.chrom = row.chrom
             self.start = row.txStart
             self.end = row.txEnd
@@ -73,7 +73,7 @@ class Cluster(list):
         genes = None
         for g in self:
             if g.table == table:
-                if genes == None:
+                if genes is None:
                     genes = []
                 genes.append(g)
         return genes
@@ -87,7 +87,7 @@ class Cluster(list):
     def write(self, fh, trackSet=None):
         "if trackSet is specified, only output genes in this set"
         for gene in self:
-            if (trackSet == None) or (gene.table in trackSet):
+            if (trackSet is None) or (gene.table in trackSet):
                 gene.write(fh)
 
 class ClusterGenes(list):
@@ -107,12 +107,12 @@ class ClusterGenes(list):
         " determine if the specified cluster exists"
         if clusterId >= len(self):
             return False
-        return self[clusterId] != None
+        return self[clusterId] is not None
 
     def __getCluster(self, clusterId):
         while len(self) <= clusterId:
             self.append(None)
-        if self[clusterId] == None:
+        if self[clusterId] is None:
             self[clusterId] = Cluster(clusterId)
         return self[clusterId]
 
@@ -129,5 +129,5 @@ class ClusterGenes(list):
     def generator(self):
         "generator over non-null clusters"
         for cl in list.__iter__(self):
-            if cl != None:
+            if cl is not None:
                 yield cl

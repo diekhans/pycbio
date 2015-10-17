@@ -9,7 +9,7 @@ def parseFacility(facilityStr):
     "convert case-insensitive facility string to a facility number"
     facilityStrLower = facilityStr.lower()
     facility = SysLogHandler.facility_names.get(facilityStrLower)
-    if facility == None:
+    if facility is None:
         raise ValueError("invalid syslog facility: \"" + facilityStr + "\"")
     return facility
 
@@ -17,7 +17,7 @@ def parseLevel(levelStr):
     "convert a log level string to numeric value"
     levelStrUp = levelStr.upper()
     level = logging._levelNames.get(levelStrUp)
-    if level == None:
+    if level is None:
         raise ValueError("invalid logging level: \"" + levelStr + "\"")
     return level
 
@@ -25,7 +25,7 @@ def setupLogger(handler):
     """add handle to logger and set logger level to the minimum of it's
     current and the handler level"""
     logger = logging.getLogger()
-    if handler.level != None:
+    if handler.level is not None:
         logger.setLevel(min(handler.level, logger.level))
     logger.addHandler(handler)
 
@@ -44,7 +44,7 @@ def setupSyslogLogger(facility, level, programName=None):
     programName specified, each line is prefixed with the name"""
     handler = SysLogHandler(address="/dev/log", facility=facility)
     # add a formatter that includes the program name as the syslog ident
-    if progName != None:
+    if progName is not None:
         handler.setFormatter(logging.Formatter(fmt=progName+" %(message)s"))
     handler.setLevel(level)
     setupLogger(handler)
@@ -52,7 +52,7 @@ def setupSyslogLogger(facility, level, programName=None):
 def setupNullLogger(level=None):
     "configure discard logging"
     handler = logging.NullHandler()
-    if level != None:
+    if level is not None:
         handler.setLevel(level)
     setupLogger(handler)
                                     

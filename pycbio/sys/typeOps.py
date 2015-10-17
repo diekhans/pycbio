@@ -17,7 +17,7 @@ def listInit(size, val):
 def listAppend(lst, item):
     """if lst is None, create a new list with item, otherwise append item.
     Returns list"""
-    if lst == None:
+    if lst is None:
         return [item]
     else:
         lst.append(item)
@@ -26,7 +26,7 @@ def listAppend(lst, item):
 def listExtend(lst, items):
     """if lst is None, create a new list with items, otherwise extend with items.
     Returns list"""
-    if lst == None:
+    if lst is None:
         return list(items)
     else:
         lst.extend(items)
@@ -42,7 +42,7 @@ def mkiter(item):
     if item is not iterable or is a string, create an iterable to return just
     item, if item is none, return an empty iter"""
     # FIXME: don't really need to construct a list
-    if item == None:
+    if item is None:
         return iter(())
     elif isIterable(item):
         return iter(item)
@@ -56,7 +56,7 @@ def mkset(item):
     it it's already a set, just return as-is"""
     if isinstance(item, set):
         return item
-    elif item == None:
+    elif item is None:
         return set()
     elif isIterable(item):
         return set(item)
@@ -65,7 +65,7 @@ def mkset(item):
 
 def noneOrZero(v):
     "test if a value is either None or len of zero"
-    return (v == None) or (len(v) == 0)
+    return (v is None) or (len(v) == 0)
 
 def addUniq(d, k, v):
     "add to a dict, generating an error if the item already exists"
@@ -89,7 +89,7 @@ def sorted(iterable, cmp=None, key=None, reverse=False):
 
 def sortedKeys(d, sortFunc=cmp):
     "return of keys for dict d, sort by sortFunc, if d is None, return an empty list"
-    if d == None:
+    if d is None:
         return []
     else:
         keys = list(d.iterkeys())

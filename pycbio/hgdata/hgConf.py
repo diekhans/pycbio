@@ -8,9 +8,9 @@ class HgConf(dict):
        3) ~/.hg.conf
        user name is expanded"""
     def __init__(self, confFile=None):
-        if confFile == None:
+        if confFile is None:
             confFile = os.getenv("HGDB_CONF")
-        if confFile == None:
+        if confFile is None:
             confFile = "~/.hg.conf"
         confFile = os.path.expanduser(confFile)
         with open(confFile) as fh:
@@ -30,6 +30,6 @@ class HgConf(dict):
     def obtain(confFile=None):
         """factory for parsed hgconf files, caching results"""
         conf = HgConf.__cache.get(confFile)
-        if conf == None:
+        if conf is None:
             conf = HgConf.__cache[confFile] = HgConf(confFile)
         return conf

@@ -8,7 +8,7 @@ def _getPipelineClass():
     """To avoid mutual import issues, we get the Pipeline class dynamically on
     first use"""
     global _pipelineMod
-    if _pipelineMod == None:
+    if _pipelineMod is None:
         _pipelineMod = __import__("pycbio.sys.pipeline", fromlist=["pycbio.sys.pipeline"])
     return _pipelineMod.Pipeline
 
@@ -86,7 +86,7 @@ def opengz(file, mode="r"):
     if (mode != "r"):
         raise Exception("opengz only supports read access: " + file)
     decompCmd = decompressCmd(file)
-    if decompCmd != None:
+    if decompCmd is not None:
         open(file).close()  # ensure it exists
         return _getPipelineClass()([decompCmd, file])
     else:
@@ -253,16 +253,16 @@ __tmpFileCnt = 0
 def tmpFileGet(prefix=None, suffix="tmp", tmpDir=None):
     "obtain a tmp file with a unique name"
     # FIXME should jump through security hoops, have version that returns an open name
-    if tmpDir == None:
+    if tmpDir is None:
         tmpDir = os.getenv("TMPDIR")
-    if tmpDir == None:
+    if tmpDir is None:
         tmpDir = "/scratch/tmp"
         if not os.path.exists(tmpDir):
             tmpDir = "/var/tmp"
     pre = tmpDir
     if not pre.endswith("/"):
         pre += "/"
-    if prefix != None:
+    if prefix is not None:
         pre += prefix + "."
     pre += socket.gethostname() + "." + str(os.getpid())
     global __tmpFileCnt
@@ -294,7 +294,7 @@ _devNullFh = None
 def getDevNull():
     "get a file object open to /dev/null, caching only one instance"
     global _devNullFh
-    if _devNullFh == None:
+    if _devNullFh is None:
         _devNullFh = open("/dev/null", "r+")
     return _devNullFh
 

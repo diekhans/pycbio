@@ -37,14 +37,14 @@ class _RuleTask(object):
     def __preEvalRuleCheck(self):
         "Sanity check before a rule is run"
         for r in self.rule.requires:
-            if r.getLocalTime() == None:
+            if r.getLocalTime() is None:
                 raise ExRunException("require should have been built:" + str(r))
 
     def __postEvalRuleCheck(self):
         "check that a rule build it's productions"
         for p in self.rule.produces:
-            if p.getLocalTime() == None:
-                if (p.producedBy == None):
+            if p.getLocalTime() is None:
+                if (p.producedBy is None):
                     raise ExRunException("No rule to build production: " + str(p))
                 else:
                     raise ExRunException("Production not built: " + str(p))
@@ -188,7 +188,7 @@ class ExRun(object):
             return path
         realPath = os.path.realpath(path)
         fprod = self.files.get(realPath)
-        if fprod == None:
+        if fprod is None:
             if self.running:
                 self.__modGraphErr()
             self.files[realPath] = fprod = File(path, realPath)
@@ -208,9 +208,9 @@ class ExRun(object):
         """get a target production, creating if it doesn't exist, optionally
         adding new requires"""
         n = self.graph.targetsByName.get(name)
-        if n == None:
+        if n is None:
             n = self.addTarget(Target(name))
-        if requires != None:
+        if requires is not None:
             n.linkRequires(requires)
         return n
 
@@ -241,7 +241,7 @@ class ExRun(object):
     def getTarget(self, name):
         "find a target object by name, or an error"
         target = self.graph.targetsByName.get(name)
-        if target == None:
+        if target is None:
             raise ExRunException("no target named: " + name)
         return target
 
@@ -326,7 +326,7 @@ class ExRun(object):
         self.verb.leave()
         
     def dumpGraph(self, msg, fh=None):
-        if fh != None:  # FIXME: kind of hacky
+        if fh is not None:  # FIXME: kind of hacky
             holdFh = self.verb.fh
             self.verb.fh = fh
         self.verb.prall(strOps.dup(70, "="))
@@ -341,7 +341,7 @@ class ExRun(object):
                 self.__dumpProduction(node)
         self.verb.leave()
         self.verb.prall(strOps.dup(70, "^"))
-        if fh != None:
+        if fh is not None:
             self.verb.fh = holdFh
 
 __all__ = (ExRun.__name__)
