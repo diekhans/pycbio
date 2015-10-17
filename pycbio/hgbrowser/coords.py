@@ -24,8 +24,8 @@ class Coords(Immutable):
             self.start, self.end = str.split(rng, "-")
             self.start = int(self.start)
             self.end = int(self.end)
-        except Exception, e:
-            raise CoordsError("invalid coordinates: \"" + str(coordsStr) + "\": " + str(e))
+        except Exception as ex:
+            raise CoordsError("invalid coordinates: \"" + str(coordsStr) + "\": " + str(ex))
 
     def __parseThree__(self, chrom, start, end):
         "parse chrom, start, end. start/end maybe strings, int or None  "
@@ -33,8 +33,8 @@ class Coords(Immutable):
             self.chrom = chrom
             self.start = int(start) if start is not None else None
             self.end = int(end) if end is not None else None
-        except Exception, e:
-            raise CoordsError("invalid coordinates: \"" + str(coordsStr) + "\": " + str(e))
+        except Exception as ex:
+            raise CoordsError("invalid coordinates: \"" + str(coordsStr) + "\": " + str(ex))
 
     def __init__(self, *args, **kwargs):
         """args are either one argument in the form chr:start-end, or

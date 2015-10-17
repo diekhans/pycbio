@@ -42,7 +42,7 @@ def runProcCode(cmd, stdin="/dev/null", stdout=None, stderr=None):
     try:
         pl = pipeline.Procline(cmd, stdin=stdin, stdout=stdout, stderr=stderr)
         pl.wait()
-    except pipeline.ProcException, ex:
+    except pipeline.ProcException as ex:
         if ex.returncode is not None:
             return ex.returncode
         else:

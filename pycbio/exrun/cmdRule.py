@@ -374,7 +374,7 @@ class CmdRule(Rule):
         "call done function, if exception, set firstEx if it is None"
         try:
             fil.done()
-        except Exception, ex:
+        except Exception as ex:
             ex = ExRunException("Exception on file: " + str(fil), cause=ex)
             self.verb.pr(Verb.error, str(ex)+"\n"+ex.format())
             return ex
@@ -394,7 +394,7 @@ class CmdRule(Rule):
         try:
             try:
                 cmd.call(self.verb)
-            except Exception, ex:
+            except Exception as ex:
                 ex = ExRunException("Exception running command: " + str(cmd), cause=ex)
                 self.verb.pr(Verb.error, str(ex)+"\n"+ex.format())
                 firstEx = ex
@@ -421,7 +421,7 @@ class CmdRule(Rule):
         self.verb.enter()
         try:
             self.run()
-        except Exception, ex:
+        except Exception as ex:
             ex = ExRunException("Exception executing rule: " + str(self), cause=ex)
             self.verb.pr(Verb.error, str(ex)+"\n"+ex.format())
             raise
