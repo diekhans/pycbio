@@ -96,5 +96,16 @@ def sortedKeys(d, sortFunc=cmp):
         keys.sort(cmp=sortFunc)
         return keys
 
-__all__ = (isListLike.__name__, listInit.__name__, listAppend.__name__, isIterable.__name__, mkiter.__name__, mkset.__name__, noneOrZero.__name__, addUniq.__name__, dictObtain.__name__, sorted.__name__, sortedKeys.__name__)
+# __str__ function for annon objects
+def _annonStr(self):
+    return ", ".join([str(k)+"="+repr(getattr(self, k)) for k in sorted(dir(self)) if not k.startswith("__")])
+
+def annon(**kwargs):
+    """create an anonymous object with fields that are same as the keyword
+    arguments.
+    """
+    kwargs.update({"__str__": _annonStr})
+    return type('',(),kwargs)()
+    
+__all__ = (isListLike.__name__, listInit.__name__, listAppend.__name__, isIterable.__name__, mkiter.__name__, mkset.__name__, noneOrZero.__name__, addUniq.__name__, dictObtain.__name__, sorted.__name__, sortedKeys.__name__, annon.__name__)
 
