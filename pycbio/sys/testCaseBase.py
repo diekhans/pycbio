@@ -68,11 +68,13 @@ class TestCaseBase(unittest.TestCase):
         fileOps.ensureFileDir(f)
         return f
 
-    def getExpectedFile(self, ext):
-        """Get path to the expected file, using the current test id and append ext"""
-        return self.getTestDir() + "/expected/" + self.getId() + ext;
+    def getExpectedFile(self, ext, basename=None):
+        """Get path to the expected file, using the current test id and append
+        ext. If basename is used, it is inset of the test id, allowing share
+        an expected file between multiple tests."""
+        return self.getTestDir() + "/expected/" + (basename if basename is not None else self.getId()) + ext;
 
-    def _getLines(self, file):
+    def __getLines(self, file):
         fh = open(file)
         lines = fh.readlines()
         fh.close()
@@ -82,14 +84,16 @@ class TestCaseBase(unittest.TestCase):
         if not os.path.exists(path):
             self.fail("file does not exist: " + path)
 
-    def diffExpected(self, ext):
-        """diff expected and output files"""
+    def diffExpected(self, ext, expectedBasename=None):
+        """diff expected and output files.  If expectedBasename is used, it is
+        inset of the test id, allowing share an expected file between multiple
+        tests."""
 
-        expFile = self.getExpectedFile(ext)
-        expLines = self._getLines(expFile)
+        expFile = self.getExpectedFile(ext, expectedBasename)
+        expLines = self.__getLines(expFile)
 
         outFile = self.getOutputFile(ext)
-        outLines = self._getLines(outFile)
+        outLines = self.__getLines(outFile)
 
         diff = difflib.unified_diff(expLines, outLines, expFile, outFile)
         cnt = 0
