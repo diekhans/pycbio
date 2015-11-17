@@ -1,0 +1,12 @@
+sequenceName	genBankAccn	refSeqAccn	ucscName	gencodeName	sequenceRole
+1	CM000663.2	NC_000001.11	chr1	chr1	assembled-molecule
+2	CM000664.2	NC_000002.12	chr2	chr2	assembled-molecule
+3	CM000665.2	NC_000003.12	chr3	chr3	assembled-molecule
+Y	CM000686.2	NC_000024.10	chrY	chrY	assembled-molecule
+HSCHR1_CTG1_UNLOCALIZED	KI270706.1	NT_187361.1	chr1_KI270706v1_random	KI270706.1	unlocalized-scaffold
+HSCHRUN_RANDOM_CTG34	KI270755.1	NT_187510.1	chrUn_KI270755v1	KI270755.1	unplaced-scaffold
+HG986_PATCH	KN196472.1	NW_009646194.1		KN196472.1	fix-patch
+HSCHR5_7_CTG1	KN196477.1	NW_009646199.1		KN196477.1	novel-patch
+HG2128_PATCH	KN196478.1	NW_009646200.1		KN196478.1	fix-patch
+HSCHR19KIR_T7526_BDEL_HAP_CTG3_1	KI270916.1	NT_187670.1	chr19_KI270916v1_alt	KI270916.1	alt-scaffold
+MT	J01415.2	NC_012920.1	chrM	chrM	assembled-molecule

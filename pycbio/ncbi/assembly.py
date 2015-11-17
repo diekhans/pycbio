@@ -29,6 +29,18 @@ class AssemblyReport(object):
             self.sequenceLength = sequenceLength 
             self.ucscStyleName = _noneIfNa(ucscStyleName)
 
+
+        @property
+        def gencodeName(self):
+            """GENCODE uses UCSC name for primary chromosomes and mitochondia and GENBANK accessions
+            for others"""
+            if self.sequenceRole == "assembled-molecule":
+                return self.ucscStyleName
+            else:
+                return self.genBankAccn
+            
+        
+            
         def __str__(self):
             return "\t".join([self.sequenceName, self.sequenceRole, self.assignedMolecule, self.locationType, _naIfNone(self.genBankAccn), self.relationship, _naIfNone(self.refSeqAccn), self.assemblyUnit, str(self.sequenceLength), _naIfNone(self.ucscStyleName)])
             

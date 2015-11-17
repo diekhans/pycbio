@@ -23,7 +23,10 @@ faSimpleFetchTest: mkdirs
 	${ncbiGbFetch} --fasta --simplifyIds --out=output/$@.fa ${testAccver}
 	diff expected/$@.fa output/$@.fa
 
-asmReportCnvTests: asmSeqNameUcscLiftTest asmRefSeqGencodeLiftTest asmSeqNameSizesTest
+asmReportCnvTests: asmSeqNameUcscLiftTest asmRefSeqGencodeLiftTest asmSeqNameSizesTest \
+	asmGencodeNameSizesMainChromsTest asmGencodeNameSizesMainAsmTest \
+	asmIdMapTest asmIdMapMainAsmTest
+
 asmReportTestFile = ../../libtests/pycbio/ncbi/input/GCF_000001405.28.assembly.txt
 
 asmSeqNameUcscLiftTest: mkdirs
@@ -37,6 +40,23 @@ asmRefSeqGencodeLiftTest: mkdirs
 asmSeqNameSizesTest: mkdirs
 	${ncbiAssemblyReportConvert} --fromIdType=sequenceName sizes ${asmReportTestFile} output/$@.sizes
 	diff expected/$@.sizes output/$@.sizes
+
+asmGencodeNameSizesMainChromsTest: mkdirs
+	${ncbiAssemblyReportConvert} --fromIdType=gencode --include=mainChroms sizes ${asmReportTestFile} output/$@.sizes
+	diff expected/$@.sizes output/$@.sizes
+
+asmGencodeNameSizesMainAsmTest: mkdirs
+	${ncbiAssemblyReportConvert} --fromIdType=gencode --include=mainAsm sizes ${asmReportTestFile} output/$@.sizes
+	diff expected/$@.sizes output/$@.sizes
+
+asmIdMapTest:
+	${ncbiAssemblyReportConvert} idmap ${asmReportTestFile} output/$@.idmap
+	diff expected/$@.idmap output/$@.idmap
+
+asmIdMapMainAsmTest:
+	${ncbiAssemblyReportConvert} --include=mainAsm idmap ${asmReportTestFile} output/$@.idmap
+	diff expected/$@.idmap output/$@.idmap
+
 mkdirs:
 	@mkdir -p output
 
