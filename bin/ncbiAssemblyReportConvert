@@ -29,7 +29,7 @@ def parseArgs():
 Convert or extract information from an NCBI assembly report file.
 Id types based on columns in file, or special handling for gencode naming.
 
-File are available from:
+Files are available from:
   ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/All/GCF_000001405.28.assembly.txt
 
 """
@@ -41,13 +41,13 @@ File are available from:
     parser.add_argument('--include', type=str, choices=(INCLUDE_MAIN_CHROMS, INCLUDE_MAIN_ASM),
                         help="only include sequence of this type")
     parser.add_argument('outputType', type=str, choices=(OUTPUT_LIFT, OUTPUT_SIZES, OUTPUT_IDMAP),
-                        help="type of output to create; one of lift or sizes")
+                        help="type of output to create; one of lift, sizes, or idmap")
     parser.add_argument('assemblyReport', type=str,
                         help="NCBI assembly report file")
     parser.add_argument('outFile', type=str,
                         help="output of the specified type")
     args = parser.parse_args()
-    if args.outputType == OUTPUT_LIFT:
+    if (args.outputType == OUTPUT_LIFT) or (args.outputType == OUTPUT_IDMAP):
         if (args.fromIdType is None) or (args.toIdType is None):
             parser.error("output of " + OUTPUT_LIFT + " requires --fromIdType and --toIdType")
     elif args.outputType == OUTPUT_SIZES:
@@ -55,11 +55,6 @@ File are available from:
             parser.error("output of " + OUTPUT_SIZES + " requires --fromIdType")
         if args.toIdType is not None:
             parser.error("--toIdType not valid with output of " + OUTPUT_SIZES)
-    elif args.outputType == OUTPUT_IDMAP:
-        if args.fromIdType is not None:
-            parser.error("--fromIdType not valid with output of " + OUTPUT_IDMAP)
-        if args.toIdType is not None:
-            parser.error("--toIdType not valid with output of " + OUTPUT_IDMAP)
     return args
 
 def emptyIfNone(val):
@@ -95,19 +90,16 @@ def createSizes(asmReport, filterFn, fromIdType, outFh):
         if filterFn(seq):
             createSizeRec(seq, fromIdType, outFh)
 
-def createIdmapRec(seq, outFh):
-    fileOps.prRowv(outFh, seq.sequenceName, emptyIfNone(seq.genBankAccn),
-                   emptyIfNone(seq.refSeqAccn), emptyIfNone(seq.ucscStyleName),
-                   emptyIfNone(seq.gencodeName),
-                   seq.sequenceRole)
+def createIdmapRec(seq, fromIdType, toIdType, outFh):
+    if getId(seq, fromIdType) is not None:
+        fileOps.prRowv(outFh, getId(seq, fromIdType) , getId(seq, toIdType))
 
-def createIdmap(asmReport, filterFn, outFh):
-    "create a TSV of sequence name mappings, including gencode"
-    fileOps.prRowv(outFh, "sequenceName", "genBankAccn", "refSeqAccn", "ucscName", "gencodeName", "sequenceRole")
+def createIdmap(asmReport, filterFn, fromIdType, toIdType, outFh):
+    """create a TSV of sequence name mappings, including gencode"""
+    fileOps.prRowv(outFh, fromIdType, toIdType)
     for seq in asmReport.seqs:
         if filterFn(seq):
-            createIdmapRec(seq, outFh)
-
+            createIdmapRec(seq, fromIdType, toIdType, outFh)
             
 class IncludeFilter(object):
     "filter to select records"
@@ -138,4 +130,4 @@ with open(args.outFile, "w") as outFh:
     elif args.outputType == OUTPUT_SIZES:
         createSizes(asmReport, filterFn, args.fromIdType, outFh)
     elif args.outputType == OUTPUT_IDMAP:
-        createIdmap(asmReport, filterFn, outFh)
+        createIdmap(asmReport, filterFn, args.fromIdType, args.toIdType, outFh)

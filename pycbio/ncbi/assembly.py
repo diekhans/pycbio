@@ -39,8 +39,6 @@ class AssemblyReport(object):
             else:
                 return self.genBankAccn
             
-        
-            
         def __str__(self):
             return "\t".join([self.sequenceName, self.sequenceRole, self.assignedMolecule, self.locationType, _naIfNone(self.genBankAccn), self.relationship, _naIfNone(self.refSeqAccn), self.assemblyUnit, str(self.sequenceLength), _naIfNone(self.ucscStyleName)])
             
