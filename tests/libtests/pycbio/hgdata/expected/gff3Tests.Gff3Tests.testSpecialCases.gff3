@@ -1,0 +1,6 @@
+##gff-version 3
+2L	blastx_masked_aa_SPTR.dmel	match	22229583	22229699	.	-	.	Name=P39770-AE003783.4-aa_SPTR.dmel-blastx_masked;sourcename=aa_SPTR.dmel;programversion=1.0;program=blastx_masked;ID=%3A1577939_blastx_masked_aa_SPTR.dmel;Target=P39770%20596%20629%20%2B
+2L	blastx_masked_aa_SPTR.dmel	match_part	22229583	22229699	48	-	.	target_type=protein;Target=P39770%20596%20629;Parent=%3A1577939_blastx_masked_aa_SPTR.dmel;Name=%3A5411530
+2L	blastx_masked_aa_SPTR.dmel	match	22229583	22229699	.	-	.	Name=Q9VKH2-AE003783.4-aa_SPTR.dmel-blastx_masked;sourcename=aa_SPTR.dmel;programversion=1.0;program=blastx_masked;ID=%3A1577877_blastx_masked_aa_SPTR.dmel;Target=Q9VKH2%20596%20629%20%2B
+2L	blastx_masked_aa_SPTR.dmel	match_part	22229583	22229699	48	-	.	target_type=protein;Target=Q9VKH2%20596%20629;Parent=%3A1577877_blastx_masked_aa_SPTR.dmel;Name=%3A5411425
+chr	RNA	RNA	788298	788656	.	+	.	Note=regulatory%20ncRNA;ID=tmRNA;Name=

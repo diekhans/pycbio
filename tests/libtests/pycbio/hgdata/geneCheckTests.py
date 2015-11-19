@@ -6,7 +6,7 @@ from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.hgdata.geneCheck import GeneCheckTbl
 
 class ReadTests(TestCaseBase):
-    def _checkDmp(self, checks):
+    def __checkDmp(self, checks):
         dmp = self.getOutputFile(".dmp")
         dmpfh = open(dmp, "w")
         for g in checks:
@@ -17,22 +17,22 @@ class ReadTests(TestCaseBase):
     def testRdbUniq(self):
         checks = GeneCheckTbl(self.getInputFile("geneCheck.rdb"), idIsUniq=True, isRdb=True)
         self.assertEqual(len(checks), 53)
-        self._checkDmp(checks)
+        self.__checkDmp(checks)
         
     def testTsvUniq(self):
         checks = GeneCheckTbl(self.getInputFile("geneCheck.tsv"), idIsUniq=True, isRdb=False)
         self.assertEqual(len(checks), 53)
-        self._checkDmp(checks)
+        self.__checkDmp(checks)
         
     def testRdbMulti(self):
         checks = GeneCheckTbl(self.getInputFile("geneCheckMulti.rdb"), isRdb=True)
         self.assertEqual(len(checks), 8)
-        self._checkDmp(checks)
+        self.__checkDmp(checks)
         
     def testTsvMulti(self):
         checks = GeneCheckTbl(self.getInputFile("geneCheckMulti.tsv"), isRdb=False)
         self.assertEqual(len(checks), 8)
-        self._checkDmp(checks)
+        self.__checkDmp(checks)
         
 def suite():
     ts = unittest.TestSuite()
