@@ -9,3 +9,7 @@
 
 # empty attr value
 chr	RNA	RNA	788298	788656	.	+	.	ID=tmRNA;Name=;Note=regulatory ncRNA
+
+# weird attribute names
+NC_012920.1	RefSeq	region	1	16569	.	+	.	ID=id1588083;Dbxref=taxon:9606;Is_circular=true;Name=MT;country=United Kingdom: Great Britain;gbkey=Src;genome=mitochondrion;isolation-source=caucasian;mol_type=genomic DNA;note=this is the rCRS;tissue-type=placenta
+NC_000001.11	RefSeq	match	629540	630786	1247	+	.	ID=aln8;Target=NG_032768.1 1 1247 +;assembly_bases_aln=1247;assembly_bases_seq=1247;bit_score=2321.79;blast_aligner=1;blast_score=1247;common_component=1;e_value=0;filter_score=0;for_remapping=2;gap_count=0;hsp_percent_coverage=100;lxr_locAcc_currStat_120=1;matchable_bases=1247;matched_bases=1247;num_ident=1247;num_mismatch=0;pct_coverage=100;pct_coverage_hiqual=100;pct_identity_gap=100;pct_identity_gapopen_only=100;pct_identity_ungap=100;rank=1;score=1247;weighted_identity=1

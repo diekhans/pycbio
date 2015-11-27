@@ -1,6 +1,8 @@
 ##gff-version 3
-2L	blastx_masked_aa_SPTR.dmel	match	22229583	22229699	.	-	.	Name=P39770-AE003783.4-aa_SPTR.dmel-blastx_masked;sourcename=aa_SPTR.dmel;programversion=1.0;program=blastx_masked;ID=%3A1577939_blastx_masked_aa_SPTR.dmel;Target=P39770%20596%20629%20%2B
-2L	blastx_masked_aa_SPTR.dmel	match_part	22229583	22229699	48	-	.	target_type=protein;Target=P39770%20596%20629;Parent=%3A1577939_blastx_masked_aa_SPTR.dmel;Name=%3A5411530
 2L	blastx_masked_aa_SPTR.dmel	match	22229583	22229699	.	-	.	Name=Q9VKH2-AE003783.4-aa_SPTR.dmel-blastx_masked;sourcename=aa_SPTR.dmel;programversion=1.0;program=blastx_masked;ID=%3A1577877_blastx_masked_aa_SPTR.dmel;Target=Q9VKH2%20596%20629%20%2B
 2L	blastx_masked_aa_SPTR.dmel	match_part	22229583	22229699	48	-	.	target_type=protein;Target=Q9VKH2%20596%20629;Parent=%3A1577877_blastx_masked_aa_SPTR.dmel;Name=%3A5411425
+2L	blastx_masked_aa_SPTR.dmel	match	22229583	22229699	.	-	.	Name=P39770-AE003783.4-aa_SPTR.dmel-blastx_masked;sourcename=aa_SPTR.dmel;programversion=1.0;program=blastx_masked;ID=%3A1577939_blastx_masked_aa_SPTR.dmel;Target=P39770%20596%20629%20%2B
+2L	blastx_masked_aa_SPTR.dmel	match_part	22229583	22229699	48	-	.	target_type=protein;Target=P39770%20596%20629;Parent=%3A1577939_blastx_masked_aa_SPTR.dmel;Name=%3A5411530
+NC_000001.11	RefSeq	match	629540	630786	1247	+	.	gap_count=0;pct_identity_gapopen_only=100;blast_score=1247;rank=1;filter_score=0;bit_score=2321.79;weighted_identity=1;assembly_bases_aln=1247;pct_coverage=100;matchable_bases=1247;score=1247;pct_identity_gap=100;e_value=0;assembly_bases_seq=1247;hsp_percent_coverage=100;Target=NG_032768.1%201%201247%20%2B;pct_identity_ungap=100;for_remapping=2;ID=aln8;num_mismatch=0;lxr_locAcc_currStat_120=1;matched_bases=1247;pct_coverage_hiqual=100;common_component=1;num_ident=1247;blast_aligner=1
+NC_012920.1	RefSeq	region	1	16569	.	+	.	mol_type=genomic%20DNA;Name=MT;country=United%20Kingdom%3A%20Great%20Britain;note=this%20is%20the%20rCRS;gbkey=Src;genome=mitochondrion;isolation-source=caucasian;tissue-type=placenta;Is_circular=true;Dbxref=taxon%3A9606;ID=id1588083
 chr	RNA	RNA	788298	788656	.	+	.	Note=regulatory%20ncRNA;ID=tmRNA;Name=

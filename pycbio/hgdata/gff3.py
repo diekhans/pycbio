@@ -164,7 +164,8 @@ class Gff3Parser(object):
         else:
             return open(self.fileName)
 
-    SPLIT_ATTR_RE = re.compile("^([a-zA-Z_]+)=(.*)$")  # parses `attr=val'
+    # parses `attr=val'; GFF3 spec is not very specific on the allowed values.
+    SPLIT_ATTR_RE = re.compile("^([a-zA-Z][^=]*)=(.*)$")
 
     def __parseAttrVal(self, attrStr):
         """returns tuple of tuple of (attr, value), multiple are returned to
@@ -175,13 +176,9 @@ class Gff3Parser(object):
                                 "'", self.fileName, self.lineNumber)
         name = m.group(1)
         val = m.group(2)
-        # FIXME: parsing of value is ambiguous. Unquote then comma separate,
-        # or coma separate and then unquote? Target attribute space separation
-        # is also ambiguous as it has space separated arguments.  It appears
-        # like special per attribute name handling is actually required.  Also
-        # when to split by comma seems attribute-specific, which is
-        # problematic for user-defined. attributes.
-        return (name, urllib.unquote(val).split(','))
+        # Split by comma separate then unquote.  Commas in values must be
+        # url encoded.
+        return (name, [urllib.unquote(v) for v in val.split(',')])
 
     SPLIT_ATTR_COL_RE = re.compile("; *")
 
