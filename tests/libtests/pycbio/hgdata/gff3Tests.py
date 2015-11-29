@@ -19,23 +19,26 @@ class Gff3Tests(TestCaseBase):
         with open(outGff3, "w") as fh:
             gff3.write(fh)
             
-    def __check(self, gff3):
-        outGff3 = self.getOutputFile(".gff3")
-        self.__write(gff3, outGff3)
-        self.assertEquals(self.__countRows(gff3.fileName), self.__countRows(outGff3))
+    def __parseTest(self, gff3RelIn):
+        # parse and write
+        gff3 = Gff3Parser(self.getInputFile(gff3RelIn)).parse()
+        gff3Out1 = self.getOutputFile(".gff3")
+        self.__write(gff3, gff3Out1)
+        self.assertEquals(self.__countRows(gff3.fileName), self.__countRows(gff3Out1))
         self.diffExpected(".gff3")
+        gff3 = Gff3Parser(self.getInputFile(gff3RelIn)).parse()
+        gff3Out2 = self.getOutputFile(".2.gff3")
+        self.__write(gff3, gff3Out2)
+        self.diffFiles(self.getExpectedFile(".gff3"), self.getOutputFile(".2.gff3"))
             
     def testSacCer(self):
-        gff3 = Gff3Parser(self.getInputFile("sacCerTest.gff3")).parse()
-        self.__check(gff3)
+        self.__parseTest("sacCerTest.gff3")
 
     def testSpecialCases(self):
-        gff3 = Gff3Parser(self.getInputFile("specialCasesTest.gff3")).parse()
-        self.__check(gff3)
+        self.__parseTest("specialCasesTest.gff3")
         
     def testDiscontinuous(self):
-        gff3 = Gff3Parser(self.getInputFile("discontinuous.gff3")).parse()
-        self.__check(gff3)
+        self.__parseTest("discontinuous.gff3")
         
         
 def suite():

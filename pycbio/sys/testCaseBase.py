@@ -84,15 +84,10 @@ class TestCaseBase(unittest.TestCase):
         if not os.path.exists(path):
             self.fail("file does not exist: " + path)
 
-    def diffExpected(self, ext, expectedBasename=None):
-        """diff expected and output files.  If expectedBasename is used, it is
-        inset of the test id, allowing share an expected file between multiple
-        tests."""
+    def diffFiles(self, expFile, outFile):
+        """diff expected and output files."""
 
-        expFile = self.getExpectedFile(ext, expectedBasename)
         expLines = self.__getLines(expFile)
-
-        outFile = self.getOutputFile(ext)
         outLines = self.__getLines(outFile)
 
         diff = difflib.unified_diff(expLines, outLines, expFile, outFile)
@@ -101,6 +96,10 @@ class TestCaseBase(unittest.TestCase):
             print l,
             cnt += 1
         self.assertTrue(cnt == 0)
+
+    def diffExpected(self, ext):
+        """diff expected and output files, with names computed from test id."""
+        self.diffFiles(self.getExpectedFile(ext), self.getOutputFile(ext))
 
     def createOutputFile(self, ext, contents=""):
         """create an output file, filling it with contents."""

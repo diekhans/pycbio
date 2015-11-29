@@ -24,6 +24,27 @@ class GFF3Exception(PycbioException):
             message = str(fileName) + ":" + str(lineNumber) + ": " + message
         super(GFF3Exception, self).__init__(message, cause)
 
+# characters forcing encode for columns
+_encodeColReStr = "\t|\n|\r|%|[\x00-\x1F]|\x7f"
+_encodeColRe = re.compile(_encodeColReStr)
+
+# characters forcing encode for attribute names or values
+_encodeAttrReStr = _encodeColReStr + "|;|=|&|,"
+_encodeAttrRe = re.compile(_encodeAttrReStr)
+
+def _encodeCol(v):
+    "encode a column if is has special characters"
+    if _encodeColRe.search(v):
+        return urllib.quote(v)
+    else:
+        return v
+
+def _encodeAttr(v):
+    "encode a attribute name or value if is has special characters"
+    if _encodeAttrRe.search(v):
+        return urllib.quote(v)
+    else:
+        return v
 
 class Feature(object):
     """One feature notation from a GFF3, missing attribute, as code by `.' in
@@ -58,8 +79,8 @@ class Feature(object):
 
     def __attributeStr(self, name):
         "return name=value for a single attributed"
-        return name + "=" + ",".join(urllib.quote(v)
-                                     for v in self.attributes[name])
+        return _encodeAttr(name) + "=" \
+            + ",".join([_encodeAttr(v) for v in self.attributes[name]])
 
     def __attributeStrs(self):
         """return name=value, semi-colon-separated string for attributes, including
@@ -132,7 +153,7 @@ class Gff3Set(object):
 
     @staticmethod
     def __recSortKey(r):
-        return (r.seqname, r.start, -r.end)
+        return (r.seqname, r.start, -r.end, r.type)
 
     def __writeRec(self, fh, rec):
         fh.write(str(rec) + "\n")
@@ -174,7 +195,7 @@ class Gff3Parser(object):
         if m is None:
             raise GFF3Exception("can't parse attribute/value: '" + attrStr +
                                 "'", self.fileName, self.lineNumber)
-        name = m.group(1)
+        name = urllib.unquote(m.group(1))
         val = m.group(2)
         # Split by comma separate then unquote.  Commas in values must be
         # url encoded.
@@ -201,8 +222,8 @@ class Gff3Parser(object):
             raise GFF3Exception("Wrong number of columns, expected " +
                                 str(self.GFF3_NUM_COLS) + ", got " +
                                 str(len(row)), self.fileName, self.lineNumber)
-        feature = Feature(row[0], row[1], row[2], int(row[3]), int(row[4]),
-                          row[5], row[6], row[7], self.__parseAttrs(row[8]),
+        feature = Feature(urllib.unquote(row[0]), urllib.unquote(row[1]), urllib.unquote(row[2]),
+                          int(row[3]), int(row[4]), row[5], row[6], row[7], self.__parseAttrs(row[8]),
                           gff3Set, self.lineNumber)
         gff3Set.add(feature)
 
