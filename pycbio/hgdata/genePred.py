@@ -4,6 +4,9 @@ from pycbio.sys import fileOps, dbOps
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin
 from pycbio.sys.symEnum import SymEnum, SymEnumValue
 
+# FIXME range and exon overlap functions are inconsistent.  exon should inherit from range.
+# FIXME needs many more tests
+
 class CdsStat(SymEnum):
     none = SymEnumValue("none", "none")                # No CDS (non-coding)
     unknown = SymEnumValue("unknown", "unk")           # CDS is unknown (coding, but not known)
@@ -39,14 +42,6 @@ class Range(object):
 
     def overlaps(self, other):
         return (self.start < other.end) and (self.end > other.start)
-
-    def overlappingAmt(self, start, end):
-        maxStart = max(self.start, start)
-        minEnd = min(self.end, end)
-        return (minEnd - maxStart) if maxStart < minEnd else 0
-
-    def overlapping(self, start, end):
-        return (self.start < end) and (self.end > start)
 
     def __str__(self):
         return str(self.start) + ".." + str(self.end)
@@ -141,6 +136,11 @@ class Exon(object):
     def overlaps(self, start, end):
         "does exon overlap range?"
         return (self.start < end) and (self.end > start)
+
+    def overlapAmt(self, start, end):
+        maxStart = max(self.start, start)
+        minEnd = min(self.end, end)
+        return (minEnd - maxStart) if maxStart < minEnd else 0
 
     def size(self):
         "size of the exon"
@@ -483,6 +483,24 @@ class GenePred(object):
             if exon.contains(pos):
                 return exon
         return None
+
+    def __overlapCnt(self, gp2):
+        "count exon bases that overlap"
+        if (self.chrom != gp2.chrom) or (self.strand != gp2.strand):
+            return 0
+        cnt = 0
+        for e1 in self.exons:
+            for e2 in gp2.exons:
+                cnt += e1.overlapAmt(e2.start, e2.end)
+        return cnt
+
+    def similarity(self, gp2):
+        "compute similariy of two genes"
+        overCnt = self.__overlapCnt(gp2)
+        if overCnt == 0:
+            return 0.0
+        else:
+            return float(2*overCnt)/float(self.getLenExons()+gp2.getLenExons())
 
     def __cdsOverlapCnt(self, gp2):
         "count cds bases that overlap"
