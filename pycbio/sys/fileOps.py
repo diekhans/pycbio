@@ -68,6 +68,13 @@ def compressCmd(path, default="cat"):
     else:
         return default
 
+def compressBaseName(path):
+    """if a file is compressed, return the path without the compressed extension"""
+    if isCompressed(path):
+        return os.path.splitext(path)[0]
+    else:
+        return path
+
 def decompressCmd(path, default="cat"):
     """"return the command to decompress the file to stdout, or default if not compressed, which defaults
     to the `cat' command, so that it just gets written through"""
