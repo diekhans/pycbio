@@ -1,7 +1,7 @@
 """
 Operations associated with logging
 """
-import logging, sys
+import logging, os, sys
 from logging.handlers import SysLogHandler
 
 
@@ -39,10 +39,19 @@ def setupStderrLogger(level):
     "configure logging to stderr"
     setupStreamLogger(level, sys.stderr)
 
-def setupSyslogLogger(facility, level, prog=None):
+def getSyslogAddress():
+    """find the address to use for syslog"""
+    for dev in ("/dev/log", "/var/run/syslog"):
+        if os.path.exists(dev):
+            return dev
+    return ("localhost", 514)
+    
+def setupSyslogLogger(facility, level, prog=None, address=None):
     """configure logging to syslog based on the specified facility.  If
     prog specified, each line is prefixed with the name"""
-    handler = SysLogHandler(address="/dev/log", facility=facility)
+    if address is None:
+        address = getSyslogAddress()
+    handler = SysLogHandler(address=address, facility=facility)
     # add a formatter that includes the program name as the syslog ident
     if prog is not None:
         handler.setFormatter(logging.Formatter(fmt=prog+" %(message)s"))
