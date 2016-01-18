@@ -1,7 +1,7 @@
 """
 Operations associated with logging
 """
-import logging
+import logging, os, sys
 from logging.handlers import SysLogHandler
 
 
@@ -39,13 +39,22 @@ def setupStderrLogger(level):
     "configure logging to stderr"
     setupStreamLogger(level, sys.stderr)
 
-def setupSyslogLogger(facility, level, programName=None):
+def getSyslogAddress():
+    """find the address to use for syslog"""
+    for dev in ("/dev/log", "/var/run/syslog"):
+        if os.path.exists(dev):
+            return dev
+    return ("localhost", 514)
+    
+def setupSyslogLogger(facility, level, prog=None, address=None):
     """configure logging to syslog based on the specified facility.  If
-    programName specified, each line is prefixed with the name"""
-    handler = SysLogHandler(address="/dev/log", facility=facility)
+    prog specified, each line is prefixed with the name"""
+    if address is None:
+        address = getSyslogAddress()
+    handler = SysLogHandler(address=address, facility=facility)
     # add a formatter that includes the program name as the syslog ident
-    if progName is not None:
-        handler.setFormatter(logging.Formatter(fmt=progName+" %(message)s"))
+    if prog is not None:
+        handler.setFormatter(logging.Formatter(fmt=prog+" %(message)s"))
     handler.setLevel(level)
     setupLogger(handler)
     
@@ -56,3 +65,26 @@ def setupNullLogger(level=None):
         handler.setLevel(level)
     setupLogger(handler)
                                     
+def addCmdOptions(parser):
+    """
+    Add command line options related to logging
+    """
+    parser.add_argument("--syslogFacility", type=parseFacility,
+                        help="Set syslog facility to case-insensitive symbolic value, if not specified, logging is not done to stderr, "
+                        " one of {}".format(
+                            ", ".join(SysLogHandler.facility_names.iterkeys())))
+    parser.add_argument("--logLevel", default="warn", type=parseLevel,
+                        help="Set level to case-insensitive symbolic value, one of {}".format(
+                            ", ".join([n for n in logging._levelNames.itervalues() if isinstance(n, str)])))
+
+def setupFromCmd(opts, prog=None):
+    """configure logging based on command options.  If prog is specified, then
+    the user it to set syslog program name.  This can be obtained from parser.prog.
+
+    N.B: logging must be initialized after daemonization
+    """
+    if opts.syslogFacility is not None:
+        setupSyslogLogger(opts.syslogFacility, opts.logLevel, prog=prog)
+    else:
+        setupStderrLogger(opts.logLevel)
+        

@@ -1,9 +1,10 @@
 # Copyright 2006-2014 Mark Diekhans
 import unittest, sys, cPickle
 if __name__ == '__main__':
-    sys.path.append("../../..")
+    sys.path.append("../../../..")
 from pycbio.sys import loggingOps
 from pycbio.sys.testCaseBase import TestCaseBase
+import argparse
 
 class LoggingOpsTests(TestCaseBase):
     def testFacilityLower(self):
@@ -26,6 +27,21 @@ class LoggingOpsTests(TestCaseBase):
         with self.assertRaisesRegexp(ValueError, '^invalid logging level: "Fred"$'):
             loggingOps.parseLevel("Fred")
 
+    def __mkParser(self):
+        parser = argparse.ArgumentParser(description="test")
+        loggingOps.addCmdOptions(parser)
+        return parser
+
+    def testParseArgsFacility(self):
+        opts = self.__mkParser().parse_args(["--syslogFacility=local0"])
+        self.assertEqual(opts.syslogFacility, loggingOps.parseFacility("local0"))
+        self.assertEqual(opts.logLevel, loggingOps.parseLevel("warn"))
+        
+    def testParseArgsFacilityLevel(self):
+        opts = self.__mkParser().parse_args(["--syslogFacility=local1", "--logLevel=info"])
+        self.assertEqual(opts.syslogFacility, loggingOps.parseFacility("local1"))
+        self.assertEqual(opts.logLevel, loggingOps.parseLevel("info"))
+        
 
 def suite():
     ts = unittest.TestSuite()

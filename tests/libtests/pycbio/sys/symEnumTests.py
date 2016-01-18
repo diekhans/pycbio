@@ -120,6 +120,17 @@ class SymEnumTests(TestCaseBase):
     def testGeneFeaturePickle0(self):
         self.__testGeneFeaturePickleProtocol(0)
 
+    def testBasicsFn(self):
+        FnColor = SymEnum("FnColor", ("red","green", "blue"))
+        self.assertEqual(FnColor.red.name, "red")
+        self.assertEqual(FnColor.green.name, "green")
+        self.assertEqual(FnColor.blue.name, "blue")
+        self.assertTrue(FnColor.red < FnColor.blue)
+        self.assertTrue(FnColor.red == FnColor.red)
+        self.assertTrue(FnColor.red != FnColor.blue)
+        self.assertTrue(FnColor.red is not None)
+        self.assertTrue(None != FnColor.red)
+
 def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(SymEnumTests))
