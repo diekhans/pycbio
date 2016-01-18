@@ -261,7 +261,7 @@ class ProcDagTests(TestCaseBase):
         pd.create(("tee", POut(io)), stdin=inf, stdout="/dev/null")
         pd.create(("cat", PIn(io)), stdin="/dev/null", stdout=outf)
         pd.wait()
-        self.diffExpected(".out")
+        self.diffFiles(inf, outf)
         # formatting fails here: (FIXME: improve??), FIXME: doesn't always produce same result,
         # so we check multiple posibilities
         self.commonChecks(nopen, pd,

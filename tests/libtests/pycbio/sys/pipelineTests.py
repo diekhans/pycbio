@@ -42,6 +42,7 @@ class PipelineTests(TestCaseBase):
         fh.close()
     
     def testWrite(self):
+        inf = self.getInputFile("simple1.txt")
         outf = self.getOutputFile(".out")
         outfGz = self.getOutputFile(".out.gz")
 
@@ -50,7 +51,7 @@ class PipelineTests(TestCaseBase):
         pl.wait()
 
         procOps.runProc(("zcat", outfGz), stdout=outf)
-        self.diffExpected(".out")
+        self.diffFiles(inf, outf)
 
     def BROKEN_testWriteFile(self):
         outf = self.getOutputFile(".out")
@@ -84,6 +85,7 @@ class PipelineTests(TestCaseBase):
         for line in pl:
             fh.write(line)
         fh.close()
+        return outf
     
     def testRead(self):
         inf = self.getInputFile("simple1.txt")
@@ -91,10 +93,10 @@ class PipelineTests(TestCaseBase):
         procOps.runProc(("gzip", "-c", inf), stdout=infGz)
 
         pl = Pipeline(("gzip", "-dc"), "r", otherEnd=infGz)
-        self.cpPlToFile(pl, ".out")
+        outf = self.cpPlToFile(pl, ".out")
         pl.wait()
 
-        self.diffExpected(".out")
+        self.diffFiles(inf, outf)
 
     def testReadMult(self):
         inf = self.getInputFile("simple1.txt")
@@ -121,7 +123,7 @@ class PipelineTests(TestCaseBase):
         procOps.runProc(["cat"],  stdin=pl.pipePath, stdout=cpOut)
         pl.wait()
 
-        self.diffExpected(".out")
+        self.diffFiles(inf, cpOut)
 
     def XXtestPassWrite(self):
         "using FIFO to pass pipe to another process for writing"
@@ -154,22 +156,4 @@ def suite():
     return ts
 
 if __name__ == '__main__':
-    #unittest.main()
-    # FIXME: tmp
-    s = suite()
-    alltests = unittest.TestSuite(suite())
-    runner = unittest.TextTestRunner(sys.stdout, verbosity=2)
-    # FIXME:
-    #doTrace = True
-    doTrace = False
-    if doTrace:
-        from pycbio.sys.Trace import Trace
-        ignoreMods = ("os", sys, "posixpath", unittest, "UserDict",
-                      "threading", "stat", "traceback", "linecache",
-                      "pycbio.sys.TestCaseBase")
-        tr = Trace("debug.log", ignoreMods=ignoreMods,
-                   inclThread=False, inclPid=True)
-        tr.enable()
-    result = runner.run(alltests)
-    if not result.wasSuccessful():
-        sys.exit(1)
+    unittest.main()
