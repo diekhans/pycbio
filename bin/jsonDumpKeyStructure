@@ -15,8 +15,12 @@ def parseArgs():
     desc = """program to poke a JSON file and print out the
     unique key structure.."""
     parser = argparse.ArgumentParser(description=desc)
-    parser.add_argument('inJson')
-    parser.add_argument('outfile')
+    parser.add_argument('--printKeyPaths', action="store_true", default=False,
+                        help="print each key structure as a list rather than a JSON file")
+    parser.add_argument('inJson',
+                        help="analyze this JSON file")
+    parser.add_argument('outfile',
+                        help="write results to this file; format depends on options")
     opts = parser.parse_args()
     return opts
 
@@ -82,7 +86,9 @@ def jsonAnalyze(opts):
     data = loadFromJson(opts.inJson)
     collect = dict()
     keys = getKeys(data)
-    #printKeys(opts.outfile, keys)
-    saveToJson(opts.outfile, keysToStruct(keys))
+    if opts.printKeyPaths:
+        printKeys(opts.outfile, keys)
+    else:
+        saveToJson(opts.outfile, keysToStruct(keys))
 
 jsonAnalyze(parseArgs())

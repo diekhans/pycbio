@@ -1,7 +1,8 @@
 # Copyright 2006-2012 Mark Diekhans
 """Miscellaneous file operations"""
 
-import os, errno, sys, stat, fcntl, socket
+import os, errno, sys, stat, fcntl, socket, tempfile
+import pycbio.sys.procOps
 
 _pipelineMod = None
 def _getPipelineClass():
@@ -14,6 +15,7 @@ def _getPipelineClass():
 
 def ensureDir(dir):
     """Ensure that a directory exists, creating it (and parents) if needed."""
+    # catching exception rather than checking for existence prevents race condition 
     try: 
         os.makedirs(dir)
     except OSError as ex:
@@ -60,7 +62,7 @@ def compressCmd(path, default="cat"):
     """return the command to compress the path, or default if not compressed, which defaults
     to the `cat' command, so that it just gets written through"""
     if path.endswith(".Z"):
-        raise Exception("writing compress .Z files not supported")
+        raise PycbioException("writing compress .Z files not supported")
     elif path.endswith(".gz"):
         return "gzip"
     elif path.endswith(".bz2"):
@@ -85,19 +87,20 @@ def decompressCmd(path, default="cat"):
     else:
         return default
 
-# FIXME: should this use python gzip/bzip2 classes??
-def opengz(file, mode="r"):
+def opengz(fileName, mode="r"):
     """open a file, if it ends in an extension indicating compression, open
-    with a decompression pipe.  Only reading is currently supported"""
-    # FIXME: implement write
-    if (mode != "r"):
-        raise Exception("opengz only supports read access: " + file)
-    decompCmd = decompressCmd(file)
-    if decompCmd is not None:
-        open(file).close()  # ensure it exists
-        return _getPipelineClass()([decompCmd, file])
+    with a compression or decompression pipe."""
+    if isCompressed(fileName):
+        if mode == "r":
+            cmd = decompressCmd(fileName)
+            return _getPipelineClass()([cmd, fileName], mode="r")
+        elif mode == "w":
+            cmd = compressCmd(fileName)
+            return _getPipelineClass()([cmd], mode="w", otherEnd=fileName)
+        else:
+            raise PycbioException("mode {} not support with compression for {}".format(mode, fileName))
     else:
-        return open(file, mode)
+        return open(fileName, mode)
 
 # FIXME: make these consistent and remove redundant code.  Maybe use
 # keyword for flush
@@ -259,25 +262,9 @@ def iterRows(fspec):
 __tmpFileCnt = 0
 def tmpFileGet(prefix=None, suffix="tmp", tmpDir=None):
     "obtain a tmp file with a unique name"
-    # FIXME should jump through security hoops, have version that returns an open name
-    if tmpDir is None:
-        tmpDir = os.getenv("TMPDIR")
-    if tmpDir is None:
-        tmpDir = "/scratch/tmp"
-        if not os.path.exists(tmpDir):
-            tmpDir = "/var/tmp"
-    pre = tmpDir
-    if not pre.endswith("/"):
-        pre += "/"
-    if prefix is not None:
-        pre += prefix + "."
-    pre += socket.gethostname() + "." + str(os.getpid())
-    global __tmpFileCnt
-    while True:
-        path = pre + "." + str(__tmpFileCnt) + "." + suffix
-        __tmpFileCnt += 1
-        if not os.path.exists(path):
-            return path
+    fh = tempfile.NamedTemporaryFile(prefix=prefix, suffix=suffix, dir=tmpDir, delete=False)
+    fh.close()
+    return fh.name
 
 def atomicTmpFile(finalPath):
     "return a tmp file to use with atomicInstall.  This will be in the same directory as finalPath"
