@@ -259,9 +259,23 @@ def iterRows(fspec):
         if isinstance(fspec, str):
             fh.close()
 
-__tmpFileCnt = 0
+def findTmpDir(tmpDir=None):
+    """find the temporary directory to use, if tmpDir is not None, it is use"""
+    if tmpDir is not None:
+        return tmpDir
+    tmpDir = os.getenv("TMPDIR")
+    if tmpDir is not None:
+        return tmpDir
+    # UCSC special checks
+    for tmpDir in ("/data/tmp", "/scratch/tmp", "/var/tmp", "/tmp"):
+        if os.path.exists(tmpDir):
+            return tmpDir
+    raise Exception("can't find a tmp directory")
+
+            
 def tmpFileGet(prefix=None, suffix="tmp", tmpDir=None):
-    "obtain a tmp file with a unique name"
+    """Obtain a tmp file with a unique name. Use tempfile.mkdtemp for
+    directories"""
     fh = tempfile.NamedTemporaryFile(prefix=prefix, suffix=suffix, dir=tmpDir, delete=False)
     fh.close()
     return fh.name
