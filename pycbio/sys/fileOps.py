@@ -274,11 +274,15 @@ def findTmpDir(tmpDir=None):
 
             
 def tmpFileGet(prefix=None, suffix="tmp", tmpDir=None):
-    """Obtain a tmp file with a unique name. Use tempfile.mkdtemp for
-    directories"""
-    fh = tempfile.NamedTemporaryFile(prefix=prefix, suffix=suffix, dir=tmpDir, delete=False)
+    """Obtain a tmp file with a unique name in a secure way"""
+    fh = tempfile.NamedTemporaryFile(prefix=prefix, suffix=suffix,
+                                     dir=findTmpDir(tmpDir), delete=False)
     fh.close()
     return fh.name
+
+def tmpDirGet(prefix=None, suffix="tmp", tmpDir=None):
+    """Obtain a tmp directory with a unique name"""
+    return tempfile.mkdtemp(prefix=prefix, suffix=suffix, dir=findTmpDir(tmpDir))
 
 def atomicTmpFile(finalPath):
     "return a tmp file to use with atomicInstall.  This will be in the same directory as finalPath"
