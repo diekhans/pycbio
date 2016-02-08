@@ -1,6 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 
 # FIXME: need to other dict methods.
+# FIXME: defaultdict seems to fill the same niche.
 
 
 class MultiDict(dict):
