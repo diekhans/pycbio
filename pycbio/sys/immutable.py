@@ -11,6 +11,8 @@ Base class used to define immutable objects
 # FIXME: some other ideas:
 # http://code.activestate.com/recipes/576527-freeze-make-any-object-immutable/
 # http://code.activestate.com/recipes/577207-immutable-objectsubclass/
+# http://stackoverflow.com/questions/4828080/how-to-make-an-immutable-object-in-python
+#  builds on namedtuple
 
 class Immutable(object):
     """Base class to make an object instance immutable.  Call 
