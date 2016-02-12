@@ -1,62 +1,37 @@
 # Copyright 2006-2012 Mark Diekhans
 """Miscellaneous file operations"""
 
-# TODO: make temp file methods consistent
-
-import os, errno, sys, stat, fcntl, socket, random, tempfile, shutil, string
+import os, errno, sys, stat, fcntl, socket, random, shutil, string
 
 
 class TemporaryFilePath(object):
     """
-    Generates a path pointing to a temporary file. Replaces TemporaryFile in tempfile, which annoyingly wants to
-    return a open handle. This is not useful to me.
+    Generates a path pointing to a temporary file. Context manager wrapper for tmpFileGet.
     """
-    def __init__(self, prefix='tmp', base_dir=None):
-        if base_dir is None:
-            self.base_dir = tempfile._get_default_tempdir()  # let tempfile do the work
-        else:
-            self.base_dir = base_dir
-            ensureDir(base_dir)
-        self.name = ''.join([prefix, get_random_string()])
-        self.path = os.path.join(self.base_dir, self.name)
+    def __init__(self, prefix=None, suffix="tmp", tmpDir=None):
+        self.path = tmpFileGet(prefix=prefix, suffix=suffix, tmpDir=tmpDir)
 
     def __enter__(self):
         return self.path
 
     def __exit__(self, type, value, traceback):
-        os.remove(self.path)
+        rmFiles(self.path)
 
 
 class TemporaryDirectoryPath(object):
     """
-    Generates a path pointing to a temporary directory.
+    Generates a path pointing to a temporary directory. Context manager wrapper for tmpFileGet,
+    except creates a directory out of the path.
     """
-    def __init__(self, prefix='tmp', base_dir=None):
-        if base_dir is None:
-            self.path = tempfile._get_default_tempdir()  # let tempfile do the work
-        else:
-            self.path = os.path.join(base_dir, get_random_string())
+    def __init__(self, prefix=None, suffix="tmp", tmpDir=None):
+        self.path = tmpFileGet(prefix=prefix, suffix=suffix, tmpDir=tmpDir)
         ensureDir(self.path)
 
     def __enter__(self):
         return self.path
 
     def __exit__(self, type, value, traceback):
-        shutil.rmtree(self.path)
-
-
-def get_random_string(n=10, chars=string.ascii_uppercase + string.digits):
-    """
-    Get n random characters from the set chars.
-    """
-    return ''.join(random.SystemRandom().choice(chars) for _ in range(n))
-
-
-def get_tmp_ext():
-    """
-    Get a temporary file extension to be used on shared filesystems.
-    """
-    return '.'.join(map(str, [socket.gethostname(), os.getppid(), 'tmp']))
+        shutil.rmTree(self.path)
 
 
 _pipelineMod = None
@@ -70,7 +45,7 @@ def _getPipelineClass():
 
 def ensureDir(dir):
     """Ensure that a directory exists, creating it (and parents) if needed."""
-    try: 
+    try:
         os.makedirs(dir)
     except OSError as ex:
         if ex.errno != errno.EEXIST:
@@ -98,15 +73,8 @@ def rmFiles(files):
                 os.unlink(f)
 
 def rmTree(root):
-    "remove a file hierarchy, root can be a file or a directory"
-    if os.path.isdir(root):
-        for dir, subdirs, files in os.walk(root, topdown=False):
-            for f in files:
-                os.unlink(dir + "/" + f)
-            os.rmdir(dir)
-    else:
-        if os.path.lexists(root):
-            os.unlink(root)
+    "In case anyone has any legacy uses"
+    shutil.rmTree(root)
 
 def isCompressed(path):
     "determine if a file appears to be compressed by extension"
@@ -139,14 +107,13 @@ def opengz(file, mode="r"):
     """open a file, if it ends in an extension indicating compression, open
     with a decompression pipe.  Only reading is currently supported"""
     # FIXME: implement write
-    if (mode != "r"):
-        raise Exception("opengz only supports read access: " + file)
-    decompCmd = decompressCmd(file)
-    if decompCmd is not None:
-        open(file).close()  # ensure it exists
-        return _getPipelineClass()([decompCmd, file])
+    f = open(filename, 'rb')
+    if f.read(2) == '\x1f\x8b':
+        f.seek(0)
+        return gzip.GzipFile(fileobj=f)
     else:
-        return open(file, mode)
+        f.close()
+        return open(filename, 'r')
 
 # FIXME: make these consistent and remove redundant code.  Maybe use
 # keyword for flush
@@ -338,7 +305,7 @@ def atomicTmpFile(finalPath):
 def atomicInstall(tmpPath, finalPath):
     "atomic install of tmpPath as finalPath"
     os.rename(tmpPath, finalPath)
-    
+
 def uncompressedBase(path):
     "return the file path, removing a compression extension if it exists"
     if path.endswith(".gz") or path.endswith(".bz2") or path.endswith(".Z"):
@@ -354,3 +321,11 @@ def getDevNull():
         _devNullFh = open("/dev/null", "r+")
     return _devNullFh
 
+def tokenizeStream(stream):
+    """
+    Iterator through a tab delimited file, returning lines as list of tokens, ignoring comments
+    """
+    for line in stream:
+        if line != '' and not line.startswith("#"):
+            tokens = line.rstrip().split("\t")
+            yield tokens
