@@ -58,88 +58,8 @@ def removeDir(dirpath):
     if os.path.exists(dirpath):
         shutil.rmtree(dirpath)
     if glob(os.path.join(os.path.dirname(dirpath), '*')) == []:
-        # if this is the last tempDir to be destroyed, destroy the parenself.t.
+        # if this is the last tempDir to be destroyed, destroy the parent
         removeTempDirParent()
-
-
-def which(program):
-    """
-    which() acts like the unix utility which, but is portable between os.
-    If the program does not exist in the PATH then 'None' is returned.
-    """
-    def is_exe(fpath):
-        return os.path.exists(fpath) and os.access(fpath, os.X_OK)
-
-    fpath, fname = os.path.split(program)
-    if fpath != '':
-        if is_exe(program):
-            return program
-    else:
-        for path in os.environ['PATH'].split(os.pathsep):
-            exe_file = os.path.join(path, program)
-            if is_exe(exe_file):
-                return exe_file
-    return None
-
-
-def runCommands(cmds, localTempDir, inPipes=None, outPipes=None, errPipes=None):
-    """
-    Run commands from CMDS list
-    """
-    if inPipes is None:
-        inPipes = [None] * len(cmds)
-    if outPipes is None:
-        outPipes = [None] * len(cmds)
-    if errPipes is None:
-        errPipes = [None] * len(cmds)
-    for i, c in enumerate(cmds, 0):
-        if inPipes[i] is None:
-            sin = None
-        else:
-            sin = subprocess.PIPE
-        if outPipes[i] is None:
-            sout = None
-        else:
-            sout = subprocess.PIPE
-        if errPipes[i] is None:
-            serr = None
-        else:
-            serr = subprocess.PIPE
-        p = subprocess.Popen(c, cwd=localTempDir, stdin=sin,
-                stdout=sout, stderr=serr)
-        if inPipes[i] is None:
-            sin = None
-        else:
-            if not os.path.exists(inPipes[i]):
-                raise IOError('Unable to locate inPipe file: %s for command %s'
-                                            % (inPipes[i], ' '.join(c)))
-            sin = open(inPipes[i], 'r').read()
-        if outPipes[i] is None:
-            pout, perr = p.communicate(sin)
-            handleReturnCode(p.returncode, cmds[i])
-        else:
-            with open(outPipes[i], 'w') as f:
-                f.write(p.communicate(sin)[0])
-            handleReturnCode(p.returncode, cmds[i])
-
-
-def handleReturnCode(retcode, cmd):
-    """
-    handle the return codes from runCommands
-    """
-    if not isinstance(retcode, int):
-        raise TypeError('handleReturnCode takes an integer for '
-                'retcode, not a %s.' % retcode.__class__)
-    if not isinstance(cmd, list):
-        raise TypeError('handleReturnCode takes a list for '
-                'cmd, not a %s.' % cmd.__class__)
-    if retcode:
-        if retcode < 0:
-            raise RuntimeError('Experienced an error while trying to execute: '
-                    '%s SIGNAL:%d' %(' '.join(cmd), -retcode))
-        else:
-            raise RuntimeError('Experienced an error while trying to execute: '
-                    '%s retcode:%d' %(' '.join(cmd), retcode))
 
 
 def createSequenceFile(sequences, tmpDir, filename='seq.fa'):
@@ -153,68 +73,6 @@ def createSequenceFile(sequences, tmpDir, filename='seq.fa'):
     subprocess.call("pyfasta flatten {}".format(seqfile), shell=True)
     return seqfile
 
-
-def createAlignmentFile(alignments, tmpDir):
-    """
-    given a list of alignments, return path to a temp file.
-    """
-    alnfile = os.path.join(tmpDir, 'aln.psl')
-    with open(alnfile, 'w') as f:
-        for a in alignments:
-            if isinstance(a, str):
-                f.write('%s\n' % a)
-            elif isinstance(a, PslRow):
-                f.write('%s\n' % a.psl_string())
-    return alnfile
-
-
-def createBedFile(bedLines, name, tmpDir):
-    """
-    given a list of string bed lines, return path to a temp file.
-    """
-    bedFile = os.path.join(tmpDir, name)
-    with open(bedFile, 'w') as f:
-        for b in bedLines:
-                f.write('%s\n' % b)
-    return bedFile
-
-
-def bedLine(chrom, chromStart, chromEnd, name, score=None, strand=None,
-                    thickStart=None, thickEnd=None, itemRgb=None, blockCount=None,
-                    blockSizes=None, blockStarts=None):
-    """ Give the fields, create a bed line string
-    """
-
-    s = ('%s %d %d %s'
-             % (chrom, chromStart, chromEnd, name))
-    if score is not None:
-        for v in [strand, thickStart, thickEnd, itemRgb,
-                blockCount, blockSizes, blockStarts]:
-            assert(v is not None)
-        s += (' %d %s %d %d %s %d %s %s'
-                % (score, strand, thickStart, thickEnd, itemRgb, blockCount,
-                blockSizes, blockStarts))
-    return s
-
-
-def simplePsl(strand, qSize, qStart, qEnd, tSize, tStart, tEnd,
-                            blockSizes, qStarts, tStarts, qName='query', tName='target'):
-    """ Given a few of the fields, create a PslRow object.
-    """
-    line = ('%d %d %d %d %d %d %d %d %s %s %d %d %d %s %d %d %d %d %s %s %s'
-            % (1, 0, 0, 0, 0, 0, 0, 0, strand, qName, qSize, qStart, qEnd,
-            tName, tSize, tStart, tEnd, len(blockSizes),
-            ','.join([str(b) for b in blockSizes]),
-            ','.join([str(b) for b in qStarts]),
-            ','.join([str(b) for b in tStarts]),
-            ))
-    return PslRow(line)
-
-
-##############################################################################
-##############################################################################
-#
-# The classes below test functions and classes in the sequence_lib library
 #
 ##############################################################################
 ##############################################################################

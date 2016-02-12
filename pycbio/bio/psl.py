@@ -7,8 +7,8 @@ Modified by Ian Fiddes
 
 from collections import Counter
 import re
-from sys.mathOps import format_ratio
-from sys.fileOps import tokenizeStream as tokenize_stream
+from pycbio.sys.mathOps import format_ratio
+from pycbio.sys.fileOps import tokenizeStream as tokenize_stream
 
 __author__ = "Ian Fiddes"
 

@@ -12,7 +12,7 @@ import os
 import math
 import re
 from itertools import izip
-from sys.fileOps import tokenizeStream as tokenize_stream
+from pycbio.sys.fileOps import tokenizeStream as tokenize_stream
 from pyfasta import Fasta, NpyFastaRecord
 
 __author__ = "Ian Fiddes"

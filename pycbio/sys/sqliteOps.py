@@ -1,12 +1,13 @@
 """
 Convenience library for interfacing with a sqlite database.
+TODO: use modern SQLAlchemy instead of this.
 """
 import os
 import sys
 from collections import defaultdict
 import sqlite3 as sql
 import pandas as pd
-from sys.dataOps import flatten_defaultdict_list
+from pycbio.sys.dataOps import flatten_defaultdict_list
 
 __author__ = "Ian Fiddes"
 
