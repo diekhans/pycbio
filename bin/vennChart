@@ -3,7 +3,7 @@
 
 import sys, os, re
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
-sys.path.insert(0, myBinDir + "/../lib")
+sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 
 from optparse import OptionParser
 from pycbio.tsv import TsvReader,TsvError
@@ -48,6 +48,5 @@ class VennCircle(object):
 
 
 
-pyplot.p
 
 

@@ -3,11 +3,11 @@
 
 import sys, os
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
-sys.path.append(myBinDir + "/../lib")
+sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 from optparse import OptionParser
-from pycbio.hgdata.GenePred import GenePred
-from pycbio.tsv.TabFile import TabFile
-from pycbio.sys import fileOps, MultiDict
+from pycbio.hgdata.genePred import GenePred
+from pycbio.tsv.tabFile import TabFile
+from pycbio.sys import fileOps, multiDict
 
 # methods of flattening
 methodUniqExons = "uniqExons"
@@ -45,7 +45,7 @@ class GeneSet(object):
             __buildByGeneMap(allTrans)
 
     def __buildByGeneMap(self, allTrans):
-        self.byGene = MultiDict()
+        self.byGene = multiDict.MultiDict()
         for t in allTrans:
             self.byGene.add(name2, t)
 

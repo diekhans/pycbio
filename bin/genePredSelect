@@ -3,10 +3,10 @@
 
 import sys, os
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
-sys.path.append(myBinDir + "/../lib")
+sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 from optparse import OptionParser
-from pycbio.hgdata.GenePred import GenePred
-from pycbio.tsv.TabFile import TabFile
+from pycbio.hgdata.genePred import GenePred
+from pycbio.tsv.tabFile import TabFile
 from pycbio.sys import fileOps
 
 class CmdOpts(object):

@@ -8,13 +8,13 @@ PKGS =  pycbio.align pycbio.distrib pycbio.exrun pycbio.hgbrowser pycbio.hgdata 
 all: libcomp
 
 libcomp:
-	PYTHONPATH=. ${PYTHON} -m compileall -l $(subst .,/,${PKGS})
+	PYTHONPATH=lib ${PYTHON} -m compileall -l $(subst .,/,${PKGS})
 
 test:
 	(cd tests && ${MAKE} test)
 
 pylint:
-	PYTHONPATH=src/lib pylint --rcfile=pylint.cfg $(subst .,/,${PKGS})
+	PYTHONPATH=lib pylint --rcfile=pylint.cfg $(subst .,/,${PKGS})
 
 clean:
 	(cd tests && ${MAKE} clean)

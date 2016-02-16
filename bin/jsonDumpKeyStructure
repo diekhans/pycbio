@@ -5,9 +5,8 @@ import sys
 import os
 import argparse
 from shutil import copyfile
-sys.path.insert(0, os.path.expanduser("~markd/compbio/code/pycbio"))
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
-sys.path.append(myBinDir + "/../lib")
+sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 from pycbio.sys import fileOps
 import json
 

@@ -3,8 +3,7 @@
 
 import sys, os, traceback, re
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
-sys.path.insert(0, myBinDir + "/../lib")
-
+sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 import warnings
 from Bio import SeqIO
 from optparse import OptionParser

@@ -3,9 +3,9 @@
 
 import sys, os
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
-sys.path.append(myBinDir + "/../lib")
+sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 from optparse import OptionParser
-from pycbio.hgdata.ClusterGenes import ClusterGenes
+from pycbio.hgdata.clusterGenes import ClusterGenes
 from pycbio.sys.fileOps import prRow, prRowv, readFileLines
 
 class CmdOpts(object):

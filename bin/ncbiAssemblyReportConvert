@@ -3,7 +3,7 @@
 
 import sys, os
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
-sys.path.append(myBinDir + "/..")
+sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 import argparse
 from pycbio.ncbi.assembly import AssemblyReport
 from pycbio.sys import fileOps
