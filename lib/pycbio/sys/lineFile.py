@@ -2,6 +2,8 @@
 """module that provides a wrapper around a file object that is a bit
 easier to use for readline lines from ascii files"""
 
+# FIXME: not done
+
 
 class LineFile(file):
     """file object oriented towards reading line-oriented files
@@ -13,5 +15,3 @@ class LineFile(file):
     def __init__(self, fileName):
         file.__init__(self, fileName)
         self.lineNum = -1
-
-##FIXME: not done

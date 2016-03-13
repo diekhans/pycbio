@@ -6,6 +6,7 @@
 
 from pycbio.sys.MultiDict import MultiDict
 
+
 class dmpFileParser(object):
     "parse one of the dmp files"
     def __init__(self, dmpFile):
@@ -21,9 +22,10 @@ class dmpFileParser(object):
             else:
                 # this leaves a last word with 'scientific name\t|\n'
                 row = line.split("\t|\t")
-                last = len(row)-1
+                last = len(row) - 1
                 row[last] = row[last].strip("\t|\n")
                 yield row
+
 
 class Node(object):
     "A record from nodes.dmp table"
@@ -41,6 +43,7 @@ class Node(object):
         self.genBankHiddenFlag = bool(row[10])
         self.hiddenSubtreeRootFlag = bool(row[11])
         self.comments = row[12]
+
 
 class Name(object):
     "A record from the names.dmp table"
@@ -72,9 +75,8 @@ class Tree(object):
             node = Node(row)
             self.nodes[node.taxId] = node
             self.parentNodeRefs.add(node.parentTaxId, node)
-        
+
     def __init__(self, dmpDir):
         "parse *.dmp files in dmpDir"
         self._loadNames(dmpDir)
         self._loadNodes(dmpDir)
-

@@ -1,7 +1,9 @@
 # Copyright 2006-2012 Mark Diekhans
-import sys, traceback
+import sys
+import traceback
 
 # FIXME: wanted to move this up a level, see doc/notes.txt as why this didn't work
+
 
 class PycbioException(Exception):
     """Base class for exceptions.  This implements exception chaining and
@@ -29,7 +31,7 @@ class PycbioException(Exception):
         "recursively construct message for chained exception"
         desc = self.msg
         if self.cause is not None:
-            desc += ",\n    caused by: " + self.cause.__class__.__name__ + ": " +  str(self.cause)
+            desc += ",\n    caused by: {}: {}".format(self.cause.__class__.__name__, self.cause)
         return desc
 
     def format(self):
@@ -45,7 +47,7 @@ class PycbioException(Exception):
         if isinstance(ex, PycbioException):
             desc += ex.msg + "\n"
         else:
-            desc +=  str(ex) +  "\n"
+            desc += str(ex) + "\n"
         st = getattr(ex, "stackTrace", None)
         if st is not None:
             if doneStacks is None:

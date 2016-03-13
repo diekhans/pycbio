@@ -1,10 +1,11 @@
 # Copyright 2006-2012 Mark Diekhans
 
-## FIXME: needed for faster readings, but needs cleaned up, need reader/writer
-## classes
+# FIXME: needed for faster readings, but needs cleaned up, need reader/writer
+# classes
 # FIXME add try and error msg with file/line num, move to row reader class; see fileOps.iterRows
 from pycbio.sys import fileOps
 import csv
+
 
 class TabFile(list):
     """Class for reading tab-separated files.  Can be used standalone
@@ -22,13 +23,14 @@ class TabFile(list):
     @staticmethod
     def write(fh, row):
         """print a row (list or tuple) to a tab file."""
-        cnt = 0;
+        cnt = 0
         for col in row:
             if cnt > 0:
                 fh.write("\t")
             fh.write(str(col))
             cnt += 1
         fh.write("\n")
+
 
 class TabFileReader(object):
     def __init__(self, tabFile, rowClass=None, hashAreComments=False, skipBlankLines=False):

@@ -2,11 +2,12 @@
 import colorsys
 from collections import namedtuple
 
+
 class Color(namedtuple("Color", ("red", "green", "blue",
                                  "hue", "saturation", "value"))):
     """Immutable color object with conversion to/from different formats.
     Don't construct  directly use, factory (from*) static methods.
-    
+
     :ivar red: red channel, in the range 0.0..1.0
     :ivar green: green channel, in the range 0.0..1.0
     :ivar blue: blue channel, in the range 0.0..1.0
@@ -21,11 +22,11 @@ class Color(namedtuple("Color", ("red", "green", "blue",
     @staticmethod
     def __int8ToReal(v):
         assert(0 <= v <= 255)
-        return v/255.0
+        return v / 255.0
 
     @staticmethod
     def __realToInt8(v):
-        iv = int(round(v*255))
+        iv = int(round(v * 255))
         return iv
 
     @property
@@ -143,9 +144,8 @@ class Color(namedtuple("Color", ("red", "green", "blue",
         assert((0.0 <= v <= 1.0))
         r, g, b = colorsys.hsv_to_rgb(h, s, v)
         return Color(r, g, b, h, s, v)
- 
+
     @staticmethod
     def fromHsvi(h, s, v):
         "construct from integer HSV values"
-        return Color.fromHsv(h/306.0, s/100.0, v/100.0)
-
+        return Color.fromHsv(h / 306.0, s / 100.0, v / 100.0)

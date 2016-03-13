@@ -2,6 +2,7 @@
 
 # FIXME: defaultdict seems to fill the same niche.
 
+
 class AutoDict(dict):
     """Dictionary where entries can be automatically allocated.  Normally used
     for dict of dicts or other contained"""
@@ -14,7 +15,7 @@ class AutoDict(dict):
     def obtain(self, key):
         """get the value for key, creating an empty entry if key is not in
         object"""
-        if self.has_key(key):
+        if key in self:
             val = dict.__getitem__(self, key)
         else:
             val = self[key] = self.entryFactory()
@@ -26,4 +27,3 @@ class AutoDict(dict):
 
     def __getitem__(self, key):
         return self.obtain(key)
-

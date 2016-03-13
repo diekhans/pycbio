@@ -1,5 +1,9 @@
 # Copyright 2006-2012 Mark Diekhans
-import os, errno, socket, fcntl
+import os
+import errno
+import socket
+import fcntl
+
 
 class _Fifo(object):
     """Object wrapper for pipes, abstracting traditional and named pipes,
@@ -13,7 +17,8 @@ class _Fifo(object):
         "finalizer"
         try:
             self.close()
-        except: pass
+        except:
+            pass
 
     def getRfh(self):
         "get read file object"
@@ -53,6 +58,7 @@ class _Fifo(object):
         if self.rfd is not None:
             self.rclose()
 
+
 class _LinuxFifo(_Fifo):
     """Linus FIFO, that used /proc to get file paths"""
 
@@ -72,6 +78,7 @@ class _LinuxFifo(_Fifo):
             raise IOError(errno.ENOENT, os.strerror(errno.ENOENT), p)
         return p
 
+
 class _NamedFifo(_Fifo):
     """FIFO, that used named pipes to get file paths"""
 
@@ -86,13 +93,14 @@ class _NamedFifo(_Fifo):
         "open a FIFO file descriptor without blocking during open"
         # FIXME: O_NONBLOCK not right for write, maybe just drop this
         omode = os.O_RDONLY if (mode.startswith("r")) else os.O_WRONLY
-        fd = os.open(path, omode|os.O_NONBLOCK)
+        fd = os.open(path, omode | os.O_NONBLOCK)
         try:
-            fcntl.fcntl(fd, fcntl.F_SETFL, omode) # clear O_NONBLOCK
+            fcntl.fcntl(fd, fcntl.F_SETFL, omode)  # clear O_NONBLOCK
         except:
             try:
                 os.close(fd)
-            finally: pass
+            finally:
+                pass
             raise
         return fd
 
@@ -102,23 +110,22 @@ class _NamedFifo(_Fifo):
         # FIXME: don't need suffix/tmpDir, unless this made of part the Fifo API
         if tmpDir is None:
             tmpDir = os.getenv("TMPDIR", "/var/tmp")
-        prefix = tmpDir + "/" + socket.gethostname() + "." + str(os.getpid())
-        maxTries=1000
+        prefix = + "{}/{}.{}".format(tmpDir, socket.gethostname(), os.getpid())
+        maxTries = 1000
         unum = 0
         while unum < maxTries:
-            path =  prefix + "." + str(unum) + "." + suffix
+            path = "{}.{}.{}".format(prefix, unum, suffix)
             if _NamedFifo.__fifoMkAtomic(path):
                 return path
             unum += 1
-        raise Exception("unable to create a unique FIFO name in the form \""
-                        + prefix + ".*." + suffix + "\" after " + str(maxTries)
-                        + " tries")
+        raise Exception("unable to create a unique FIFO name in the form \"{}.*.{} after {} tries".format(
+            prefix, suffix, maxTries))
 
     @staticmethod
     def __checkFifo(path):
         """check that fifo matches expected types and perms, catch security hold
         were it could be replace with another file"""
-        pass # FIXME implement
+        pass  # FIXME implement
 
     @staticmethod
     def __fifoMkAtomic(path):
@@ -143,6 +150,8 @@ class _NamedFifo(_Fifo):
             self.rpath = self.wpath = None
 
 _fifoClass = None
+
+
 def factory():
     "get a FIFO object of the correct type for this OS"
     global _fifoClass

@@ -5,12 +5,15 @@
 from pycbio.sys import PycbioException
 from Bio import SeqFeature
 
+
 class GbffExcept(PycbioException):
     pass
+
 
 def featHaveQual(feat, key):
     "does a feature have a qualifier?"
     return (key in feat.qualifiers)
+
 
 def featGetQual1(feat, key):
     """get the single valued qualifier, or None if not found.  Returns first
@@ -19,14 +22,16 @@ def featGetQual1(feat, key):
     if val is None:
         return None
     if len(val) != 1:
-        raise GbffExcept("qualifier \"" + key + "\" has multiple values")
+        raise GbffExcept("qualifier \"{}\" has multiple values".format(key))
     return val[0]
-        
+
+
 def featMustGetQual1(feat, key):
     val = featGetQual1(feat, key)
     if val is None:
-        raise GbffExcept("qualifier \""+key+"\" not found in feature: " + str(feat))
+        raise GbffExcept("qualifier \"{}\" not found in feature: {}".format(key, str(feat)))
     return val
+
 
 def featGetQual1ByKeys(feat, keys):
     "get single-valued qualifier based on first matching key"
@@ -35,7 +40,8 @@ def featGetQual1ByKeys(feat, keys):
         if val is not None:
             return val
     return None
-    
+
+
 def featMustGetQual1ByKeys(feat, keys):
     "get a single valued qualifier based on first matching key, or error"
     val = featGetQual1ByKeys(feat, keys)
@@ -43,10 +49,11 @@ def featMustGetQual1ByKeys(feat, keys):
         featRaiseNeedAQual(feat, keys)
     return val
 
+
 def featRaiseNeedAQual(feat, quals):
-   "raise error about one of the qualifiers not being found"
-   raise GbffExcept("didn't find any of these qualifiers: "
-                    + ", ".join(quals) + " in feature: " + str(feat))
+    "raise error about one of the qualifiers not being found"
+    raise GbffExcept("didn't find any of these qualifiers: {} in feature: {}".format(", ".join(quals), str(feat)))
+
 
 def featGetDbXRef(feat, dbXRefPrefix):
     "return a dbXRef starting with dbXRefPrefix (include `:' in key), or None if not found"
@@ -57,33 +64,40 @@ def featGetDbXRef(feat, dbXRefPrefix):
                 return dbXRef[len(dbXRefPrefix):]
     return None
 
+
 def featGetGeneId(feat):
     "get a db_ref qualifier for GeneID, or None"
     return featGetDbXRef(feat, "GeneID:")
+
 
 def featMustGetGeneId(feat):
     """get a db_ref qualifier for GeneID or error if not found"""
     # FIXME: at one point returned locus id if gene id not found still needed?
     val = featGetGeneId(feat)
     if val is None:
-        raise GbffExcept("db_xref GeneID not found in feature: " + str(feat))
+        raise GbffExcept("db_xref GeneID not found in feature: {}".format(str(feat)))
     return val
+
 
 def featGetLocusId(feat):
     "get a db_ref qualifier for LocusId, or None"
     return featGetDbXRef(feat, "LocusID:")
 
+
 def featGetGID(feat):
     "get a db_ref qualifier for GI, or None"
     return featGetDbXRef(feat, "GI:")
+
 
 def featGetCdsId(feat):
     "get a CDS identifier from qualifier, or None"
     return featGetQual1ByKeys(feat, ("protein_id", "standard_name"))
 
+
 class Coord(object):
     "[0..n) coord"
     __slots__ = ("start", "end", "strand")
+
     def __init__(self, start, end, strand):
         "stand can be +/- or -1/+1, converted to +/-"
         self.start = start
@@ -94,10 +108,10 @@ class Coord(object):
             self.strand = strand
 
     def __str__(self):
-        return str(self.start) + ".." + str(self.end) + "/"+str(self.strand)
+        return "{}..{}/{}".format(self.start, self.end, self.strand)
 
     def size(self):
-        return self.end-self.start
+        return self.end - self.start
 
     def __cmp__(self, other):
         if not isinstance(other, Coord):
@@ -121,13 +135,14 @@ class Coord(object):
         "convert to a FeatureLocation object to a Coord"
         return Coord(loc.start.position, loc.end.position, strand)
 
+
 class Coords(list):
     "List of Coord objects"
 
     def __init__(self, init=None):
         if init is not None:
             list.__init__(self, init)
-            assert((len(self)==0) or isinstance(self[0], Coord))
+            assert((len(self) == 0) or isinstance(self[0], Coord))
         else:
             list.__init__(self)
 
@@ -167,7 +182,7 @@ class Coords(list):
         si = 0
         while oi < len(other):
             # find next self block containing other[oi]
-            while  (si < len(self)) and (self[si].end < other[oi].start):
+            while (si < len(self)) and (self[si].end < other[oi].start):
                 si += 1
             if (si >= len(self)) or (self[si].start >= other[oi].end) or not self[si].contains(other[oi]):
                 return False
@@ -189,4 +204,3 @@ class Coords(list):
             coords.__cnvSeqFeature(feat.location, feat.strand)
         coords.sort()
         return coords
-            

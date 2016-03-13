@@ -15,7 +15,7 @@ Base class used to define immutable objects
 #  builds on namedtuple
 
 class Immutable(object):
-    """Base class to make an object instance immutable.  Call 
+    """Base class to make an object instance immutable.  Call
     Immutable.__init__(self) after construction to make immutable"""
 
     __immAttr = "_Immutable__immutable"
@@ -38,4 +38,3 @@ class Immutable(object):
         if self.__immutable:
             raise TypeError("immutable object", self)
         object.__delattr__(self, attr)
-

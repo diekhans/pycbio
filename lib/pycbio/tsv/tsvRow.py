@@ -4,6 +4,7 @@
 # a better convention to avoid collisions
 # FIXME: need accessor functions for columns
 
+
 class TsvRow(object):
     "Row of a TSV where columns are fields."
     # n.b.: doesn't inherit from list, as this results in columns in two
@@ -83,7 +84,7 @@ class TsvRow(object):
             return self.__fmtWithTypes()
         else:
             return self.__fmtNoTypes()
-    
+
     def __str__(self):
         return "\t".join(self.getRow())
 
@@ -99,7 +100,7 @@ class TsvRow(object):
         fh.write("\n")
 
     def dump(self, fh):
-        i = 0;
+        i = 0
         for col in self:
             if i > 0:
                 fh.write("\t")
@@ -108,4 +109,3 @@ class TsvRow(object):
             fh.write(str(col))
             i += 1
         fh.write("\n")
-

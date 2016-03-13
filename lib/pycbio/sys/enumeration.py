@@ -2,7 +2,7 @@
 from pycbio.sys.immutable import Immutable
 from pycbio.sys.typeOps import isListLike
 
-# FIXME: 
+# FIXME:
 # - could have user add value object direcrly instead of complex value tuples
 # - should be iterable
 # - need to be able to pickle objects contains EnumValue and then
@@ -27,13 +27,14 @@ from pycbio.sys.typeOps import isListLike
 # FIXME: should be able to specify a EnumValue; although need a way to add
 # aliases in this case.
 
+
 class EnumValue(object):
     """A value of an enumeration.  The object id (address) is the
     unique value, with an associated display string and numeric value
     """
     __slots__ = ("enum", "name", "numValue", "strValue")
+
     def __init__(self, enum, name, numValue, strValue=None):
-        #Immutable.__init__(self)
         self.enum = enum
         self.name = name
         self.numValue = numValue
@@ -41,18 +42,15 @@ class EnumValue(object):
             self.strValue = name
         else:
             self.strValue = strValue
-        #self.mkImmutable()
 
     def __getstate__(self):
         # optimize strValue if same as name
         return (self.enum, self.name, self.numValue, (None if self.strValue == self.name else self.strValue))
 
     def __setstate__(self, st):
-        #Immutable.__init__(self)
-        (self.enum,  self.name, self.numValue, self.strValue) = st
+        (self.enum, self.name, self.numValue, self.strValue) = st
         if self.strValue is None:
             self.strValue = self.name
-        #self.mkImmutable()
 
     def __rept__(self):
         return self.name
@@ -82,6 +80,7 @@ class EnumValue(object):
         else:
             return cmp(self.numValue, otherVal.numValue)
 
+
 class Enumeration(object):
     """A class for creating enumeration objects.
     """
@@ -94,7 +93,6 @@ class Enumeration(object):
         lookup the value under a different name, and the forth value
         is the numeric value.  Tuple elements maybe None or omitted.
         """
-        #Immutable.__init__(self)
         self.name = name
         self.aliases = {}  # FIXME: not only aliases
         self.numValueMap = {}
@@ -111,7 +109,6 @@ class Enumeration(object):
             else:
                 numValue += 1
         self.values = tuple(self.values)
-        #self.mkImmutable()
 
     def __len__(self):
         "return number of values"
@@ -144,7 +141,7 @@ class Enumeration(object):
                 raise TypeError("valueDef[2] must be None, a list or tuple, found: " + str(valueDef[2]))
             for a in valueDef[2]:
                 self.aliases[a] = val
-        
+
     def X__getstate__(self):
         return (self.name, self.aliases, self.values, self.maxNumValue)
 
@@ -153,7 +150,6 @@ class Enumeration(object):
         (self.name, self.aliases, self.values, self.maxNumValue) = st
         for val in self.values:
             setattr(self, val.name, val)
-        #self.mkImmutable()
 
     def lookup(self, name):
         """look up a value by name or aliases"""

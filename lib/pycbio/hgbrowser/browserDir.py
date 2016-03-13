@@ -3,7 +3,6 @@
 browser.
 """
 
-from pycbio.hgbrowser.coords import Coords
 from pycbio.html.htmlPage import HtmlPage
 from pycbio.sys import fileOps
 
@@ -21,6 +20,7 @@ TABLE, TR, TH, TD {
     border-collapse: collapse;
 }
 """
+
 
 class SubRows(object):
     """Object used to specify a set of sub-rows.  Indicates number of columns
@@ -43,13 +43,14 @@ class SubRows(object):
         if iRow < len(self.rows):
             return "<td>" + "<td>".join([str(c) for c in self.rows[iRow]])
         elif self.numCols > 1:
-            return "<td colspan=%d>" % self.numCols
+            return "<td colspan={}>".format(self.numCols)
         else:
             return "<td>"
 
+
 class Entry(object):
     "entry in directory"
-    __slots__= ("row", "key", "cssClass", "subRowGroups", "tdStyles")
+    __slots__ = ("row", "key", "cssClass", "subRowGroups", "tdStyles")
 
     def __init__(self, row, key=None, cssClass=None, subRows=None, tdStyles=None):
         """Entry in directory, key can be some value(s) used in sorting. The
@@ -64,7 +65,7 @@ class Entry(object):
         if subRows is not None:
             if isinstance(subRows, SubRows):
                 self.subRowGroups = [subRows]
-            else: 
+            else:
                 self.subRowGroups = subRows
         assert((self.tdStyles is None) or (len(self.tdStyles) == len(row)))
         assert((self.tdStyles is None) or (self.subRowGroups is None))  # can't have both yet
@@ -90,13 +91,13 @@ class Entry(object):
     def __toHtmlRowWithSubRows(self):
         numSubRowRows = self.__numSubRowGroupRows()
         hrow = ["<tr>"]
-        td = "<td rowspan=\""+str(numSubRowRows) + "\">"
+        td = "<td rowspan=\"{}\">".format(numSubRowRows)
         for c in self.row:
             hrow.append(td + str(c))
         if numSubRowRows > 0:
             for subRows in self.subRowGroups:
                 hrow.append(subRows.toTdRow(0))
-        hhrow.append("</tr>\n")
+        hrow.append("</tr>\n")
 
         # remaining rows
         for iRow in xrange(1, numSubRowRows):
@@ -132,6 +133,7 @@ class Entry(object):
         else:
             return self.__toHtmlRowSimple()
 
+
 class BrowserDir(object):
     """Create a frameset and collection of HTML pages that index one or more
     genome browsers.
@@ -149,7 +151,7 @@ class BrowserDir(object):
         """
         self.browserUrl = browserUrl
         if self.browserUrl.endswith("/"):
-            self.browserUrl = self.browserUrl[0:-1] # drop trailing `/', so we don't end up with '//'
+            self.browserUrl = self.browserUrl[0:-1]  # drop trailing `/', so we don't end up with '//'
         self.defaultDb = defaultDb
         self.colNames = colNames
         self.pageSize = pageSize
@@ -165,7 +167,6 @@ class BrowserDir(object):
         self.initTrackArgs = self.__mkTracksArgs(initTracks)
         if customTrackUrl is not None:
             self.trackArgs += "&hgt.customText=" + self.customTrackUrl
-            
 
     def __mkTracksArgs(self, tracks):
         if (tracks is None) or (len(tracks) == 0):
@@ -174,9 +175,9 @@ class BrowserDir(object):
         for t in tracks:
             l.append(t + "=" + tracks[t])
         return "&" + "&".join(l)
-        
+
     def mkDefaultUrl(self):
-        return self.browserUrl + "/cgi-bin/hgTracks?db=" + self.defaultDb + "&position=default" + self.initTrackArgs  + self.trackArgs
+        return self.browserUrl + "/cgi-bin/hgTracks?db=" + self.defaultDb + "&position=default" + self.initTrackArgs + self.trackArgs
 
     def mkUrl(self, coords):
         url = self.browserUrl + "/cgi-bin/hgTracks?db="
@@ -190,8 +191,8 @@ class BrowserDir(object):
     def mkAnchor(self, coords, text=None, target="browser"):
         if text is None:
             text = str(coords)
-        return "<a href=\"" + self.mkUrl(coords) + "\" target="+target+">" + text + "</a>"
-        
+        return "<a href=\"{}\" target={}>{}</a>".format(self.mkUrl(coords), target, text)
+
     def addRow(self, row, key=None, cssClass=None, subRows=None, tdStyles=None):
         """add an encoded row, row can be a list or an Entry object"""
         # FIXME: hacky, have two add functions
@@ -208,19 +209,19 @@ class BrowserDir(object):
 
     def sort(self, cmpFunc=cmp, reverse=False):
         "sort by the key"
-        self.entries.sort(cmp=lambda a,b: cmpFunc(a.key, b.key), reverse=reverse)
+        self.entries.sort(cmp=lambda a, b: cmpFunc(a.key, b.key), reverse=reverse)
 
     def __mkFrame(self, title=None, dirPercent=15, below=False):
         """create frameset as a HtmlPage object"""
 
         if below:
-            fsAttr = "rows=%d%%,%d%%" % (100-dirPercent, dirPercent)
+            fsAttr = "rows={}%%,{}%%".format(100 - dirPercent, dirPercent)
         else:
-            fsAttr = "cols=%d%%,%d%%" % (dirPercent, 100-dirPercent)
+            fsAttr = "cols={}%%,{}%%".format(dirPercent, 100 - dirPercent)
         pg = HtmlPage(title=title, framesetAttrs=(fsAttr,))
 
         fdir = '<frame name="dir" src="dir1.html">'
-        fbr = '<frame name="browser" src="%s">' % self.mkDefaultUrl()
+        fbr = '<frame name="browser" src="{}">'.format(self.mkDefaultUrl())
         if below:
             pg.add(fbr)
             pg.add(fdir)
@@ -233,28 +234,28 @@ class BrowserDir(object):
         html = []
         # prev link
         if pageNum > 1:
-            html.append("<a href=\"dir%d.html\">prev</a>" % (pageNum-1))
+            html.append("<a href=\"dir{}.html\">prev</a>".format(pageNum - 1))
         else:
             html.append("prev")
 
         # page number links
         if inclPageLinks:
-            for p in xrange(1, numPages+1):
+            for p in xrange(1, numPages + 1):
                 if p != pageNum:
-                    html.append("<a href=\"dir%d.html\">%d</a>" % (p, p))
+                    html.append("<a href=\"dir{}.html\">{}</a>".format((p, p)))
                 else:
-                    html.append("[%d]" % p)
+                    html.append("[{}]".format(p))
 
         # next link
         if pageNum < numPages:
-            html.append("<a href=\"dir%d.html\">next</a>" % (pageNum+1))
+            html.append("<a href=\"dir{}.html\">next</a>".format(pageNum + 1))
         else:
             html.append("next")
         return ", ".join(html)
 
     def __padRows(self, pg, numPadRows, numColumns):
         if numColumns > 1:
-            pr = "<tr colspan=\"" + numColumns + "\"></tr>"
+            pr = "<tr colspan=\"{}\"></tr>".format(numColumns)
         else:
             pr = "<tr></tr>"
         for i in xrange(numPadRows):
@@ -277,22 +278,21 @@ class BrowserDir(object):
     def __addMultiColEntryTbl(self, pg, pgEntries):
         pg.tableStart()
         nEnts = len(pgEntries)
-        rowsPerCol = nEnts/self.numColumns
+        rowsPerCol = nEnts / self.numColumns
         iEnt = 0
         pg.add("<tr>")
         for icol in xrange(self.numColumns):
             pg.add("<td>")
-            if iEnt < nEnts-rowsPerCol:
+            if iEnt < nEnts - rowsPerCol:
                 n = rowsPerCol
                 np = 0
             else:
-                n = nEnts-iEnt
+                n = nEnts - iEnt
                 np = rowsPerCol - n
-            self.__addPageRows(pg, pgEntries[iEnt:iEnt+n], np)
+            self.__addPageRows(pg, pgEntries[iEnt:iEnt + n], np)
             pg.add("</td>")
         pg.add("</tr>")
         pg.tableEnd()
-        
 
     def __addEntryTbl(self, pg, pgEntries):
         if self.numColumns > 1:
@@ -301,9 +301,9 @@ class BrowserDir(object):
             self.__addPageRows(pg, pgEntries, 0)
 
     def __writeDirPage(self, outDir, pgEntries, pageNum, numPages):
-        title = "page %d" % pageNum
+        title = "page {}".format(pageNum)
         if self.title:
-            title += ": " + self.title
+            title += ": {}".format(self.title)
         pg = HtmlPage(title=title, inStyle=self.style)
         pg.h3(title)
         if self.pageDesc is not None:
@@ -313,7 +313,7 @@ class BrowserDir(object):
         self.__addEntryTbl(pg, pgEntries)
         pg.add(self.__getPageLinks(pageNum, numPages, True))
 
-        dirFile = outDir + "/dir%d.html" % pageNum
+        dirFile = outDir + "/dir{}.html".format(pageNum)
         pg.writeFile(dirFile)
 
     def __writeDirPages(self, outDir):
@@ -325,10 +325,10 @@ class BrowserDir(object):
             self.__writeDirPage(outDir, self.entries, 1, 1)
         else:
             # split
-            numPages = (len(self.entries)+self.pageSize-1)/self.pageSize
-            for pageNum in xrange(1,numPages+1):
-                first = (pageNum-1) * self.pageSize
-                last = first+(self.pageSize-1)
+            numPages = (len(self.entries) + self.pageSize - 1) / self.pageSize
+            for pageNum in xrange(1, numPages + 1):
+                first = (pageNum - 1) * self.pageSize
+                last = first + (self.pageSize - 1)
                 pgEntries = self.entries[first:last]
                 self.__writeDirPage(outDir, pgEntries, pageNum, numPages)
 

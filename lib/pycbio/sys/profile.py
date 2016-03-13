@@ -1,5 +1,9 @@
 # Copyright 2006-2012 Mark Diekhans
-import cProfile, signal, argparse
+import cProfile
+import signal
+import argparse
+import sys
+
 
 class Profile(object):
     """Wrapper to make adding optional support for profiling easy.
@@ -15,7 +19,7 @@ class Profile(object):
         (opts, args) = parser.parse_args()
         ...
         self.profiler.setup(opts)
-    
+
     at the end of the program:
         xxx.profiler.finishUp()
 
@@ -44,7 +48,7 @@ class Profile(object):
     def __setupSignalHandler(self, signum):
         self.signum = signum
         signal.signal(self.signum, self.__sigHandler)
-        
+
     def setup(self, opts):
         """initializing profiling, if requested"""
         if opts.profile is None:
@@ -60,7 +64,7 @@ class Profile(object):
     def __finishupSignal(self):
         signal.signal(self.signum, signal.SIG_IGN)
         self.signum = None
-                
+
     def finishUp(self):
         "if profiling is enabled, stop and close log file"
         if self.profiler is not None:
@@ -68,4 +72,3 @@ class Profile(object):
             if self.signum is not None:
                 self.__finishupSignal()
             self.profiler.dump_stats(self.logFile)
-                

@@ -1,9 +1,10 @@
 # Copyright 2006-2012 Mark Diekhans
 """Operations on dbapi objects"""
-import MySQLdb, warnings
-
+import MySQLdb
+import warnings
 
 _mySqlErrorOnWarnDone = False
+
 
 def mySqlSetErrorOnWarn():
     """Turn most warnings into errors except for those that are Notes from
@@ -25,6 +26,7 @@ def cursorColIdxMap(cur):
         m[cur.description[i][0]] = i
     return m
 
+
 def execute(conn, sql, args=None):
     "execute SQL query on a connection that returns no result"
     cur = conn.cursor()
@@ -32,6 +34,7 @@ def execute(conn, sql, args=None):
         cur.execute(sql, args)
     finally:
         cur.close()
+
 
 def query(conn, sql, args=None):
     "generator to run an SQL query on a connection"
@@ -43,8 +46,8 @@ def query(conn, sql, args=None):
     finally:
         cur.close()
 
+
 def haveTableLike(conn, pattern, db=None):
     frm = "" if db is None else " from " + db
     # FIXME: mysql-specific
-    return len(list(query(conn, 'show tables' + frm + ' like "' + pattern + '";'))) > 0
-
+    return len(list(query(conn, 'show tables{} like "{}";'.format(frm, pattern)))) > 0

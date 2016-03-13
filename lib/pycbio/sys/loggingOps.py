@@ -1,7 +1,9 @@
 """
 Operations associated with logging
 """
-import logging, os, sys
+import logging
+import os
+import sys
 from logging.handlers import SysLogHandler
 
 
@@ -13,6 +15,7 @@ def parseFacility(facilityStr):
         raise ValueError("invalid syslog facility: \"" + facilityStr + "\"")
     return facility
 
+
 def parseLevel(levelStr):
     "convert a log level string to numeric value"
     levelStrUp = levelStr.upper()
@@ -20,6 +23,7 @@ def parseLevel(levelStr):
     if level is None:
         raise ValueError("invalid logging level: \"" + levelStr + "\"")
     return level
+
 
 def setupLogger(handler):
     """add handle to logger and set logger level to the minimum of it's
@@ -29,15 +33,18 @@ def setupLogger(handler):
         logger.setLevel(min(handler.level, logger.level))
     logger.addHandler(handler)
 
+
 def setupStreamLogger(level, fh):
     "configure logging to a specified open file."
     handler = logging.StreamHandler(stream=fh)
     handler.setLevel(level)
     setupLogger(handler)
 
+
 def setupStderrLogger(level):
     "configure logging to stderr"
     setupStreamLogger(level, sys.stderr)
+
 
 def getSyslogAddress():
     """find the address to use for syslog"""
@@ -45,7 +52,8 @@ def getSyslogAddress():
         if os.path.exists(dev):
             return dev
     return ("localhost", 514)
-    
+
+
 def setupSyslogLogger(facility, level, prog=None, address=None):
     """configure logging to syslog based on the specified facility.  If
     prog specified, each line is prefixed with the name"""
@@ -54,17 +62,19 @@ def setupSyslogLogger(facility, level, prog=None, address=None):
     handler = SysLogHandler(address=address, facility=facility)
     # add a formatter that includes the program name as the syslog ident
     if prog is not None:
-        handler.setFormatter(logging.Formatter(fmt=prog+" %(message)s"))
+        handler.setFormatter(logging.Formatter(fmt="{} %(message)s".format(prog)))
     handler.setLevel(level)
     setupLogger(handler)
-    
+
+
 def setupNullLogger(level=None):
     "configure discard logging"
     handler = logging.NullHandler()
     if level is not None:
         handler.setLevel(level)
     setupLogger(handler)
-                                    
+
+
 def addCmdOptions(parser):
     """
     Add command line options related to logging
@@ -77,6 +87,7 @@ def addCmdOptions(parser):
                         help="Set level to case-insensitive symbolic value, one of {}".format(
                             ", ".join([n for n in logging._levelNames.itervalues() if isinstance(n, str)])))
 
+
 def setupFromCmd(opts, prog=None):
     """configure logging based on command options.  If prog is specified, then
     the user it to set syslog program name.  This can be obtained from parser.prog.
@@ -87,4 +98,3 @@ def setupFromCmd(opts, prog=None):
         setupSyslogLogger(opts.syslogFacility, opts.logLevel, prog=prog)
     else:
         setupStderrLogger(opts.logLevel)
-        

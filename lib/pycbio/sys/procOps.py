@@ -5,7 +5,8 @@
 # also see stderr changes in genbank copy of this file
 # FIXME: names are a bit too verbose (callLines instead of callProcLines)
 
-import os, re
+import os
+import re
 from pycbio.sys import pipeline
 
 
@@ -21,6 +22,7 @@ def callProc(cmd, keepLastNewLine=False):
         out = out[0:-1]
     return out
 
+
 def callProcLines(cmd):
     """call a process and return stdout, split into a list of lines, exception
     with stderr in message."""
@@ -29,11 +31,13 @@ def callProcLines(cmd):
         return []  # split creates a list of one empty string from an empty string
     return out.split("\n")
 
+
 def runProc(cmd, stdin="/dev/null", stdout=None, stderr=None):
     """run a process, with I/O redirection to specified file paths or open
     file objects. None specifies inheriting open file."""
     pl = pipeline.Procline(cmd, stdin=stdin, stdout=stdout, stderr=stderr)
     pl.wait()
+
 
 def runProcCode(cmd, stdin="/dev/null", stdout=None, stderr=None):
     """run a process, with I/O redirection to specified file paths or open
@@ -48,7 +52,8 @@ def runProcCode(cmd, stdin="/dev/null", stdout=None, stderr=None):
         else:
             raise ex
     return 0
-    
+
+
 def which(prog, makeAbs=False):
     "search PATH for prog, optionally generating an absolute path.  Exception if not found."
     for d in os.environ["PATH"].split(":"):
@@ -63,6 +68,8 @@ def which(prog, makeAbs=False):
     raise Exception("Can't find program \"" + prog + "\" on path \"" + os.environ["PATH"] + "\"")
 
 shSafeRe = re.compile("^[-+./_=,:@0-9A-Za-z]+$")
+
+
 def shQuoteWord(word):
     """quote word so that it will evaluate as a simple string by common Unix
     shells"""
@@ -73,15 +80,16 @@ def shQuoteWord(word):
     else:
         return "\\'".join("'" + c + "'" for c in word.split("'"))
 
+
 def shQuote(words):
     """quote a list of words so that it will evaluate as simple strings by
     common Unix shells"""
     return [shQuoteWord(w) for w in words]
-    
+
+
 def sshCmd(host, cmd, direct=None):
     ""
     pass
 
 __all__ = (callProc.__name__, callProcLines.__name__, runProc.__name__, which.__name__,
            shQuoteWord.__name__, shQuote.__name__)
-

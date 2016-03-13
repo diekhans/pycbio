@@ -13,6 +13,9 @@ libcomp:
 test:
 	(cd tests && ${MAKE} test)
 
+lint:
+	flake8 lib/pycbio tests/libtests
+
 pylint:
 	PYTHONPATH=lib pylint --rcfile=pylint.cfg $(subst .,/,${PKGS})
 

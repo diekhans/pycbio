@@ -1,5 +1,5 @@
 # Copyright 2006-2012 Mark Diekhans
-"""Implementation of interval skip lists. 
+"""Implementation of interval skip lists.
 
 See:
 The Interval Skip List: A Data Structure for Finding All Intervals That Overlap a Point
@@ -11,7 +11,7 @@ http://www-pub.cise.ufl.edu/~hanson/IS-lists/
 """
 
 from pycbio.sys.immutable import Immutable
-from pycbio.sys import typeOps
+
 
 class Entry(Immutable):
     "An entry for an interval and associated value. This is immutable"
@@ -24,6 +24,7 @@ class Entry(Immutable):
         self.end = end
         self.val = val
         self.mkImmutable()
+
 
 class Node(object):
     """a node in the skip list.
@@ -68,19 +69,18 @@ class IntervalSkipList(object):
     def _search(self, searchKey, update):
         pass
 
-    def _findIntervals(self, searchKey):
+    def _findIntervals(self, start):
         "return list of intervals overlapping v"
         x = self.head
         vals = set()
         # Step down to bottom level
-        for i in xrange(self.maxLevel-1, -1, -1):
+        for i in xrange(self.maxLevel - 1, -1, -1):
             # Search forward on current level as far as possible.
             while (x.forward[i] is not None) and (x.forward[i].start < start):
                 x = x.forward[i]
-                
+
             # Pick up interval markers on edge when dropping down a level.
             vals.add(x.markers[i])
-
 
         # Scan forward on bottom level to find location where search key will
         # lie.
@@ -90,9 +90,9 @@ class IntervalSkipList(object):
         # If K is not in list, pick up interval markers on edge, otherwise
         # pick up markers on node with value = K.
         if (x.forward[0] is None) or (x.forward[0].start != start):
-            val |= x.markers[0]
-        else: 
-            val |= x.forward[0].eqMarkers
+            vals |= x.markers[0]
+        else:
+            vals |= x.forward[0].eqMarkers
 
         return vals
 
@@ -114,5 +114,5 @@ class IntervalSkipList(object):
     def randomLevel(self):
         pass
 
- 
+
 __all__ = (Entry.__name__, IntervalSkipList.__name__)

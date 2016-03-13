@@ -5,6 +5,7 @@ import sys
 from types import FunctionType, ModuleType
 from pycbio.sys import PycbioException
 
+
 def _evalConfigFile(configPyFile, extraEnv=None):
     "evaluate file and return environment"
     configEnv = {"configPyFile": configPyFile}
@@ -19,6 +20,7 @@ def _evalConfigFile(configPyFile, extraEnv=None):
 
 # FIXME: now that configEnv has locals, we could get by varname.
 # getFuncArgs could be handled by functools.partial much more elegently
+
 
 def evalConfigFunc(configPyFile, getFuncName="getConfig", getFuncArgs=[], getFuncKwargs={}, extraEnv=None):
     """Evaluate the specified configuration file and call the specified function
@@ -42,12 +44,15 @@ def evalConfigFunc(configPyFile, getFuncName="getConfig", getFuncArgs=[], getFun
         ei = sys.exc_info()
         raise PycbioException("Error from configuration function %s(): %s " % (getFuncName, configPyFile), ei[1]), None, ei[2]
 
+
 class Config(object):
     "configuration object"
     pass
 
+
 def _includeField(key, value):
     return not (isinstance(value, ModuleType) or key.startswith('_'))
+
 
 def evalConfigObj(configPyFile, extraEnv=None):
     """Evaluate the specified configuration file and return a object containing

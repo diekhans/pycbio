@@ -35,40 +35,47 @@ Modified by markd:
   - add truncate constructor option
 """
 
-import os, UserDict
+import UserDict
 from sqlite3 import dbapi2 as sqlite
+
 
 class DbDict(UserDict.DictMixin):
     ''' DbDict, a dictionnary-like object for large datasets (several
     Tera-bytes) backed by an SQLite database'''
-    
+
     def __init__(self, db_filename, table="data", truncate=False):
         self.db_filename = db_filename
         self.table = table
         self.con = sqlite.connect(self.db_filename)
         if truncate:
-            self.con.execute("drop table if exists " + self.table)
-        self.con.execute("create table if not exists " + self.table + " (key PRIMARY KEY,value)")
-    
+            self.con.execute("drop table if exists {}".format(self.table))
+        self.con.execute("create table if not exists {} (key PRIMARY KEY,value)".format(self.table))
+
     def __getitem__(self, key):
-        row = self.con.execute("select value from " + self.table + " where key=?",(key,)).fetchone()
+        row = self.con.execute("select value from {} where key=?".format(self.table),
+                               (key,)).fetchone()
         if not row:
             raise KeyError(str(key))
         return row[0]
-    
+
     def __setitem__(self, key, item):
-        if self.con.execute("select key from " + self.table + " where key=?",(key,)).fetchone():
-            self.con.execute("update " + self.table + " set value=? where key=?",(item,key))
+        if self.con.execute("select key from {} where key=?".format(self.table),
+                            (key,)).fetchone():
+            self.con.execute("update {} set value=? where key=?".format(self.table),
+                             (item, key))
         else:
-            self.con.execute("insert into " + self.table + " (key,value) values (?,?)",(key, item))
+            self.con.execute("insert into {} (key,value) values (?,?)".format(self.table),
+                             (key, item))
         self.con.commit()
-               
+
     def __delitem__(self, key):
-        if self.con.execute("select key from " + self.table + " where key=?",(key,)).fetchone():
-            self.con.execute("delete from " + self.table + " where key=?",(key,))
+        if self.con.execute("select key from {} where key=?".format(self.table),
+                            (key,)).fetchone():
+            self.con.execute("delete from {} where key=?".format(self.table),
+                             (key,))
             self.con.commit()
         else:
-             raise KeyError(str(key))
-             
+            raise KeyError(str(key))
+
     def keys(self):
-        return [row[0] for row in self.con.execute("select key from " + self.table).fetchall()]
+        return [row[0] for row in self.con.execute("select key from {}".format(self.table)).fetchall()]

@@ -5,9 +5,11 @@ from pycbio.sys.immutable import Immutable
 
 # FIXME: support MAF db.chrom syntax, single base syntax, etc.
 
+
 class CoordsError(Exception):
     "Coordinate error"
     pass
+
 
 class Coords(Immutable):
     """Browser coordinates
@@ -17,6 +19,7 @@ class Coords(Immutable):
        chromSize - optional size of chromosome
     """
     __slots__ = ("chrom", "start", "end", "db", "chromSize")
+
     def __parseCombined__(self, coordsStr):
         "parse chrom:start-end "
         try:
@@ -34,7 +37,7 @@ class Coords(Immutable):
             self.start = int(start) if start is not None else None
             self.end = int(end) if end is not None else None
         except Exception as ex:
-            raise CoordsError("invalid coordinates: \"" + str(coordsStr) + "\": " + str(ex))
+            raise CoordsError("invalid coordinates: \"{}:{}-{}\": {}".format(chrom, start, end, ex))
 
     def __init__(self, *args, **kwargs):
         """args are either one argument in the form chr:start-end, or
@@ -54,20 +57,20 @@ class Coords(Immutable):
         return self.chrom + ":" + str(self.start) + "-" + str(self.end)
 
     def size(self):
-        return self.end-self.start
+        return self.end - self.start
 
     def overlaps(self, other):
         return ((self.chrom == other.chrom) and (self.start < other.end) and (self.end > other.start))
 
     def pad(self, frac=0.05, minBases=5):
         """return Coords, padded with a fraction of the range."""
-        amt = int(frac*(self.end - self.start))
+        amt = int(frac * (self.end - self.start))
         if amt < minBases:
             amt = minBases
         st = self.start - amt
         if st < 0:
             st = 0
-        return Coords(self.chrom, st, self.end+amt)
+        return Coords(self.chrom, st, self.end + amt)
 
     def __cmp__(self, other):
         if other is None:

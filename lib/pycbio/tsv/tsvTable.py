@@ -2,9 +2,11 @@
 from pycbio.tsv.tsvReader import TsvReader
 from pycbio.tsv import TsvError
 from pycbio.sys.multiDict import MultiDict
-import sys,csv
+import sys
+import csv
 
 # FIX: maybe make each index it's own class to handle uniq check, etc.
+
 
 class TsvTable(list):
     """Class for reading and writing TSV files. Stores rows as a list of Row
@@ -19,10 +21,10 @@ class TsvTable(list):
             return getattr(self, key)
 
     def __addIndex(self, keyCol, dictClass):
-        if not keyCol in self.colMap:
+        if keyCol not in self.colMap:
             raise TsvError("key column \"" + keyCol + "\" is not defined"), None, sys.exc_info()[2]
         setattr(self.idx, keyCol, dictClass())
-        
+
     def __createIndices(self, keyCols, dictClass):
         "keyCols maybe string or seq of strings"
         if type(keyCols) == str:
@@ -33,7 +35,7 @@ class TsvTable(list):
 
     def __buildIndices(self, uniqKeyCols, multiKeyCols):
         self.idx = TsvTable.Indices()
-        self.indices = self.idx # FIXME: old name, delete 
+        self.indices = self.idx  # FIXME: old name, delete
         if uniqKeyCols is not None:
             self.__createIndices(uniqKeyCols, dict)
         if multiKeyCols is not None:
@@ -51,10 +53,10 @@ class TsvTable(list):
 
     def __indexCol(self, iCol, colDict, col, row):
         if (type(colDict) == dict) and colDict.get(col):
-            raise Exception("column " + self.columns[iCol]+ " unique index value already entered: " + str(col) + " from " + str(row))
+            raise Exception("column {} unique index value already entered: {} from {} ".format(self.columns[iCol], col, row))
         else:
             colDict[col] = row
-            
+
     def __indexRow(self, colDictTbl, row):
         for i in xrange(len(row)):
             if colDictTbl[i] is not None:
@@ -71,7 +73,7 @@ class TsvTable(list):
     def __init__(self, fileName, uniqKeyCols=None, multiKeyCols=None, rowClass=None, typeMap=None,
                  defaultColType=None, columns=None, columnNameMapper=None, ignoreExtraCols=False, isRdb=False, inFh=None, allowEmpty=False, dialect=csv.excel_tab):
         """Read TSV file into the object
-        
+
         fileName - name of file, opened unless inFh is specified
         uniqKeyCols - name or names of columns to index with uniq keys,
             can be string or sequence
@@ -94,7 +96,8 @@ class TsvTable(list):
         allowEmpty - an empty input results in an EOF rather than an error.
           Should specify this if reading from a database query.
         """
-        reader = TsvReader(fileName, rowClass=rowClass, typeMap=typeMap, defaultColType=defaultColType, isRdb=isRdb, columns=columns, columnNameMapper=columnNameMapper, ignoreExtraCols=ignoreExtraCols, inFh=inFh, allowEmpty=allowEmpty, dialect=dialect)
+        reader = TsvReader(fileName, rowClass=rowClass, typeMap=typeMap, defaultColType=defaultColType, isRdb=isRdb, columns=columns, columnNameMapper=columnNameMapper,
+                           ignoreExtraCols=ignoreExtraCols, inFh=inFh, allowEmpty=allowEmpty, dialect=dialect)
         try:
             self.columns = reader.columns
             self.colTypes = reader.colTypes
@@ -128,10 +131,12 @@ class TsvTable(list):
             row.write(fh)
 
 # FIXME: duped in TabFile, also file ops
+
+
 def tsvPrRow(fh, row):
     """Print a row (list or tupe) to a tab file.
     does string conversions on columns"""
-    cnt = 0;
+    cnt = 0
     for col in row:
         if cnt > 0:
             fh.write("\t")

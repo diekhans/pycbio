@@ -1,6 +1,8 @@
 # Copyright 2006-2012 Mark Diekhans
 """TSV reading classes"""
-import sys,csv
+
+import sys
+import csv
 from pycbio.sys import fileOps
 from pycbio.tsv.tsvRow import TsvRow
 from pycbio.tsv import TsvError
@@ -29,6 +31,7 @@ strOrNoneType = (lambda v: None if (v == "") else v,
 # typeMap converter for int types were empty represents None
 intOrNoneType = (lambda v: None if (v == "") else int(v),
                  lambda v: "" if (v is None) else str(v))
+
 
 class TsvReader(object):
     """Class for reading TSV files.  Reads header and builds column name to
@@ -64,7 +67,7 @@ class TsvReader(object):
                 raise TsvError("empty TSV file", reader=self), None, sys.exc_info()[2]
         else:
             if self.isRdb:
-                self.__readRow() # skip format line
+                self.__readRow()  # skip format line
             if (len(row) > 0) and row[0].startswith('#'):
                 row[0] = row[0][1:]
             self.__setupColumns(row)
@@ -164,8 +167,7 @@ class TsvReader(object):
             raise TsvError("Error reading TSV row", self, ex), None, sys.exc_info()[2]
         if row is None:
             raise StopIteration
-        if ((self.ignoreExtraCols and (len(row) < len(self.columns)))
-            or ((not self.ignoreExtraCols) and (len(row) != len(self.columns)))):
+        if ((self.ignoreExtraCols and (len(row) < len(self.columns))) or ((not self.ignoreExtraCols) and (len(row) != len(self.columns)))):
             # FIXME: will hang: self.close()
             raise TsvError("row has %d columns, expected %d" %
                            (len(row), len(self.columns)),
@@ -174,5 +176,3 @@ class TsvReader(object):
             return self.rowClass(self, row)
         except Exception as ex:
             raise TsvError("Error converting TSV row to object", self, ex), None, sys.exc_info()[2]
-
-
