@@ -1,6 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 import os
 
+
 class HgConf(dict):
     """read hg.conf into this object.  Search order:
        1) supplied path
@@ -23,9 +24,10 @@ class HgConf(dict):
             i = line.find("=")
             if i < 0:
                 raise Exception("expected name=value, got: " + line)
-            self[line[0:i].strip()] = line[i+1:].strip()
+            self[line[0:i].strip()] = line[i + 1:].strip()
 
     __cache = {}
+
     @staticmethod
     def obtain(confFile=None):
         """factory for parsed hgconf files, caching results"""

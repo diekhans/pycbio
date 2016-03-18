@@ -5,6 +5,7 @@
 from pycbio.tsv.tsvTable import TsvTable
 from pycbio.hgdata.autoSql import intArrayType
 
+
 class PseudoGeneLink(TsvTable):
     """Tsv of PseudoGeneLink table"""
 
@@ -17,7 +18,7 @@ class PseudoGeneLink(TsvTable):
                 "refSeq": str, "mgc": str, "kgName": str,
                 "overName": str, "overStrand": str,
                 "adaBoost": float, "posConf": float, "negConf": float}
-    
+
     def __init__(self, pglFile):
         TsvTable.__init__(self, pglFile, multiKeyCols="name", typeMap=PseudoGeneLink._typeMap, defaultColType=int)
 

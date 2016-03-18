@@ -1,5 +1,4 @@
 # Copyright 2006-2012 Mark Diekhans
-import copy
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin, strArraySplit, strArrayJoin
 from pycbio.sys import fileOps, dbOps
 from pycbio.sys.multiDict import MultiDict
@@ -9,9 +8,11 @@ from Bio.Seq import reverse_complement
 # FIXME: Should have factory rather than __init__ multiplexing nonsense **
 # FIXME: should have builder functions
 
+
 def rcStrand(s):
     "return reverse-complement of a strand character"
     return "+" if (s == "-") else "-"
+
 
 class PslBlock(object):
     """Block of a PSL"""
@@ -21,7 +22,7 @@ class PslBlock(object):
         "sets iBlk base on being added in ascending order"
         self.psl = psl
         self.iBlk = len(psl.blocks)
-        self.qStart= qStart
+        self.qStart = qStart
         self.qEnd = qStart + size
         self.tStart = tStart
         self.tEnd = tStart + size
@@ -69,7 +70,8 @@ class PslBlock(object):
 
     def reverseComplement(self, newPsl):
         "construct a block that is the reverse complement of this block"
-        return PslBlock(newPsl, self.psl.qSize-self.qEnd, self.psl.tSize-self.tEnd, self.size,
+        return PslBlock(newPsl, self.psl.qSize - self.qEnd,
+                        self.psl.tSize - self.tEnd, self.size,
                         (reverse_complement(self.qSeq) if (self.qSeq is not None) else None),
                         (reverse_complement(self.tSeq) if (self.tSeq is not None) else None))
 
@@ -79,9 +81,11 @@ class PslBlock(object):
 
     def swapSidesReverseComplement(self, newPsl):
         "construct a block with query and target swapped and reverse complemented "
-        return PslBlock(newPsl, self.psl.tSize-self.tEnd, self.psl.qSize-self.qEnd, self.size,
+        return PslBlock(newPsl, self.psl.tSize - self.tEnd,
+                        self.psl.qSize - self.qEnd, self.size,
                         (reverse_complement(self.tSeq) if (self.tSeq is not None) else None),
                         (reverse_complement(self.qSeq) if (self.qSeq is not None) else None))
+
 
 class Psl(object):
     """Object containing data from a PSL record."""
@@ -191,39 +195,39 @@ class Psl(object):
 
     def qRevRange(self, start, end):
         "reverse a query range to the other strand"
-        return (self.qSize-end, self.qSize-start)
+        return (self.qSize - end, self.qSize - start)
 
     def tRevRange(self, start, end):
         "reverse a query range to the other strand"
-        return (self.tSize-end, self.tSize-start)
+        return (self.tSize - end, self.tSize - start)
 
     def qRangeToPos(self, start, end):
         "convert a query range in alignment coordinates to positive strand coordinates"
         if self.getQStrand() == "+":
             return (start, end)
         else:
-            return (self.qSize-end, self.qSize-start)
+            return (self.qSize - end, self.qSize - start)
 
     def tRangeToPos(self, start, end):
         "convert a target range in alignment coordinates to positive strand coordinates"
         if self.getTStrand() == "+":
             return (start, end)
         else:
-            return (self.tSize-end, self.tSize-start)
+            return (self.tSize - end, self.tSize - start)
 
     def isProtein(self):
         lastBlock = self.blockCount - 1
         if len(self.strand) < 2:
             return False
         return (((self.strand[1] == '+') and
-                 (self.tEnd == self.tStarts[lastBlock] + 3*self.blockSizes[lastBlock]))
+                 (self.tEnd == self.tStarts[lastBlock] + 3 * self.blockSizes[lastBlock]))
                 or
                 ((self.strand[1] == '-') and
-                 (self.tStart == (self.tSize-(self.tStarts[lastBlock] + 3*self.blockSizes[lastBlock])))))
+                 (self.tStart == (self.tSize - (self.tStarts[lastBlock] + 3 * self.blockSizes[lastBlock])))))
 
     def tOverlap(self, tName, tStart, tEnd):
         "test for overlap of target range"
-        return (tName == self.tName) and  (tStart < self.tEnd) and (tEnd > self.tStart)
+        return (tName == self.tName) and (tStart < self.tEnd) and (tEnd > self.tStart)
 
     def tBlkOverlap(self, tStart, tEnd, iBlk):
         "does the specified block overlap the target range"
@@ -256,7 +260,7 @@ class Psl(object):
             row.append(strArrayJoin([b.qSeq for b in self.blocks]))
             row.append(strArrayJoin([b.tSeq for b in self.blocks]))
         return str.join("\t", row)
-        
+
     def write(self, fh):
         """write psl to a tab-seperated file"""
         fh.write(str(self))
@@ -265,7 +269,7 @@ class Psl(object):
     @staticmethod
     def queryCmp(psl1, psl2):
         "sort compairson using query address"
-        cmp = string.cmp(psl1.qName, psl2.qName)
+        cmp = cmp(psl1.qName, psl2.qName)
         if cmp != 0:
             cmp = psl1.qStart - psl2.qStart
             if cmp != 0:
@@ -339,13 +343,13 @@ class Psl(object):
         if aligned == 0.0:
             return 0.0
         else:
-            return float(self.match + self.repMatch)/aligned
+            return float(self.match + self.repMatch) / aligned
 
     def basesAligned(self):
         return self.match + self.misMatch + self.repMatch
 
     def queryAligned(self):
-        return float(self.match + self.misMatch + self.repMatch)/float(self.qSize)
+        return float(self.match + self.misMatch + self.repMatch) / float(self.qSize)
 
     def reverseComplement(self):
         "create a new PSL that is reverse complemented"
@@ -369,7 +373,7 @@ class Psl(object):
         rc.tEnd = self.tEnd
         rc.blockCount = self.blockCount
         rc.blocks = []
-        for i in xrange(self.blockCount-1,-1,-1):
+        for i in xrange(self.blockCount - 1, -1, -1):
             rc.blocks.append(self.blocks[i].reverseComplement(rc))
         return rc
 
@@ -382,7 +386,7 @@ class Psl(object):
             # swap and make|keep explicit
             qs = self.getTStrand()
             ts = self.getQStrand()
-        return qs+ts
+        return qs + ts
 
     def swapSides(self, keepTStrandImplicit=False):
         """Create a new PSL with target and query swapped,
@@ -417,12 +421,13 @@ class Psl(object):
         swap.blocks = []
 
         if doRc:
-            for i in xrange(self.blockCount-1,-1,-1):
+            for i in xrange(self.blockCount - 1, -1, -1):
                 swap.blocks.append(self.blocks[i].swapSidesReverseComplement(swap))
         else:
             for i in xrange(self.blockCount):
                 swap.blocks.append(self.blocks[i].swapSides(swap))
         return swap
+
 
 class PslReader(object):
     """Read PSLs from a tab file"""
@@ -443,12 +448,13 @@ class PslReader(object):
         while True:
             line = self.fh.readline()
             if (line == ""):
-                self.fh.close();
+                self.fh.close()
                 self.fh = None
                 raise StopIteration
             if not ((len(line) == 1) or line.startswith('#')):
                 line = line[0:-1]  # drop newline
                 return Psl(line.split("\t"))
+
 
 class PslDbReader(object):
     """Read PSLs from db query.  Factory methods are provide
@@ -456,6 +462,7 @@ class PslDbReader(object):
 
     pslColumns = ("matches", "misMatches", "repMatches", "nCount", "qNumInsert", "qBaseInsert", "tNumInsert", "tBaseInsert", "strand", "qName", "qSize", "qStart", "qEnd", "tName", "tSize", "tStart", "tEnd", "blockCount", "blockSizes", "qStarts", "tStarts")
     pslSeqColumns = ("qSequence", "tSequence")
+
     def __init__(self, conn, query):
         self.cur = conn.cursor()
         try:
@@ -465,7 +472,7 @@ class PslDbReader(object):
                 self.close()
             except:
                 pass
-            raise # continue original exception
+            raise  # continue original exception
         # FIXME: could make this optional or require column names in query
         self.colIdxMap = dbOps.cursorColIdxMap(self.cur)
 
@@ -544,7 +551,7 @@ class PslTbl(list):
         return self.tNameMap.iterkeys()
 
     def haveTName(self, tName):
-        return (self.tNameMap.get(qName) is not None)
+        return (self.tNameMap.get(tName) is not None)
 
     def getByTName(self, tName):
         """generator to get all PSL with a give tName"""

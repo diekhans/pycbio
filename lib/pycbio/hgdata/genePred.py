@@ -7,6 +7,7 @@ from pycbio.sys.symEnum import SymEnum, SymEnumValue
 # FIXME range and exon overlap functions are inconsistent.  exon should inherit from range.
 # FIXME needs many more tests
 
+
 class CdsStat(SymEnum):
     none = SymEnumValue("none", "none")                # No CDS (non-coding)
     unknown = SymEnumValue("unknown", "unk")           # CDS is unknown (coding, but not known)
@@ -16,9 +17,11 @@ class CdsStat(SymEnum):
 genePredColumns = ("name", "chrom", "strand", "txStart", "txEnd", "cdsStart", "cdsEnd", "exonCount", "exonStarts", "exonEnds", "score", "name2", "cdsStartStat", "cdsEndStat", "exonFrames")
 genePredExtColumns = ("name", "chrom", "strand", "txStart", "txEnd", "cdsStart", "cdsEnd", "exonCount", "exonStarts", "exonEnds")
 
+
 class Range(object):
     "start and end coordinates"
     __slots__ = ("start", "end")
+
     def __init__(self, start, end):
         self.start = start
         self.end = end
@@ -50,10 +53,11 @@ class Range(object):
         "get a range on the opposite strand"
         return Range(chromSize - self.end, chromSize - self.start)
 
+
 class ExonFeatures(object):
     "object the holds the features of a single exon"
     __slots__ = ("utr5", "cds", "utr3")
-        
+
     def __init__(self, utr5=None, cds=None, utr3=None):
         self.utr5 = utr5
         self.cds = cds
@@ -61,6 +65,7 @@ class ExonFeatures(object):
 
     def __str__(self):
         return "utr5=" + str(self.utr5) + " cds=" + str(self.cds) + " utr3=" + str(self.utr3)
+
 
 class Exon(object):
     "an exon in a genePred annotation"
@@ -144,7 +149,7 @@ class Exon(object):
 
     def size(self):
         "size of the exon"
-        return self.end-self.start
+        return self.end - self.start
 
     def getRelCoords(self, chromSize):
         "get a range object of strand-relative coordinates"
@@ -152,6 +157,7 @@ class Exon(object):
             return Range(self.start, self.end)
         else:
             return Range(chromSize - self.end, chromSize - self.start)
+
 
 class GenePred(object):
     """Object wrapper for a genePred"""
@@ -183,22 +189,22 @@ class GenePred(object):
         self.score = None
         if iCol < numCols:  # 10
             self.score = int(row[iCol])
-            iCol = iCol+1
+            iCol = iCol + 1
         self.name2 = None
         if iCol < numCols:  # 11
             self.name2 = row[iCol]
-            iCol = iCol+1
+            iCol = iCol + 1
         self.cdsStartStat = None
         self.cdsEndStat = None
         if iCol < numCols:  # 12,13
             self.cdsStartStat = CdsStat(row[iCol])
-            self.cdsEndStat = CdsStat(row[iCol+1])
-            iCol = iCol+2
+            self.cdsEndStat = CdsStat(row[iCol + 1])
+            iCol = iCol + 2
         exonFrames = None
         self.hasExonFrames = False
         if iCol < numCols:  # 14
             exonFrames = intArraySplit(row[iCol])
-            iCol = iCol+1
+            iCol = iCol + 1
             self.hasExonFrames = True
         self.__buildExons(exonStarts, exonEnds, exonFrames)
 
@@ -261,7 +267,7 @@ class GenePred(object):
         self.exons = copy.deepcopy(gp.exons)
         self.cdsStartIExon = gp.cdsStartIExon
         self.cdsEndIExon = gp.cdsEndIExon
-        
+
     def __initSwapToOtherStrand(self, gp, chromSize):
         "swap coordinates to other strand"
         self.name = gp.name
@@ -323,7 +329,7 @@ class GenePred(object):
             iEnd = len(self.exons)
             iDir = 1
         else:
-            iStart = len(self.exons)-1
+            iStart = len(self.exons) - 1
             iEnd = -1
             iDir = -1
         cdsOff = 0
@@ -331,8 +337,8 @@ class GenePred(object):
             e = self.exons[i]
             c = e.getCds()
             if c is not None:
-                e.frame = cdsOff%3
-                cdsOff += (c.end-c.start)
+                e.frame = cdsOff % 3
+                cdsOff += (c.end - c.start)
             else:
                 e.frame = -1
         self.hasExonFrames = True
@@ -355,7 +361,7 @@ class GenePred(object):
     def sameCds(self, gene2):
         "test if another gene has the same CDS as this gene"
         if id(self) == id(gene2):
-            return True # same object
+            return True  # same object
         if (gene2.chrom != self.chrom) or (gene2.strand != self.strand) or (gene2.cdsStart != self.cdsStart) or (gene2.cdsEnd != self.cdsEnd):
             return False
         nCds1 = self.getNumCdsExons()
@@ -411,8 +417,8 @@ class GenePred(object):
         if self.cdsStartIExon is None:
             return 0
         else:
-            return (self.cdsEndIExon - self.cdsStartIExon)+1
-    
+            return (self.cdsEndIExon - self.cdsStartIExon) + 1
+
     def getCdsExon(self, iCdsExon):
         "get a exon containing CDS, by CDS exon index"
         return self.exons[self.cdsStartIExon + iCdsExon]
@@ -422,14 +428,14 @@ class GenePred(object):
         if self.inDirectionOfTranscription():
             return xrange(0, len(self.exons), 1)
         else:
-            return xrange(len(self.exons)-1, -1, -1)
+            return xrange(len(self.exons) - 1, -1, -1)
 
     def getSortedExons(self):
         "get list of exons, sorted in order of transcription."
         if self.inDirectionOfTranscription():
             return list(self.exons)
         else:
-            return [self.exons[i] for i in xrange(len(self.exons)-1, -1, -1)]
+            return [self.exons[i] for i in xrange(len(self.exons) - 1, -1, -1)]
 
     def getRow(self):
         row = [self.name, self.chrom, self.strand, str(self.txStart), str(self.txEnd), str(self.cdsStart), str(self.cdsEnd)]
@@ -447,18 +453,18 @@ class GenePred(object):
         if self.score is not None:
             row.append(str(self.score))
         elif hasExt:
-            row.append("0");
+            row.append("0")
         if self.name2 is not None:
             row.append(self.name2)
         elif hasExt:
-            row.append("");
+            row.append("")
         if self.cdsStartStat is not None:
             row.append(str(self.cdsStartStat))
             row.append(str(self.cdsEndStat))
         elif hasExt:
             row.append(str(CdsStat.unknown))
             row.append(str(CdsStat.unknown))
-        if self.hasExonFrames or  hasExt:
+        if self.hasExonFrames or hasExt:
             frames = []
             if self.hasExonFrames:
                 for e in self.exons:
@@ -500,7 +506,7 @@ class GenePred(object):
         if overCnt == 0:
             return 0.0
         else:
-            return float(2*overCnt)/float(self.getLenExons()+gp2.getLenExons())
+            return float(2 * overCnt) / float(self.getLenExons() + gp2.getLenExons())
 
     def __cdsOverlapCnt(self, gp2):
         "count cds bases that overlap"
@@ -522,7 +528,7 @@ class GenePred(object):
         if overCnt == 0:
             return 0.0
         else:
-            return float(2*overCnt)/float(self.getLenCds()+gp2.getLenCds())
+            return float(2 * overCnt) / float(self.getLenCds() + gp2.getLenCds())
 
     def cdsCover(self, gp2):
         "compute faction of CDS is covered a gene"
@@ -530,7 +536,7 @@ class GenePred(object):
         if overCnt == 0:
             return 0.0
         else:
-            return float(overCnt)/float(self.getLenCds())
+            return float(overCnt) / float(self.getLenCds())
 
     def __str__(self):
         return "\t".join(self.getRow())
@@ -538,7 +544,8 @@ class GenePred(object):
     def write(self, fh):
         fh.write(str(self))
         fh.write("\n")
-        
+
+
 class GenePredTbl(list):
     """Table of GenePred objects loaded from a tab-file"""
     def __init__(self, fileName, buildIdx=False, buildUniqIdx=False, buildRangeIdx=False):
@@ -574,6 +581,7 @@ class GenePredTbl(list):
         for gene in self:
             self.rangeMap.add(gene.chrom, gene.txStart, gene.txEnd, gene, gene.strand)
 
+
 class GenePredReader(object):
     """Read genePreds from a tab file."""
     def __init__(self, fileName):
@@ -587,11 +595,12 @@ class GenePredReader(object):
         while True:
             line = self.fh.readline()
             if (line == ""):
-                self.fh.close();
+                self.fh.close()
                 raise StopIteration
             if not ((len(line) == 1) or line.startswith('#')):
                 line = line[0:-1]  # drop newline
                 return GenePred(line.split("\t"))
+
 
 class GenePredFhReader(object):
     """Read genePreds from an open."""
@@ -610,6 +619,7 @@ class GenePredFhReader(object):
             if not ((len(line) == 1) or line.startswith('#')):
                 line = line[0:-1]  # drop newline
                 return GenePred(line.split("\t"))
+
 
 class GenePredDbReader(object):
     """Read genePreds from a db query"""

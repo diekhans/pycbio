@@ -1,5 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
 
+
 class PslMap(object):
     """Object for mapping coordinates using PSL alignments.
     Can map from either query-to-target or target-to-query coordinates.
@@ -63,7 +64,7 @@ class PslMap(object):
         # process blocks and gaps
         prevBlk = None
         for blk in psl.blocks:
-            if  tRngNext >= tRngEnd:
+            if tRngNext >= tRngEnd:
                 break
             if prevBlk is not None:
                 tRngNext = self.__t2qProcessGap(psl, prevBlk, blk, tRngNext, tRngEnd)
@@ -72,7 +73,7 @@ class PslMap(object):
             prevBlk = blk
 
         # deal with gap at end
-        lastBlk = psl.blocks[psl.blockCount-1]
+        lastBlk = psl.blocks[psl.blockCount - 1]
         if tRngEnd > lastBlk.tEnd:
             self.cb.mapGap(psl, lastBlk, None, None, None, lastBlk.tEnd, tRngEnd)
 
@@ -119,7 +120,7 @@ class PslMap(object):
         # process blocks and gaps
         prevBlk = None
         for blk in psl.blocks:
-            if  qRngNext >= qRngEnd:
+            if qRngNext >= qRngEnd:
                 break
             if prevBlk is not None:
                 qRngNext = self.__q2tProcessGap(psl, prevBlk, blk, qRngNext, qRngEnd)
@@ -128,8 +129,6 @@ class PslMap(object):
             prevBlk = blk
 
         # deal with gap at end
-        lastBlk = psl.blocks[psl.blockCount-1]
+        lastBlk = psl.blocks[psl.blockCount - 1]
         if qRngEnd > lastBlk.qEnd:
             self.cb.mapGap(psl, lastBlk, None, lastBlk.qEnd, qRngEnd, None, None)
-
-

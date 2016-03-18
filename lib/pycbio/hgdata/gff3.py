@@ -18,6 +18,7 @@ from pycbio.sys import PycbioException
 
 GFF3_HEADER = "##gff-version 3"
 
+
 class GFF3Exception(PycbioException):
     """
     Exception associated with GFF3 data.
@@ -35,6 +36,7 @@ _encodeColRegexp = re.compile(_encodeColRegexpStr)
 _encodeAttrReStr = _encodeColRegexpStr + "|;|=|&|,"
 _encodeAttrRe = re.compile(_encodeAttrReStr)
 
+
 def _encodeCol(v):
     """
     Encode a column if is has special characters.
@@ -44,6 +46,7 @@ def _encodeCol(v):
     else:
         return v
 
+
 def _encodeAttr(v):
     """
     Encode a attribute name or value if is has special characters.
@@ -52,6 +55,7 @@ def _encodeAttr(v):
         return urllib.quote(v)
     else:
         return v
+
 
 class Feature(object):
     """
@@ -195,9 +199,10 @@ class Gff3Set(object):
         """
         Write set to a GFF3 format file.
         """
-        fh.write(GFF3_HEADER+"\n")
+        fh.write(GFF3_HEADER + "\n")
         for root in sorted(self.roots, key=self.__recSortKey):
             self.__writeRec(fh, root)
+
 
 class Gff3Parser(object):
     """
