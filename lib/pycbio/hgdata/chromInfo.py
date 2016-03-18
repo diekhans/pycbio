@@ -3,8 +3,8 @@ Object with chromosome information that can be loaded from a variety of
 sources.
 """
 # Copyright 2006-2012 Mark Diekhans
-from pycbio.sys.procOps import callProc
 from pycbio.tsv import TabFile
+
 
 class ChromInfo(object):
     "object with chromosome information"
@@ -15,9 +15,10 @@ class ChromInfo(object):
     def __str__(self):
         return self.chrom + " " + str(self.size)
 
+
 class ChromInfoTbl(dict):
     "object to manage information about chromosomes"
-    
+
     def __init__(self, chromSizes=None, conn=None, chromClass=ChromInfo):
         "loads from either chromSizes file or database conn 2chromInfo table"
         self.chromClass = chromClass

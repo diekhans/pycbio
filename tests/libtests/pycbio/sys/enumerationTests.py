@@ -49,7 +49,7 @@ class EnumerationTests(TestCaseBase):
                                ["okay",
                                 ("notConserved","notConserved", ("no_alignment")),
                                 "bad_3_splice", "bad_5_splice"])
-        
+
     def testBitSetValues(self):
         Stat = Enumeration("Stat",
                            ["okay",

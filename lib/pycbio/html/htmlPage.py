@@ -7,6 +7,7 @@
 # maybe: http://starship.python.net/crew/friedrich/HTMLgen/html/main.html
 # FIXME: add class TableCell
 
+
 class HtmlPage(list):
     """ Object to assist in creating an HTML page.  Page is stored as a list
     of lines.  The lines will not contain any newlines"""
@@ -48,17 +49,27 @@ class HtmlPage(list):
     def header(self, hlevel, text):
         self.append("<" + hlevel + ">" + text + "</" + hlevel + ">")
 
-    def h1(self, text): self.header("h1", text)
-    def h2(self, text): self.header("h2", text)
-    def h3(self, text): self.header("h3", text)
-    def h4(self, text): self.header("h4", text)
-    def h5(self, text): self.header("h5", text)
+    def h1(self, text):
+        self.header("h1", text)
+
+    def h2(self, text):
+        self.header("h2", text)
+
+    def h3(self, text):
+        self.header("h3", text)
+
+    def h4(self, text):
+        self.header("h4", text)
+
+    def h5(self, text):
+        self.header("h5", text)
 
     def br(self, numBr=1):
         for i in xrange(numBr):
             self.append("<br>")
 
-    def hr(self): self.append("<hr>")
+    def hr(self):
+        self.append("<hr>")
 
     def span(self, text, id=None, hclasses=None):
         line = "<span"
@@ -87,7 +98,7 @@ class HtmlPage(list):
         tag += ">"
         self.append(tag)
         if caption is not None:
-            self.append("<caption>"+ caption + "</caption>")
+            self.append("<caption>{}</caption>".format(caption))
 
     def __addTableRow(self, cell, row, hclasses=None):
         """ add a table row
@@ -123,7 +134,7 @@ class HtmlPage(list):
         self.__addTableRow("th", row, hclasses)
 
     def tableRow(self, row, hclasses=None):
-       self.__addTableRow("td", row, hclasses)
+        self.__addTableRow("td", row, hclasses)
 
     def tableEnd(self):
         self.append("</table>")
@@ -167,6 +178,6 @@ class HtmlPage(list):
             fh.write("\n")
         finally:
             fh.close()
-    
+
     def jsBackButton(self):
         self.append('<FORM><INPUT TYPE="Button" VALUE="Back" onClick="history.go(-1)"></form>')

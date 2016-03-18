@@ -2,9 +2,10 @@
 "Generate Venn diagram set intersection statistics"
 
 from pycbio.stats.subsets import Subsets
-from pycbio.sys import fileOps, setOps
+from pycbio.sys import fileOps
 
 # FIXME: setName vs items can get confusing, more doc.
+
 
 class SetDict(dict):
     "Dictionary of sets"
@@ -18,12 +19,13 @@ class SetDict(dict):
 
     def add(self, key, val):
         "add a value to a set"
-        if not key in self:
+        if key not in self:
             self[key] = set()
         self[key].add(val)
 
+
 class Venn(object):
-    """Generate Venn diagram set intersections.  Each set has 
+    """Generate Venn diagram set intersections.  Each set has
     list of ids associated with it that are shared between sets.
     """
 
@@ -40,7 +42,7 @@ class Venn(object):
         # Tables mappings set name to items and items to set names
         self.nameToItems = SetDict()
         self.itemToNames = SetDict()
-        
+
         # Venn table, dict index by name, of items (lazy build)
         self.venn = None
 
@@ -121,4 +123,3 @@ class Venn(object):
         fileOps.prRowv(fh, "subset", "ids")
         for subset in self.subsets.getSubsets():
             fileOps.prRowv(fh, self.formatSubsetName(subset, subsetNameSeparator, setNameFormatter), self.getSubsetCounts(subset))
-        

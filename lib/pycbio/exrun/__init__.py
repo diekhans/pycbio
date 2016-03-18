@@ -4,29 +4,33 @@
 
 """
 
-import sys,traceback,types
+import sys
+import traceback
+import types
 from pycbio.sys import typeOps, PycbioException
+
 
 class ExRunException(PycbioException):
     "Exceptions thrown bye exrun module derive from this object"
     def __init__(self, msg, cause=None):
         PycbioException.__init__(self, msg, cause)
 
-# FIXME: make this a sys object:
+
 class Verb(object):
     """Verbose tracing, bases on a set of flags.  The str() of
     any object passed to print routines with the following exceptions:
       traceback - stack is formatted
     """
+    # FIXME: make this a sys object:
 
     # flag values
-    error = intern("error")     # output errors
-    trace = intern("trace")     # basic tracing
-    details = intern("details") # detailed tracing
-    debug = intern("debug")     # debugging
-    dumpIn = intern("dumpIn")   # dump graph input graph before complete()
-    dumpStart = intern("dumpStart")   # dump graph at start
-    dumpEnd = intern("dumpEnd")     # dump graph after finish
+    error = intern("error")      # output errors
+    trace = intern("trace")      # basic tracing
+    details = intern("details")  # detailed tracing
+    debug = intern("debug")      # debugging
+    dumpIn = intern("dumpIn")    # dump graph input graph before complete()
+    dumpStart = intern("dumpStart")  # dump graph at start
+    dumpEnd = intern("dumpEnd")      # dump graph after finish
     all = set([error, trace, details, debug, dumpIn, dumpStart, dumpEnd])
 
     def __init__(self, flags=None, fh=sys.stderr):
@@ -50,7 +54,7 @@ class Verb(object):
             return (flag in self.flags)
 
     def __prIndent(self, msg):
-        ind = ("%*s" % (2*self.indent, ""))
+        ind = ("%*s" % (2 * self.indent, ""))
         self.fh.write(ind)
         sep = ""
         for m in msg:
@@ -85,8 +89,8 @@ class Verb(object):
             self.__prIndent(msg)
 
 # make classes commonly used externally part of top module
-from pycbio.exrun.graph import Target, Production, Rule
-from pycbio.exrun.cmdRule import CmdRule, Cmd, FileOut, FileIn, FileOut, File
+from pycbio.exrun.graph import Production, Rule
+from pycbio.exrun.cmdRule import CmdRule, Cmd, FileIn, FileOut, File
 from pycbio.exrun.exRun import ExRun
 
 

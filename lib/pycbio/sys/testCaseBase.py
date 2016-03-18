@@ -1,12 +1,21 @@
 # Copyright 2006-2012 Mark Diekhans
 from pycbio.sys import fileOps
-import os, sys, unittest, difflib, threading, errno, re, glob, subprocess
+import os
+import sys
+import unittest
+import difflib
+import threading
+import errno
+import re
+import glob
+import subprocess
 from pipes import quote
 
 try:
     MAXFD = os.sysconf("SC_OPEN_MAX")
 except:
     MAXFD = 256
+
 
 class TestCaseBase(unittest.TestCase):
     """Base class for test case with various test support functions"""
@@ -16,12 +25,12 @@ class TestCaseBase(unittest.TestCase):
         unittest.TestCase.__init__(self, methodName)
         clId = self.getClassId()
         od = self.getOutputDir()
-        for f in glob.glob(od+"/"+clId + ".*") + glob.glob(od+"/tmp.*."+clId + ".*"):
+        for f in glob.glob(os.path.join(od, "/{}.*".format(clId))) + glob.glob(os.path.join(od, "/tmp.*.{}.*".format(clId))):
             fileOps.rmTree(f)
-    
+
     def getClassId(self):
-        """Get the first part of the portable test id, consisting 
-        moduleBase.class.  This is the prefix to output files"""  
+        """Get the first part of the portable test id, consisting
+        moduleBase.class.  This is the prefix to output files"""
         # module name is __main__ when run standalone, so get base file name
         mod = os.path.splitext(os.path.basename(sys.modules[self.__class__.__module__].__file__))[0]
         return mod + "." + self.__class__.__name__
@@ -35,14 +44,14 @@ class TestCaseBase(unittest.TestCase):
 
     def getTestDir(self):
         """find test directory, where concrete class is defined."""
-        testDir =  os.path.dirname(sys.modules[self.__class__.__module__].__file__)
+        testDir = os.path.dirname(sys.modules[self.__class__.__module__].__file__)
         if testDir == "":
             testDir = "."
         testDir = os.path.realpath(testDir)
         # turn this into a relative directory
         cwd = os.getcwd()
         if testDir.startswith(cwd):
-            testDir = testDir[len(cwd)+1:]
+            testDir = testDir[len(cwd) + 1:]
             if len(testDir) == 0:
                 testDir = "."
         return testDir
@@ -57,14 +66,14 @@ class TestCaseBase(unittest.TestCase):
 
     def getOutputDir(self):
         """get the path to the output directory to use for this test, create if it doesn't exist"""
-        d = self.getTestDir() + "/output";
+        d = os.path.join(self.getTestDir(), "output")
         fileOps.ensureDir(d)
         return d
 
     def getOutputFile(self, ext):
         """Get path to the output file, using the current test id and append
         ext, which should contain a dot"""
-        f = self.getOutputDir() + "/" + self.getId() + ext;
+        f = os.path.join(self.getOutputDir(), self.getId() + ext)
         fileOps.ensureFileDir(f)
         return f
 
@@ -72,7 +81,8 @@ class TestCaseBase(unittest.TestCase):
         """Get path to the expected file, using the current test id and append
         ext. If basename is used, it is inset of the test id, allowing share
         an expected file between multiple tests."""
-        return self.getTestDir() + "/expected/" + (basename if basename is not None else self.getId()) + ext;
+        return os.path.join(self.getTestDir(), "expected/{}{}".format(basename if basename is not None else self.getId(),
+                                                                      ext))
 
     def __getLines(self, file):
         fh = open(file)
@@ -157,7 +167,7 @@ class TestCaseBase(unittest.TestCase):
                 os.fstat(fd)
             except:
                 n += 1
-        return MAXFD-n
+        return MAXFD - n
 
     def assertNumOpenFilesSame(self, prevNumOpen):
         "assert that the number of open files has not changed"

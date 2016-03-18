@@ -1,15 +1,17 @@
 # Copyright 2006-2014 Mark Diekhans
 
 # required enum34: https://pypi.python.org/pypi/enum34
-from enum import Enum,EnumMeta
+from enum import Enum, EnumMeta
 
 SymEnum = None  # class defined after use
+
 
 class SymEnumValue(object):
     "Class used to define SymEnum member that have additional attributes."
     def __init__(self, value, externalName=None):
         self.value = value
         self.externalName = externalName
+
 
 class _SysEnumExternalNameMap(object):
     "Mapping between internal and external member names"
@@ -28,6 +30,7 @@ class _SysEnumExternalNameMap(object):
     def toIntName(self, extName):
         "return name unchanged in no mapping"
         return self.extToInt.get(extName, extName)
+
 
 class SymEnumMeta(EnumMeta):
     """metaclass for SysEnumMeta that implements looking up singleton members
@@ -67,6 +70,7 @@ class SymEnumMeta(EnumMeta):
                 return member
         else:
             return EnumMeta.__call__(cls, value, names, module, typ)
+
 
 class SymEnum(Enum):
     """

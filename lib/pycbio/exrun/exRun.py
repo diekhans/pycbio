@@ -1,13 +1,15 @@
 # Copyright 2006-2012 Mark Diekhans
 """Experiment running objects"""
 from __future__ import with_statement
-import os.path,sys,socket,threading
-from pycbio.exrun.graph import *
+import os.path
+import socket
+import threading
+from pycbio.exrun.graph import Target, Production, Rule, Graph, RuleState, Node
 from pycbio.sys import typeOps, strOps, PycbioException
 from pycbio.exrun import ExRunException, Verb, sched
-from pycbio.exrun.cmdRule import CmdRule, Cmd, File, FileIn, FileOut
+from pycbio.exrun.cmdRule import CmdRule, Cmd, File
 
-os.stat_float_times(True) # very, very gross
+os.stat_float_times(True)  # very, very gross
 
 # FIXME: should rules/prods automatically be added? ExRun object to constructor
 # would do the trick
@@ -67,7 +69,7 @@ class _RuleTask(object):
                 p.finishFail()
             except Exception as ex:
                 # FIXME: count these errors
-                ex = ExRunException("Error in Production.finishFail() for "+p.name,
+                ex = ExRunException("Error in Production.finishFail() for {}".format(p.name),
                                     cause=ex)
                 self.verb.prall(str(ex))
                 self.verb.pr(Verb.error, ex.format())
@@ -75,11 +77,11 @@ class _RuleTask(object):
             try:
                 r.finishRequire()
             except Exception as ex:
-                ex = ExRunException("Error in Production.finishRequire() for "+name,
+                ex = ExRunException("Error in Production.finishRequire() for {}".format(self.name),
                                     cause=ex)
                 self.verb.prall(str(ex))
                 self.verb.pr(Verb.error, +ex.format())
-        
+
     def __evalRule(self):
         "evaluate a rule"
         assert(self.rule.state == RuleState.running)
@@ -93,12 +95,12 @@ class _RuleTask(object):
             self.rule.setState(RuleState.ok)
             self.verb.leave(Verb.trace, "done rule:", self.rule)
         except Exception as ex:
-            ex = ExRunException("rule error: "+str(self.rule), cause=ex)
-            self.verb.pr((Verb.trace,Verb.error), str(ex))
+            ex = ExRunException("rule error: {}".format(self.rule), cause=ex)
+            self.verb.pr((Verb.trace, Verb.error), str(ex))
             self.verb.pr(Verb.error, ex.format())
             self.rule.setState(RuleState.failed)
             self.__finishFail()
-            self.verb.leave((Verb.trace,Verb.error), "failed rule:", self.rule)
+            self.verb.leave((Verb.trace, Verb.error), "failed rule: {}".format(self.rule))
             raise ex
 
     def run(self, task):
@@ -110,6 +112,7 @@ class _RuleTask(object):
             self.exrun.flagError(ex)
         self.rule.task = None
         self.exrun.scheduleReady()
+
 
 class ExRun(object):
     """Run an experiment.
@@ -128,14 +131,14 @@ class ExRun(object):
         self.files = {}
         self.running = False
         self.failedCnt = 0
-        self.targets = None # list of targets to execute
+        self.targets = None  # list of targets to execute
         self.sched = sched.Sched()
         self.sched.obtainLocalGroup(maxLocalThreads)
-        self.errors = [] # exceptions that occurred
+        self.errors = []  # exceptions that occurred
 
     def setRemoteMaxThreads(self, host, maxThreads):
         """set the max number of threads on a remote host"""
-        self.sched.obtainGroup(host).setMaxConcurrent(maxConcurrent)
+        self.sched.obtainGroup(host).setMaxConcurrent(maxThreads)
 
     def __modGraphErr(self):
         "generate error on attempt to modify graph after started running"
@@ -223,7 +226,7 @@ class ExRun(object):
         """add a command rule with a single command or pipeline, this is a
         shortcut for addRule(CmdRule(Cmd(....),...)"""
         return self.addRule(CmdRule(Cmd(cmd, stdin=stdin, stdout=stdout, stderr=stderr), name=name, requires=requires, produces=produces))
-    
+
     def flagError(self, err):
         "add an error from a rule to the list"
         with self.lock:
@@ -237,7 +240,7 @@ class ExRun(object):
                 for rule in self.graph.getReady(self.targets):
                     self.sched.addTask(_RuleTask(self, rule).run,
                                        sched.groupLocal)
-            
+
     def getTarget(self, name):
         "find a target object by name, or an error"
         target = self.graph.targetsByName.get(name)
@@ -258,9 +261,9 @@ class ExRun(object):
         return ts
 
     def __reportExprError(self, ex):
-        self.verb.prall(strOps.dup(80,"=")+"\n")
+        self.verb.prall(strOps.dup(80, "=") + "\n")
         self.verb.prall(PycbioException.formatExcept(ex) + "\n")
-        self.verb.prall(strOps.dup(80,"-")+"\n")
+        self.verb.prall(strOps.dup(80, "-") + "\n")
 
     def __reportExprErrors(self):
         "final error reporting at the end of a run"
@@ -280,7 +283,6 @@ class ExRun(object):
                 self.dumpGraph("ending")
         if len(self.errors) > 0:
             self.__reportExprErrors()
-        
 
     def run(self, targets=defaultTargetName, dryRun=False):
         """run the experiment, If targets are not specified, the default
@@ -305,9 +307,9 @@ class ExRun(object):
             self.verb.prall(pre, str(r))
             pre = "     "
         self.verb.leave()
-        
+
     def __dumpRule(self, rule, fh=None):
-        self.verb.prall("Rule:", str(rule), "<"+str(rule.state)+">")
+        self.verb.prall("Rule: <{}>".format(rule, rule.state))
         self.verb.enter()
         pre = "prd: "
         for p in rule.produces:
@@ -318,13 +320,13 @@ class ExRun(object):
             self.verb.prall(pre, str(r))
             pre = "     "
         self.verb.leave()
-        
+
     def __dumpProduction(self, prod):
-        self.verb.prall("Production:", str(prod), "<"+ str(prod.state)+ ">", "["+str(prod.getLocalTime())+"]")
+        self.verb.prall("Production: {} <{}> []".format(prod, prod.state, prod.getLocalTime()))
         self.verb.enter()
-        self.verb.prall("producedBy:", str(prod.producedBy))
+        self.verb.prall("producedBy: {}".format(prod.producedBy))
         self.verb.leave()
-        
+
     def dumpGraph(self, msg, fh=None):
         if fh is not None:  # FIXME: kind of hacky
             holdFh = self.verb.fh

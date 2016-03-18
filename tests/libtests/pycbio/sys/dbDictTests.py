@@ -17,14 +17,14 @@ class DbDictTests(TestCaseBase):
     def testBasic(self):
         dbfile = self.getOutputFile("basic.sqlite")
         dbd = DbDict(dbfile)
-        dbd["one"] = "value 1" 
-        dbd["two"] = "value 2" 
-        dbd["three"] = "value 3" 
+        dbd["one"] = "value 1"
+        dbd["two"] = "value 2"
+        dbd["three"] = "value 3"
         keys = dbd.keys()
         keys.sort()
         self.__assertKeyValues(dbd, (('one', 'value 1'), ('three', 'value 3'), ('two', 'value 2')))
 
-        dbd["two"] = "value 2.1" 
+        dbd["two"] = "value 2.1"
         self.__assertKeyValues(dbd, (('one', 'value 1'), ('three', 'value 3'), ('two', 'value 2.1')))
 
         del dbd["two"]

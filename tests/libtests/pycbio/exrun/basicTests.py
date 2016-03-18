@@ -6,8 +6,8 @@ if __name__ == '__main__':
     sys.path.append("../../../..")
 from pycbio.sys import fileOps
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.exrun import ExRunException, ExRun, File, Target, Rule, Production, Verb
-from pycbio.exrun.graph import RuleState, ProdState
+from pycbio.exrun import ExRunException, ExRun, File, Rule, Production, Verb
+from pycbio.exrun.graph import RuleState, ProdState, Target
 from libtests.pycbio.exrun import ExRunTestCaseBase
 
 # change this for debugging:

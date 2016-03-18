@@ -2,7 +2,8 @@
 """ Version of Binner class that works with sqlalchemy
 """
 from .rangeFinder import Binner
-from sqlalchemy import and_,or_
+from sqlalchemy import and_, or_
+
 
 class BinnerSA(Binner):
     """generate sqlalchemy query to find overlapping ranges using bin numbers"""
@@ -18,5 +19,3 @@ class BinnerSA(Binner):
             else:
                 parts.append(and_(binCol >= bins[0], binCol <= bins[1]))
         return and_(seqCol == seq, startCol < end, endCol > start, or_(*parts))
-
-

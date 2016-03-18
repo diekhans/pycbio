@@ -2,10 +2,10 @@
 # Copyright 2006-2012 Mark Diekhans
 "Classes used to implement rules that execute commands and produce files"
 
-import os.path,sys
-from pycbio.sys import typeOps,fileOps
-from pycbio.exrun import ExRunException,Verb
-from pycbio.exrun.graph import Production,Rule
+import os.path
+from pycbio.sys import typeOps, fileOps
+from pycbio.exrun import ExRunException, Verb
+from pycbio.exrun.graph import Production, Rule
 from pycbio.sys import pipeline
 
 # FIXME: Auto decompression is not supported, as many programs handle reading
@@ -17,6 +17,7 @@ from pycbio.sys import pipeline
 
 # FIXME: the number of different get{In,Out} functions is confusing, and can causes
 # errors if the wrong one is used
+
 
 class FileIn(object):
     """Object used to specified an input File as an argument to a command.
@@ -45,6 +46,7 @@ class FileIn(object):
             return self.file.getInPath(self.autoDecompress)
         else:
             return self.prefix + self.file.getInPath(self.autoDecompress)
+
 
 class FileOut(object):
     """Object used to specified an output File as an argument to a command.  Using
@@ -75,6 +77,7 @@ class FileOut(object):
         else:
             return self.prefix + self.file.getOutPath(self.autoCompress)
 
+
 class File(Production):
     """Object representing a file production. This handles atomic file
     creation. CmdRule will install productions of this class after the
@@ -91,7 +94,7 @@ class File(Production):
         "realPath is use to detect files accessed from different paths"
         Production.__init__(self, path)
         self.path = path
-        self.realPath = realPath # FIXME is this needed
+        self.realPath = realPath  # FIXME is this needed
         self.outPath = None
         self.installed = False
         # FIXME: add failed flag
@@ -173,6 +176,7 @@ class File(Production):
         to clean up decompression pipes"""
         self.done()
 
+
 class Cmd(list):
     """A command in a CmdRule. Contains a list of lists of command words,
     which will either be any type of object or FileIn/FileOut objects.
@@ -222,7 +226,6 @@ class Cmd(list):
             return pipeline.PIn(pdev, fspec.prefix)
         else:
             return pipeline.PIn(pipeline.File(path), fspec.prefix)
-
 
     def __getOutput(self, pdag, fspec):
         """Get an output file. If fspec can be None, File or FileOut, or any
@@ -283,10 +286,12 @@ class Cmd(list):
         finally:
             self.prodToDev = None
 
+
 class PersistentFlag(Production):
     """Object representing a flag file indicating that a rules has succeeded.
     These are stored in the experiment control directory."""
     pass
+
 
 class CmdRule(Rule):
     """Rule to execute processes.  Automatically installs File producions after
@@ -322,7 +327,7 @@ class CmdRule(Rule):
 
     @staticmethod
     def __mkName(requires, produces):
-        return "Rule["+ CmdRule.__mkNamePart(requires) + "=>" + CmdRule.__mkNamePart(produces)+"]"
+        return "Rule[{}=>{}]".format(CmdRule.__mkNamePart(requires), CmdRule.__mkNamePart(produces))
 
     def __init__(self, cmds=None, name=None, requires=None, produces=None):
         requires = typeOps.mkset(requires)
@@ -354,7 +359,7 @@ class CmdRule(Rule):
     def __addCmdStdio(self, fspecs, specSet, exclude=None):
         "add None, a single or a list of file specs as requires or produces links"
         for fspec in typeOps.mkiter(fspecs):
-            if  (isinstance(fspec, FileIn) or isinstance(fspec, FileOut)):
+            if (isinstance(fspec, FileIn) or isinstance(fspec, FileOut)):
                 fspec = fspec.file  # get File object for reference
             if (isinstance(fspec, File) and ((exclude is None) or (fspec not in exclude))):
                 specSet.add(fspec)
@@ -376,7 +381,7 @@ class CmdRule(Rule):
             fil.done()
         except Exception as ex:
             ex = ExRunException("Exception on file: " + str(fil), cause=ex)
-            self.verb.pr(Verb.error, str(ex)+"\n"+ex.format())
+            self.verb.pr(Verb.error, "{}\n{}".format(ex, ex.format()))
             return ex
         return None
 
@@ -396,7 +401,7 @@ class CmdRule(Rule):
                 cmd.call(self.verb)
             except Exception as ex:
                 ex = ExRunException("Exception running command: " + str(cmd), cause=ex)
-                self.verb.pr(Verb.error, str(ex)+"\n"+ex.format())
+                self.verb.pr(Verb.error, "{}\n{}".format(ex, ex.format()))
                 firstEx = ex
         finally:
             firstEx = self.__closeFiles(self.requires, firstEx)
@@ -423,7 +428,7 @@ class CmdRule(Rule):
             self.run()
         except Exception as ex:
             ex = ExRunException("Exception executing rule: " + str(self), cause=ex)
-            self.verb.pr(Verb.error, str(ex)+"\n"+ex.format())
+            self.verb.pr(Verb.error, "{}\n{}".format(ex, ex.format()))
             raise
         finally:
             self.verb.leave()

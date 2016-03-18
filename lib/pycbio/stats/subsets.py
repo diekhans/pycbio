@@ -1,5 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
 
+
 class Subsets(object):
     "Generate possible subsets for a set of elements"
 
@@ -60,9 +61,9 @@ class Subsets(object):
             elements = list(elements)
 
         # build as lists for sorting
-        nSubsets = (1 << len(elements))-1
+        nSubsets = (1 << len(elements)) - 1
         subsets = list()
-        for bitSet in xrange(1, nSubsets+1):
+        for bitSet in xrange(1, nSubsets + 1):
             subsets.append(self.__makeSubset(bitSet, elements))
         # sort and constructs sets
         subsets.sort(cmp=Subsets.__subListCmp)
@@ -90,7 +91,6 @@ class Subsets(object):
             inclSubsets.append(iss)
         inclSubsets.sort(cmp=Subsets.__subListCmp)
         return tuple(inclSubsets)
-
 
     def getInclusiveSubsets(self, subset):
         """Get the inclusive subsets for particular subset; that is all subsets

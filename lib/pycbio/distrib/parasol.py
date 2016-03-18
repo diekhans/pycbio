@@ -1,7 +1,8 @@
 # Copyright 2006-2012 Mark Diekhans
 """classes for interacting with parasol batch system"""
-import sys, os.path
-from pycbio.sys import procOps,fileOps
+import sys
+import os.path
+from pycbio.sys import procOps, fileOps
 
 # FIXME: shell has multiple quoting hell issues; maybe something like
 # fsh (http://www.lysator.liu.se/fsh/) would fix this, and make it faster.
@@ -9,18 +10,19 @@ from pycbio.sys import procOps,fileOps
 
 # FIXME: need to figure out verbose stuff with indentation
 
+
 class BatchStats(object):
     "statistics on jobs in the current batch"
 
     # map of `string: cnt' lines to fields
-    _simpleParse = {"unsubmitted jobs":    "unsubmitted",
-                    "submission errors":   "subErrors",
-                    "queue errors":        "queueErrors",
-                    "tracking errors":     "trackingErrors",
-                    "queued and waiting":  "waiting",
-                    "crashed":             "crashed",
-                    "running":             "running",
-                    "ranOk":               "ranOk",
+    _simpleParse = {"unsubmitted jobs": "unsubmitted",
+                    "submission errors": "subErrors",
+                    "queue errors": "queueErrors",
+                    "tracking errors": "trackingErrors",
+                    "queued and waiting": "waiting",
+                    "crashed": "crashed",
+                    "running": "running",
+                    "ranOk": "ranOk",
                     "total jobs in batch": "totalJobs"}
 
     def _parseLine(self, words):
@@ -67,13 +69,14 @@ class BatchStats(object):
             if len(line) > 0:
                 words = line.split(":")
                 if (len(words) < 2) or not self._parseLine(words):
-                    raise Exception("don't know how to parse para check output line: "+line)
+                    raise Exception("don't know how to parse para check output line: {}".format(line))
 
     def hasParasolErrs(self):
         return self.subErrors or self.queueErrors or self.trackingErrors or self.paraResultsErrors
 
     def succeeded(self):
         return (not self.hasParasolErrs()) and (self.ranOk == self.totalJobs)
+
 
 class Para(object):
     "interface to the parasol para command"

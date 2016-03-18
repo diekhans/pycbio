@@ -16,7 +16,11 @@ between scheduling groups.  A task is not equivalent to a thread, they
 are something run by a thread.
 """
 from __future__ import with_statement
-import sys, os, threading, Queue, traceback
+import sys
+import os
+import threading
+import Queue
+import traceback
 from pycbio.sys import PycbioException
 
 # Notes:
@@ -30,35 +34,44 @@ from pycbio.sys import PycbioException
 
 groupLocal = "localhost"
 
+
 class SchedException(PycbioException):
     "various Sched exceptions"
     pass
+
 
 class TaskTerminateException(PycbioException):
     "exception used to prematurely terminate a task"
     def __init__(self):
         PycbioException.__init__(self, "task terminated")
 
+
 class TaskRunMsg(object):
     "message to tell a task to run"
     pass
+
 
 class TaskEndMsg(object):
     "message to tell a task to exit prematurely"
     pass
 
+
 class SchedTaskEndMsg(object):
     "message to scheduler that a task ended"
     __slots__ = ("task",)
+
     def __init__(self, task):
         self.task = task
+
 
 class SchedTaskMoveMsg(object):
     "message to scheduler to move a task to another group."
     __slots__ = ("task", "newGroup")
+
     def __init__(self, task, newGroup):
         self.task = task
         self.newGroup = newGroup
+
 
 class Task(threading.Thread):
     """A task, which is something to execute. A tasks can be moved between groups.
@@ -107,6 +120,7 @@ class Task(threading.Thread):
         self.__send(SchedTaskMoveMsg(self, newGroup))
         self.__receive()
 
+
 class Group(object):
     """Scheduling group, normally associated with a host,
     contains a list of tasks. Assumes locking is done by Sched"""
@@ -140,9 +154,10 @@ class Group(object):
     def _startTasks(self):
         "start pending tasks up to maximum"
         # re-order by priority
-        self.ready.sort(cmp=lambda a,b: b.pri-a.pri) 
+        self.ready.sort(cmp=lambda a, b: b.pri - a.pri)
         while (len(self.running) < self.maxConcurrent) and (len(self.ready) > 0):
             self.__startNext()
+
 
 class Sched(object):
     "object that schedules threads to tasks"

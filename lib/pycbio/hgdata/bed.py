@@ -11,11 +11,12 @@ class Bed(object):
 
     class Block(object):
         __slots__ = ("relStart", "size", "start", "end")
+
         def __init__(self, relStart, size, start):
             self.relStart = relStart
             self.size = size
             self.start = start
-            self.end = start+size
+            self.end = start + size
 
         def __str__(self):
             return str(self.start) + "-" + str(self.end) + "[+" + str(self.relStart) + "/" + str(self.size) + "]"
@@ -40,7 +41,7 @@ class Bed(object):
         else:
             self.thickStart = None
             self.thickEnd = None
-            
+
         if self.numCols > 8:
             self.itemRgb = row[8]
         else:
@@ -50,14 +51,14 @@ class Bed(object):
             relStarts = intArraySplit(row[11])
             self.blocks = []
             for i in xrange(len(relStarts)):
-                self.blocks.append(Bed.Block(relStarts[i], sizes[i], self.chromStart+relStarts[i]))
+                self.blocks.append(Bed.Block(relStarts[i], sizes[i], self.chromStart + relStarts[i]))
         else:
             self.blocks = None
 
     def getRow(self):
         row = [self.chrom, str(self.chromStart), str(self.chromEnd), self.name]
         if self.numCols > 4:
-            row.append(str(self.score));
+            row.append(str(self.score))
         if self.numCols > 5:
             row.append(self.strand)
         if self.numCols > 7:
@@ -79,17 +80,19 @@ class Bed(object):
     def __str__(self):
         "return BED as a tab-separated string"
         return str.join("\t", self.getRow())
-        
+
     def write(self, fh):
         """write BED to a tab-seperated file"""
         fh.write(str(self))
-        fh.write('\n')        
+        fh.write('\n')
+
 
 class BedReader(TabFileReader):
     """Reader for BED objects loaded from a tab-file"""
 
     def __init__(self, fileName):
         TabFileReader.__init__(self, fileName, rowClass=Bed, hashAreComments=True, skipBlankLines=True)
+
 
 class BedTbl(TabFile):
     """Table of BED objects loaded from a tab-file
@@ -105,4 +108,3 @@ class BedTbl(TabFile):
         self.nameMap = None
         if nameIdx:
             self.__mkNameIdx()
-

@@ -5,6 +5,7 @@ from pycbio.hgdata.autoSql import strArrayType
 from pycbio.tsv import TsvReader
 from pycbio.sys.multiDict import MultiDict
 
+
 def cgBoolParse(val):
     if val == "y":
         return True
@@ -12,18 +13,20 @@ def cgBoolParse(val):
         return False
     else:
         raise ValueError("expected y or n: " + val)
-    
+
+
 def cgBoolFormat(val):
-    if val == True:
+    if val is True:
         return "y"
-    elif val == False:
+    elif val is False:
         return "n"
     else:
         raise ValueError("expected bool type, got: " + type(val))
+
 cgBoolSpec = (cgBoolParse, cgBoolFormat)
 
-#cluster	table	gene	chrom	txStart	txEnd	strand	hasExonConflicts	hasCdsConflicts	exonConflicts	cdsConflicts
-#cluster	table	gene	chrom	txStart	txEnd	strand
+# cluster	table	gene	chrom	txStart	txEnd	strand	hasExonConflicts	hasCdsConflicts	exonConflicts	cdsConflicts
+# cluster	table	gene	chrom	txStart	txEnd	strand
 typeMap = {
     "cluster": int,
     "chrom": intern,
@@ -36,6 +39,7 @@ typeMap = {
     "exonConflicts": strArrayType,
     "cdsConflicts": strArrayType,
 }
+
 
 class Cluster(list):
     """one gene cluster, a list of gene objects from file, A field
@@ -51,7 +55,7 @@ class Cluster(list):
 
         # set to None if conflicts were not collected
         self.hasExonConflicts = None
-	self.hasCdsConflicts = None
+        self.hasCdsConflicts = None
 
     def add(self, row):
         self.append(row)
@@ -90,6 +94,7 @@ class Cluster(list):
             if (trackSet is None) or (gene.table in trackSet):
                 gene.write(fh)
 
+
 class ClusterGenes(list):
     """Object to access output of ClusterGenes.  List of Cluster objects,
     indexed by clusterId.  Note that clusterId is one based, entry 0 is
@@ -121,7 +126,7 @@ class ClusterGenes(list):
         cluster.add(row)
         self.genes.add(row.gene, row)
         self.tableSet.add(row.table)
-        
+
     def __iter__(self):
         "get generator over non-null clusters"
         return self.generator()

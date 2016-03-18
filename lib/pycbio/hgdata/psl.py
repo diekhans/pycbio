@@ -215,7 +215,7 @@ class Psl(object):
         lastBlock = self.blockCount - 1
         if len(self.strand) < 2:
             return False
-        return (((self.strand[1] == '+' ) and
+        return (((self.strand[1] == '+') and
                  (self.tEnd == self.tStarts[lastBlock] + 3*self.blockSizes[lastBlock]))
                 or
                 ((self.strand[1] == '-') and
@@ -260,7 +260,7 @@ class Psl(object):
     def write(self, fh):
         """write psl to a tab-seperated file"""
         fh.write(str(self))
-        fh.write('\n')        
+        fh.write('\n')
 
     @staticmethod
     def queryCmp(psl1, psl2):
@@ -314,7 +314,7 @@ class Psl(object):
 
     def sameAlign(self, other):
         "compare for equality of alignment.  The stats fields are not compared."
-        if ((other is None) 
+        if ((other is None)
             or (self.strand != other.strand)
             or (self.qName != other.qName)
             or (self.qSize != other.qSize)
@@ -385,7 +385,7 @@ class Psl(object):
         return qs+ts
 
     def swapSides(self, keepTStrandImplicit=False):
-        """Create a new PSL with target and query swapped, 
+        """Create a new PSL with target and query swapped,
 
         If keepTStrandImplicit is True the psl has an implicit positive target strand, reverse
         complement to keep the target strand positive and implicit.
@@ -394,7 +394,7 @@ class Psl(object):
         alignments to keep target positive strand.  This will make the target
         strand explicit."""
         doRc = (keepTStrandImplicit and (len(self.strand) == 1) and (self.getQStrand() == "-"))
-        
+
         swap = Psl(None)
         swap.match = self.match
         swap.misMatch = self.misMatch
@@ -499,7 +499,7 @@ class PslDbReader(object):
         query += " from " + table + " where " \
             + Binner.getOverlappingSqlExpr("tName", "bin", "tStart", "tEnd", tName, tStart, tEnd)
         return PslDbReader(conn, query)
-                
+
 
 class PslTbl(list):
     """Table of PSL objects loaded from a tab-file
@@ -529,7 +529,7 @@ class PslTbl(list):
 
     def haveQName(self, qName):
         return (self.qNameMap.get(qName) is not None)
-        
+
     def getByQName(self, qName):
         """generator to get all PSL with a give qName"""
         ent = self.qNameMap.get(qName)
@@ -545,7 +545,7 @@ class PslTbl(list):
 
     def haveTName(self, tName):
         return (self.tNameMap.get(qName) is not None)
-        
+
     def getByTName(self, tName):
         """generator to get all PSL with a give tName"""
         ent = self.tNameMap.get(tName)

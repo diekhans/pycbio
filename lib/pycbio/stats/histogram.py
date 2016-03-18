@@ -1,10 +1,9 @@
 # Copyright 2006-2012 Mark Diekhans
-import math
-from pycbio.sys.fileOps import prLine, prRowv, iterRows
-from pycbio.sys.typeOps import isListLike
+from pycbio.sys.fileOps import prLine, iterRows
 
 # FIXME: computed histo should be an object, not just a list
 # FIXME: binnins doesn't work for values in the range [-1.0, 1.0]
+
 
 class Bin(object):
     "A bin in the histogram"
@@ -18,11 +17,12 @@ class Bin(object):
 
     def getCenter(self):
         "return center point of bin"
-        return self.binMin+(self.binSize/2.0)
+        return self.binMin + (self.binSize / 2.0)
 
     def __str__(self):
-        return "bin: "+ str(self.idx) + " min: " + str(self.binMin) + " size: " + str(self.binSize) + " cnt: " + str(self.cnt) + " freq: " + str(self.freq)
-        
+        return "bin: {} min: {} size: {} cnt: {} freq: {}".format(self.idx, self.binMin, self.binSize, self.cnt, self.freq)
+
+
 class NumData(list):
     "data consisting of individual numbers"
     def __init__(self):
@@ -36,6 +36,7 @@ class NumData(list):
             self.min = min(self)
             self.max = max(self)
             self.total = sum(self)
+
 
 class NumCntData(list):
     "data consisting of tuples of numbers and counts"
@@ -54,7 +55,8 @@ class NumCntData(list):
                 self.min = val
             if val > self.max:
                 self.max = val
-            self.total += item[1]*val
+            self.total += item[1] * val
+
 
 class Histogram(object):
     """Bin data into a histogram for ploting or other purposes.
@@ -62,10 +64,9 @@ class Histogram(object):
     tuples of (value, count).
     """
 
-    def __init__(self, data=None, isTupleData=False,
-                 truncMin = False, truncMax = False,
-                 binMin = None, binMax = None,
-                 binSize = None, numBins = None):
+    def __init__(self, data=None, isTupleData=False, truncMin=False,
+                 truncMax=False, binMin=None, binMax=None, binSize=None,
+                 numBins=None):
         "create histogram, optionally adding data"
         # parameters controling histogram
         self.truncMin = truncMin
@@ -134,14 +135,14 @@ class Histogram(object):
             self.binSizeUse = self.binFloorUse = self.binCeilUse = 0
         elif self.binSizeUse is None:
             # compute bin size from num bins
-            estBinSize = float(self.binMaxUse-self.binMinUse)/float(self.numBinsUse-1)
-            self.binSizeUse = float(self.binMaxUse-self.binMinUse+estBinSize)/float(self.numBinsUse)
-            self.binFloorUse = self.binMinUse - (self.binSizeUse/2.0)
-            self.binCeilUse = self.binFloorUse + (self.numBinsUse*self.binSizeUse)
+            estBinSize = float(self.binMaxUse - self.binMinUse) / float(self.numBinsUse - 1)
+            self.binSizeUse = float(self.binMaxUse - self.binMinUse + estBinSize) / float(self.numBinsUse)
+            self.binFloorUse = self.binMinUse - (self.binSizeUse / 2.0)
+            self.binCeilUse = self.binFloorUse + (self.numBinsUse * self.binSizeUse)
         else:
             # compute num bins from bin size
             raise Exception("doesn't work")
-            self.numBinsUse = int(float(self.binMaxUse-self.binMinUse)/float(self.binSizeUse))
+            self.numBinsUse = int(float(self.binMaxUse - self.binMinUse) / float(self.binSizeUse))
             self.binFloorUse = self.binMinUse
             self.binCeilUse = self.binMaxUse
 
@@ -154,12 +155,12 @@ class Histogram(object):
         elif val > self.binMaxUse:
             return None if self.truncMax else self.numBinsUse - 1
         else:
-            return int((val-self.binFloorUse)/float(self.binSizeUse))
+            return int((val - self.binFloorUse) / float(self.binSizeUse))
 
     def __mkBins(self):
         self.bins = []
         for i in xrange(self.numBinsUse):
-            self.bins.append(Bin(self, i, self.binFloorUse+(i*self.binSizeUse), self.binSizeUse))
+            self.bins.append(Bin(self, i, self.binFloorUse + (i * self.binSizeUse), self.binSizeUse))
 
     def __binTupleData(self):
         for item in self.data:
@@ -180,7 +181,7 @@ class Histogram(object):
                 bin.freq = bin.cnt / ndata
             else:
                 bin.freq = 0.0
-                
+
     def build(self):
         "construct histogram from data, return list of bins (also in bins field)"
         self.__calcParams()
@@ -200,8 +201,7 @@ class Histogram(object):
         self.__calcParams()
         if desc is not None:
             prLine(fh, desc)
-        prLine(fh, "  data:  len: ", len(self.data), "  min: ", self.data.min, "  max: ", self.data.max)
-        prLine(fh, "  bins:  num: ", self.numBins, "  size: ", self.binSize, "  min: ", self.binMin, "  max: ", self.binMax)
-        prLine(fh, "  use:  num: ", self.numBinsUse, "  size: ", self.binSizeUse, "  min: ", self.binMinUse, "  max: ", self.binMaxUse,
-               "  floor: ", self.binFloorUse, "  ceil: ", self.binCeilUse)
-        
+        prLine(fh, "  data: len: {}  min: {} max: {}".format(len(self.data), self.data.min, self.data.max))
+        prLine(fh, "  bins: num: {} size: {} min: {} max: {}".format(self.numBins, self.binSize, self.binMin, self.binMax))
+        prLine(fh, "  use:  num: {} size: {} min: {} max: {} floor: {} ceil: {}".format(self.numBinsUse, self.binSizeUse, "", self.binMinUse, self.binMaxUse,
+                                                                                        self.binFloorUse, self.binCeilUse))

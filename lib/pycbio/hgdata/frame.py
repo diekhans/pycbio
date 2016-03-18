@@ -1,6 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 from pycbio.sys.immutable import Immutable
 
+
 def frameToPhase(frame):
     "convert a frame to a phase"
     if frame < 0:
@@ -13,6 +14,7 @@ def frameToPhase(frame):
         return 1
     else:
         raise Exception("invalid frame: " + str(frame))
+
 
 def phaseToFrame(phase):
     "convert a phase to a frame"
@@ -27,6 +29,7 @@ def phaseToFrame(phase):
     else:
         raise Exception("invalid phase: " + str(phase))
 
+
 def frameIncr(frame, amt):
     """increment an interger frame by positive or negative amount. Frame of -1
     already returns -1."""
@@ -35,15 +38,17 @@ def frameIncr(frame, amt):
     elif amt >= 0:
         return ((frame + amt) % 3)
     else:
-        amt3 = ((-amt)%3)
-        return ((frame - (amt-amt3)) % 3)
-        
-# FIXME: not done or tested
+        amt3 = ((-amt) % 3)
+        return ((frame - (amt - amt3)) % 3)
+
+
 class Frame(Immutable):
     """Immutable object the represents a frame, integer value of 0, 1, 2, or
     -1 for no frame."""
-    
+    # FIXME: not done or tested
+
     __slots__ = ("val",)
+
     def __init__(self, val=-1):
         Immutable.__init__(self)
         assert((val >= -1) and (val <= 2))
@@ -60,4 +65,3 @@ class Frame(Immutable):
         else:
             amt3 = (-amt) % 3
             return Frame((self.val - (amt - amt3)) % 3)
-        

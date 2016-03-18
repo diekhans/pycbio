@@ -3,9 +3,11 @@
 
 # FIXME: move to other modules
 
+
 def isListLike(v):
     "is variable a list or tuple?"
     return isinstance(v, list) or isinstance(v, tuple)
+
 
 def listInit(size, val):
     "create a list of length size, with each element containing val"
@@ -13,6 +15,7 @@ def listInit(size, val):
     for i in xrange(size):
         l.append(val)
     return l
+
 
 def listAppend(lst, item):
     """if lst is None, create a new list with item, otherwise append item.
@@ -23,6 +26,7 @@ def listAppend(lst, item):
         lst.append(item)
     return lst
 
+
 def listExtend(lst, items):
     """if lst is None, create a new list with items, otherwise extend with items.
     Returns list"""
@@ -32,10 +36,12 @@ def listExtend(lst, items):
         lst.extend(items)
     return lst
 
-# FIXME: bad name, as strings are iterable
+
 def isIterable(v):
     "is variable a list, tuple, set, or hash? str doesn't count"
+    # FIXME: bad name, as strings are iterable
     return isinstance(v, list) or isinstance(v, tuple) or isinstance(v, set) or isinstance(v, dict)
+
 
 def mkiter(item):
     """create a iterator over item, if item is iterable, just return an iter,
@@ -49,11 +55,12 @@ def mkiter(item):
     else:
         return iter([item])
 
-# FIXME: move to setOps
+
 def mkset(item):
     """create a set from item.  If it's None, return an empty set, if it's
     iterable, convert to a set, if it's a single item, make a set of it,
     it it's already a set, just return as-is"""
+    # FIXME: move to setOps
     if isinstance(item, set):
         return item
     elif item is None:
@@ -63,9 +70,11 @@ def mkset(item):
     else:
         return set([item])
 
+
 def noneOrZero(v):
     "test if a value is either None or len of zero"
     return (v is None) or (len(v) == 0)
+
 
 def addUniq(d, k, v):
     "add to a dict, generating an error if the item already exists"
@@ -73,19 +82,22 @@ def addUniq(d, k, v):
         raise Exception("item \"" + str(k) + "\" already in dict")
     d[k] = v
 
+
 def dictObtain(d, key, mkFunc):
     "return entry d[key], creating with mkFunc if it doesn't exist"
-    if not key in d:
+    if key not in d:
         e = d[key] = mkFunc()
     else:
         e = d[key]
     return e
+
 
 def sorted(iterable, cmp=None, key=None, reverse=False):
     "create new list from iterable and sort it"
     l = list(iterable)
     l.sort(cmp=cmp, key=key, reverse=reverse)
     return l
+
 
 def sortedKeys(d, sortFunc=cmp):
     "return of keys for dict d, sort by sortFunc, if d is None, return an empty list"
@@ -96,16 +108,20 @@ def sortedKeys(d, sortFunc=cmp):
         keys.sort(cmp=sortFunc)
         return keys
 
-# __str__ function for annon objects
+
 def _annonStr(self):
-    return ", ".join([str(k)+"="+repr(getattr(self, k)) for k in sorted(dir(self)) if not k.startswith("__")])
+    "__str__ function for annon objects"
+    return ", ".join(["{}={}".format(k, repr(getattr(self, k))) for k in sorted(dir(self)) if not k.startswith("__")])
+
 
 def annon(**kwargs):
     """create an anonymous object with fields that are same as the keyword
     arguments.
     """
     kwargs.update({"__str__": _annonStr})
-    return type('',(),kwargs)()
-    
-__all__ = (isListLike.__name__, listInit.__name__, listAppend.__name__, isIterable.__name__, mkiter.__name__, mkset.__name__, noneOrZero.__name__, addUniq.__name__, dictObtain.__name__, sorted.__name__, sortedKeys.__name__, annon.__name__)
+    return type('', (), kwargs)()
 
+__all__ = (isListLike.__name__, listInit.__name__, listAppend.__name__,
+           isIterable.__name__, mkiter.__name__, mkset.__name__,
+           noneOrZero.__name__, addUniq.__name__, dictObtain.__name__,
+           sorted.__name__, sortedKeys.__name__, annon.__name__)

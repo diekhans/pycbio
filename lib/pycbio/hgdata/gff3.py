@@ -28,18 +28,18 @@ class GFF3Exception(PycbioException):
         super(GFF3Exception, self).__init__(message, cause)
 
 # characters forcing encode for columns
-_encodeColReStr = "\t|\n|\r|%|[\x00-\x1F]|\x7f"
-_encodeColRe = re.compile(_encodeColReStr)
+_encodeColRegexpStr = "\t|\n|\r|%|[\x00-\x1F]|\x7f"
+_encodeColRegexp = re.compile(_encodeColRegexpStr)
 
 # characters forcing encode for attribute names or values
-_encodeAttrReStr = _encodeColReStr + "|;|=|&|,"
+_encodeAttrReStr = _encodeColRegexpStr + "|;|=|&|,"
 _encodeAttrRe = re.compile(_encodeAttrReStr)
 
 def _encodeCol(v):
     """
     Encode a column if is has special characters.
     """
-    if _encodeColRe.search(v):
+    if _encodeColRegexp.search(v):
         return urllib.quote(v)
     else:
         return v
@@ -193,7 +193,7 @@ class Gff3Set(object):
 
     def write(self, fh):
         """
-        Write set to a GFF3 format file. 
+        Write set to a GFF3 format file.
         """
         fh.write(GFF3_HEADER+"\n")
         for root in sorted(self.roots, key=self.__recSortKey):

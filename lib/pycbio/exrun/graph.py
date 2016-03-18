@@ -1,12 +1,11 @@
 # Copyright 2006-2012 Mark Diekhans
-"""Graph (DAG) of productions and rules.  This also manages 
+"""Graph (DAG) of productions and rules.  This also manages
 of production and rule state flags."""
 from __future__ import with_statement
-import os.path, threading
+import threading
 from pycbio.sys import typeOps
 from pycbio.sys.enumeration import Enumeration
 from pycbio.exrun import ExRunException, Verb
-import sys # FIXME: debug
 
 # FIXME: adding node has gotten too complex
 # FIXME: state initialization is rather complex and redundent
@@ -18,11 +17,12 @@ posInf = float("inf")
 negInf = float("-inf")
 _emptySet = frozenset()
 
+
 class CycleException(ExRunException):
     "Exception indicating a cycle has occured"
     def __init__(self, cycle):
         desc = []
-        for n in  cycle:
+        for n in cycle:
             desc.append("  " + str(n) + " ->")
         ExRunException.__init__(self, "cycle detected:\n" + "\n".join(desc))
 
@@ -33,12 +33,12 @@ class CycleException(ExRunException):
 ProdState = Enumeration("ProdState",
                         ("unknown", "outdated", "current", "failed", "blocked", "bad"))
 _prodStateTbl = {}
-_prodStateTbl[ProdState.unknown]  = frozenset([ProdState.outdated, ProdState.current, ProdState.blocked, ProdState.bad])
+_prodStateTbl[ProdState.unknown] = frozenset([ProdState.outdated, ProdState.current, ProdState.blocked, ProdState.bad])
 _prodStateTbl[ProdState.outdated] = frozenset([ProdState.current, ProdState.blocked, ProdState.failed, ProdState.bad])
-_prodStateTbl[ProdState.current]  = _emptySet
-_prodStateTbl[ProdState.failed]   = _emptySet
-_prodStateTbl[ProdState.blocked]  = _emptySet
-_prodStateTbl[ProdState.bad]      = _emptySet
+_prodStateTbl[ProdState.current] = _emptySet
+_prodStateTbl[ProdState.failed] = _emptySet
+_prodStateTbl[ProdState.blocked] = _emptySet
+_prodStateTbl[ProdState.bad] = _emptySet
 
 # state of a Rule and valid transitions
 #  - failed - rule failed
@@ -46,12 +46,13 @@ _prodStateTbl[ProdState.bad]      = _emptySet
 RuleState = Enumeration("RuleState",
                         ("unknown", "outdated", "running", "ok", "failed", "blocked"))
 _ruleStateTbl = {}
-_ruleStateTbl[RuleState.unknown]  = frozenset([RuleState.ok, RuleState.outdated, RuleState.blocked])
+_ruleStateTbl[RuleState.unknown] = frozenset([RuleState.ok, RuleState.outdated, RuleState.blocked])
 _ruleStateTbl[RuleState.outdated] = frozenset([RuleState.running, RuleState.blocked])
-_ruleStateTbl[RuleState.running]  = frozenset([RuleState.ok, RuleState.failed])
-_ruleStateTbl[RuleState.ok]       = _emptySet
-_ruleStateTbl[RuleState.failed]   = _emptySet
-_ruleStateTbl[RuleState.blocked]  = _emptySet
+_ruleStateTbl[RuleState.running] = frozenset([RuleState.ok, RuleState.failed])
+_ruleStateTbl[RuleState.ok] = _emptySet
+_ruleStateTbl[RuleState.failed] = _emptySet
+_ruleStateTbl[RuleState.blocked] = _emptySet
+
 
 class Node(object):
     """Base object for all entries in graph. Derived object define generators
@@ -60,7 +61,7 @@ class Node(object):
         assert(isinstance(name, str))
         self.name = name
         self.shortName = shortName if (shortName is not None) else name
-        self.graph = None # set when added to graph
+        self.graph = None  # set when added to graph
         # these set when added to graph
         self.exrun = None
         self.verb = None
@@ -74,7 +75,8 @@ class Node(object):
         nodes = list(nodes)
         nodes.sort()
         return ", ".join([n.name for n in nodes])
-    
+
+
 class Production(Node):
     """Base class for a production. It can only have one requires (produced by)
     link.  When a production is being create by a rule, it is single threaded.
@@ -82,7 +84,7 @@ class Production(Node):
     multi-threaded when used as a required."""
     def __init__(self, name, shortName=None):
         """Name must be unique, short name does not have to be unique and defaults to name."""
-        Node.__init__(self, name, shortName);
+        Node.__init__(self, name, shortName)
         self.producedBy = None
         self.requiredBy = set()
         self.state = ProdState.unknown
@@ -112,10 +114,10 @@ class Production(Node):
         "compute and update state from producing rule state"
         if self.producedBy is None:
             # no rule to produce, must exist
-            if prod.getLocalTime() is None:
-                prod._transition(ProdState.bad)
+            if self.getLocalTime() is None:
+                self._transition(ProdState.bad)
             else:
-                prod._transition(ProdState.current)
+                self._transition(ProdState.current)
         else:
             self._transition(self.__stateFromRuleState(self.producedBy.state))
 
@@ -145,18 +147,18 @@ class Production(Node):
             if not isinstance(r, Rule):
                 raise ExRunException("Production " + str(self) + " requiredBy can only be linked to a Rule, attempt to link to: " + str(r))
             self.requiredBy.add(r)
-            r.requires.add(self);
+            r.requires.add(self)
 
     def setState(self, state):
         "recursively set the state or this production and parents"
         with self.graph.lock:
-            self.verb.enter(Verb.debug, "Production.setState: " + str(self.state), "=>", str(state), self.name) # FIXME
+            self.verb.enter(Verb.debug, "Production.setState: " + str(self.state), "=>", str(state), self.name)  # FIXME
             self._transition(state)
             if (state == ProdState.failed) or (state == ProdState.blocked):
                 for r in self.requiredBy:
                     r.setState(RuleState.blocked)
             # FIXME: could have a ready state
-            self.verb.leave() # FIXME
+            self.verb.leave()  # FIXME
 
     def finishSucceed(self):
         "called when the rule to create this production finishes successfully"
@@ -184,16 +186,17 @@ class Production(Node):
         If the production does not exist, returns None. """
         pt = self.getLocalTime()
         if (pt is None) or (self.producedBy is None):
-            return None # short-circuit
+            return None  # short-circuit
         else:
             return min(pt, self.producedBy.getUpdateTime())
+
 
 class Rule(Node):
     """Base class for a rule.  A rule is single threaded."""
     def __init__(self, name, requires=None, produces=None, shortName=None):
         """requires/produces can be a single Production or list of productions.
         name must be unique, short name does not have to be unique and defaults to name"""
-        Node.__init__(self, name, shortName);
+        Node.__init__(self, name, shortName)
         self.state = RuleState.unknown
         self.requires = set()
         self.produces = set()
@@ -288,7 +291,7 @@ class Rule(Node):
     def setState(self, state):
         "recursively set the state or this rule and parents"
         with self.graph.lock:
-            self.verb.enter(Verb.debug, "Rule.setState: " + str(self.state), "=>", str(state), self.name) # FIXME
+            self.verb.enter(Verb.debug, "Rule.setState: " + str(self.state), "=>", str(state), self.name)  # FIXME
             self._transition(state)
             if state == RuleState.running:
                 pstate = None
@@ -303,7 +306,7 @@ class Rule(Node):
             if pstate is not None:
                 for p in self.produces:
                     p.setState(pstate)
-            self.verb.leave() # FIXME
+            self.verb.leave()  # FIXME
 
     def nextNodes(self):
         "generator for traversing tree"
@@ -322,7 +325,7 @@ class Rule(Node):
             if not isinstance(r, Production):
                 raise ExRunException("Rule " + str(self) + " requires can only be linked to a Production, attempt to link to: " + str(r))
             r.linkRequiredBy(self)
-            
+
     def linkProduces(self, produces):
         """link in productions produced by this node. Can be single nodes, or
         lists or sets of nodes, reverse links are created"""
@@ -348,10 +351,10 @@ class Rule(Node):
         for r in self.requires:
             pt = r.getUpdateTime()
             if pt is None:
-                return None # short-circuit
+                return None  # short-circuit
             rt = min(rt, pt)
         return rt
-    
+
     def __isProdOutdated(self, rtime, prod):
         """is production outdated relative to requirement time, rtime is None
         if no requires, +Inf one doesn exist """
@@ -382,13 +385,14 @@ class Rule(Node):
         return False
 
     def isReady(self):
-        "is this rule ready to be run?" 
+        "is this rule ready to be run?"
         if self.state != RuleState.outdated:
             return False
         for r in self.requires:
             if r.state != ProdState.current:
                 return False
         return True
+
 
 class Target(Node):
     """A target is an explicit entry point into a graph.  It can have multiple
@@ -403,7 +407,7 @@ class Target(Node):
         self.requires = set()
         if requires is not None:
             self.linkRequires(requires)
-        
+
     def linkRequires(self, requires):
         """link in productions or targets required by this node. Can be single nodes,
         or lists or sets of nodes"""
@@ -411,11 +415,12 @@ class Target(Node):
             if not (isinstance(r, Production) or isinstance(r, Target)):
                 raise ExRunException("Target " + str(self) + " requires can only be linked to a Production or a Target, attempt to link to: " + str(r))
             self.requires.add(r)
-            
+
     def nextNodes(self):
         "generator for traversing tree"
         for r in self.requires:
             yield r
+
 
 class Graph(object):
     """Graph of productions and rules. Assumes that topology modifications
@@ -444,7 +449,7 @@ class Graph(object):
         nodeIdx[node.name] = node
         node.exrun = self.exrun
         node.verb = self.verb
-        
+
     def addTarget(self, target):
         "add a target to the graph"
         assert(isinstance(target, Target))
@@ -455,7 +460,7 @@ class Graph(object):
         """Get entry productions of the graph; that is those having no requireBy"""
         entries = [p for p in self.productions if (len(p.requiredBy) == 0)]
         # sorted by names so that test produce consistent results
-        entries.sort(cmp=lambda a,b:cmp(a.name,b.name))
+        entries.sort(cmp=lambda a, b: cmp(a.name, b.name))
         return entries
 
     def addRule(self, rule):
@@ -476,7 +481,7 @@ class Graph(object):
         with self.lock:
             entries = [p for p in self.productions if (len(p.requiredBy) == 0)]
             # sorted by names so that test produce consistent results
-            entries.sort(lambda a,b:cmp(a.name,b.name))
+            entries.sort(lambda a, b: cmp(a.name, b.name))
             return entries
 
     def __entrySetup(self, defaultTargetName=None):
@@ -516,7 +521,7 @@ class Graph(object):
         """check for cycles, starting at a root, update set of all visited"""
         cycle = self.__cycleCheckNode(set(), allVisited, root)
         if cycle is not None:
-            raise CycleException(cycle) # should never happen
+            raise CycleException(cycle)  # should never happen
 
     def __getCheckEntries(self):
         """get entries for cycle check. If all is well, there should be a least one
@@ -538,10 +543,10 @@ class Graph(object):
             self.__cycleCheck(entry, reachable)
         if len(reachable) < len(self.nodes):
             raise ExRunException("Nodes not reachable from any Target: "
-                                 + Node.joinNames(self.nodes-reachable))
+                                 + Node.joinNames(self.nodes - reachable))
         elif len(reachable) > len(self.nodes):
             raise ExRunException("Invalid graph, nodes not added through API: "
-                                 + Node.joinNames(reachable-self.nodes))
+                                 + Node.joinNames(reachable - self.nodes))
 
     def __initRuleStates(self, rule):
         "recursively initial rules states"
@@ -559,7 +564,7 @@ class Graph(object):
             else:
                 prod._transition(ProdState.current)
         else:
-            # recursively update, 
+            # recursively update,
             if prod.producedBy.state == RuleState.unknown:
                 self.__initRuleStates(prod.producedBy)
             prod.computeState()
@@ -583,7 +588,7 @@ class Graph(object):
         bad = self.__getBadProds()
         if bad is not None:
             raise ExRunException("No rule to build production(s): " + Node.joinNames(bad))
-        
+
     def complete(self, defaultTargetName=None):
         """complete construction of graph, validating and setting initial states.
         If there are no targets, then a default one can be created linking to
@@ -605,18 +610,18 @@ class Graph(object):
         return targets
 
     def bfs(self):
-      "BFS generator for graph"
-      with self.lock:
-          # initialize queue
-          queue = self.__findEntryProductions()
-          visited = set(queue)
-          while len(queue) > 0:
-              node = queue.pop()
-              yield node
-              for n in node.nextNodes():
-                  if not n in visited:
-                      visited.add(n)
-                      queue.append(n)
+        "BFS generator for graph"
+        with self.lock:
+            # initialize queue
+            queue = self.__findEntryProductions()
+            visited = set(queue)
+            while len(queue) > 0:
+                node = queue.pop()
+                yield node
+                for n in node.nextNodes():
+                    if n not in visited:
+                        visited.add(n)
+                        queue.append(n)
 
     def __getReady(self, root, ready):
         assert(isinstance(root, Node))
@@ -632,7 +637,7 @@ class Graph(object):
             elif root.state == RuleState.outdated:
                 for r in root.requires:
                     self.__getReady(r, ready)
-                      
+
     def getReady(self, roots):
         """get list of rules that are ready to run, starting at the
         given list of nodes."""

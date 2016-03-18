@@ -14,6 +14,7 @@ and parasol files.
 """
 from pycbio.exrun.Graph import Rule
 
+
 class Batch(Rule):
     """A rule for running a parasol batch. A batch rule works much
     like a CmdRule, with a list of requires and produces files.
@@ -27,10 +28,10 @@ class Batch(Rule):
         self.tmpDir = None
         Rule.__init__(self, statusDir, requires, produces)
 
-        
     def setup(self):
         """Called to setup the batch, should be overridden by specific batch."""
         pass
+
 
 class Parasol(Rule):
     """Construct a parasol batch rule.  A specific rule extends this class

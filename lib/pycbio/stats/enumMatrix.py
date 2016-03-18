@@ -3,11 +3,12 @@
 
 from pycbio.sys.enumeration import Enumeration
 
+
 class EnumArray(list):
     """array indexed by an Enumeration."""
 
     def __init__(self, enum, initVal=None):
-        for i in xrange(enum.maxNumValue+1):
+        for i in xrange(enum.maxNumValue + 1):
             self.append(initVal)
 
     def __getitem__(self, eval):
@@ -15,6 +16,7 @@ class EnumArray(list):
 
     def __setitem__(self, eval, val):
         return list.__setitem__(self, eval.numValue, val)
+
 
 class EnumMatrix(EnumArray):
     """matrix indexed by Enumerations."""

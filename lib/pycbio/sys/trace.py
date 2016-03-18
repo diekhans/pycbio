@@ -3,14 +3,22 @@
 # ideas from:
 #  http://www.dalkescientific.com/writings/diary/archive/2005/04/20/tracing_python_code.html
 
-import sys, os, types, linecache, threading
+import sys
+import os
+import types
+import linecache
+import threading
+
+# FIXME: can this be replace by the pdb trace facility???.
 
 # used to detect traces that are currently open to prevent closing
 _activeTraceFds = set()
 
+
 def getActiveTraceFds():
     "return snapshot of currently active traces"
     return frozenset(_activeTraceFds)
+
 
 class Trace(object):
     """Trace object, associate with an open trace file.  File is flushed after
@@ -27,7 +35,7 @@ class Trace(object):
         self.ignoreMods = set()
         if ignoreMods is not None:
             for m in ignoreMods:
-                if type(m) == types.ModuleType:
+                if isinstance(m, types.ModuleType):
                     m = m.__name__
                 self.ignoreMods.add(m)
 
@@ -67,17 +75,18 @@ class Trace(object):
             msg.append("\n")
             self.fh.write("".join(msg))
             self.fh.flush()
-        except IOError as ex:
+        except IOError:
             pass
 
-    __indentStrs = {} # cache of spaces for identation, indexed by depth
+    __indentStrs = {}  # cache of spaces for identation, indexed by depth
+
     def __getIndent(self):
         "get indentation string"
         if not self.callIndent:
             return ""
         i = Trace.__indentStrs.get(self.depth)
         if i is None:
-            i = Trace.__indentStrs[self.depth] = "".ljust(4*self.depth)
+            i = Trace.__indentStrs[self.depth] = "".ljust(4 * self.depth)
         return i
 
     def __logLine(self, frame, event):
@@ -91,6 +100,7 @@ class Trace(object):
         self.log(name, ":", lineno, self.__getIndent(), line.rstrip())
 
     __logEvents = frozenset(["call", "line"])
+
     def __callback(self, frame, event, arg):
         "trace event callback"
         if frame.f_globals["__name__"] not in self.ignoreMods:
@@ -100,7 +110,7 @@ class Trace(object):
                 self.depth -= 1
                 if self.depth < 0:
                     self.depth = 0
-            
+
             if event in Trace.__logEvents:
                 self.__logLine(frame, event)
         return self.__callback

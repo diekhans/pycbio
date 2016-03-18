@@ -2,12 +2,14 @@
 """Miscellaneous operations on sets"""
 
 # FIXME: should not need `set' as part of function names, since qualified by
-# module. move mkset from typeOps. 
+# module. move mkset from typeOps.
 import typeOps
+
 
 def setJoin(s, sep=" "):
     "join a set into a sorted string, converting each element to a string"
     return sep.join(sorted([str(e) for e in s]))
+
 
 def itemsInSet(seq, setFilter):
     "generator over all elements of sequence that are in the setFilter"
@@ -15,11 +17,13 @@ def itemsInSet(seq, setFilter):
         if item in setFilter:
             yield item
 
+
 def toSortList(s):
     "convert a set to a sorted list"
     l = list(s)
     l.sort()
     return l
+
 
 def mkfzset(item):
     """create a frozenset from item.  If it's None, return an empty set, if
@@ -34,5 +38,4 @@ def mkfzset(item):
     elif typeOps.isIterable(item):
         return frozenset(item)
     else:
-        return frozensetset([item])
-
+        return frozenset([item])
