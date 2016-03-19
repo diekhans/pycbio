@@ -1,8 +1,8 @@
 # Copyright 2015-2015 Mark Diekhans
-import unittest, sys
+import unittest
+import sys
 if __name__ == '__main__':
     sys.path.extend(["../../..", "../../../.."])
-from pycbio.sys.color import Color
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.sys import typeOps
 
@@ -13,7 +13,7 @@ class TypeOpsTests(TestCaseBase):
         self.assertEquals(ao.a, 10)
         self.assertEquals(ao.b, 20)
         self.assertEquals(str(ao), "a=10, b=20, fred='spaced out'")
-        
+
 
 # FIXME: many more tests needed
 

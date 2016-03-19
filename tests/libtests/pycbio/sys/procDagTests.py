@@ -1,10 +1,12 @@
 # Copyright 2006-2012 Mark Diekhans
-import unittest, sys, re, os
+import unittest
+import sys
+import re
 if __name__ == '__main__':
     sys.path.extend(["../../..", "../../../.."])
-from pycbio.sys.pipeline import ProcDag, ProcException, ProcDagException, Pipe, DataReader, DataWriter, File, PIn, POut
-from pycbio.sys import procOps
+from pycbio.sys.pipeline import ProcDag, ProcException, ProcDagException, Pipe, DataReader, DataWriter, PIn, POut
 from pycbio.sys.testCaseBase import TestCaseBase
+
 
 class ProcDagTests(TestCaseBase):
 
@@ -16,7 +18,7 @@ class ProcDagTests(TestCaseBase):
         if expectStr is not None:
             if isRe:
                 if not re.search(expectStr, s):
-                    self.fail("'" +s+ "' doesn't match RE '" + expectStr + "'")
+                    self.fail("'" + s + "' doesn't match RE '" + expectStr + "'")
             else:
                 self.assertEqual(s, expectStr)
         self.assertNoChildProcs()
@@ -34,7 +36,7 @@ class ProcDagTests(TestCaseBase):
         nopen = self.numOpenFiles()
         pd = ProcDag()
         pd.create(("false",))
-        with self.assertRaises(ProcException) as cm:
+        with self.assertRaises(ProcException):
             pd.wait()
         self.commonChecks(nopen, pd, "false")
 
@@ -53,7 +55,7 @@ class ProcDagTests(TestCaseBase):
         p = Pipe()
         pd.create(("false",), stdout=p)
         pd.create(("true",), stdin=p)
-        with self.assertRaises(ProcException) as cm:
+        with self.assertRaises(ProcException):
             pd.wait()
         self.commonChecks(nopen, pd, "false | true")
 
@@ -62,14 +64,14 @@ class ProcDagTests(TestCaseBase):
         nopen = self.numOpenFiles()
         pd = ProcDag()
         dw = DataWriter("one\ntwo\nthree\n")
-        pd.create(("procDoesNotExist","-r"), stdin=dw)
+        pd.create(("procDoesNotExist", "-r"), stdin=dw)
         with self.assertRaises(ProcException) as cm:
             pd.wait()
         expect = "exec failed: procDoesNotExist -r,\n    caused by: OSError: [Errno 2] No such file or directory"
         msg = str(cm.exception)
         if not msg.startswith(expect):
-            self.fail("'"+ msg + "' does not start with '"
-                      + expect + "', cause: " + str(getattr(ex,"cause", None)))
+            self.fail("'" + msg + "' does not start with '"
+                      + expect + "', cause: " + str(getattr(expect, "cause", None)))
         self.commonChecks(nopen, pd, "procDoesNotExist -r <[DataWriter]")
 
     def testStdinMem(self):
@@ -78,7 +80,7 @@ class ProcDagTests(TestCaseBase):
         pd = ProcDag()
         dw = DataWriter("one\ntwo\nthree\n")
         outf = self.getOutputFile(".out")
-        pd.create(("sort","-r"), stdin=dw, stdout=outf)
+        pd.create(("sort", "-r"), stdin=dw, stdout=outf)
         pd.wait()
         self.diffExpected(".out")
         self.commonChecks(nopen, pd, "^sort -r <\\[DataWriter\\] >.+/output/procDagTests\\.ProcDagTests\\.testStdinMem\\.out$", isRe=True)
@@ -89,7 +91,7 @@ class ProcDagTests(TestCaseBase):
         pd = ProcDag()
         inf = self.getInputFile("simple1.txt")
         dr = DataReader()
-        pd.create(("sort","-r"), stdin=inf, stdout=dr)
+        pd.create(("sort", "-r"), stdin=inf, stdout=dr)
         pd.wait()
         self.assertEqual(dr.get(), "two\nthree\nsix\none\nfour\nfive\n")
         self.commonChecks(nopen, pd, "^sort -r <.+/input/simple1\\.txt >\\[DataWriter\\]", isRe=True)
@@ -102,7 +104,7 @@ class ProcDagTests(TestCaseBase):
         pd = ProcDag()
         dw = DataWriter("one\ntwo\nthree\n")
         outf = self.getOutputFile(".out")
-        pr = pd.create(("sort","-r", PIn(dw)), stdin="/dev/null", stdout=outf)
+        pd.create(("sort", "-r", PIn(dw)), stdin="/dev/null", stdout=outf)
         pd.wait()
         self.diffExpected(".out")
         self.commonChecks(nopen, pd, "^sort -r \\[DataWriter\\] </dev/null >.+/output/procDagTests\\.ProcDagTests\\.testInArgMem\\.out$", isRe=True)
@@ -113,7 +115,7 @@ class ProcDagTests(TestCaseBase):
         pd = ProcDag()
         inf = self.getInputFile("simple1.txt")
         dr = DataReader()
-        pr = pd.create(("tee",POut(dr)), stdin=inf, stdout="/dev/null")
+        pd.create(("tee", POut(dr)), stdin=inf, stdout="/dev/null")
         pd.wait()
         self.assertEqual(dr.get(), "one\ntwo\nthree\nfour\nfive\nsix\n")
         self.commonChecks(nopen, pd, "^tee \\[DataWriter\\] <.+/input/simple1.txt >/dev/null$", isRe=True)
@@ -123,7 +125,7 @@ class ProcDagTests(TestCaseBase):
         nopen = self.numOpenFiles()
         pd = ProcDag()
         dr = DataReader()
-        pr = pd.create(("true", POut(dr)), stdin="/dev/null")
+        pd.create(("true", POut(dr)), stdin="/dev/null")
         pd.wait()
         self.commonChecks(nopen, pd, "true [DataWriter] </dev/null")
 
@@ -132,7 +134,7 @@ class ProcDagTests(TestCaseBase):
         nopen = self.numOpenFiles()
         pd = ProcDag()
         dw = DataWriter("one\ntwo\nthree\n")
-        pr = pd.create(("true", PIn(dw)), stdin="/dev/null")
+        pd.create(("true", PIn(dw)), stdin="/dev/null")
         pd.wait()
         self.commonChecks(nopen, pd, "true [DataWriter] </dev/null")
 
@@ -146,7 +148,7 @@ class ProcDagTests(TestCaseBase):
         outf = self.getOutputFile(".out")
         io = Pipe()
         pd.create(("cat", inf), stdout=io)
-        pd.create(("sort","-r", PIn(io)), stdin="/dev/null", stdout=outf)
+        pd.create(("sort", "-r", PIn(io)), stdin="/dev/null", stdout=outf)
         pd.wait()
         self.diffExpected(".out")
         self.commonChecks(nopen, pd, "^sort -r <\\(cat .+/input/simple1.txt\\) </dev/null >.+/output/procDagTests\\.ProcDagTests\\.testStdoutToArg\\.out$", isRe=True)
@@ -159,7 +161,7 @@ class ProcDagTests(TestCaseBase):
         outf = self.getOutputFile(".out")
         io = Pipe()
         pd.create(("tee", POut(io)), stdin=inf, stdout="/dev/null")
-        pd.create(("sort","-r"), stdin=io, stdout=outf)
+        pd.create(("sort", "-r"), stdin=io, stdout=outf)
         pd.wait()
         self.diffExpected(".out")
         self.commonChecks(nopen, pd, "^tee >\\(sort -r >.+/output/procDagTests\\.ProcDagTests\\.testArgToStdout\\.out\\) <.+/input/simple1\\.txt >/dev/null$", isRe=True)
@@ -175,7 +177,7 @@ class ProcDagTests(TestCaseBase):
         rev = Pipe()
         pd.create(("tee", POut(rev)), stdin=inf, stdout=POut(fwd))
         pd.create(("sort",), stdin=fwd, stdout=outFwd)
-        pd.create(("sort","-r"), stdin=rev, stdout=outRev)
+        pd.create(("sort", "-r"), stdin=rev, stdout=outRev)
         pd.wait()
         self.diffExpected(".fwd.out")
         self.diffExpected(".rev.out")
@@ -194,10 +196,10 @@ class ProcDagTests(TestCaseBase):
         rev2 = Pipe()
         # sort wrong direction, then sort again into final orders
         pd.create(("tee", POut(rev1)), stdin=inf, stdout=POut(fwd1))
-        pd.create(("sort","-r"), stdin=fwd1, stdout=fwd2)
+        pd.create(("sort", "-r"), stdin=fwd1, stdout=fwd2)
         pd.create(("sort",), stdin=fwd2, stdout=outFwd)
         pd.create(("sort",), stdin=rev1, stdout=rev2)
-        pd.create(("sort","-r"), stdin=rev2, stdout=outRev)
+        pd.create(("sort", "-r"), stdin=rev2, stdout=outRev)
         pd.wait()
         self.diffExpected(".fwd.out")
         self.diffExpected(".rev.out")
@@ -216,10 +218,10 @@ class ProcDagTests(TestCaseBase):
         rev1 = Pipe()
         rev2 = Pipe()
         # sort reverse direction, then sort again into final orders
-        pd.create(("sort","-r"), stdin=inf, stdout=fwd1)
+        pd.create(("sort", "-r"), stdin=inf, stdout=fwd1)
         pd.create(("sort",), stdin=fwd1, stdout=fwd2)
         pd.create(("sort",), stdin=inf, stdout=rev1)
-        pd.create(("sort","-r"), stdin=rev1, stdout=rev2)
+        pd.create(("sort", "-r"), stdin=rev1, stdout=rev2)
         pd.create(("cat", PIn(fwd2), PIn(rev2)), stdout=outf)
         pd.wait()
         self.diffExpected(".out")
@@ -239,12 +241,12 @@ class ProcDagTests(TestCaseBase):
         rev2 = Pipe()
         sortu = Pipe()
         # sort reverse direction, then sort again into final orders
-        pd.create(("sort","-r"), stdin=inf, stdout=fwd1)
+        pd.create(("sort", "-r"), stdin=inf, stdout=fwd1)
         pd.create(("sort",), stdin=fwd1, stdout=fwd2)
         pd.create(("sort",), stdin=inf, stdout=rev1)
-        pd.create(("sort","-r"), stdin=rev1, stdout=rev2)
+        pd.create(("sort", "-r"), stdin=rev1, stdout=rev2)
         pd.create(("cat", PIn(fwd2), PIn(rev2)), stdout=sortu)
-        pd.create(("sort","-u"), stdin=sortu, stdout=outf)
+        pd.create(("sort", "-u"), stdin=sortu, stdout=outf)
         pd.wait()
         self.diffExpected(".out")
         self.commonChecks(nopen, pd, "^cat <\\(sort -r <.+/input/simple1.txt \\| sort\\) <\\(sort <.+/input/simple1.txt \\| sort -r\\) \\| sort -u >.+/output/procDagTests\\.ProcDagTests\\.testJoinPipe2Uniq\\.out$", isRe=True)
@@ -265,9 +267,9 @@ class ProcDagTests(TestCaseBase):
         # formatting fails here: (FIXME: improve??), FIXME: doesn't always produce same result,
         # so we check multiple posibilities
         self.commonChecks(nopen, pd,
-                          "(^tee >\\(cat <\\(tee \\.\\.\\.\\) </dev/null >.+/output/procDagTests\\.ProcDagTests\\.testArgToArg\\.out\\) <.+/input/simple1\\.txt >/dev/null ; cat \\.\\.\\.$)" \
-                              + "|(^tee >\\(cat <\\(tee \\.\\.\\.\\) </dev/null >.+/output/procDagTests\\.ProcDagTests\\.testArgToArg\\.out\\) <.+/input/simple1\\.txt >/dev/null ; cat \\.\\.\\.$)" \
-                              + "|(^cat <\\(tee >\\(cat \\.\\.\\.\\) <.+/input/simple1\\.txt >/dev/null\\) </dev/null >.+/output/procDagTests\\.ProcDagTests\\.testArgToArg\\.out ; tee \\.\\.\\.)",
+                          "(^tee >\\(cat <\\(tee \\.\\.\\.\\) </dev/null >.+/output/procDagTests\\.ProcDagTests\\.testArgToArg\\.out\\) <.+/input/simple1\\.txt >/dev/null ; cat \\.\\.\\.$)"
+                          "|(^tee >\\(cat <\\(tee \\.\\.\\.\\) </dev/null >.+/output/procDagTests\\.ProcDagTests\\.testArgToArg\\.out\\) <.+/input/simple1\\.txt >/dev/null ; cat \\.\\.\\.$)"
+                          "|(^cat <\\(tee >\\(cat \\.\\.\\.\\) <.+/input/simple1\\.txt >/dev/null\\) </dev/null >.+/output/procDagTests\\.ProcDagTests\\.testArgToArg\\.out ; tee \\.\\.\\.)",
                           isRe=True)
 
     def testStdioCycleDetect(self):
@@ -276,7 +278,6 @@ class ProcDagTests(TestCaseBase):
         pd = ProcDag()
         inf = self.getInputFile("simple1.txt")
         p1 = Pipe()
-        p2 = Pipe()
         p3 = Pipe()
         p4 = Pipe()
         pd.create(("cat",), stdin=inf, stdout=p1)
@@ -287,8 +288,9 @@ class ProcDagTests(TestCaseBase):
         msg = str(cm.exception)
         expect = "cycle detected: entering: cat /dev/stdin <([Pipe])"
         if msg != expect:
-            self.fail("'"+ msg + "' != '"+ expect + "'")
+            self.fail("'" + msg + "' != '" + expect + "'")
         self.commonChecks(nopen, pd, "{CYCLE}: cat ; cat ; cat /dev/stdin <([Pipe])")
+
 
 def suite():
     ts = unittest.TestSuite()

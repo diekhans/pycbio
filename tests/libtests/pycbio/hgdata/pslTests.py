@@ -1,9 +1,11 @@
 # Copyright 2006-2012 Mark Diekhans
-import unittest, sys
+import unittest
+import sys
 if __name__ == '__main__':
     sys.path.append("../../../..")
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.hgdata.psl import Psl,PslTbl
+from pycbio.hgdata.psl import Psl, PslTbl
+
 
 class ReadTests(TestCaseBase):
     def testLoad(self):
@@ -38,6 +40,7 @@ class ReadTests(TestCaseBase):
                 self.assertEqual(len(blk.qSeq), len(blk))
                 self.assertEqual(len(blk.tSeq), len(blk))
 
+
 class OpsTests(TestCaseBase):
     "test operations of PSL objects"
     # test data as a string (ps = psl string)
@@ -51,7 +54,7 @@ class OpsTests(TestCaseBase):
     @staticmethod
     def __splitToPsl(ps):
         return Psl(ps.split("\t"))
-    
+
     def __rcTest(self, psIn, psExpect):
         self.assertEqual(str(OpsTests.__splitToPsl(psIn).reverseComplement()), psExpect)
 
@@ -73,7 +76,7 @@ class OpsTests(TestCaseBase):
         self.__swapTest(OpsTests.psTransPosNeg, "500	154	0	0	5	6805	2	504	-+	chr1	245522847	92653606	92661065	NM_001020776	1480	132	1290	6	57,84,30,135,164,184,	152861782,152862321,152864639,152864784,152866513,152869057,	132,339,777,807,942,1106,")
         self.__swapTest(OpsTests.psTransNegPos, "71	5	0	0	2	213667	1	93	+-	chr5	180857866	157138232	157351975	AA608343.1a	186	0	169	3	27,29,20,	157138232,157351058,157351955,	17,137,166,")
         self.__swapTest(OpsTests.psTransNegNeg, "47	4	0	0	1	46	1	122	--	chr6	170899992	29962882	29962979	AA608343.1b	186	5	178	2	30,21,	140937013,140937089,	8,160,")
-        
+
     def __swapDropImplicitTest(self, psIn, psExpect):
         self.assertEqual(str(OpsTests.__splitToPsl(psIn).swapSides(keepTStrandImplicit=False)), psExpect)
 
@@ -85,6 +88,7 @@ class OpsTests(TestCaseBase):
         self.__swapDropImplicitTest(OpsTests.psTransNegPos, "71	5	0	0	2	213667	1	93	+-	chr5	180857866	157138232	157351975	AA608343.1a	186	0	169	3	27,29,20,	157138232,157351058,157351955,	17,137,166,")
         self.__swapDropImplicitTest(OpsTests.psTransNegNeg, "47	4	0	0	1	46	1	122	--	chr6	170899992	29962882	29962979	AA608343.1b	186	5	178	2	30,21,	140937013,140937089,	8,160,")
 
+
 def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(ReadTests))
@@ -93,4 +97,3 @@ def suite():
 
 if __name__ == '__main__':
     unittest.main()
-

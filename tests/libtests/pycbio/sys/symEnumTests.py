@@ -1,14 +1,18 @@
 # Copyright 2006-2014 Mark Diekhans
-import unittest, sys, cPickle
+import unittest
+import sys
+import cPickle
 if __name__ == '__main__':
     sys.path.extend(["../../..", "../../../.."])
 from pycbio.sys.symEnum import SymEnum, SymEnumValue
 from pycbio.sys.testCaseBase import TestCaseBase
 
+
 class Color(SymEnum):
     red = 1
     green = 2
     blue = 3
+
 
 class GeneFeature(SymEnum):
     promoter = 1
@@ -26,7 +30,7 @@ class SymEnumTests(TestCaseBase):
         self.assertTrue(Color.red == Color.red)
         self.assertTrue(Color.red != Color.blue)
         self.assertTrue(Color.red is not None)
-        self.assertTrue(None != Color.red)
+        self.assertTrue(None != Color.red)  # flake8: noqa
 
     def testLookup(self):
         self.assertTrue(Color.red == Color("red"))
@@ -62,7 +66,7 @@ class SymEnumTests(TestCaseBase):
         class NumDef(SymEnum):
             neg = -2
             zero = 0
-            pos= 2
+            pos = 2
             big = 3
         values = [(v.name, v.value) for v in NumDef]
         self.assertEqual(values, [('neg', -2), ('zero', 0), ('pos', 2), ('big', 3)])
@@ -77,11 +81,14 @@ class SymEnumTests(TestCaseBase):
 
         self.assertTrue(Color.red in stuff2)
         self.assertTrue(Color.green in stuff2)
+
     def testColorPickle2(self):
         self.assertTrue(cPickle.HIGHEST_PROTOCOL == 2)
         self.__testColorPickleProtocol(2)
+
     def testColorPickle1(self):
         self.__testColorPickleProtocol(1)
+
     def testColorPickle0(self):
         self.__testColorPickleProtocol(0)
 

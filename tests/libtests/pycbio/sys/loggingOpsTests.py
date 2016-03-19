@@ -1,10 +1,12 @@
 # Copyright 2006-2014 Mark Diekhans
-import unittest, sys, cPickle
+import unittest
+import sys
 if __name__ == '__main__':
     sys.path.append("../../../..")
 from pycbio.sys import loggingOps
 from pycbio.sys.testCaseBase import TestCaseBase
 import argparse
+
 
 class LoggingOpsTests(TestCaseBase):
     def testFacilityLower(self):
@@ -36,12 +38,12 @@ class LoggingOpsTests(TestCaseBase):
         opts = self.__mkParser().parse_args(["--syslogFacility=local0"])
         self.assertEqual(opts.syslogFacility, loggingOps.parseFacility("local0"))
         self.assertEqual(opts.logLevel, loggingOps.parseLevel("warn"))
-        
+
     def testParseArgsFacilityLevel(self):
         opts = self.__mkParser().parse_args(["--syslogFacility=local1", "--logLevel=info"])
         self.assertEqual(opts.syslogFacility, loggingOps.parseFacility("local1"))
         self.assertEqual(opts.logLevel, loggingOps.parseLevel("info"))
-        
+
 
 def suite():
     ts = unittest.TestSuite()

@@ -1,9 +1,11 @@
 # Copyright 2006-2012 Mark Diekhans
-import unittest, sys
+import unittest
+import sys
 if __name__ == '__main__':
     sys.path.extend(["../../..", "../../../.."])
 from pycbio.sys.dbDict import DbDict
 from pycbio.sys.testCaseBase import TestCaseBase
+
 
 class DbDictTests(TestCaseBase):
 

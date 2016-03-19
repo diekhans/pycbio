@@ -279,7 +279,7 @@ class Psl(object):
     @staticmethod
     def targetCmp(psl1, psl2):
         "sort compairson using target address"
-        cmp = string.cmp(psl1.tName, psl2.tName)
+        cmp = cmp(psl1.tName, psl2.tName)
         if cmp != 0:
             cmp = psl1.tStart - psl2.tStart
             if cmp != 0:

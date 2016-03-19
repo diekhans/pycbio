@@ -1,9 +1,9 @@
 # Copyright 2006-2012 Mark Diekhans
-import unittest, sys
+import unittest
+import sys
 if __name__ == '__main__':
     sys.path.append("../../../..")
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.hgdata.genePred import GenePred
 from pycbio.hgdata.genePred import GenePredTbl
 
 # lists defining expected results from exon features.
@@ -44,10 +44,12 @@ def featRangeEq(featRange, expectRange):
     else:
         return ((featRange.start == expectRange[0]) and
                 (featRange.end == expectRange[1]))
-    
+
+
 def featureEq(feat, expected):
     "compare exon feature object with expected tuple"
     return featRangeEq(feat.utr5, expected[0]) and featRangeEq(feat.cds, expected[1]) and featRangeEq(feat.utr3, expected[2])
+
 
 def featureExpectedSwap1(feat, chromSize):
     "swap either (start, end) or pass back none"
@@ -55,6 +57,7 @@ def featureExpectedSwap1(feat, chromSize):
         return None
     else:
         return (chromSize - feat[1], chromSize - feat[0])
+
 
 def featureExpectedSwap(expected, chromSize):
     reved = []
@@ -64,13 +67,14 @@ def featureExpectedSwap(expected, chromSize):
                       featureExpectedSwap1(feat[2], chromSize)))
     return tuple(reved)
 
+
 class ReadTests(TestCaseBase):
     def chkFeatures(self, gene, expect):
         feats = gene.getFeatures()
         self.assertEqual(len(feats), len(expect))
         for i in xrange(len(feats)):
             self.assertTrue(featureEq(feats[i], expect[i]))
-        
+
     def testLoadMin(self):
         gpTbl = GenePredTbl(self.getInputFile("fromPslMinTest.gp"))
         self.assertEqual(len(gpTbl), 9)
@@ -116,7 +120,8 @@ class ReadTests(TestCaseBase):
         self.assertTrue(r.strandRel)
         self.assertEqual(r.name, "NM_000066.1")
 
-        self.chkFeatures(r,  featureExpectedSwap(featsNM_000066, chromSizes[r.chrom]))
+        self.chkFeatures(r, featureExpectedSwap(featsNM_000066, chromSizes[r.chrom]))
+
 
 def suite():
     ts = unittest.TestSuite()

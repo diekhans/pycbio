@@ -1,10 +1,13 @@
 # Copyright 2006-2014 Mark Diekhans
-import unittest, sys, re
+import unittest
+import sys
+import re
 if __name__ == '__main__':
     sys.path.extend(["../../..", "../../../.."])
-from pycbio.sys.configInPy import *
+from pycbio.sys.configInPy import evalConfigFunc, evalConfigObj
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.sys import PycbioException
+
 
 class ConfigInPyTests(TestCaseBase):
     def testConfigFuncCall(self):
@@ -25,11 +28,11 @@ class ConfigInPyTests(TestCaseBase):
     def testConfigFuncInvalid(self):
         # tests both specifying a different function name and detecting a function that doesn't exist
         with self.assertRaises(PycbioException) as cm:
-            evalConfigFunc(self.getInputFile("funcBasic.config.py"),  getFuncName="getMissing")
+            evalConfigFunc(self.getInputFile("funcBasic.config.py"), getFuncName="getMissing")
         self.assertRegexpMatches(cm.exception.message, "configuration script does not define function getMissing\\(\\)")
 
     def testConfigFuncArgs(self):
-        c = evalConfigFunc(self.getInputFile("funcArgs.config.py"), getFuncArgs=("F1",), getFuncKwargs={"f2":"F2", "f3":"F3"})
+        c = evalConfigFunc(self.getInputFile("funcArgs.config.py"), getFuncArgs=("F1",), getFuncKwargs={"f2": "F2", "f3": "F3"})
         self.assertEqual(c.f1, "F1")
         self.assertEqual(c.f2, "F2")
         self.assertEqual(c.f3, "F3")
@@ -38,7 +41,7 @@ class ConfigInPyTests(TestCaseBase):
     def __getFields(self, c):
         "return non-reserved name fields"
         return sorted([f for f in dir(c) if not re.match("^__.*__", f)])
-        
+
     def testConfigObjBasic(self):
         c = evalConfigObj(self.getInputFile("objBasic.config.py"))
         self.assertEqual(c.value1, 10)
@@ -57,6 +60,7 @@ class ConfigInPyTests(TestCaseBase):
         self.assertRegexpMatches(c.configPyFile, ".*/input/objBasic.config.py")
         self.assertEqual(c.passedInModule, "stuck in a global")
         self.assertEqual(self.__getFields(c), ['configPyFile', "passedInModule", 'value1', 'value2'])
+
 
 def suite():
     ts = unittest.TestSuite()

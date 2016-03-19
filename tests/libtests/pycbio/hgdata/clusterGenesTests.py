@@ -1,9 +1,11 @@
 # Copyright 2006-2012 Mark Diekhans
-import unittest, sys
+import unittest
+import sys
 if __name__ == '__main__':
     sys.path.append("../../../..")
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.hgdata.clusterGenes import ClusterGenes
+
 
 class ReadTests(TestCaseBase):
     def testLoad(self):
@@ -24,7 +26,7 @@ class ReadTests(TestCaseBase):
         cl = g.clusterObj
         self.assertEqual(len(cl), 2)
         self.assertTrue((cl[0].gene == "NM_199454.1") or (cl[1].gene == "NM_199454.1"))
-        
+
 
 def suite():
     ts = unittest.TestSuite()

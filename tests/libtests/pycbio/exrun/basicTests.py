@@ -1,19 +1,22 @@
 # Copyright 2006-2012 Mark Diekhans
 "tests of basic functionality"
 
-import unittest, sys, os, time
+import unittest
+import sys
+import os
+import time
 if __name__ == '__main__':
     sys.path.append("../../../..")
 from pycbio.sys import fileOps
-from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.exrun import ExRunException, ExRun, File, Rule, Production, Verb
-from pycbio.exrun.graph import RuleState, ProdState, Target
+from pycbio.exrun.graph import RuleState, ProdState
 from libtests.pycbio.exrun import ExRunTestCaseBase
 
 # change this for debugging:
-verbFlags=set((Verb.error,))
-#xverbFlags=set((Verb.error, Verb.trace, Verb.details, Verb.dumpStart))
-#verbFlags=Verb.all
+verbFlags = set((Verb.error,))
+# verbFlags = set((Verb.error, Verb.trace, Verb.details, Verb.dumpStart))
+# verbFlags = Verb.all
+
 
 class ProdSet(object):
     "set of file productions and contents; deletes files if they exist"
@@ -32,6 +35,7 @@ class ProdSet(object):
         "verify files and contents"
         for fp in self.prods:
             self.tester.checkContents(fp, self.contents)
+
 
 class TouchRule(Rule):
     "rule that creates files"
@@ -56,6 +60,7 @@ class TouchRule(Rule):
         "create file products"
         for fp in self.produces:
             self._touch(fp)
+
 
 class TouchTests(ExRunTestCaseBase):
     def checkContents(self, fp, contents={}):
@@ -109,7 +114,7 @@ class TouchTests(ExRunTestCaseBase):
 
         # top level, dependent on intermediates
         topPset = ProdSet(er, self, (".top1", ".top2", ".top3"))
-        topRule = TouchRule("top", self, topPset, requires=low1Pset.prods+low2Pset.prods)
+        topRule = TouchRule("top", self, topPset, requires=low1Pset.prods + low2Pset.prods)
         er.addRule(topRule)
 
         if makeTargets:
@@ -146,9 +151,9 @@ class TouchTests(ExRunTestCaseBase):
         self.assertEqual(tl.topRule.touchCnt, 0)
         self.checkGraphStates(er,
                               ((tl.low2Pset.prods, ProdState.outdated),
-                               (tl.low2Rule,       RuleState.outdated),
-                               (tl.topPset.prods,  ProdState.outdated),
-                               (tl.topRule,        RuleState.outdated)))
+                               (tl.low2Rule, RuleState.outdated),
+                               (tl.topPset.prods, ProdState.outdated),
+                               (tl.topRule, RuleState.outdated)))
 
     def testTargetLowLevel12(self):
         "target runs two low level rules"
@@ -162,7 +167,7 @@ class TouchTests(ExRunTestCaseBase):
         self.assertEqual(tl.topRule.touchCnt, 0)
         self.checkGraphStates(er,
                               ((tl.topPset.prods, ProdState.outdated),
-                               (tl.topRule,       RuleState.outdated)))
+                               (tl.topRule, RuleState.outdated)))
 
     def testTargetTop(self):
         "target runs two levels"
@@ -177,13 +182,16 @@ class TouchTests(ExRunTestCaseBase):
         tl.topPset.check()
         self.checkGraphStates(er)
 
+
 class CurrentProd(Production):
     "production that is always up-to-date"
     def __init__(self, name):
         Production.__init__(self, name)
+
     def getLocalTime(self):
         "always returns current time"
         return time.time()
+
 
 class NeverRunRule(Rule):
     "rule that generates an error if it's run"
@@ -192,6 +200,7 @@ class NeverRunRule(Rule):
 
     def execute(self):
         raise ExRunException("rule should never have been run")
+
 
 class MiscTests(ExRunTestCaseBase):
     def testUptodateProd(self):
@@ -204,6 +213,7 @@ class MiscTests(ExRunTestCaseBase):
         er.addRule(rule)
         er.run()
         self.checkGraphStates(er)
+
 
 def suite():
     ts = unittest.TestSuite()

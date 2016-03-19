@@ -1,15 +1,18 @@
 # Copyright 2006-2012 Mark Diekhans
 "test of Sched class independent of rest of ExRun"
 
-import unittest, sys
+import unittest
+import sys
 if __name__ == '__main__':
     sys.path.append("../../../..")
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.exrun.sched import Sched
 
+
 def mkGrpName(i):
     "group name from a number"
-    return "grp"+str(i)
+    return "grp" + str(i)
+
 
 class TrivialTask(object):
     "just note that task ran"
@@ -18,6 +21,7 @@ class TrivialTask(object):
 
     def run(self, task):
         self.ran = True
+
 
 class MoveGrpTask(object):
     "just note that task ran"
@@ -30,6 +34,7 @@ class MoveGrpTask(object):
         self.ran = True
         task.moveGroup(self.newGrp)
         self.moved = (task.group.name == self.newGrp)
+
 
 class SchedTests(TestCaseBase):
     def testSimple(self):
@@ -52,7 +57,7 @@ class SchedTests(TestCaseBase):
         for i in xrange(10):
             t = TrivialTask()
             tasks.append(t)
-            grp = sched.obtainGroup(mkGrpName(i%2), 2)
+            grp = sched.obtainGroup(mkGrpName(i % 2), 2)
             sched.addTask(t.run, grp)
         sched.run()
         for t in tasks:
@@ -63,7 +68,7 @@ class SchedTests(TestCaseBase):
         sched = Sched()
         tasks = []
         for i in xrange(10):
-            t = MoveGrpTask(mkGrpName(i+1))
+            t = MoveGrpTask(mkGrpName(i + 1))
             tasks.append(t)
             grp = sched.obtainGroup(mkGrpName(i))
             sched.addTask(t.run, grp)
@@ -71,6 +76,7 @@ class SchedTests(TestCaseBase):
         for t in tasks:
             self.assertTrue(t.ran)
             self.assertTrue(t.moved)
+
 
 def suite():
     ts = unittest.TestSuite()

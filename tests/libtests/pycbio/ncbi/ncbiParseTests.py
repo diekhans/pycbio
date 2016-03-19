@@ -1,10 +1,12 @@
 # Copyright 2006-2015 Mark Diekhans
-import unittest, sys
+import unittest
+import sys
 if __name__ == '__main__':
     sys.path.append("../../../..")
-    
+
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.ncbi.assembly import AssemblyReport
+
 
 class NcbiParseTests(TestCaseBase):
     def testAssemblyReport(self):
@@ -31,7 +33,20 @@ class NcbiParseTests(TestCaseBase):
 
         metaData = [(name, asmReport.metaData[name]) for name in sorted(asmReport.metaData.iterkeys())]
         self.assertEquals(metaData,
-                          [('Assembly Name', 'GRCh38.p2'), ('Assembly level', 'Chromosome'), ('Assembly type', 'haploid-with-alt-loci'), ('Date', '2014-12-5'), ('Description', 'Genome Reference Consortium Human Build 38 patch release 2 (GRCh38.p2)'), ('GenBank Assembly Accession', 'GCA_000001405.17 (replaced)'), ('Genome representation', 'full'), ('Organism name', 'Homo sapiens'), ('RefSeq Assembly Accession', 'GCF_000001405.28 (species-representative replaced)'), ('RefSeq Assembly and GenBank Assemblies Identical', 'yes'), ('Release type', 'patch'), ('Submitter', 'Genome Reference Consortium'), ('Taxid', '9606')])
+                          [('Assembly Name', 'GRCh38.p2'),
+                           ('Assembly level', 'Chromosome'),
+                           ('Assembly type', 'haploid-with-alt-loci'),
+                           ('Date', '2014-12-5'),
+                           ('Description', 'Genome Reference Consortium Human Build 38 patch release 2 (GRCh38.p2)'),
+                           ('GenBank Assembly Accession', 'GCA_000001405.17 (replaced)'),
+                           ('Genome representation', 'full'),
+                           ('Organism name', 'Homo sapiens'),
+                           ('RefSeq Assembly Accession', 'GCF_000001405.28 (species-representative replaced)'),
+                           ('RefSeq Assembly and GenBank Assemblies Identical', 'yes'),
+                           ('Release type', 'patch'),
+                           ('Submitter', 'Genome Reference Consortium'),
+                           ('Taxid', '9606')])
+
 
 def suite():
     ts = unittest.TestSuite()

@@ -1,9 +1,11 @@
 # Copyright 2006-2012 Mark Diekhans
-import unittest, sys
+import unittest
+import sys
 if __name__ == '__main__':
     sys.path.extend(["../../..", "../../../.."])
 from pycbio.sys import procOps, pipeline
 from pycbio.sys.testCaseBase import TestCaseBase
+
 
 class ProcRunTests(TestCaseBase):
     def testCallSimple(self):
@@ -76,25 +78,25 @@ class ProcRunTests(TestCaseBase):
             procOps.runProc(["false"], stdin=self.getInputFile("simple1.txt"))
         self.assertEqual(str(cm.exception), 'process exited 1: false')
 
+
 class ShellQuoteTests(TestCaseBase):
     # set of test words and expected response string
     testData = (
         (["a", "b"], "a b"),
         (["a b", "c$d", "e\\tf"], "a b c$d e\\tf"),
-        (["a{b", "c	d", "(ef)", "${hi}", "j<k"], "a{b c	d (ef) ${hi} j<k"),
-        )
+        (["a{b", "c	d", "(ef)", "${hi}", "j<k"], "a{b c	d (ef) ${hi} j<k"),)
 
     def testQuotesBash(self):
         for (words, expect) in self.testData:
             out = procOps.callProc(["sh", "-c", "/bin/echo " + " ".join(procOps.shQuote(words))])
             self.assertEqual(out, expect)
-        
+
     def testQuotesCsh(self):
         # must use /bin/echo, as some csh echos expand backslash sequences
         for (words, expect) in self.testData:
             out = procOps.callProc(["csh", "-c", "/bin/echo " + " ".join(procOps.shQuote(words))])
             self.assertEqual(out, expect)
-        
+
 
 def suite():
     ts = unittest.TestSuite()

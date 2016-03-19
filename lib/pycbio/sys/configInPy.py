@@ -71,3 +71,5 @@ def evalConfigObj(configPyFile, extraEnv=None):
         if _includeField(key, configEnv[key]):
             setattr(configObj, key, configEnv[key])
     return configObj
+
+__all__ = (evalConfigFunc.__name__, Config.__name__, evalConfigObj.__name__)

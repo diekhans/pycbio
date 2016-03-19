@@ -1,19 +1,21 @@
 # Copyright 2006-2012 Mark Diekhans
 "tests of basic functionality"
 
-import unittest, sys, time
+import unittest
+import sys
+import time
 if __name__ == '__main__':
     sys.path.append("../../../..")
 from pycbio.sys import typeOps
 from pycbio.exrun import ExRun, Rule, Production, Verb
-from pycbio.exrun.graph import RuleState
 from libtests.pycbio.exrun import ExRunTestCaseBase
 
 # change this for debugging:
-verbFlags=set((Verb.error,))
-#verbFlags=set((Verb.error, Verb.trace, Verb.details, Verb.dumpStart))
-#verbFlags=Verb.all
-#verbFlags=set([Verb.dumpEnd])
+verbFlags = set((Verb.error,))
+# verbFlags = set((Verb.error, Verb.trace, Verb.details, Verb.dumpStart))
+# verbFlags = Verb.all
+# verbFlags = set([Verb.dumpEnd])
+
 
 class MemProd(Production):
     "production that is just in memory, track times"
@@ -24,6 +26,7 @@ class MemProd(Production):
     def getLocalTime(self):
         return self.time
 
+
 class MemRule(Rule):
     "rule for running in-memory tests"
     def __init__(self, name, requires=None, produces=None):
@@ -31,7 +34,7 @@ class MemRule(Rule):
 
     def execute(self):
         for p in self.produces:
-            time.sleep(0.00001) # allow other threads to run
+            time.sleep(0.00001)  # allow other threads to run
             if (p.time is not None) and (p.time > 0.0):
                 raise Exception("production already done: " + p.name)
             p.time = time.time()
@@ -44,6 +47,7 @@ class RuleDef(object):
         self.name = name
         self.requires = typeOps.mkset(requires)
         self.produces = typeOps.mkset(produces)
+
 
 class ExprBuilder(object):
     """Build artificial experiments.  The graph is defined by a list of
@@ -85,12 +89,13 @@ class ExprBuilder(object):
             prod = self.er.addProd(MemProd(pName))
         return prod
 
+
 class BigTests(ExRunTestCaseBase):
     def testNoLeaves(self):
         "no leaf productions"
         eb = ExprBuilder([
-            RuleDef("r1", (), ("p1.1","p1.2")),
-            RuleDef("r2", ("p1.1","p1.2"), ("p2.1","p2.2")),
+            RuleDef("r1", (), ("p1.1", "p1.2")),
+            RuleDef("r2", ("p1.1", "p1.2"), ("p2.1", "p2.2")),
         ], verbFlags=verbFlags)
         eb.er.run()
         self.checkGraphStates(eb.er)
@@ -98,8 +103,8 @@ class BigTests(ExRunTestCaseBase):
     def testLeaves(self):
         "leaf productions"
         eb = ExprBuilder([
-            RuleDef("r1", ("p0.1","p0.2","p0.3"), ("p1.1","p1.2")),
-            RuleDef("r2", ("p1.1","p1.2"), ("p2.1","p2.2")),
+            RuleDef("r1", ("p0.1", "p0.2", "p0.3"), ("p1.1", "p1.2")),
+            RuleDef("r2", ("p1.1", "p1.2"), ("p2.1", "p2.2")),
         ], verbFlags=verbFlags)
         eb.er.run()
         self.checkGraphStates(eb.er)
@@ -107,12 +112,12 @@ class BigTests(ExRunTestCaseBase):
     def testDiamond(self):
         "graph with a diamond and crossed dependencies"
         eb = ExprBuilder([
-            RuleDef("r1", ("p0.1","p0.2","p0.3"), ("p1.1","p1.2","p1.3")),
-            RuleDef("r2.1", ("p1.1",), ("p2.1.1","p2.1.2")),
-            RuleDef("r2.2", ("p1.2",), ("p2.2.1","p2.2.2")),
-            RuleDef("r3.1", ("p2.1.1","p2.2.1"), ("p3.1.1","p3.1.2")),
-            RuleDef("r3.2", ("p2.1.2","p2.2.2"), ("p3.2.1","p3.2.2")),
-            RuleDef("r4", ("p3.1.1","p3.1.2", "p3.2.1","p3.2.2"), ("p4",))
+            RuleDef("r1", ("p0.1", "p0.2", "p0.3"), ("p1.1", "p1.2", "p1.3")),
+            RuleDef("r2.1", ("p1.1",), ("p2.1.1", "p2.1.2")),
+            RuleDef("r2.2", ("p1.2",), ("p2.2.1", "p2.2.2")),
+            RuleDef("r3.1", ("p2.1.1", "p2.2.1"), ("p3.1.1", "p3.1.2")),
+            RuleDef("r3.2", ("p2.1.2", "p2.2.2"), ("p3.2.1", "p3.2.2")),
+            RuleDef("r4", ("p3.1.1", "p3.1.2", "p3.2.1", "p3.2.2"), ("p4",))
         ], verbFlags=verbFlags)
         eb.er.run()
         self.checkGraphStates(eb.er)
@@ -122,22 +127,23 @@ class BigTests(ExRunTestCaseBase):
         previous level"""
         reqs = []
         if level != maxLevel:
-            for ir in xrange(level+1):
-                reqs.append(self.mkRule(level+1, maxLevel, numLeaves, rname + "#"+str(level) + "."+str(ir), rules))
+            for ir in xrange(level + 1):
+                reqs.append(self.mkRule(level + 1, maxLevel, numLeaves, rname + "#" + str(level) + "." + str(ir), rules))
         else:
             for ip in xrange(numLeaves):
-                reqs.append(rname+"#leaf"+str(ip))
-        prod = rname + "#prod"+str(level)
+                reqs.append(rname + "#leaf" + str(ip))
+        prod = rname + "#prod" + str(level)
         rules.append(RuleDef(rname, reqs, prod))
         return prod
 
     def testMany(self):
         "graph with a many independent rules in a tree"
-        rules =  []
+        rules = []
         self.mkRule(0, 4, 5, "rule.0", rules)
         eb = ExprBuilder(rules, verbFlags=verbFlags)
         eb.er.run()
         self.checkGraphStates(eb.er)
+
 
 def suite():
     ts = unittest.TestSuite()

@@ -19,25 +19,31 @@ generating SQL where clauses to restrict by bin."""
 class Binner(object):
     "functions to translate ranges to bin numbers"
 
-    binOffsetsBasic = (512+64+8+1, 64+8+1, 8+1, 1, 0)
-    binOffsetsExtended = (4096+512+64+8+1, 512+64+8+1, 64+8+1, 8+1, 1, 0)
-    
-    binFirstShift = 17 # How much to shift to get to finest bin.
-    binNextShift = 3   # How much to shift to get to next larger bin.
-    
-    binBasicMaxEnd = 512*1024*1024
+    binOffsetsBasic = (512 + 64 + 8 + 1,
+                       64 + 8 + 1,
+                       8 + 1,
+                       1, 0)
+    binOffsetsExtended = (4096 + 512 + 64 + 8 + 1,
+                          512 + 64 + 8 + 1,
+                          64 + 8 + 1, 8 + 1,
+                          1, 0)
+
+    binFirstShift = 17  # How much to shift to get to finest bin.
+    binNextShift = 3    # How much to shift to get to next larger bin.
+
+    binBasicMaxEnd = 512 * 1024 * 1024
     binOffsetToExtended = 4681
 
     @staticmethod
     def __calcBinForOffsets(start, end, baseOffset, offsets):
         "get the bin for a range"
         startBin = start >> Binner.binFirstShift
-        endBin = (end-1) >> Binner.binFirstShift
+        endBin = (end - 1) >> Binner.binFirstShift
         for binOff in offsets:
             if (startBin == endBin):
                 return baseOffset + binOff + startBin
-            startBin >>= Binner.binNextShift;
-            endBin >>= Binner.binNextShift;
+            startBin >>= Binner.binNextShift
+            endBin >>= Binner.binNextShift
         raise Exception("can't compute bin: start %d, end %d out of range" % (start, end))
 
     @staticmethod
@@ -52,11 +58,11 @@ class Binner(object):
     def __getOverlappingBinsForOffsets(start, end, baseOffset, offsets):
         "generate bins for a range given a list of offsets"
         startBin = start >> Binner.binFirstShift
-        endBin = (end-1) >> Binner.binFirstShift
+        endBin = (end - 1) >> Binner.binFirstShift
         for offset in offsets:
-            yield (startBin+baseOffset+offset, endBin+baseOffset+offset)
-            startBin >>= Binner.binNextShift;
-            endBin >>= Binner.binNextShift;
+            yield (startBin + baseOffset + offset, endBin + baseOffset + offset)
+            startBin >>= Binner.binNextShift
+            endBin >>= Binner.binNextShift
 
     @staticmethod
     def getOverlappingBins(start, end):
@@ -84,9 +90,10 @@ class Binner(object):
                 parts.append("(" + binCol + "=" + str(bins[0]) + ")")
             else:
                 parts.append("(" + binCol + ">=" + str(bins[0]) + " and " + binCol + "<=" + str(bins[1]) + ")")
-            
+
         return "((" + seqCol + "=\"" + seq + "\") and (" + startCol + "<" + str(end) + ") and (" + endCol + ">" + str(start) + ")" \
             " and (" + " or ".join(parts) + "))"
+
 
 class Entry(object):
     "entry associating a range with a value"
@@ -104,6 +111,7 @@ class Entry(object):
     def __str__(self):
         return str(self.start) + "-" + str(self.end) + ": " + str(self.value)
 
+
 class RangeBins(object):
     """Range indexed container for a single sequence.  This using a binning
     scheme that implements spacial indexing. Based on UCSC hg browser binRange
@@ -119,14 +127,14 @@ class RangeBins(object):
         bin = Binner.calcBin(start, end)
         entries = self.bins.get(bin)
         if (entries is None):
-           self.bins[bin] = entries = []
+            self.bins[bin] = entries = []
         entries.append(Entry(start, end, value))
 
     def overlapping(self, start, end):
         "generator over values overlapping the specified range"
         if (start < end):
             for bins in Binner.getOverlappingBins(start, end):
-                for j in xrange(bins[0], bins[1]+1):
+                for j in xrange(bins[0], bins[1] + 1):
                     bin = self.bins.get(j)
                     if (bin is not None):
                         for entry in bin:
@@ -145,6 +153,7 @@ class RangeBins(object):
             fh.write(self.seqId + " (" + str(self.strand) + ") bin=" + str(bin) + "\n")
             for entry in self.bins[bin]:
                 fh.write("\t" + str(entry) + "\n")
+
 
 class RangeFinder(object):
     """Container index by sequence id, range, and optionally strand.
@@ -169,7 +178,7 @@ class RangeFinder(object):
         key = (seqId, strand)
         bins = self.seqBins.get(key)
         if bins is None:
-           self.seqBins[key] = bins = RangeBins(seqId, strand)
+            self.seqBins[key] = bins = RangeBins(seqId, strand)
         bins.add(start, end, value)
 
     def overlapping(self, seqId, start, end, strand=None):
@@ -194,7 +203,7 @@ class RangeFinder(object):
             if bins is not None:
                 for value in bins.overlapping(start, end):
                     yield value
-            
+
     def values(self):
         "generator over all values"
         for bins in self.seqBins:
@@ -207,4 +216,3 @@ class RangeFinder(object):
             bins.dump(fh)
 
 __all__ = (RangeFinder.__name__,)
-

@@ -1,27 +1,29 @@
 # Copyright 2006-2012 Mark Diekhans
 "tests of CmdRule"
 
-import unittest, sys
+import unittest
+import sys
 if __name__ == '__main__':
     sys.path.append("../../../..")
-from pycbio.sys import strOps,fileOps
+from pycbio.sys import strOps, fileOps
 from pycbio.sys.pipeline import ProcException
 from pycbio.exrun import ExRunException, ExRun, CmdRule, Cmd, FileIn, FileOut
-from pycbio.exrun.graph import ProdState,RuleState
+from pycbio.exrun.graph import ProdState, RuleState
 from libtests.pycbio.exrun import ExRunTestCaseBase
 
 # change this for debugging:
-verbFlags=set()
-#verbFlags=set((Verb.error, Verb.trace, Verb.details))
-#verbFlags=set((Verb.error,))
-#verbFlags=Verb.all
+verbFlags = set()
+# verbFlags = set((Verb.error, Verb.trace, Verb.details))
+# verbFlags = set((Verb.error,))
+# verbFlags = Verb.all
+
 
 def prExceptions(er, ex):
     "print and exception and any recorded ones"
     sys.stdout.flush()
     sys.stderr.flush()
     fh = sys.stderr
-    fileOps.prLine(fh, "\n"+strOps.dup(78, '='))
+    fileOps.prLine(fh, "\n" + strOps.dup(78, '='))
     fileOps.prLine(fh, "Unexpected exception:")
     fileOps.prLine(fh, ProcException.formatExcept(ex))
     for e in er.errors:
@@ -29,6 +31,7 @@ def prExceptions(er, ex):
         fileOps.prLine(fh, ProcException.formatExcept(e))
     fileOps.prLine(fh, strOps.dup(78, '^'))
     sys.stderr.flush()
+
 
 class CmdSuppliedTests(ExRunTestCaseBase):
     "tests of CmdRule with commands supplied to class"
@@ -125,7 +128,7 @@ class CmdSuppliedTests(ExRunTestCaseBase):
         er = ExRun(verbFlags=verbFlags)
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp = er.getFile(self.getOutputFile(".txt"))
-        c = Cmd(("dd", "if="+FileIn(ifp), "of="+FileOut(ofp)))
+        c = Cmd(("dd", "if=" + FileIn(ifp), "of=" + FileOut(ofp)))
         er.addRule(CmdRule(c))
         try:
             er.run()
@@ -134,6 +137,7 @@ class CmdSuppliedTests(ExRunTestCaseBase):
             raise
         self.diffExpected(".txt")
         self.checkGraphStates(er)
+
 
 class CmdSubclassTests(ExRunTestCaseBase):
     "tests of CmdRule with subclassing"
@@ -145,8 +149,10 @@ class CmdSubclassTests(ExRunTestCaseBase):
                 CmdRule.__init__(self, requires=ifp, produces=ofp)
                 self.ifp = ifp
                 self.ofp = ofp
+
             def run(self):
                 self.call(Cmd(("sort", "-n", self.ifp.getInPath()), stdout=self.ofp))
+
         er = ExRun(verbFlags=verbFlags)
         ifp = er.getFile(self.getInputFile("numbers.txt"))
         ofp = er.getFile(self.getOutputFile(".txt"))
@@ -167,6 +173,7 @@ class CmdSubclassTests(ExRunTestCaseBase):
                 CmdRule.__init__(self, requires=ifp, produces=ofp)
                 self.ifp = ifp
                 self.ofp = ofp
+
             def run(self):
                 self.call(Cmd((("sort", "-n", self.ifp), ("sort", "-nr")),
                               stdout=self.ofp))
@@ -191,6 +198,7 @@ class CmdSubclassTests(ExRunTestCaseBase):
                 self.ifp = ifp
                 self.ofp1 = ofp1
                 self.ofp2 = ofp2
+
             def run(self):
                 self.call(Cmd((("sort", "-r", self.ifp), ("sort", "-nr")), stdout=self.ofp1))
                 self.call(Cmd((("wc", "-l"), ("sed", "-e", "s/ //g")), stdin=self.ofp1, stdout=self.ofp2))
@@ -216,6 +224,7 @@ class CmdSubclassTests(ExRunTestCaseBase):
                 CmdRule.__init__(self, requires=ifp, produces=ofp)
                 self.ifp = ifp
                 self.ofp = ofp
+
             def run(self):
                 self.call(Cmd((("sort", "-n", self.ifp), ("sort", "-nr")),
                               stdout=self.ofp))
@@ -225,10 +234,10 @@ class CmdSubclassTests(ExRunTestCaseBase):
                 CmdRule.__init__(self, requires=ifp, produces=ofp)
                 self.ifp = ifp
                 self.ofp = ofp
+
             def run(self):
                 self.call(Cmd((("wc", "-l"), ("sed", "-e", "s/ //g")),
                               stdin=self.ifp, stdout=self.ofp))
-
 
         er = ExRun(verbFlags=verbFlags)
         ifp = er.getFile(self.getInputFile("numbers.txt"))
@@ -244,6 +253,7 @@ class CmdSubclassTests(ExRunTestCaseBase):
         self.diffExpected(".txt")
         self.diffExpected(".linecnt")
         self.checkGraphStates(er)
+
 
 class CmdCompressTests(ExRunTestCaseBase):
     "tests of CmdRule with automatic compression"
@@ -296,12 +306,12 @@ class CmdCompressTests(ExRunTestCaseBase):
         ex3 = ex2.cause
         self.assertTrue(isinstance(ex3, ProcException))
         exre = "process exited 1: false"
-        self.assertTrue(str(ex3),exre)
+        self.assertTrue(str(ex3), exre)
         self.checkGraphStates(er,
                               ((ofp1, ProdState.current),
                                (ofp2, ProdState.failed),
-                               (r1,   RuleState.ok),
-                               (r2,   RuleState.failed)))
+                               (r1, RuleState.ok),
+                               (r2, RuleState.failed)))
 
     def testCmdSigPipe(self):
         "test command recieving SIGPIPE with no error"
@@ -315,6 +325,7 @@ class CmdCompressTests(ExRunTestCaseBase):
             prExceptions(er, ex)
             raise
         self.checkGraphStates(er)
+
 
 class CmdMiscTests(ExRunTestCaseBase):
     "misc tests, regressions, etc"
@@ -351,4 +362,3 @@ def suite():
 
 if __name__ == '__main__':
     unittest.main()
-

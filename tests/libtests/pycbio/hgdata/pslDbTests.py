@@ -1,5 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
-import unittest, sys
+import unittest
+import sys
 if __name__ == '__main__':
     sys.path.append("../../../..")
 from pycbio.sys.testCaseBase import TestCaseBase
@@ -16,9 +17,10 @@ onTestHost = gethostname() in testHosts
 if not onTestHost:
     sys.stderr.write("Note: not running on test host, skipping PslDbTest\n")
 
+
 class DbReadTests(TestCaseBase):
     """database read tests.  Only run on certain hosts"""
-    
+
     hgConf = None  # load on first use
 
     def __connect(self):
@@ -52,6 +54,7 @@ class DbReadTests(TestCaseBase):
             if qName not in qNames:
                 self.fail("qName not in refSeqAli select, maybe have to update test if RefSeq changed: " + qName)
 
+
 def suite():
     ts = unittest.TestSuite()
     if onTestHost:
@@ -60,4 +63,3 @@ def suite():
 
 if __name__ == '__main__' and onTestHost:
     unittest.main()
-

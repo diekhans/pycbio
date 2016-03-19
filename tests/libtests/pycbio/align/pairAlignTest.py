@@ -1,10 +1,12 @@
 # Copyright 2006-2012 Mark Diekhans
-import unittest, sys
+import unittest
+import sys
 if __name__ == '__main__':
     sys.path.append("../../../..")
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.sys.fileOps import prRowv
 from pycbio.align.pairAlign import loadPslFile
+
 
 class WithSrcCds(object):
     "container for map CDS results"
@@ -16,6 +18,7 @@ class WithSrcCds(object):
         prRowv(fh, "srcQCds: ", self.srcAln.qSeq)
         prRowv(fh, "srcTCds: ", self.srcAln.tSeq)
         self.destAln.dump(fh)
+
 
 class PairAlignPsl(TestCaseBase):
     def __dumpNDiff(self, alns, suffix):
@@ -47,7 +50,6 @@ class PairAlignPsl(TestCaseBase):
                            self.getInputFile("hsRefSeq.cds"),
                            inclUnaln=True)
         self.__dumpNDiff(alns, ".out")
-
 
     def doTestProjectCds(self, contained):
         alns = loadPslFile(self.getInputFile("refseqWeird.psl"),
@@ -95,6 +97,7 @@ class PairAlignPsl(TestCaseBase):
 
     def testMapCdsContained(self):
         self.doTestMapCds(contained=True)
+
 
 def suite():
     ts = unittest.TestSuite()

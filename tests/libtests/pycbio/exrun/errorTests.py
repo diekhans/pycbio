@@ -1,19 +1,21 @@
 # Copyright 2006-2012 Mark Diekhans
 "test of error conditions"
 
-import unittest, sys
+import unittest
+import sys
 if __name__ == '__main__':
     sys.path.append("../../../..")
 from pycbio.exrun import ExRun, ExRunException, Rule, Verb
-from pycbio.exrun.graph import CycleException,ProdState,RuleState
+from pycbio.exrun.graph import CycleException, ProdState, RuleState
 from pycbio.sys import fileOps
 from libtests.pycbio.exrun import ExRunTestCaseBase
 
 # change this for debugging:
-verbFlags=set((Verb.error,))
+verbFlags = set((Verb.error,))
 
 # FIXME add:
 #  dup production test
+
 
 class ErrorRule(Rule):
     "rule that should never be run"
@@ -22,6 +24,7 @@ class ErrorRule(Rule):
 
     def execute(self):
         raise Exception("rule should never be run: " + str(self))
+
 
 class TouchRule(Rule):
     "rule that creates files"
@@ -35,11 +38,13 @@ class TouchRule(Rule):
             fileOps.ensureFileDir(fp.path)
             open(fp.path, "w").close()
 
+
 def _sortMsg(msg):
     "turn multi-line message into a sort list of lines"
     ml = msg.split("\n")
     ml.sort()
     return ml
+
 
 class ErrorTests(ExRunTestCaseBase):
     def testCycleAll(self):
@@ -92,6 +97,7 @@ class ErrorTests(ExRunTestCaseBase):
                                (f3, ProdState.bad),
                                (r1, RuleState.blocked),
                                (r2, RuleState.blocked)))
+
 
 def suite():
     ts = unittest.TestSuite()

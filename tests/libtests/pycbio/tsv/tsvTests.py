@@ -1,5 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
-import unittest, sys, string
+import unittest
+import sys
 if __name__ == '__main__':
     sys.path.append("../../../..")
 from pycbio.tsv import TsvTable
@@ -9,6 +10,7 @@ from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.sys import procOps
 from pycbio.hgdata.autoSql import intArrayType
 
+
 class ReadTests(TestCaseBase):
     def testLoad(self):
         tsv = TsvTable(self.getInputFile("mrna1.tsv"))
@@ -17,7 +19,7 @@ class ReadTests(TestCaseBase):
             self.assertEqual(len(r), 22)
         r = tsv[0]
         self.assertEqual(r["qName"], "BC032353")
-        self.assertEqual(r[10],"BC032353")
+        self.assertEqual(r[10], "BC032353")
         self.assertEqual(r.qName, "BC032353")
 
     def testMultiIdx(self):
@@ -76,23 +78,23 @@ class ReadTests(TestCaseBase):
         typeMap = {"strand": str, "qName": str, "tName": str,
                    "blockSizes": intArrayType,
                    "qStarts": intArrayType, "tStarts": intArrayType}
-        
+
         tsv = TsvTable(self.getInputFile("mrna1.tsv"), uniqKeyCols="qName",
-                  typeMap=typeMap, defaultColType=int)
+                       typeMap=typeMap, defaultColType=int)
         r = tsv.idx.qName["AK095183"]
         self.assertEqual(r.tStart, 4222)
         self.assertEqual(r.tEnd, 19206)
         self.assertEqual(r.tName, "chr1")
         self.assertEqual(r.tStart, 4222)
 
-        tStarts = (4222,4832,5658,5766,6469,6719,7095,7355,7777,8130,14600,19183)
+        tStarts = (4222, 4832, 5658, 5766, 6469, 6719, 7095, 7355, 7777, 8130, 14600, 19183)
         self.assertEqual(len(r.tStarts), len(tStarts))
         for i in xrange(len(tStarts)):
             self.assertEqual(r.tStarts[i], tStarts[i])
 
     def testMissingIdxCol(self):
         with self.assertRaises(TsvError) as cm:
-            tsv = TsvTable(self.getInputFile("mrna1.tsv"), multiKeyCols=("noCol",))
+            TsvTable(self.getInputFile("mrna1.tsv"), multiKeyCols=("noCol",))
         # should have chained exception
         self.assertNotEqual(cm.exception.cause, None)
         self.assertEqual(cm.exception.cause.message, "key column \"noCol\" is not defined")
@@ -156,7 +158,7 @@ class ReadTests(TestCaseBase):
 
     def testDupColumn(self):
         with self.assertRaises(TsvError) as cm:
-            tsv = TsvTable(self.getInputFile("dupCol.tsv"))
+            TsvTable(self.getInputFile("dupCol.tsv"))
         self.assertEqual(str(cm.exception), "Duplicate column name: col1")
 
     def testAllowEmptyReader(self):
@@ -168,6 +170,7 @@ class ReadTests(TestCaseBase):
     def testAllowEmptyTbl(self):
         tbl = TsvTable("/dev/null", allowEmpty=True)
         self.assertEqual(len(tbl), 0)
+
 
 def suite():
     ts = unittest.TestSuite()

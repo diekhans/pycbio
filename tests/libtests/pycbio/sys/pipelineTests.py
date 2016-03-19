@@ -1,14 +1,19 @@
 # Copyright 2006-2012 Mark Diekhans
-import unittest, sys
+import unittest
+import sys
+import StringIO
 if __name__ == '__main__':
     sys.path.extend(["../../..", "../../../.."])
-from pycbio.sys.pipeline import *
+from pycbio.sys.pipeline import Pipeline, ProcException, DataReader
 from pycbio.sys import procOps
+from pycbio.hgdata.genePred import GenePredFhReader
 from pycbio.sys.testCaseBase import TestCaseBase
 
 # FIXME from: ccds2/modules/gencode/src/progs/gencodeMakeTracks/gencodeGtfToGenePred
 # this doesn't work, nothing is returned by the readers,
 # used to fix Pipeline at some time
+
+
 class ChrMLifterBROKEN(object):
     "Do lifting to of chrM"
     def __init__(self, liftFile):
@@ -40,7 +45,7 @@ class PipelineTests(TestCaseBase):
         for line in fh:
             pl.write(line)
         fh.close()
-    
+
     def testWrite(self):
         inf = self.getInputFile("simple1.txt")
         outf = self.getOutputFile(".out")
@@ -86,7 +91,7 @@ class PipelineTests(TestCaseBase):
             fh.write(line)
         fh.close()
         return outf
-    
+
     def testRead(self):
         inf = self.getInputFile("simple1.txt")
         infGz = self.getOutputFile(".txt.gz")
@@ -101,7 +106,7 @@ class PipelineTests(TestCaseBase):
     def testReadMult(self):
         inf = self.getInputFile("simple1.txt")
 
-        pl = Pipeline((("gzip","-1c"),
+        pl = Pipeline((("gzip", "-1c"),
                        ("gzip", "-dc"),
                        ("wc",),
                        ("sed", "-e", "s/  */\t/g")),
@@ -120,7 +125,7 @@ class PipelineTests(TestCaseBase):
         procOps.runProc(("gzip", "-c", inf), stdout=infGz)
 
         pl = Pipeline(("gzip", "-dc"), "r", otherEnd=infGz)
-        procOps.runProc(["cat"],  stdin=pl.pipePath, stdout=cpOut)
+        procOps.runProc(["cat"], stdin=pl.pipePath, stdout=cpOut)
         pl.wait()
 
         self.diffFiles(inf, cpOut)
@@ -133,14 +138,14 @@ class PipelineTests(TestCaseBase):
         pipePath = self.getOutputFile(".fifo")
 
         pl = Pipeline(("sort", "-r"), "w", otherEnd=outf, pipePath=pipePath)
-        procOps.runProc(["cat"],  stdin=inf, stdout=pl.pipePath)
+        procOps.runProc(["cat"], stdin=inf, stdout=pl.pipePath)
         pl.wait()
 
         self.diffExpected(".out")
 
     def testExitCode(self):
         pl = Pipeline(("false",))
-        with self.assertRaises(ProcException) as cm:
+        with self.assertRaises(ProcException):
             pl.wait()
         for p in pl.procs:
             self.assertTrue(p.returncode == 1)
@@ -149,7 +154,8 @@ class PipelineTests(TestCaseBase):
         "test not reading all of pipe output"
         pl = Pipeline([("yes",), ("true",)], "r")
         pl.wait()
-        
+
+
 def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(PipelineTests))

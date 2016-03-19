@@ -1,5 +1,7 @@
 # Copyright 2015-2016 Mark Diekhans
-import unittest, sys, shutil
+import unittest
+import sys
+import shutil
 if __name__ == '__main__':
     sys.path.extend(["../../..", "../../../.."])
 from pycbio.sys.testCaseBase import TestCaseBase
@@ -13,7 +15,7 @@ class FileOpsTests(TestCaseBase):
         with fileOps.opengz(inf) as inFh, open(outf, "w") as outFh:
             shutil.copyfileobj(inFh, outFh)
         self.diffFiles(inf, outf)
-        
+
     def testOpengzWritePlain(self):
         inf = self.getInputFile("simple1.txt")
         outf = self.getOutputFile(".out")
@@ -29,7 +31,7 @@ class FileOpsTests(TestCaseBase):
         with fileOps.opengz(infGz) as inFh, open(outf, "w") as outFh:
             shutil.copyfileobj(inFh, outFh)
         self.diffFiles(inf, outf)
-        
+
     def testOpengzWriteGz(self):
         inf = self.getInputFile("simple1.txt")
         outf = self.getOutputFile(".out")
@@ -47,7 +49,7 @@ class FileOpsTests(TestCaseBase):
         with fileOps.opengz(infBz2) as inFh, open(outf, "w") as outFh:
             shutil.copyfileobj(inFh, outFh)
         self.diffFiles(inf, outf)
-        
+
     def testOpengzWriteBz2(self):
         inf = self.getInputFile("simple1.txt")
         outf = self.getOutputFile(".out")
@@ -57,9 +59,8 @@ class FileOpsTests(TestCaseBase):
         procOps.runProc(("bunzip2", "-c", outfBz2), stdout=outf)
         self.diffFiles(inf, outf)
 
-
-
 # FIXME: many more tests needed
+
 
 def suite():
     ts = unittest.TestSuite()

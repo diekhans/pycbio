@@ -1,10 +1,11 @@
 # Copyright 2006-2012 Mark Diekhans
-import unittest, sys
+import unittest
+import sys
 if __name__ == '__main__':
     sys.path.append("../../../..")
-from pycbio.tsv import TabFile,TabFileReader
+from pycbio.tsv import TabFile, TabFileReader
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.hgdata.autoSql import intArrayType
+
 
 class TabFileTests(TestCaseBase):
     typesNumRows = 4
@@ -16,14 +17,14 @@ class TabFileTests(TestCaseBase):
             self.assertEqual(len(row), expectNumCols)
             numRows += 1
         self.assertEqual(numRows, expectNumRows)
-        
+
     def testTable(self):
         tbl = TabFile(self.getInputFile("types.tsv"))
         self.checkRowsCols(tbl, self.typesNumRows, self.typesNumCols)
 
     def testTableComments(self):
         tbl = TabFile(self.getInputFile("typesComment.tsv"), hashAreComments=True)
-        self.checkRowsCols(tbl, self.typesNumRows-1, self.typesNumCols)
+        self.checkRowsCols(tbl, self.typesNumRows - 1, self.typesNumCols)
 
     def testReader(self):
         rows = []
@@ -35,7 +36,7 @@ class TabFileTests(TestCaseBase):
         rows = []
         for row in TabFileReader(self.getInputFile("typesComment.tsv"), hashAreComments=True):
             rows.append(row)
-        self.checkRowsCols(rows, self.typesNumRows-1, self.typesNumCols)
+        self.checkRowsCols(rows, self.typesNumRows - 1, self.typesNumCols)
 
 
 def suite():

@@ -3,19 +3,22 @@
 Pairwise alignment.  All coordinates are strand-specific
 
 """
-import copy,re
+import copy
+import re
 from pycbio.hgdata.psl import PslReader
-from pycbio.sys.fileOps import prLine,iterLines
+from pycbio.sys.fileOps import prLine, iterLines
 
 # FIXME: need range/overlap operators
 
 otherStrand = {"+": "-", "-": "+"}
 
+
 class Coord(object):
     """A coordinate, which can be either absolute or relative to start of strand.
     """
     __slots__ = ("seqId", "start", "end", "size", "strand", "isAbs")
-    def __init__(self, seqId, start, end, size, strand, isAbs):     #pylint: disable=R0913
+
+    def __init__(self, seqId, start, end, size, strand, isAbs):
         assert((start <= end) and (start <= size) and (end <= size))
         assert(strand in ("+", "-"))
         self.seqId = seqId
@@ -32,8 +35,7 @@ class Coord(object):
         (self.seqId, self.start, self.end, self.size, self.strand, self.isAbs) = st
 
     def __str__(self):
-        return self.seqId + ":" + str(self.start) + "-" + str(self.end) + "(" \
-            + self.strand + ("a" if self.isAbs else "r") + ")"
+        return self.seqId + ":" + str(self.start) + "-" + str(self.end) + "(" + self.strand + ("a" if self.isAbs else "r") + ")"
 
     def toAbs(self):
         """create a new coord object that is in absolute coordinates.  Does not change the
@@ -88,11 +90,13 @@ class Coord(object):
             aself = self.toAbs()
             return (aself.strand == coord.strand) and aself.overlaps(coord.start, coord.end)
 
+
 class Seq(Coord):
     """Sequence in an alignment, coordinates are relative."""
 
     __slots__ = ("cds")
-    def __init__(self, seqId, start, end, size, strand, cds=None):   #pylint: disable=R0913
+
+    def __init__(self, seqId, start, end, size, strand, cds=None):
         Coord.__init__(self, seqId, start, end, size, strand, True)
         self.cds = cds
 
@@ -123,17 +127,17 @@ class Seq(Coord):
         "return a reverse complment of this object"
         cds = self.cds.revCmpl(self.size) if self.cds is not None else None
         strand = '-' if (self.strand == '+') else '+'
-        return Seq(self.seqId, self.size-self.end, self.size-self.start, self.size, strand, cds)
+        return Seq(self.seqId, self.size - self.end, self.size - self.start, self.size, strand, cds)
 
     def __str__(self):
-        return self.seqId + ":" + str(self.start) + "-" + str(self.end) + "/" \
-            + self.strand + " sz: " + str(self.size) + " cds: " + str(self.cds)
+        return "{}:{}-{}/{} sz: {} cds: {}".format(self.seqId, self.start, self.end,
+                                                   self.strand, self.size, self.cds)
 
     def __len__(self):
         "get sequence length"
-        return self.end-self.start
+        return self.end - self.start
 
-    def updateCds(self, cdsStart,  cdsEnd):
+    def updateCds(self, cdsStart, cdsEnd):
         """Update the CDS bounds to include specified range, triming to bounds"""
         cdsStart = max(self.start, cdsStart)
         cdsEnd = min(self.end, cdsEnd)
@@ -143,9 +147,11 @@ class Seq(Coord):
             self.cds.start = min(self.cds.start, cdsStart)
             self.cds.end = max(self.cds.end, cdsEnd)
 
+
 class SubSeq(object):
     "subsequence in alignment"
     __slots__ = ("seq", "start", "end", "cds")
+
     def __init__(self, seq, start, end, cds=None):
         self.seq = seq
         self.start = start
@@ -174,11 +180,11 @@ class SubSeq(object):
     def revCmpl(self, revSeq):
         "return a reverse complment of this object for revSeq"
         cds = self.cds.revCmpl(revSeq.size) if self.cds is not None else None
-        return SubSeq(revSeq, revSeq.size-self.end, revSeq.size-self.start, cds)
+        return SubSeq(revSeq, revSeq.size - self.end, revSeq.size - self.start, cds)
 
     def __len__(self):
         "get sequence length"
-        return self.end-self.start
+        return self.end - self.start
 
     def overlaps(self, start, end):
         "determine if subseqs overlap"
@@ -186,7 +192,7 @@ class SubSeq(object):
         minEnd = min(self.end, end)
         return (maxStart < minEnd)
 
-    def updateCds(self, cdsStart,  cdsEnd):
+    def updateCds(self, cdsStart, cdsEnd):
         """Update the CDS bounds and the sequence CDS. This expands existing
         CDS, it doesn't replace it.  If cds range exceeds block bounds,
         it is adjusted"""
@@ -200,10 +206,12 @@ class SubSeq(object):
 
         self.seq.updateCds(self.cds.start, self.cds.end)
 
+
 class SubSeqs(list):
     """list of subseqs of in blks, or None if one side is unaligned. Used
     to for functions that can operate on either side of alignment."""
     __slots__ = ("seq")
+
     def __init__(self, seq):
         list.__init__(self)
         self.seq = seq
@@ -230,14 +238,16 @@ class SubSeqs(list):
 
     def findLastCdsIdx(self):
         "find index of first SubSeq with CDS"
-        for i in xrange(len(self)-1, -1, -1):
+        for i in xrange(len(self) - 1, -1, -1):
             if (self[i] is not None) and (self[i].cds is not None):
                 return i
         return None
 
+
 class Cds(object):
     "range or subrange of CDS"
     __slots__ = ("start", "end")
+
     def __init__(self, start, end):
         assert(start < end)
         self.start = start
@@ -251,19 +261,21 @@ class Cds(object):
 
     def revCmpl(self, psize):
         "return a reverse complment of this object, given parent seq or subseq size"
-        return Cds(psize-self.end, psize-self.start)
+        return Cds(psize - self.end, psize - self.start)
 
     def __str__(self):
-        return str(self.start) + "-" + str(self.end)
+        return "{}-{}".format(self.start, self.end)
 
     def __len__(self):
         "get CDS length"
-        return self.end-self.start
+        return self.end - self.start
+
 
 class Block(object):
     """Block in alignment, query or target SubSeq can be None.  Links allow
     for simple traversing"""
     __slots__ = ("aln", "q", "t", "prev", "next")
+
     def __init__(self, aln, q, t):
         assert((q is None) or (t is None) or (len(q) == len(t)))
         self.aln = aln
@@ -276,7 +288,7 @@ class Block(object):
         return (self.aln, self.q, self.t, self.prev, self.next)
 
     def __setstate__(self, st):
-        (self.aln, self.q, self.t, self.prev, self.next)= st
+        (self.aln, self.q, self.t, self.prev, self.next) = st
 
     def __len__(self):
         "length of block"
@@ -306,16 +318,18 @@ class Block(object):
 
     def toRow(self):
         "convert to list of query and target coords"
-        return  self.__subToRow(self.aln.qSeq, self.q) + self.__subToRow(self.aln.tSeq, self.t)
+        return self.__subToRow(self.aln.qSeq, self.q) + self.__subToRow(self.aln.tSeq, self.t)
 
     def dump(self, fh):
         "print content to file"
         prLine(fh, "\t> query:  ", self.q)
         prLine(fh, "\t  target: ", self.t)
 
+
 class PairAlign(list):
     """List of alignment blocks"""
     __slots__ = ("qSeq", "tSeq", "qSubSeqs", "tSubSeqs")
+
     def __init__(self, qSeq, tSeq):
         list.__init__(self)
         self.qSeq = qSeq
@@ -354,7 +368,7 @@ class PairAlign(list):
         qSeq = self.qSeq.revCmpl()
         tSeq = self.tSeq.revCmpl()
         aln = PairAlign(qSeq, tSeq)
-        for i in xrange(len(self)-1, -1, -1):
+        for i in xrange(len(self) - 1, -1, -1):
             blk = self[i]
             aln.addBlk((None if (blk.q is None) else blk.q.revCmpl(qSeq)),
                        (None if (blk.t is None) else blk.t.revCmpl(tSeq)))
@@ -383,8 +397,8 @@ class PairAlign(list):
         "project CDS from one subseq to another"
         if destSs is not None:
             if (srcSs is not None) and (srcSs.cds is not None):
-                start = destSs.start+(srcSs.cds.start-srcSs.start)
-                end = destSs.start+(srcSs.cds.end-srcSs.start)
+                start = destSs.start + (srcSs.cds.start - srcSs.start)
+                end = destSs.start + (srcSs.cds.end - srcSs.start)
                 destSs.updateCds(start, end)
             elif contained:
                 destSs.updateCds(destSs.start, destSs.end)
@@ -394,7 +408,7 @@ class PairAlign(list):
         "project CDS from one alignment side to the other"
         assert(srcSubSeqs.seq.cds is not None)
         destSubSeqs.clearCds()
-        for i in xrange(srcSubSeqs.findFirstCdsIdx(), srcSubSeqs.findLastCdsIdx()+1, 1):
+        for i in xrange(srcSubSeqs.findFirstCdsIdx(), srcSubSeqs.findLastCdsIdx() + 1, 1):
             PairAlign.__projectBlkCds(srcSubSeqs[i], destSubSeqs[i], contained)
 
     def targetOverlap(self, o):
@@ -431,7 +445,7 @@ class PairAlign(list):
         while si < sl:
             srcSs = srcSubSeqs[si]
             if srcSs is not None:
-                if (srcSs.cds is not None) and destSs.overlaps(srcSs.cds.start, srcSs.cds.end) :
+                if (srcSs.cds is not None) and destSs.overlaps(srcSs.cds.start, srcSs.cds.end):
                     destSs.updateCds(srcSs.cds.start, srcSs.cds.end)
                 elif destSs.start > srcSs.end:
                     break
@@ -500,12 +514,14 @@ def _getCds(cdsRange, strand, size):
         cds = cds.revCmpl(size)
     return cds
 
+
 def _mkPslSeq(name, start, end, size, strand, cds=None):
     "make a seq from a PSL q or t, reversing range is neg strand"
     if strand == '-':
-        return Seq(name, size-end, size-start, size, strand, cds)
+        return Seq(name, size - end, size - start, size, strand, cds)
     else:
         return Seq(name, start, end, size, strand, cds)
+
 
 def _addPslBlk(pslBlk, aln, prevBlk, inclUnaln):
     """add an aligned block, and optionally preceeding unaligned blocks"""
@@ -522,6 +538,7 @@ def _addPslBlk(pslBlk, aln, prevBlk, inclUnaln):
                      aln.tSeq.mkSubSeq(tStart, tEnd))
     return blk
 
+
 def fromPsl(psl, qCdsRange=None, inclUnaln=False, projectCds=False, contained=False):
     """generate a PairAlign from a PSL. cdsRange is None or a tuple. In
     inclUnaln is True, then include Block objects for unaligned regions"""
@@ -536,6 +553,7 @@ def fromPsl(psl, qCdsRange=None, inclUnaln=False, projectCds=False, contained=Fa
         aln.projectCdsToTarget(contained)
     return aln
 
+
 class CdsTable(dict):
     """table mapping ids to tuple of zero-based (start end),
     Load from CDS seperated file in form:
@@ -549,13 +567,15 @@ class CdsTable(dict):
                 self.__parseCds(line)
 
     __parseRe = re.compile("^([^\t]+)\t([0-9]+)\\.\\.([0-9]+)$")
+
     def __parseCds(self, line):
         m = self.__parseRe.match(line)
         if m is None:
             raise Exception("can't parse CDS line: " + line)
-        st = int(m.group(2))-1
-        en = int(m.group(3))-1
+        st = int(m.group(2)) - 1
+        en = int(m.group(3)) - 1
         self[m.group(1)] = (st, en)
+
 
 def loadPslFile(pslFile, cdsFile=None, inclUnaln=False, projectCds=False, contained=False):
     "build list of PairAlign from a PSL file and optional CDS file"

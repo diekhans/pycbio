@@ -1,9 +1,12 @@
 # Copyright 2006-2012 Mark Diekhans
-import unittest, sys, cPickle
+import unittest
+import sys
+import cPickle
 if __name__ == '__main__':
     sys.path.extend(["../../..", "../../../.."])
 from pycbio.sys.enumeration import Enumeration
 from pycbio.sys.testCaseBase import TestCaseBase
+
 
 class EnumerationTests(TestCaseBase):
 
@@ -18,7 +21,7 @@ class EnumerationTests(TestCaseBase):
         self.assertTrue(Colors.red == Colors.red)
         self.assertTrue(Colors.red != Colors.blue)
         self.assertTrue(Colors.red is not None)
-        self.assertTrue(None != Colors.red)
+        self.assertTrue(None != Colors.red)   # flake8: noqa
 
     def testBasics(self):
         Colors = self.__getColors()
@@ -31,7 +34,7 @@ class EnumerationTests(TestCaseBase):
         self.assertTrue(Colors.green != Colors.lookup("red"))
 
     def testAliases(self):
-        Name = Enumeration("Name", ["Fred",  ("Rick", "Richard", ("Dick", "HeyYou")), ("Bill", "Willian")])
+        Name = Enumeration("Name", ["Fred", ("Rick", "Richard", ("Dick", "HeyYou")), ("Bill", "Willian")])
         self.assertEqual(Name.lookup("Richard"), Name.Rick)
         self.assertTrue(Name.lookup("Richard") is Name.Rick)
         self.assertEqual(Name.lookup("Dick"), Name.Rick)
@@ -44,16 +47,16 @@ class EnumerationTests(TestCaseBase):
 
     def testAliasesBug1(self):
         "forgot comma in one-element tuple"
-        with self.assertRaises(TypeError) as cm:
-            Stat = Enumeration("Stat",
-                               ["okay",
-                                ("notConserved","notConserved", ("no_alignment")),
-                                "bad_3_splice", "bad_5_splice"])
+        with self.assertRaises(TypeError):
+            Enumeration("Stat",
+                        ["okay",
+                         ("notConserved", "notConserved", ("no_alignment")),
+                         "bad_3_splice", "bad_5_splice"])
 
     def testBitSetValues(self):
         Stat = Enumeration("Stat",
                            ["okay",
-                            ("notConserved","notConserved", ("no_alignment",)),
+                            ("notConserved", "notConserved", ("no_alignment",)),
                             "bad_3_splice", "bad_5_splice"],
                            bitSetValues=True)
         self.assertEqual(Stat.okay, 1)
@@ -87,7 +90,7 @@ class EnumerationTests(TestCaseBase):
         # check if immutable
         with self.assertRaises(TypeError) as cm:
             Colors.red.name = "purple"
-        with self.assertRaises(TypeError) as cm:
+        with self.assertRaises(TypeError):
             Colors.red = None
 
     def __testPickleProt(self, prot):
@@ -105,10 +108,13 @@ class EnumerationTests(TestCaseBase):
     def testPickle2(self):
         self.assertTrue(cPickle.HIGHEST_PROTOCOL == 2)
         self.__testPickleProt(2)
+
     def testPickle1(self):
         self.__testPickleProt(1)
+
     def testPickle0(self):
         self.__testPickleProt(0)
+
 
 def suite():
     ts = unittest.TestSuite()

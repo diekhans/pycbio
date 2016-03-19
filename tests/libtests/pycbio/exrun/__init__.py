@@ -1,7 +1,8 @@
 # Copyright 2006-2012 Mark Diekhans
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.exrun.graph import ProdState,RuleState
+from pycbio.exrun.graph import ProdState, RuleState
 from pycbio.sys import typeOps
+
 
 class ExRunTestCaseBase(TestCaseBase):
     "test bases class for unit tests that provides check of status "
@@ -21,8 +22,8 @@ class ExRunTestCaseBase(TestCaseBase):
             if expect is None:
                 expect = defaultState
             if n.state != expect:
-                self.fail("State of " + str(n.__class__) + " " +  n.name
-                          + " state " + str(n.state)+ " != expected " + str(expect))
+                self.fail("State of " + str(n.__class__) + " " + n.name
+                          + " state " + str(n.state) + " != expected " + str(expect))
 
     def checkGraphStates(self, er, notOkSpecs=()):
         """check states of productions and rules nodes, ones that are

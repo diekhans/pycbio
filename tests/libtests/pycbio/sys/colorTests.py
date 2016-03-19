@@ -1,5 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
-import unittest, sys, cPickle
+import unittest
+import sys
 if __name__ == '__main__':
     sys.path.extend(["../../..", "../../../.."])
 from pycbio.sys.color import Color
@@ -52,8 +53,8 @@ class ColorTests(TestCaseBase):
         c = Color.fromRgb8(16, 78, 139)
         with self.assertRaises(AttributeError):
             c.red = 0
-        
-        
+
+
 # FIXME: many more tests needed
 
 def suite():

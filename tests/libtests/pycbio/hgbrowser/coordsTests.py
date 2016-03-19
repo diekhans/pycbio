@@ -1,10 +1,13 @@
 # Copyright 2006-2014 Mark Diekhans
-import unittest, sys, re
+import unittest
+import sys
+
 if __name__ == '__main__':
     sys.path.append("../../../..")
 
 from pycbio.hgbrowser.coords import Coords
 from pycbio.sys.testCaseBase import TestCaseBase
+
 
 class CoordsTests(TestCaseBase):
     def testCoordsCombined(self):
@@ -32,6 +35,7 @@ class CoordsTests(TestCaseBase):
         self.assertEqual(c.end, 20000)
         self.assertEqual(c.db, "hg38")
         self.assertEqual(c.chromSize, 50818468)
+
 
 def suite():
     ts = unittest.TestSuite()
