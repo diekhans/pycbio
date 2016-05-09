@@ -490,7 +490,7 @@ class GenePred(object):
                 return exon
         return None
 
-    def __overlapCnt(self, gp2):
+    def overlapAmt(self, gp2):
         "count exon bases that overlap"
         if (self.chrom != gp2.chrom) or (self.strand != gp2.strand):
             return 0
@@ -502,13 +502,13 @@ class GenePred(object):
 
     def similarity(self, gp2):
         "compute similariy of two genes"
-        overCnt = self.__overlapCnt(gp2)
+        overCnt = self.overlapAmt(gp2)
         if overCnt == 0:
             return 0.0
         else:
             return float(2 * overCnt) / float(self.getLenExons() + gp2.getLenExons())
 
-    def __cdsOverlapCnt(self, gp2):
+    def cdsOverlapAmt(self, gp2):
         "count cds bases that overlap"
         if (self.chrom != gp2.chrom) or (self.strand != gp2.strand):
             return 0
@@ -524,7 +524,7 @@ class GenePred(object):
 
     def cdsSimilarity(self, gp2):
         "compute similariy of CDS of two genes"
-        overCnt = self.__cdsOverlapCnt(gp2)
+        overCnt = self.cdsOverlapAmt(gp2)
         if overCnt == 0:
             return 0.0
         else:
@@ -532,7 +532,7 @@ class GenePred(object):
 
     def cdsCover(self, gp2):
         "compute faction of CDS is covered a gene"
-        overCnt = self.__cdsOverlapCnt(gp2)
+        overCnt = self.cdsOverlapAmt(gp2)
         if overCnt == 0:
             return 0.0
         else:
