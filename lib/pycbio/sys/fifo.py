@@ -110,7 +110,7 @@ class _NamedFifo(_Fifo):
         # FIXME: don't need suffix/tmpDir, unless this made of part the Fifo API
         if tmpDir is None:
             tmpDir = os.getenv("TMPDIR", "/var/tmp")
-        prefix = + "{}/{}.{}".format(tmpDir, socket.gethostname(), os.getpid())
+        prefix = "{}/{}.{}".format(tmpDir, socket.gethostname(), os.getpid())
         maxTries = 1000
         unum = 0
         while unum < maxTries:

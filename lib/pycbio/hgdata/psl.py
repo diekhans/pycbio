@@ -1,8 +1,8 @@
 # Copyright 2006-2012 Mark Diekhans
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin, strArraySplit, strArrayJoin
 from pycbio.sys import fileOps, dbOps
-from pycbio.sys.multiDict import MultiDict
 from pycbio.hgdata.rangeFinder import Binner
+from collections import defaultdict
 from Bio.Seq import reverse_complement
 
 # FIXME: Should have factory rather than __init__ multiplexing nonsense **
@@ -340,10 +340,7 @@ class Psl(object):
 
     def identity(self):
         aligned = float(self.match + self.misMatch + self.repMatch)
-        if aligned == 0.0:
-            return 0.0
-        else:
-            return float(self.match + self.repMatch) / aligned
+        return float(self.match + self.repMatch) / aligned
 
     def basesAligned(self):
         return self.match + self.misMatch + self.repMatch
@@ -513,14 +510,14 @@ class PslTbl(list):
     """
 
     def __mkQNameIdx(self):
-        self.qNameMap = MultiDict()
+        self.qNameMap = defaultdict(list)
         for psl in self:
-            self.qNameMap.add(psl.qName, psl)
+            self.qNameMap[psl.qName].append(psl)
 
     def __mkTNameIdx(self):
-        self.tNameMap = MultiDict()
+        self.tNameMap = defaultdict(list)
         for psl in self:
-            self.tNameMap.add(psl.tName, psl)
+            self.tNameMap[psl.tName](psl)
 
     def __init__(self, fileName, qNameIdx=False, tNameIdx=False):
         for psl in PslReader(fileName):
@@ -541,11 +538,8 @@ class PslTbl(list):
         """generator to get all PSL with a give qName"""
         ent = self.qNameMap.get(qName)
         if ent is not None:
-            if isinstance(ent, list):
-                for psl in ent:
-                    yield psl
-            else:
-                yield ent
+            for psl in ent:
+                yield psl
 
     def getTNameIter(self):
         return self.tNameMap.iterkeys()
