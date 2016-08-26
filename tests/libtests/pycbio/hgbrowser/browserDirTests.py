@@ -2,7 +2,7 @@
 import unittest
 import sys
 if __name__ == '__main__':
-    sys.path.append("../../../..")
+    sys.path.append("../../../../lib")
 
 # from pycbio.hgbrowser.browserDir import BrowserDir
 from pycbio.sys.testCaseBase import TestCaseBase

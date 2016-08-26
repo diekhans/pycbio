@@ -23,6 +23,7 @@ class TestCaseBase(unittest.TestCase):
     def __init__(self, methodName='runTest'):
         """initialize, removing old output files associated with the class"""
         unittest.TestCase.__init__(self, methodName)
+        self.maxDiff = None
         clId = self.getClassId()
         od = self.getOutputDir()
         for f in glob.glob(os.path.join(od, "/{}.*".format(clId))) + glob.glob(os.path.join(od, "/tmp.*.{}.*".format(clId))):

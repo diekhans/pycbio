@@ -1,41 +1,66 @@
 # Copyright 2006-2012 Mark Diekhans
 
+class PslMapRange(object):
+    """A subrange of requested mapping, which is either aligned on unaligned.
+    If aligned both query and target ranges are set, if unaligned only one.
+    prev/next coordinates are only set when corresponding range is not set (unaligned).
+    """
+    __slots__ = ("qPrevEnd", "qStart", "qEnd", "qNextStart", "tPrevEnd", "tStart", "tEnd", "tNextStart")
+    def __init__(self, qPrevEnd, qStart, qEnd,  qNextStart, tPrevEnd, tStart, tEnd, tNextStart):
+        self.qPrevEnd = qPrevEnd
+        self.qStart = qStart
+        self.qEnd = qEnd
+        self.qNextStart = qNextStart
+        self.tPrevEnd = tPrevEnd
+        self.tStart = tStart
+        self.tEnd = tEnd
+        self.tNextStart = tNextStart
 
+    def __str__(self):
+        strs = []
+        for s in self.__slots__:
+            strs.append(str(getattr(self, s)))
+        return " ".join(strs)
+        
+    def __eq__(self, other):
+        if not isinstance(other, PslMapRange):
+            return False
+        for s in self.__slots__:
+            if getattr(self, s) != getattr(other, s):
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not (self == other)
+        
 class PslMap(object):
     """Object for mapping coordinates using PSL alignments.
     Can map from either query-to-target or target-to-query coordinates.
+    Has a generator that is used to traverse the range.
     Takes an object that has the following callback functions that are
-    called on each contiguous range that is mapped:
-
-    - cb.mapBlock(psl, blk, qRngStart, qRngEnd, tRngStart, tRngEnd)
-      Called for every aligned block in the requested range.
-    - cb.mapGap(psl, prevBlk, nextBlk, qRngStart, qRngEnd, tRngStart, tRngEnd)
-      Called for every gap in the requested range.  Either the qRng or
-      tRng arguments will be None. prevBlk or nextBlk maybe none if at
-      beginning or end of alignment.
-
     Blocks are traversed in order, reverse complement PSL to traverse in
     opposite order.
     """
-    def __init__(self, callback):
-        "initialize with callback object"
-        self.cb = callback
+    def __init__(self, mapPsl):
+        "initialize with mapping PSL"
+        self.mapPsl = mapPsl
 
-    def __t2qProcessGap(self, psl, prevBlk, nextBlk, tRngNext, tRngEnd):
-        """analyze gap before blk, return updated tRngNext"""
+    def __t2qProcessGap(self, prevBlk, nextBlk, tRngNext, tRngEnd):
+        """analyze  gap before blk, return updated tRngNext"""
         gapTStart = prevBlk.tEnd
         gapTEnd = nextBlk.tStart
         if tRngNext >= gapTEnd:
-            return tRngNext  # gap before range
+            return tRngNext, None  # gap before range
         assert(tRngNext >= gapTStart)
         tRngNextNext = tRngEnd if (tRngEnd < gapTEnd) else gapTEnd
-        self.cb.mapGap(psl, prevBlk, nextBlk, None, None, tRngNext, tRngNextNext)
-        return tRngNextNext
+        pmr = PslMapRange(prevBlk.qEnd, None, None, nextBlk.qStart,
+                          None, tRngNext, tRngNextNext, None)
+        return tRngNextNext, pmr
 
-    def __t2qProcessBlk(self, psl, blk, tRngNext, tRngEnd):
+    def __t2qProcessBlk(self, blk, tRngNext, tRngEnd):
         """Analyze next block overlapping range.  Return updated tRngNext"""
         if tRngNext >= blk.tEnd:
-            return tRngNext  # block before range
+            return tRngNext, None  # block before range
         assert(tRngNext >= blk.tStart)
 
         # in this block, find corresponding query range
@@ -49,49 +74,57 @@ class PslMap(object):
             left = blk.tEnd - tRngNext
             qRngNextNext = qRngNext + left
             tRngNextNext = tRngNext + left
-        self.cb.mapBlock(psl, blk, qRngNext, qRngNextNext, tRngNext, tRngNextNext)
-        return tRngNextNext
+        pmr = PslMapRange(None, qRngNext, qRngNextNext, None,
+                          None, tRngNext, tRngNextNext, None)
+        return tRngNextNext, pmr
 
-    def targetToQueryMap(self, psl, tRngStart, tRngEnd):
-        """Map a target range to query ranges using a PSL. Target range must
+    def targetToQueryMap(self, tRngStart, tRngEnd):
+        """Generator map a target range to query ranges using a PSL. Target range must
         be in PSL block-specific coordinates (positive or negative strand)"""
         # deal with gap at beginning
         tRngNext = tRngStart
-        if tRngNext < psl.blocks[0].tStart:
-            self.cb.mapGap(psl, None, psl.blocks[0], None, None, tRngNext, psl.blocks[0].tStart)
-            tRngNext = psl.blocks[0].tStart
+        if tRngNext < self.mapPsl.blocks[0].tStart:
+            yield PslMapRange(None, None, None, self.mapPsl.blocks[0].qStart,
+                              None, tRngNext, self.mapPsl.blocks[0].tStart, None)
+            tRngNext = self.mapPsl.blocks[0].tStart
 
         # process blocks and gaps
         prevBlk = None
-        for blk in psl.blocks:
+        for blk in self.mapPsl.blocks:
             if tRngNext >= tRngEnd:
                 break
             if prevBlk is not None:
-                tRngNext = self.__t2qProcessGap(psl, prevBlk, blk, tRngNext, tRngEnd)
+                tRngNext, pmr = self.__t2qProcessGap(prevBlk, blk, tRngNext, tRngEnd)
+                if pmr is not None:
+                    yield pmr
             if tRngNext < tRngEnd:
-                tRngNext = self.__t2qProcessBlk(psl, blk, tRngNext, tRngEnd)
+                tRngNext, pmr = self.__t2qProcessBlk(blk, tRngNext, tRngEnd)
+                if pmr is not None:
+                    yield pmr
             prevBlk = blk
 
         # deal with gap at end
-        lastBlk = psl.blocks[psl.blockCount - 1]
+        lastBlk = self.mapPsl.blocks[self.mapPsl.blockCount - 1]
         if tRngEnd > lastBlk.tEnd:
-            self.cb.mapGap(psl, lastBlk, None, None, None, lastBlk.tEnd, tRngEnd)
+            yield PslMapRange(lastBlk.qEnd, None, None, None,
+                              None, lastBlk.tEnd, tRngEnd, None)
 
-    def __q2tProcessGap(self, psl, prevBlk, nextBlk, qRngNext, qRngEnd):
+    def __q2tProcessGap(self, prevBlk, nextBlk, qRngNext, qRngEnd):
         """analyze gap before blk, return updated qRngNext"""
         gapQStart = prevBlk.qEnd
         gapQEnd = nextBlk.qStart
         if qRngNext >= gapQEnd:
-            return qRngNext  # gap before range
+            return qRngNext, None  # gap before range
         assert(qRngNext >= gapQStart)
         qRngNextNext = qRngEnd if (qRngEnd < gapQEnd) else gapQEnd
-        self.cb.mapGap(psl, prevBlk, nextBlk, qRngNext, qRngNextNext, None, None)
-        return qRngNextNext
+        pmr = PslMapRange(None, qRngNext, qRngNextNext, None,
+                          prevBlk.tEnd, None, None, nextBlk.tStart)
+        return qRngNextNext, pmr
 
-    def __q2tProcessBlk(self, psl, blk, qRngNext, qRngEnd):
+    def __q2tProcessBlk(self, blk, qRngNext, qRngEnd):
         """Analyze next block overlapping range.  Return updated qRngNext"""
         if qRngNext >= blk.qEnd:
-            return qRngNext  # block before range
+            return qRngNext, None  # block before range
         assert(qRngNext >= blk.qStart)
 
         # in this block, find corresponding target range
@@ -105,30 +138,37 @@ class PslMap(object):
             left = blk.qEnd - qRngNext
             tRngNextNext = tRngNext + left
             qRngNextNext = qRngNext + left
-        self.cb.mapBlock(psl, blk, qRngNext, qRngNextNext, tRngNext, tRngNextNext)
-        return qRngNextNext
+        pmr = PslMapRange(None, qRngNext, qRngNextNext, None,
+                          None, tRngNext, tRngNextNext, None)
+        return qRngNextNext, pmr
 
-    def queryToTargetMap(self, psl, qRngStart, qRngEnd):
+    def queryToTargetMap(self, qRngStart, qRngEnd):
         """Map a query range to target ranges using a PSL.  Query range must
         be in PSL block-specific coordinates (positive or negative strand)"""
         # deal with gap at beginning
         qRngNext = qRngStart
-        if qRngNext < psl.blocks[0].qStart:
-            self.cb.mapGap(psl, None, psl.blocks[0], qRngNext, psl.blocks[0].qStart, None, None)
-            qRngNext = psl.blocks[0].qStart
+        if qRngNext < self.mapPsl.blocks[0].qStart:
+            yield PslMapRange(None, qRngNext, self.mapPsl.blocks[0].qStart, None,
+                              None, None, None, self.mapPsl.blocks[0].tStart)
+            qRngNext = self.mapPsl.blocks[0].qStart
 
         # process blocks and gaps
         prevBlk = None
-        for blk in psl.blocks:
+        for blk in self.mapPsl.blocks:
             if qRngNext >= qRngEnd:
                 break
             if prevBlk is not None:
-                qRngNext = self.__q2tProcessGap(psl, prevBlk, blk, qRngNext, qRngEnd)
+                qRngNext, pmr = self.__q2tProcessGap(prevBlk, blk, qRngNext, qRngEnd)
+                if pmr is not None:
+                    yield pmr
             if qRngNext < qRngEnd:
-                qRngNext = self.__q2tProcessBlk(psl, blk, qRngNext, qRngEnd)
+                qRngNext, pmr = self.__q2tProcessBlk(blk, qRngNext, qRngEnd)
+                if pmr is not None:
+                    yield pmr
             prevBlk = blk
 
         # deal with gap at end
-        lastBlk = psl.blocks[psl.blockCount - 1]
+        lastBlk = self.mapPsl.blocks[self.mapPsl.blockCount - 1]
         if qRngEnd > lastBlk.qEnd:
-            self.cb.mapGap(psl, lastBlk, None, lastBlk.qEnd, qRngEnd, None, None)
+            yield PslMapRange(None, lastBlk.qEnd, qRngEnd, None,
+                              lastBlk.tEnd, None, None, None)

@@ -6,7 +6,7 @@ import sys
 import os
 import time
 if __name__ == '__main__':
-    sys.path.append("../../../..")
+    sys.path.append("../../../../lib")
 from pycbio.sys import fileOps
 from pycbio.exrun import ExRunException, ExRun, File, Rule, Production, Verb
 from pycbio.exrun.graph import RuleState, ProdState

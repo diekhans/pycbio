@@ -2,7 +2,7 @@
 import unittest
 import sys
 if __name__ == '__main__':
-    sys.path.append("../../../..")
+    sys.path.append("../../../../lib")
 from pycbio.tsv import TsvTable
 from pycbio.tsv import TsvError
 from pycbio.tsv import TsvReader

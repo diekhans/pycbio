@@ -2,7 +2,7 @@
 import unittest
 import sys
 if __name__ == '__main__':
-    sys.path.append("../../../..")
+    sys.path.append("../../../../lib")
 from pycbio.sys import loggingOps
 from pycbio.sys.testCaseBase import TestCaseBase
 import argparse

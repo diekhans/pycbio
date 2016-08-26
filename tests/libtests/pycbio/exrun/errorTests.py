@@ -4,7 +4,7 @@
 import unittest
 import sys
 if __name__ == '__main__':
-    sys.path.append("../../../..")
+    sys.path.append("../../../../lib")
 from pycbio.exrun import ExRun, ExRunException, Rule, Verb
 from pycbio.exrun.graph import CycleException, ProdState, RuleState
 from pycbio.sys import fileOps

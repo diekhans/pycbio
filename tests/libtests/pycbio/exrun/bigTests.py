@@ -5,7 +5,7 @@ import unittest
 import sys
 import time
 if __name__ == '__main__':
-    sys.path.append("../../../..")
+    sys.path.append("../../../../lib")
 from pycbio.sys import typeOps
 from pycbio.exrun import ExRun, Rule, Production, Verb
 from libtests.pycbio.exrun import ExRunTestCaseBase
