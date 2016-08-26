@@ -121,7 +121,17 @@ def annon(**kwargs):
     kwargs.update({"__str__": _annonStr})
     return type('', (), kwargs)()
 
+def attrdict(obj):
+    """Create a dictionary of all attributes in an object. This will work for
+    classes with __slots__.  The returned object may or may not be the
+    __dict__, and so should not be modified"""
+    try:
+        return obj.__dict__
+    except AttributeError:
+        return {a: getattr(obj, a) for a in dir(obj)}
+
 __all__ = (isListLike.__name__, listInit.__name__, listAppend.__name__,
            isIterable.__name__, mkiter.__name__, mkset.__name__,
            noneOrZero.__name__, addUniq.__name__, dictObtain.__name__,
-           sorted.__name__, sortedKeys.__name__, annon.__name__)
+           sorted.__name__, sortedKeys.__name__, annon.__name__,
+           attrdict.__name__)
