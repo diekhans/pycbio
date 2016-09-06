@@ -108,11 +108,11 @@ def sortedKeys(d, sortFunc=cmp):
         keys.sort(cmp=sortFunc)
         return keys
 
+# FIXME: describe how this is different than a named tuple
 
 def _annonStr(self):
     "__str__ function for annon objects"
     return ", ".join(["{}={}".format(k, repr(getattr(self, k))) for k in sorted(dir(self)) if not k.startswith("__")])
-
 
 def annon(**kwargs):
     """create an anonymous object with fields that are same as the keyword

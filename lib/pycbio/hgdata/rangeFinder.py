@@ -81,19 +81,16 @@ class Binner(object):
                 yield bins
 
     @staticmethod
-    def getOverlappingSqlExpr(seqCol, binCol, startCol, endCol, seq, start, end):
+    def getOverlappingSqlExpr(binCol, seqCol, startCol, endCol, seq, start, end):
         "generate an SQL expression for overlaps with the specified range"
         # build bin parts
         parts = []
         for bins in Binner.getOverlappingBins(start, end):
             if bins[0] == bins[1]:
-                parts.append("(" + binCol + "=" + str(bins[0]) + ")")
+                parts.append("({}={})".format(binCol, bins[0]))
             else:
-                parts.append("(" + binCol + ">=" + str(bins[0]) + " and " + binCol + "<=" + str(bins[1]) + ")")
-
-        return "((" + seqCol + "=\"" + seq + "\") and (" + startCol + "<" + str(end) + ") and (" + endCol + ">" + str(start) + ")" \
-            " and (" + " or ".join(parts) + "))"
-
+                parts.append("({}>={} and {}<={})".format(binCol, bins[0], binCol, bins[1]))
+        return "(({}=\"{}\") and ({}<{}) and ({}>{}) and ({}))".format(seqCol, seq, startCol, end, endCol, start, " or ".join(parts))
 
 class Entry(object):
     "entry associating a range with a value"

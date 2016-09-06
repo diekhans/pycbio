@@ -34,7 +34,7 @@ class PslBlock(object):
         return self.size
 
     def __str__(self):
-        return str(self.qStart) + ".." + str(self.qEnd) + " <=> " + str(self.tStart) + ".." + str(self.tEnd)
+        return "{}..{} <=> {}..{}".format(self.qStart, self.qEnd, self.tStart, self.tEnd)
 
     def getQStartPos(self):
         "get qStart for the block on positive strand"
@@ -501,7 +501,7 @@ class PslDbReader(object):
         if haveSeqs:
             query += "," + ",".join(PslDbReader.pslSeqColumns)
         query += " from " + table + " where " \
-            + Binner.getOverlappingSqlExpr("tName", "bin", "tStart", "tEnd", tName, tStart, tEnd)
+            + Binner.getOverlappingSqlExpr("bin", "tName", "tStart", "tEnd", tName, tStart, tEnd)
         return PslDbReader(conn, query)
 
 

@@ -17,8 +17,9 @@ class Coords(Immutable):
        chrom, start, end - start/end maybe None to indicate a full chromosome
        db - optional genome assembly database
        chromSize - optional size of chromosome
+       strand - optional strand
     """
-    __slots__ = ("chrom", "start", "end", "db", "chromSize")
+    __slots__ = ("chrom", "start", "end", "db", "chromSize", "strand")
 
     def __parseCombined__(self, coordsStr):
         "parse chrom:start-end "
@@ -51,6 +52,7 @@ class Coords(Immutable):
             raise CoordsError("Coords() excepts either one or three arguments")
         self.db = kwargs.get("db")
         self.chromSize = kwargs.get("chromSize")
+        self.strand = kwargs.get("strand")
         self.mkImmutable()
 
     def __str__(self):
@@ -72,6 +74,21 @@ class Coords(Immutable):
             st = 0
         return Coords(self.chrom, st, self.end + amt)
 
+    def reverse(self):
+        """move coordinates to other strand"""
+        if self.chromSize is None:
+            raise ValueError("reverse requires chromSize")
+        if self.strand == '+':
+            strand = '-'
+        elif self.strand == '-':
+            strand = '+'
+        else:
+            strand = self.strand  # would keep weird value
+        return Coords(self.chrom,
+                      self.chromSize - self.end,
+                      self.chromSize - self.start,
+                      db=self.db, chromSize=self.chromSize, strand=strand)
+    
     def __cmp__(self, other):
         if other is None:
             return -1

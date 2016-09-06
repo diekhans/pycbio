@@ -18,80 +18,95 @@ _psNegMrna = "5148	0	415	0	0	0	27	208231	-	NM_017651	5564	0	5563	chr6	171115067	
 def splitToPsl(ps):
     return Psl(ps.split("\t"))
 
-def _mapToTuple(prm):
-    typ = "blk" if (prm.qStart is not None) and (prm.tStart is not None) else "gap"
-    return (typ, prm.qPrevEnd, prm.qStart, prm.qEnd, prm. qNextStart, prm.tPrevEnd, prm.tStart, prm.tEnd, prm.tNextStart)
+def _mapToTuple(pmr):
+    typ = "blk" if (pmr.qStart is not None) and (pmr.tStart is not None) else "gap"
+    return (typ, pmr.qPrevEnd, pmr.qStart, pmr.qEnd, pmr.qNextStart, pmr.qStrand, pmr.tPrevEnd, pmr.tStart, pmr.tEnd, pmr.tNextStart, pmr.tStrand)
 
-def _targetToQueryMap(mapPsl, tRngStart, tRngEnd):
-    return tuple([_mapToTuple(m) for m in PslMap(mapPsl).targetToQueryMap(tRngStart, tRngEnd)])
+def _targetToQueryMap(mapPsl, tRngStart, tRngEnd, tStrand=None):
+    return tuple([_mapToTuple(m) for m in PslMap(mapPsl).targetToQueryMap(tRngStart, tRngEnd, tStrand)])
 
-def _queryToTargetMap(mapPsl, qRngStart, qRngEnd):
-    return tuple([_mapToTuple(m) for m in PslMap(mapPsl).queryToTargetMap(qRngStart, qRngEnd)])
+def _queryToTargetMap(mapPsl, qRngStart, qRngEnd, qStrand=None):
+    return tuple([_mapToTuple(m) for m in PslMap(mapPsl).queryToTargetMap(qRngStart, qRngEnd, qStrand)])
 
 class TargetToQueryTests(TestCaseBase):
     def testPosMRna(self):
-        pslPosMrna = splitToPsl(_psPosMRna)
+        psl = splitToPsl(_psPosMRna)
         # within a single block
-        got = _targetToQueryMap(pslPosMrna, 1024444, 1024445)
-        self.assertEqual(got, (('blk', None, 96, 97, None, None, 1024444, 1024445, None),))
+        got = _targetToQueryMap(psl, 1024444, 1024445)
+        self.assertEqual((('blk', None, 96, 97, None, '+', None, 1024444, 1024445, None, '+'),),
+                         got)
 
         # crossing gaps
-        got = _targetToQueryMap(pslPosMrna, 1024398, 1031918)
-        self.assertEqual(got, (('blk', None, 50, 119, None, None, 1024398, 1024467, None),
-                               ('gap', 119, None, None, 119, None, 1024467, 1028428, None),
-                               ('blk', None, 119, 290, None, None, 1028428, 1028599, None),
-                               ('gap', 290, None, None, 290, None, 1028599, 1031868, None),
-                               ('blk', None, 290, 340, None, None, 1031868, 1031918, None)))
+        got = _targetToQueryMap(psl, 1024398, 1031918)
+        self.assertEqual((('blk', None, 50, 119, None, '+', None, 1024398, 1024467, None, '+'),
+                          ('gap', 119, None, None, 119, '+', None, 1024467, 1028428, None, '+'),
+                          ('blk', None, 119, 290, None, '+', None, 1028428, 1028599, None, '+'),
+                          ('gap', 290, None, None, 290, '+', None, 1028599, 1031868, None, '+'),
+                          ('blk', None, 290, 340, None, '+', None, 1031868, 1031918, None, '+')),
+                         got)
+
+        # crossing gaps, with strand reversal 
+        got = _targetToQueryMap(psl, 134342819, 134350339, tStrand='-')  # 1024398-1031918 on - strand
+        self.assertEqual((('blk', None, 50, 119, None, '+', None, 134350270, 134350339, None, '-'),
+                          ('gap', 119, None, None, 119, '+', None, 134346309, 134350270, None, '-'),
+                          ('blk', None, 119, 290, None, '+', None, 134346138, 134346309, None, '-'),
+                          ('gap', 290, None, None, 290, '+', None, 134342869, 134346138, None, '-'),
+                          ('blk', None, 290, 340, None, '+', None, 134342819, 134342869, None, '-')),
+                         got)
 
         # gap before
-        got = _targetToQueryMap(pslPosMrna, 1024309, 1028420)
-        self.assertEqual(got, (('gap', None, None, None, 0, None, 1024309, 1024348, None),
-                               ('blk', None, 0, 119, None, None, 1024348, 1024467, None),
-                               ('gap', 119, None, None, 119, None, 1024467, 1028420, None)))
+        got = _targetToQueryMap(psl, 1024309, 1028420)
+        self.assertEqual(got, (('gap', None, None, None, 0, '+', None, 1024309, 1024348, None, '+'),
+                               ('blk', None, 0, 119, None, '+', None, 1024348, 1024467, None, '+'),
+                               ('gap', 119, None, None, 119, '+', None, 1024467, 1028420, None, '+')))
 
         # gap after
-        got = _targetToQueryMap(pslPosMrna, 1051793, 1053908)
-        self.assertEqual(got, (('blk', None, 1780, 1823, None, None, 1051793, 1051836, None),
-                               ('gap', 1823, None, None, 1823, None, 1051836, 1053014, None),
-                               ('blk', None, 1823, 2517, None, None, 1053014, 1053708, None),
-                               ('gap', 2517, None, None, None, None, 1053708, 1053908, None)))
-
+        got = _targetToQueryMap(psl, 1051793, 1053908)
+        self.assertEqual((('blk', None, 1780, 1823, None, '+', None, 1051793, 1051836, None, '+'),
+                          ('gap', 1823, None, None, 1823, '+', None, 1051836, 1053014, None, '+'),
+                          ('blk', None, 1823, 2517, None, '+', None, 1053014, 1053708, None, '+'),
+                          ('gap', 2517, None, None, None, '+', None, 1053708, 1053908, None, '+')),
+                         got)
+        
     def testDoubleDel1(self):
         "gap with deletions on both sizes, query one a single base"
-        pslPosMrna = splitToPsl(_psDoubleDel1)
-        got = _targetToQueryMap(pslPosMrna, 151283730, 151370810)
-        self.assertEqual(got, (('blk', None, 1580, 1590, None, None, 151283730, 151283740, None),
-                               ('gap', 1590, None, None, 1591, None, 151283740, 151370804, None),
-                               ('blk', None, 1591, 1593, None, None, 151370804, 151370806, None),
-                               ('gap', 1593, None, None, 1593, None, 151370806, 151370807, None),
-                               ('blk', None, 1593, 1596, None, None, 151370807, 151370810, None)))
-        got = _queryToTargetMap(pslPosMrna, 1408, 1784)
-        self.assertEqual(got, (('blk', None, 1408, 1590, None, None, 151283558, 151283740, None),
-                               ('gap', None, 1590, 1591, None, 151283740, None, None, 151370804),
-                               ('blk', None, 1591, 1593, None, None, 151370804, 151370806, None),
-                               ('blk', None, 1593, 1762, None, None, 151370807, 151370976, None),
-                               ('gap', None, 1762, 1764, None, 151370976, None, None, 151370976),
-                               ('blk', None, 1764, 1784, None, None, 151370976, 151370996, None)))
-
+        psl = splitToPsl(_psDoubleDel1)
+        got = _targetToQueryMap(psl, 151283730, 151370810)
+        self.assertEqual((('blk', None, 1580, 1590, None, '-', None, 151283730, 151283740, None, '+'),
+                          ('gap', 1590, None, None, 1591, '-', None, 151283740, 151370804, None, '+'),
+                          ('blk', None, 1591, 1593, None, '-', None, 151370804, 151370806, None, '+'),
+                          ('gap', 1593, None, None, 1593, '-', None, 151370806, 151370807, None, '+'),
+                          ('blk', None, 1593, 1596, None, '-', None, 151370807, 151370810, None, '+')),
+                         got)
+        got = _queryToTargetMap(psl, 1408, 1784)
+        self.assertEqual((('blk', None, 1408, 1590, None, '-', None, 151283558, 151283740, None, '+'),
+                          ('gap', None, 1590, 1591, None, '-', 151283740, None, None, 151370804, '+'),
+                          ('blk', None, 1591, 1593, None, '-', None, 151370804, 151370806, None, '+'),
+                          ('blk', None, 1593, 1762, None, '-', None, 151370807, 151370976, None, '+'),
+                          ('gap', None, 1762, 1764, None, '-', 151370976, None, None, 151370976, '+'),
+                          ('blk', None, 1764, 1784, None, '-', None, 151370976, 151370996, None, '+')),
+                         got)
 
 class QueryToTargetTests(TestCaseBase):
     def testPosMRna(self):
-        pslPosMrna = splitToPsl(_psPosMRna)
+        psl = splitToPsl(_psPosMRna)
         # within a single block
-        got = _queryToTargetMap(pslPosMrna, 96, 97)
-        self.assertEqual(got, (('blk', None, 96, 97, None, None, 1024444, 1024445, None),))
+        got = _queryToTargetMap(psl, 96, 97)
+        self.assertEqual(got, (('blk', None, 96, 97, None, '+', None, 1024444, 1024445, None, '+'),))
 
         # crossing gaps
-        got = _queryToTargetMap(pslPosMrna, 50, 340)
-        self.assertEqual(got, (('blk', None, 50, 119, None, None, 1024398, 1024467, None),
-                               ('blk', None, 119, 290, None, None, 1028428, 1028599, None),
-                               ('blk', None, 290, 340, None, None, 1031868, 1031918, None)))
+        got = _queryToTargetMap(psl, 50, 340)
+        self.assertEqual((('blk', None, 50, 119, None, '+', None, 1024398, 1024467, None, '+'),
+                          ('blk', None, 119, 290, None, '+', None, 1028428, 1028599, None, '+'),
+                          ('blk', None, 290, 340, None, '+', None, 1031868, 1031918, None, '+')),
+                         got)
 
         # gap after
-        got = _queryToTargetMap(pslPosMrna, 1780, 2537)
-        self.assertEqual(got, (('blk', None, 1780, 1823, None, None, 1051793, 1051836, None),
-                               ('blk', None, 1823, 2517, None, None, 1053014, 1053708, None),
-                               ('gap', None, 2517, 2537, None, 1053708, None, None, None)))
+        got = _queryToTargetMap(psl, 1780, 2537)
+        self.assertEqual((('blk', None, 1780, 1823, None, '+', None, 1051793, 1051836, None, '+'),
+                          ('blk', None, 1823, 2517, None, '+', None, 1053014, 1053708, None, '+'),
+                          ('gap', None, 2517, 2537, None, '+', 1053708, None, None, None, '+')),
+                         got)
 
     def testNegMRna(self):
         # One-base gap at query start of negative strand PSL.  This appeared to be a bug,
@@ -100,7 +115,51 @@ class QueryToTargetTests(TestCaseBase):
         # within a single block and on neg strand
         pslNegMrna = splitToPsl(_psNegMrna)
         got = _queryToTargetMap(pslNegMrna, 0, 100)
-        self.assertEqual(got, (('gap', None, 0, 1, None, None, None, None, 135605109), ('blk', None, 1, 100, None, None, 135605109, 135605208, None)))
+        self.assertEqual((('gap', None, 0, 1, None, '-', None, None, None, 135605109, '+'),
+                          ('blk', None, 1, 100, None, '-', None, 135605109, 135605208, None, '+')),
+                         got)
+
+    def testDoubleDel1(self):
+        "gap with deletions on both sizes, query one a single base"
+        psl = splitToPsl(_psDoubleDel1)
+        # this includes query deletion on either end
+        got = _queryToTargetMap(psl, 3, 1790, qStrand='+')
+        self.assertEqual((('gap', None, 1387, 1790, None, '+', None, None, None, 151108857, '+'),
+                          ('blk', None, 1175, 1387, None, '+', None, 151108857, 151109069, None, '+'),
+                          ('blk', None, 1022, 1175, None, '+', None, 151116760, 151116913, None, '+'),
+                          ('blk', None, 878, 1022, None, '+', None, 151127128, 151127272, None, '+'),
+                          ('blk', None, 795, 878, None, '+', None, 151143890, 151143973, None, '+'),
+                          ('blk', None, 574, 795, None, '+', None, 151174905, 151175126, None, '+'),
+                          ('blk', None, 506, 574, None, '+', None, 151203795, 151203863, None, '+'),
+                          ('blk', None, 388, 506, None, '+', None, 151264708, 151264826, None, '+'),
+                          ('blk', None, 384, 388, None, '+', None, 151264832, 151264836, None, '+'),
+                          ('blk', None, 202, 384, None, '+', None, 151283558, 151283740, None, '+'),
+                          ('gap', None, 201, 202, None, '+', 151283740, None, None, 151370804, '+'),
+                          ('blk', None, 199, 201, None, '+', None, 151370804, 151370806, None, '+'),
+                          ('blk', None, 30, 199, None, '+', None, 151370807, 151370976, None, '+'),
+                          ('gap', None, 28, 30, None, '+', 151370976, None, None, 151370976, '+'),
+                          ('blk', None, 8, 28, None, '+', None, 151370976, 151370996, None, '+'),
+                          ('gap', None, 3, 8, None, '+', 151370996, None, None, None, '+')),
+                         got)
+        got = _queryToTargetMap(psl, 2, 1789) # same rane s 3-1790 on - strand
+        self.assertEqual((('gap', None, 2, 405, None, '-', None, None, None, 151108857, '+'),
+                          ('blk', None, 405, 617, None, '-', None, 151108857, 151109069, None, '+'),
+                          ('blk', None, 617, 770, None, '-', None, 151116760, 151116913, None, '+'),
+                          ('blk', None, 770, 914, None, '-', None, 151127128, 151127272, None, '+'),
+                          ('blk', None, 914, 997, None, '-', None, 151143890, 151143973, None, '+'),
+                          ('blk', None, 997, 1218, None, '-', None, 151174905, 151175126, None, '+'),
+                          ('blk', None, 1218, 1286, None, '-', None, 151203795, 151203863, None, '+'),
+                          ('blk', None, 1286, 1404, None, '-', None, 151264708, 151264826, None, '+'),
+                          ('blk', None, 1404, 1408, None, '-', None, 151264832, 151264836, None, '+'),
+                          ('blk', None, 1408, 1590, None, '-', None, 151283558, 151283740, None, '+'),
+                          ('gap', None, 1590, 1591, None, '-', 151283740, None, None, 151370804, '+'),
+                          ('blk', None, 1591, 1593, None, '-', None, 151370804, 151370806, None, '+'),
+                          ('blk', None, 1593, 1762, None, '-', None, 151370807, 151370976, None, '+'),
+                          ('gap', None, 1762, 1764, None, '-', 151370976, None, None, 151370976, '+'),
+                          ('blk', None, 1764, 1784, None, '-', None, 151370976, 151370996, None, '+'),
+                          ('gap', None, 1784, 1789, None, '-', 151370996, None, None, None, '+')),
+                         got)
+
 
 def suite():
     ts = unittest.TestSuite()
