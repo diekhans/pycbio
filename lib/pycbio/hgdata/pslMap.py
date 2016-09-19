@@ -137,7 +137,7 @@ class PslMap(object):
         lastBlk = self.mapPsl.blocks[self.mapPsl.blockCount - 1]
         if tRngEnd > lastBlk.tEnd:
             yield self.__mkMapRange(lastBlk.qEnd, None, None, None, qStrand,
-                                    None, lastBlk.tEnd, tRngEnd, None, tStrand)
+                                    None, max(tRngStart, lastBlk.tEnd), tRngEnd, None, tStrand)
 
     def __q2tProcessGap(self, prevBlk, nextBlk, qRngNext, qRngEnd, qStrand, tStrand):
         """analyze gap before blk, return updated qRngNext"""
@@ -206,5 +206,5 @@ class PslMap(object):
         # deal with gap at end
         lastBlk = self.mapPsl.blocks[self.mapPsl.blockCount - 1]
         if qRngEnd > lastBlk.qEnd:
-            yield self.__mkMapRange(None, lastBlk.qEnd, qRngEnd, None, qStrand,
+            yield self.__mkMapRange(None, max(qRngStart, lastBlk.qEnd), qRngEnd, None, qStrand,
                                     lastBlk.tEnd, None, None, None, tStrand)

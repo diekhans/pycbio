@@ -8,9 +8,11 @@ from Bio.Seq import reverse_complement
 # FIXME: Should have factory rather than __init__ multiplexing nonsense **
 # FIXME: should have builder functions
 
+def reverseCoords(start, end, size):
+    return (size-end, size-start)
 
-def rcStrand(s):
-    "return reverse-complement of a strand character"
+def reverseStrand(s):
+    "return reverse of a strand character"
     return "+" if (s == "-") else "-"
 
 
@@ -359,7 +361,7 @@ class Psl(object):
         rc.qBaseInsert = self.qBaseInsert
         rc.tNumInsert = self.tNumInsert
         rc.tBaseInsert = self.tBaseInsert
-        rc.strand = rcStrand(self.getQStrand()) + rcStrand(self.getTStrand())
+        rc.strand = reverseStrand(self.getQStrand()) + reverseStrand(self.getTStrand())
         rc.qName = self.qName
         rc.qSize = self.qSize
         rc.qStart = self.qStart
@@ -377,7 +379,7 @@ class Psl(object):
     def __swapStrand(self, rc, keepTStrandImplicit, doRc):
         # don't make implicit if already explicit
         if keepTStrandImplicit and (len(self.strand) == 1):
-            qs = rcStrand(self.getTStrand()) if doRc else self.getTStrand()
+            qs = reverseStrand(self.getTStrand()) if doRc else self.getTStrand()
             ts = ""
         else:
             # swap and make|keep explicit

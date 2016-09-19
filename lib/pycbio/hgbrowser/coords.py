@@ -58,6 +58,11 @@ class Coords(Immutable):
     def __str__(self):
         return self.chrom + ":" + str(self.start) + "-" + str(self.end)
 
+    @property
+    def name(self):
+        # FIXME: need to generalizes this
+        return self.chrom
+    
     def size(self):
         return self.end - self.start
 

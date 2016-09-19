@@ -10,20 +10,20 @@ class Profile(object):
     Adds cmd options:
        --profile=profFile
        --profile-sig=signal
-       --profile-lines
+    This works with both optparse and argparse.
 
     Serving suggestion:
         parser = OptionParser(usage=CmdOpts.usage)
-        self.profiler = Profile(parser)
+        profiler = Profile(parser)
         ...
         (opts, args) = parser.parse_args()
         ...
-        self.profiler.setup(opts)
+        profiler.setup(opts)
 
     at the end of the program:
-        xxx.profiler.finishUp()
+        profiler.finishUp()
 
-    Use the program profStats to create reports.  This works with both optparse and argparse
+    Use the program profStats to create reports.
     """
 
     def __init__(self, cmdParser):
