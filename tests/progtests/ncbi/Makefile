@@ -25,7 +25,7 @@ faSimpleFetchTest: mkdirs
 
 asmReportCnvTests: asmSeqNameUcscLiftTest asmRefSeqGencodeLiftTest asmSeqNameSizesTest \
 	asmGencodeNameSizesMainChromsTest asmGencodeNameSizesMainAsmTest \
-	asmIdmapTest asmIdmapMainAsmTest
+	asmIdmapTest asmIdmapMainAsmTest asmIdmapMixedAsmTest
 
 asmReportTestFile = ../../libtests/pycbio/ncbi/input/GCF_000001405.28.assembly.txt
 
@@ -49,12 +49,16 @@ asmGencodeNameSizesMainAsmTest: mkdirs
 	${ncbiAssemblyReportConvert} --fromIdType=gencode --include=mainAsm sizes ${asmReportTestFile} output/$@.sizes
 	diff expected/$@.sizes output/$@.sizes
 
-asmIdmapTest:
+asmIdmapTest: mkdirs
 	${ncbiAssemblyReportConvert} --fromIdType=refSeqAccn --toIdType=gencode idmap ${asmReportTestFile} output/$@.idmap
 	diff expected/$@.idmap output/$@.idmap
 
-asmIdmapMainAsmTest:
+asmIdmapMainAsmTest: mkdirs
 	${ncbiAssemblyReportConvert} --fromIdType=ucscStyleName --toIdType=gencode --include=mainAsm idmap ${asmReportTestFile} output/$@.idmap
+	diff expected/$@.idmap output/$@.idmap
+
+asmIdmapMixedAsmTest: mkdirs
+	${ncbiAssemblyReportConvert} --fromIdType=ucscStyleName --toIdType=sequenceNameGenbankAccn idmap ${asmReportTestFile} output/$@.idmap
 	diff expected/$@.idmap output/$@.idmap
 
 mkdirs:
