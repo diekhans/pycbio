@@ -3,7 +3,7 @@ import unittest
 import sys
 import shutil
 if __name__ == '__main__':
-    sys.path.extend(["../../..", "../../../.."])
+    sys.path.append("../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.sys import fileOps, procOps
 
@@ -59,6 +59,16 @@ class FileOpsTests(TestCaseBase):
         procOps.runProc(("bunzip2", "-c", outfBz2), stdout=outf)
         self.diffFiles(inf, outf)
 
+    def testAtomicInstall(self):
+        inf = self.getInputFile("simple1.txt")
+        outf = self.getOutputFile(".out")
+        outfTmp = fileOps.atomicTmpFile(outf)
+        with open(inf) as inFh, open(outfTmp, "w") as outFh:
+            shutil.copyfileobj(inFh, outFh)
+        fileOps.atomicInstall(outfTmp, outf)
+        self.diffFiles(inf, outf)
+
+        
 # FIXME: many more tests needed
 
 

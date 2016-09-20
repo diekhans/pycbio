@@ -3,7 +3,7 @@ import unittest
 import sys
 import StringIO
 if __name__ == '__main__':
-    sys.path.extend(["../../..", "../../../.."])
+    sys.path.append("../../../../lib")
 from pycbio.sys.pipeline import Pipeline, ProcException, DataReader
 from pycbio.sys import procOps
 from pycbio.hgdata.genePred import GenePredFhReader

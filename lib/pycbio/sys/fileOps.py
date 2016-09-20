@@ -4,6 +4,7 @@
 import os
 import errno
 import sys
+import socket
 import tempfile
 
 
@@ -294,7 +295,8 @@ def findTmpDir(tmpDir=None):
 
 
 def tmpFileGet(prefix=None, suffix="tmp", tmpDir=None):
-    """Obtain a tmp file with a unique name in a secure way"""
+    """Obtain a tmp file with a unique name in a secure way. File
+    will only be accessible to user."""
     fh = tempfile.NamedTemporaryFile(prefix=prefix, suffix=suffix,
                                      dir=findTmpDir(tmpDir), delete=False)
     fh.close()
@@ -302,16 +304,28 @@ def tmpFileGet(prefix=None, suffix="tmp", tmpDir=None):
 
 
 def tmpDirGet(prefix=None, suffix="tmp", tmpDir=None):
-    """Obtain a tmp directory with a unique name"""
+    """Obtain a tmp directory with a unique name in a secure way.  Directory
+    will only be accessible to user."""
     return tempfile.mkdtemp(prefix=prefix, suffix=suffix, dir=findTmpDir(tmpDir))
 
+_hostName = None  # don't get multiple times
+_atomicNextNum = 0 # number to include in atomicTmpFile, just in case same process tries creates multiple
 
 def atomicTmpFile(finalPath):
-    "return a tmp file to use with atomicInstall.  This will be in the same directory as finalPath"
+    """Return a tmp file name to use with atomicInstall.  This will be in the
+    same directory as finalPath. The temporary file will have the same extension
+    as finalPath."""
+    # note: this can't use tmpFileGet, since file should not be created or be private
     finalPathDir = os.path.dirname(finalPath)
     if finalPathDir == "":
         finalPathDir = '.'
-    return tmpFileGet(prefix=os.path.basename(finalPath), suffix="tmp".format(os.path.splitext(finalPath)[1]), tmpDir=finalPathDir)
+    global _hostName, _atomicNextNum
+    if _hostName is None:
+        _hostName = socket.gethostname()
+    baseName = "{}.{}.{}.{}.tmp.{}".format(os.path.basename(finalPath), _hostName, os.getpid(),
+                                           _atomicNextNum, os.path.splitext(finalPath)[1])
+    _atomicNextNum += 1
+    return os.path.join(finalPathDir, baseName)
 
 
 def atomicInstall(tmpPath, finalPath):

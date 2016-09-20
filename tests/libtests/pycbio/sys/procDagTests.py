@@ -3,7 +3,7 @@ import unittest
 import sys
 import re
 if __name__ == '__main__':
-    sys.path.extend(["../../..", "../../../.."])
+    sys.path.append("../../../../lib")
 from pycbio.sys.pipeline import ProcDag, ProcException, ProcDagException, Pipe, DataReader, DataWriter, PIn, POut
 from pycbio.sys.testCaseBase import TestCaseBase
 
