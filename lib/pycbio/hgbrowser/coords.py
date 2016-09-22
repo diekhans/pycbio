@@ -4,6 +4,7 @@
 from pycbio.sys.immutable import Immutable
 
 # FIXME: support MAF db.chrom syntax, single base syntax, etc.
+# FIXME: maybe use factory methods instead of __init trying to figure it out
 
 
 class CoordsError(Exception):
@@ -21,7 +22,7 @@ class Coords(Immutable):
     """
     __slots__ = ("chrom", "start", "end", "db", "chromSize", "strand")
 
-    def __parseCombined__(self, coordsStr):
+    def __parseCombined(self, coordsStr):
         "parse chrom:start-end "
         try:
             self.chrom, rng = str.split(coordsStr, ":")
@@ -31,7 +32,7 @@ class Coords(Immutable):
         except Exception as ex:
             raise CoordsError("invalid coordinates: \"" + str(coordsStr) + "\": " + str(ex))
 
-    def __parseThree__(self, chrom, start, end):
+    def __parseThree(self, chrom, start, end):
         "parse chrom, start, end. start/end maybe strings, int or None  "
         try:
             self.chrom = chrom
@@ -45,9 +46,9 @@ class Coords(Immutable):
         chr, start, end. options are db= and chromSize="""
         Immutable.__init__(self)
         if len(args) == 1:
-            self.__parseCombined__(args[0])
+            self.__parseCombined(args[0])
         elif len(args) == 3:
-            self.__parseThree__(args[0], args[1], args[2])
+            self.__parseThree(args[0], args[1], args[2])
         else:
             raise CoordsError("Coords() excepts either one or three arguments")
         self.db = kwargs.get("db")
