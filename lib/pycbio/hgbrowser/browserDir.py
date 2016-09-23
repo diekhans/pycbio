@@ -242,7 +242,7 @@ class BrowserDir(object):
         if inclPageLinks:
             for p in xrange(1, numPages + 1):
                 if p != pageNum:
-                    html.append("<a href=\"dir{}.html\">{}</a>".format((p, p)))
+                    html.append("<a href=\"dir{}.html\">{}</a>".format(p, p))
                 else:
                     html.append("[{}]".format(p))
 

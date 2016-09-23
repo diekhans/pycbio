@@ -13,8 +13,9 @@ ID_TYPE_GENBANK_ACCN = "genBankAccn"
 ID_TYPE_REFSEQ_ACCN = "refSeqAccn"
 ID_TYPE_UCSC_STYLE_NAME = "ucscStyleName"
 ID_TYPE_GENCODE = "gencode"
+ID_TYPE_SEQUENCE_NAME_GENBANK_ACCN = "sequenceNameGenbankAccn"
 
-ID_TYPES = (ID_TYPE_SEQUENCE_NAME, ID_TYPE_GENBANK_ACCN, ID_TYPE_REFSEQ_ACCN, ID_TYPE_UCSC_STYLE_NAME, ID_TYPE_GENCODE)
+ID_TYPES = (ID_TYPE_SEQUENCE_NAME, ID_TYPE_GENBANK_ACCN, ID_TYPE_REFSEQ_ACCN, ID_TYPE_UCSC_STYLE_NAME, ID_TYPE_GENCODE, ID_TYPE_SEQUENCE_NAME_GENBANK_ACCN)
 
 OUTPUT_LIFT = "lift"
 OUTPUT_SIZES = "sizes"
@@ -32,6 +33,9 @@ Id types based on columns in file, or special handling for gencode naming.
 Files are available from:
   ftp://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/All/GCF_000001405.28.assembly.txt
 
+Special id types:
+    - sequenceNameGenbankAccn - use sequenceName for primary assembly and genbank
+      accession for other sequences.
 """
     parser = argparse.ArgumentParser(description=usage)
     parser.add_argument('--fromIdType', type=str, choices=ID_TYPES,
@@ -64,6 +68,8 @@ def getId(seq, idType):
     "get the from a sequence record, given the type of id desired, or None if not defined"
     if idType == ID_TYPE_GENCODE:
         return seq.gencodeName
+    elif idType == ID_TYPE_SEQUENCE_NAME_GENBANK_ACCN:
+        return seq.sequenceNameGenbankAccn
     else:
         return getattr(seq, idType)
 
