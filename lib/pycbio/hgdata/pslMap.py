@@ -1,4 +1,5 @@
 # Copyright 2006-2016 Mark Diekhans
+from pycbio.hgdata.psl import Psl, PslBlock, reverseCoords
 
 def _reverseRange(start, end, size):
     "reverse range, if start or end is None, return that value swapped but None"
@@ -25,6 +26,15 @@ class PslMapRange(object):
         self.tStrand = tStrand
         self.tNextStart = tNextStart
 
+    def isAligned(self):
+        return (self.qStart is not None) and (self.tStart is not None)
+        
+    def isQInsert(self):
+        return (self.qStart is not None) and (self.tStart is None)
+        
+    def isTInsert(self):
+        return (self.qStart is None) and (self.tStart is not None)
+        
     def __len__(self):
         return (self.tEnd - self.tStart) if (self.tStart is not None) else (self.qEnd - self.qStart)
         
@@ -58,8 +68,6 @@ class PslMapRange(object):
         return PslMapRange(qPrevEnd, qStart, qEnd, qNextStart, qStrand,
                            tPrevEnd, tStart, tEnd, tNextStart, tStrand)
         
-
-    
 class PslMap(object):
     """Object for mapping coordinates using PSL alignments.
     Can map from either query-to-target or target-to-query coordinates.
@@ -212,3 +220,52 @@ class PslMap(object):
         if qRngEnd > lastBlk.qEnd:
             yield handler(self.mapPsl, None, max(qRngStart, lastBlk.qEnd), qRngEnd, None, qStrand,
                           lastBlk.tEnd, None, None, None, tStrand)
+
+    def __addRangeToPsl(self, psl, rng, prevRng):
+        psl.match += len(rng)
+        if prevRng is not None:
+            sz = rng.qStart - prevRng.qEnd
+            if sz > 0:
+                psl.qNumInsert += 1 
+                psl.qBaseInsert += sz
+            sz = rng.tStart - prevRng.tEnd
+            if sz > 0:
+                psl.tNumInsert += 1 
+                psl.tBaseInsert += sz
+        psl.blocks.append(PslBlock(psl, rng.qStart, rng.tStart, len(rng)))
+
+    def __rangesToPsl(self, rangeGen):
+        # FIXME: psl building should go a function in Psl
+        rngs = [rng for rng in rangeGen if rng.isAligned()]
+        if len(rngs) == 0:
+            return None
+        psl = Psl()
+        psl.qName = self.mapPsl.qName
+        psl.qStart = rngs[0].qStart
+        psl.qEnd = rngs[-1].qEnd
+        psl.qSize = self.mapPsl.qSize
+        if rngs[0].qStrand == '-':
+            psl.qStart, psl.qEnd = reverseCoords(psl.qStart, psl.qEnd, psl.qSize)
+        psl.tName = self.mapPsl.tName
+        psl.tStart = rngs[0].tStart
+        psl.tEnd = rngs[-1].tEnd
+        psl.tSize = self.mapPsl.tSize
+        if rngs[0].tStrand == '-':
+            psl.tStart, psl.tEnd = reverseCoords(psl.tStart, psl.tEnd, psl.tSize)
+        psl.strand = rngs[0].qStrand + ('-' if rngs[0].tStrand == '-' else '')
+        psl.blockCount = len(rngs)
+        prevRng = None
+        for rng in rngs:
+            self.__addRangeToPsl(psl, rng, prevRng)
+            prevRng = rng
+        return psl
+
+    def targetToQueryMapPsl(self, tRngStart, tRngEnd, tStrand=None):
+        """Map a target range to query ranges using a PSL and output a PSL. If tStrand is not
+        specified, target range must be match mapping PSL.   Return None if range not mapped."""
+        return self.__rangesToPsl(self.targetToQueryMap(tRngStart, tRngEnd, tStrand))
+        
+    def queryToTargetMapPsl(self, qRngStart, qRngEnd, qStrand=None):
+        """Map a query range to query ranges using a PSL and output a PSL. If qStrand is not
+        specified, query range must be match mapping PSL.  Return None if range not mapped."""
+        return self.__rangesToPsl(self.queryToTargetMap(qRngStart, qRngEnd, qStrand))

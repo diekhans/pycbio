@@ -89,6 +89,15 @@ class TargetToQueryTests(TestCaseBase):
                           ('blk', None, 1764, 1784, None, '-', None, 151370976, 151370996, None, '+')),
                          got)
 
+    def testDoubleDel1ToPsl(self):
+        "gap with deletions on both sizes, query one a single base, to a PSL"
+        mapPsl = splitToPsl(_pslDoubleDel1)
+        gotPsl = PslMap(mapPsl).targetToQueryMapPsl(151283730, 151370810)
+        self.assertEqual(['15', '0', '0', '0', '1', '1', '2', '87065', '-', 'NM_017069.1-1.1', '1792', '196', '212', 'chrX', '154913754', '151283730', '151370810', '3', '10,2,3,', '1580,1591,1593,', '151283730,151370804,151370807,'],
+                         gotPsl.toRow())
+        gotPsl = PslMap(mapPsl).queryToTargetMapPsl(151283730, 151370810)
+        self.assertEqual(None, gotPsl)
+
 class QueryToTargetTests(TestCaseBase):
     def testPosMRna(self):
         psl = splitToPsl(_pslPosMRna)
@@ -121,6 +130,13 @@ class QueryToTargetTests(TestCaseBase):
                           ('blk', None, 1, 100, None, '-', None, 135605109, 135605208, None, '+')),
                          got)
 
+    def testNegMRnaToPsl(self):
+        # within a single block and on neg strand
+        pslNegMrna = splitToPsl(_pslNegMrna)
+        gotPsl = PslMap(pslNegMrna).queryToTargetMapPsl(0, 100)
+        self.assertEqual(['99', '0', '0', '0', '0', '0', '0', '0', '-', 'NM_017651', '5564', '5464', '5563', 'chr6', '171115067', '135605109', '135605208', '1', '99,', '1,', '135605109,'],
+                         gotPsl.toRow())
+
     def testDoubleDel1(self):
         "gap with deletions on both sizes, query one a single base"
         psl = splitToPsl(_pslDoubleDel1)
@@ -143,7 +159,7 @@ class QueryToTargetTests(TestCaseBase):
                           ('blk', None, 8, 28, None, '+', None, 151370976, 151370996, None, '+'),
                           ('gap', None, 3, 8, None, '+', 151370996, None, None, None, '+')),
                          got)
-        got = _queryToTargetMap(psl, 2, 1789) # same rane s 3-1790 on - strand
+        got = _queryToTargetMap(psl, 2, 1789) # same range as 3-1790 on - strand
         self.assertEqual((('gap', None, 2, 405, None, '-', None, None, None, 151108857, '+'),
                           ('blk', None, 405, 617, None, '-', None, 151108857, 151109069, None, '+'),
                           ('blk', None, 617, 770, None, '-', None, 151116760, 151116913, None, '+'),

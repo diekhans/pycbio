@@ -235,8 +235,8 @@ class Psl(object):
         "does the specified block overlap the target range"
         return (tStart < self.getTEndPos(iBlk)) and (tEnd > self.getTStartPos(iBlk))
 
-    def __str__(self):
-        "return psl as a tab-separated string"
+    def toRow(self):
+        "convert PSL to array of strings"
         row = [str(self.match),
                str(self.misMatch),
                str(self.repMatch),
@@ -261,7 +261,11 @@ class Psl(object):
         if self.blocks[0].qSeq is not None:
             row.append(strArrayJoin([b.qSeq for b in self.blocks]))
             row.append(strArrayJoin([b.tSeq for b in self.blocks]))
-        return str.join("\t", row)
+        return row
+        
+    def __str__(self):
+        "return psl as a tab-separated string"
+        return str.join("\t", self.toRow())
 
     def write(self, fh):
         """write psl to a tab-seperated file"""
