@@ -4,7 +4,7 @@
 import sys, os
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, os.path.join(myBinDir, "../lib"))
-from optparse import OptionParser
+import argparse
 import pstats
 from pycbio.sys.enumeration import Enumeration
 
@@ -13,48 +13,44 @@ validSortKeys = ('calls', 'cumulative', 'file', 'module', 'pcalls', 'line',
 
 ReportType = Enumeration("ReportType", ("basic", "callers", "callees"))
 
-class CmdOpts(object):
-    usage="""%prog [options] profLog [profOut]
+def parseArgs():
+    desc = """%prog [options] profLog [profOut]
 
     format python profile logs from hotshot.
     """
     
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("--sort", action="append", dest="sortKeys", default=["cumulative"],
+                        help="sort result by specified key, which maybe repeated, one of: "
+                        + ", ".join(validSortKeys))
+    parser.add_argument("--report", action="store", dest="reportType", default=str(ReportType.basic),
+                        help="specify type of report to produce, one of: "
+                        + ", ".join([str(v) for v in ReportType.values]))
+    parser.add_argument("--stripDirs", action="store_true", dest="stripDirs", default=False,
+                        help="strip directory names from output")
+    parser.add_argument("profLog", 
+                        help="profile log file input")
+    parser.add_argument("profStats", 
+                        help="statistics output")
+    opts = parser.parse_args()
+    for sortKey in opts.sortKeys:
+        if not sortKey in validSortKeys:
+            raise Exception("invalid sort key: {}, expected one of: {}".format(sortKey, ", ".join(validSortKeys)))
+    opts.reportType = ReportType(opts.reportType)
+    return opts
 
-    def __init__(self):
-        parser = OptionParser(usage=CmdOpts.usage)
-        parser.add_option("--sort", action="append", dest="sortKeys", default=["cumulative"],
-                          help="sort result by specified key, which maybe repeated, one of: "
-                          + ", ".join(validSortKeys))
-        parser.add_option("--report", action="store", dest="reportType", default=str(ReportType.basic),
-                          help="specify type of report to produce, one of: "
-                          + ", ".join([str(v) for v in ReportType.values]))
-        parser.add_option("--stripDirs", action="store_true", dest="stripDirs", default=False,
-                          help="strip directory names from output")
-        (opts, args) = parser.parse_args()
-        if not (1 <= len(args) <= 2):
-            parser.error("wrong number of arguments")
-        self.__dict__.update(opts.__dict__)
-        for sortKey in opts.sortKeys:
-            if not sortKey in validSortKeys:
-                raise Exception("invalid sort key: " + sortKey
-                                + ", expected one of: " + ", ".join(validSortKeys))
-        self.reportType = ReportType(self.reportType)
-        self.profLog = args[0]
-        self.profOut = args[1] if len(args) >= 2 else None
+def generateReport(opts, outFh):
+    profStats = pstats.Stats(opts.profLog, stream=outFh)
+    if opts.stripDirs:
+        profStats.strip_dirs()
+    profStats.sort_stats(*opts.sortKeys)
+    if opts.reportType == ReportType.basic:
+        profStats.print_stats()
+    elif opts.reportType == ReportType.callers:
+        profStats.print_callers()
+    elif opts.reportType == ReportType.callees:
+        profStats.print_callees()
 
-
-opts = CmdOpts()
-outFh = sys.stdout if opts.profOut is None else open(opts.profOut, "w")
-profStats = pstats.Stats(opts.profLog, stream=outFh)
-if opts.stripDirs:
-    profStats.strip_dirs()
-profStats.sort_stats(*opts.sortKeys)
-if opts.reportType == ReportType.basic:
-    profStats.print_stats()
-elif opts.reportType == ReportType.callers:
-    profStats.print_callers()
-elif opts.reportType == ReportType.callees:
-    profStats.print_callees()
-
-if outFh != sys.stdout:
-    outFh.close()
+opts = parseArgs()
+with open(opts.profOut, "w") as outFh:
+    generateReport(opts, outFh)

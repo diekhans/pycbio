@@ -20,8 +20,7 @@ def parseArgs():
                         help="analyze this JSON file")
     parser.add_argument('outfile',
                         help="write results to this file; format depends on options")
-    opts = parser.parse_args()
-    return opts
+    return parser.parse_args()
 
 def loadFromJson(fname):
     with open(fname, "r") as fh:

@@ -5,14 +5,14 @@ import sys, os, re
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 
-from optparse import OptionParser
+import argparse
 from pycbio.tsv import TsvReader,TsvError
 
 from matplotlib.patches import Circle
 from matplotlib import pyplot
 
-class CmdOpts(object):
-    usage = """%prog [options] inStats outImage
+def parseArgs():
+    desc = """%prog [options] inStats outImage
 
 Generate a simple Venn diagram.
 
@@ -23,15 +23,14 @@ the row includes that set, along with a column of counts.
 Output defaults to PDF format.
 
 """
-    def __init__(self):
-        parser = OptionParser(usage=CmdOpts.usage)
-        parser.add_option("--countCol", dest="rnaq", action="store", default="Counts",
-                          help="column name of counts column, default is 'Counts'")
-        (opts, args) = parser.parse_args()
-        if len(args) != 2:
-            parser.error("wrong number of arguments")
-        (self.inStats, self.outImage) = args
-        self.__dict__.update(opts.__dict__)
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("--countCol", dest="rnaq", action="store", default="Counts",
+                        help="column name of counts column, default is 'Counts'")
+    parser.add_argument("inStats", 
+                        help="input statistics")
+    parser.add_argument("outImage", 
+                        help="output image")
+    return parser.parse_args()
 
 class BoolStats(object):
     "stats extract from boolean Tsv"
@@ -49,4 +48,4 @@ class VennCircle(object):
 
 
 
-
+raise Exception("FIXME: not done")

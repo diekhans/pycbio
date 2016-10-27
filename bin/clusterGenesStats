@@ -4,49 +4,43 @@
 import sys, os
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, os.path.join(myBinDir, "../lib"))
-from optparse import OptionParser
+import argparse
 from pycbio.sys import fileOps
 from pycbio.hgdata.clusterGenes import ClusterGenes
 from pycbio.stats.venn import Venn
 from pycbio.sys.fileOps import prRowv
 from pycbio.tsv.tabFile import TabFile
 
-class CmdOpts(object):
-    usage="""%prog [options] clusterFile statsFile
+def parseArgs():
+    desc = """%prog [options] clusterFile statsFile
 
     Get stats on clusterGenes clusters
     """
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("--totalsOut", action="store", dest="totalsOut", default=None,
+                        help="output count of total loci for each track to this file")
+    parser.add_argument("--geneSubsetOut", action="store", dest="geneSubsetOut", default=None,
+                        help="output gene ids and subsets")
+    parser.add_argument("--lociCats", action="store", dest="lociCatsFile", default=None,
+                        help="tab separated file with two columns, locus numberic id and a category. "
+                        "The category is included in the subset. e.g. single-exon loci vs multi-exon loci")
+    parser.add_argument("--omitZero", action="store_true", dest="omitZero", default=False,
+                        help="don't output subsets buckets with zero counts")
+    parser.add_argument("--total", action="store_true", dest="total", default=False,
+                        help="include a faux subset of TOTAL for overall counts")
+    parser.add_argument("clusterFile",
+                        help="""clusterGenes output file to process""")
+    parser.add_argument("statsFile",
+                        help="""output statistics to this file""")
+    return parser.parse_args()
 
-    def __init__(self):
-        parser = OptionParser(usage=CmdOpts.usage)
-        parser.add_option("--totalsOut", action="store", dest="totalsOut", default=None,
-                          help="output count of total loci for each track to this file")
-        parser.add_option("--geneSubsetOut", action="store", dest="geneSubsetOut", default=None,
-                          help="output gene ids and subsets")
-        parser.add_option("--lociCats", action="store", dest="lociCatsFile", default=None,
-                          help="tab separated file with two columns, locus numberic id and a category. "
-                          "The category is included in the subset. e.g. single-exon loci vs multi-exon loci")
-        parser.add_option("--omitZero", action="store_true", dest="omitZero", default=False,
-                          help="don't output subsets buckets with zero counts")
-        parser.add_option("--total", action="store_true", dest="total", default=False,
-                          help="include a faux subset of TOTAL for overall counts")
-        (opts, args) = parser.parse_args()
-        if len(args) != 2:
-            parser.error("wrong number of arguments")
-        (self.clusterFile, self.statsFile) = args
-        if opts.lociCatsFile is not None:
-            self.lociCats = self._readLociCats(opts.lociCatsFile)
-        else:
-            self.lociCats = None
-        self.__dict__.update(opts.__dict__)
-
-    def _readLociCats(self, catsFile):
-        cats = {}
-        for row in TabFile(catsFile):
-            if len(row) < 2:
-                raise Exception("rows must have at least two columns: "+catsFile)
-            cats[int(row[0])] = intern(row[1])
-        return cats
+def readLociCats(self, catsFile):
+    cats = {}
+    for row in TabFile(catsFile):
+        if len(row) < 2:
+            raise Exception("rows must have at least two columns: "+catsFile)
+        cats[int(row[0])] = intern(row[1])
+    return cats
 
 def fmtFrac(cnt, total):
     if (total == 0):
@@ -165,8 +159,10 @@ class ClusterStats(object):
                     prRowv(fh, gene.gene, clusterId, " ".join(subset))
         fh.close()
 
-opts = CmdOpts()
-clStats = ClusterStats(opts.clusterFile, opts.lociCats, opts.omitZero)
+opts = parseArgs()
+
+lociCats = readLociCats(opts.lociCatsFile) if opts.lociCatsFile is not None else None
+clStats = ClusterStats(opts.clusterFile, lociCats, opts.omitZero)
 clStats.saveVenn(opts.statsFile, opts.total)
 if opts.totalsOut is not None:
     clStats.saveSetTotals(opts.totalsOut)

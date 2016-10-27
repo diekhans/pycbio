@@ -2,79 +2,57 @@
 # Copyright 2006-2012 Mark Diekhans
 
 import sys, os, re, socket
-from optparse import OptionParser
+import argparse
 from Bio import Entrez
 
 host="eutils.ncbi.nlm.nih.gov"
 
-class CmdOpts(object):
-    usage="""%prog [options] [id1 ...]
+def parseArgs():
+    desc = """%prog [options] [id1 ...]
 
 Retrieve genbank records or sequences from NCBI nucleotide (GenBank/RefSeq),
 give accessions or other ids understood by efetch server.
 """
-    def __init__(self):
-        parser = OptionParser(usage=CmdOpts.usage)
-        parser.add_option("--idFile", dest="idFiles", action="append", default=[],
-                          help="file containing ids, can be specified multiple times.")
-        parser.add_option("--out", "-o", dest="out", action="store", default=None,
-                          help="output to this file instead of stdout")
-        parser.add_option("--fasta", "-f", dest="fasta", action="store_true", default=False,
-                          help="retrieve sequences in fasta format")
-        parser.add_option("--simplifyIds", dest="simplifyIds", action="store_true", default=False,
-                          help="simplify genbank fasta ids")
-        parser.add_option("--verbose", "-v", dest="verbose", action="store_true", default=False,
-                          help="verbose tracing")
-        parser.add_option("--debug", dest="debug", action="store", type="int", default=None,
-                          help="set HTTP debug level to this value")
-        parser.add_option("--email", dest="email", action="store", default=None,
-                          help="override defaulting of email address")
-        (opts, args) = parser.parse_args()
-        self.__dict__.update(opts.__dict__)
-        if self.simplifyIds and not self.fasta:
-            parser.error("can only specify --simplifyIds with --fasta");
-        self.ids = set(args)
-        self._loadIdFiles()
-        if len(self.ids) == 0:
-            parser.error("no ids specified on command line or with --idFile, specify --help for usage")
-        if self.email is None:
-            self.email = self.__getEmail()
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("--idFile", dest="idFiles", action="append", default=[],
+                        help="file containing ids, can be specified multiple times.")
+    parser.add_argument("--out", "-o", dest="out", action="store", default=None,
+                        help="output to this file instead of stdout")
+    parser.add_argument("--fasta", "-f", dest="fasta", action="store_true", default=False,
+                        help="retrieve sequences in fasta format")
+    parser.add_argument("--verbose", "-v", dest="verbose", action="store_true", default=False,
+                        help="verbose tracing")
+    parser.add_argument("--debug", dest="debug", action="store", type=int, default=None,
+                        help="set HTTP debug level to this value")
+    parser.add_argument("--email", dest="email", action="store", default=None,
+                        help="override defaulting of email address")
+    parser.add_argument("ids", nargs="*",  default=[],
+                        help="explicit list of ids to fetch")
+    opts= parser.parse_args()
+    loadIdFiles(opts)
+    if len(opts.ids) == 0:
+        parser.error("no ids specified on command line or with --idFile")
+    opts.ids = frozenset(opts.ids)
+    if opts.email is None:
+        opts.email = getEmail()
+    return opts
 
-    def _loadIdFiles(self):
-        for idFile in self.idFiles:
-            self._loadIdFile(idFile)
+def loadIdFiles(opts):
+    for idFile in opts.idFiles:
+        opts.ids.extend(loadIdFile(idFile))
 
-    def _loadIdFile(self, idFile):
-        fh = open(idFile)
-        for line in fh:
-            line=line.strip()
-            if (len(line) > 0) and (line[0] != '#'):
-                self.ids.add(line)
-        fh.close()
+def loadIdFile(self, idFile):
+    fh = open(idFile)
+    ids = []
+    for line in fh:
+        line=line.strip()
+        if (len(line) > 0) and (line[0] != '#'):
+            self.ids.add(line)
+    fh.close()
 
-    def __getEmail(self):
-        return os.getenv("USER") + "@" + socket.gethostbyaddr(socket.gethostname())[0]
+def getEmail():
+    return os.getenv("USER") + "@" + socket.gethostbyaddr(socket.gethostname())[0]
 
-# >gi|37590707|gb|AAH59029.1| RIKEN cDNA A930017N06 gene [Mus musculus]
-# >gi|14424222|sp|O94933|SLIK3_HUMAN SLIT and NTRK-like protein 3 precursor
-# >gi|555931|gb|U14680.1|HSU14680 Homo sapiens breast and ovarian cancer susceptibility (BRCA1) mRNA, complete cds
-
-faIdSplitRe = re.compile(r"^>([^\s]+)(\s.*)", re.DOTALL)
-def simplifyFastaId(ent):
-    "simplify genbank ids in a fasta record"
-
-    # split id from rest of entry
-    m = faIdSplitRe.match(ent)
-    if m is None:
-        Exception("not a fasta record: " + ent)
-    id = m.group(1)
-    # split into parts
-    parts = id.split('|')
-    if len(parts) < 3:
-        Exception("not a GENBANK/RefSeq fasta id: " + id)
-    acc = parts[3]
-    return ">" + acc + m.group(2)
-    
 def efetch(opts, gbid, outFh):
     "fetch a genbank entry or fasta"
     if opts.fasta:
@@ -85,19 +63,14 @@ def efetch(opts, gbid, outFh):
     ent = resp.read()
     if len(ent) <= 1:
         raise Exception("no entry found for \""+id+"\"")
-    if opts.simplifyIds:
-        ent = simplifyFastaId(ent)
     outFh.write(ent)
 
 def doFetch(opts, outFh):
     for gbid in opts.ids:
         efetch(opts, gbid, outFh)
 
-opts = CmdOpts()
-if opts.out is not None:
-    outFh = open(opts.out, "w")
-else:
-    outFh = sys.stdout
+opts = parseArgs()
+outFh = open(opts.out, "w") if opts.out is not None else sys.stdout
 doFetch(opts, outFh)
 if outFh != sys.stdout:
     outFh.close()

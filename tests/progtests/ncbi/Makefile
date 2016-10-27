@@ -9,7 +9,7 @@ testAccver = NM_013266.2 AK289756.1 BG187649.1 U14680.1
 
 test: fetchTests asmReportCnvTests
 
-fetchTests: gbffFetchTest faFetchTest faSimpleFetchTest
+fetchTests: gbffFetchTest faFetchTest
 
 gbffFetchTest: mkdirs
 	${ncbiGbFetch} --out=output/$@.gbff ${testAccver}
@@ -17,10 +17,6 @@ gbffFetchTest: mkdirs
 
 faFetchTest: mkdirs
 	${ncbiGbFetch} --fasta --out=output/$@.fa ${testAccver}
-	diff expected/$@.fa output/$@.fa
-
-faSimpleFetchTest: mkdirs
-	${ncbiGbFetch} --fasta --simplifyIds --out=output/$@.fa ${testAccver}
 	diff expected/$@.fa output/$@.fa
 
 asmReportCnvTests: asmSeqNameUcscLiftTest asmRefSeqGencodeLiftTest asmSeqNameSizesTest \

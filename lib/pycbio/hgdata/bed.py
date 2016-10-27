@@ -26,7 +26,10 @@ class Bed(object):
         self.chrom = row[0]
         self.chromStart = int(row[1])
         self.chromEnd = int(row[2])
-        self.name = row[3]
+        if self.numCols > 3:
+            self.name = row[3]
+        else:
+            self.name = None
         if self.numCols > 4:
             self.score = int(row[4])
         else:

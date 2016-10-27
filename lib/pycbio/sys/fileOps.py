@@ -27,7 +27,7 @@ def ensureDir(dir):
         os.makedirs(dir)
     except OSError as ex:
         if ex.errno != errno.EEXIST:
-            raise e
+            raise ex
 
 
 def ensureFileDir(fname):

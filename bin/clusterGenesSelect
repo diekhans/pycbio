@@ -4,12 +4,12 @@
 import sys, os
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, os.path.join(myBinDir, "../lib"))
-from optparse import OptionParser
+import argparse
 from pycbio.hgdata.clusterGenes import ClusterGenes
 from pycbio.sys.fileOps import prRow, prRowv, readFileLines
 
-class CmdOpts(object):
-    usage="""%prog [options] clusterFile outFile
+def parseArgs():
+    desc = """%prog [options] clusterFile outFile
 
     Select clusters based on the criteria specified by the options.
     By default, output a clusterGenes file with just the selected
@@ -19,37 +19,29 @@ class CmdOpts(object):
     Somes options take track sets, which are comma seperated sets
     of track names.
 """
-
-    def __init__(self):
-        parser = OptionParser(usage=CmdOpts.usage)
-        parser.add_option("--trackSet",
-                          action="append", dest="trackSet", default=None,
-                          help="""selects loci that have at least the specified set of tracks.
-                                  Maybe specified multiple times.""")
-        parser.add_option("--notTrackSet",
-                          action="append", dest="notTrackSet", default=None,
-                          help="""selects loci that don't have any of the specified set of tracks.
-                                  Maybe specified multiple times.""")
-        parser.add_option("--onlyTrackSet",
-                          action="append", dest="onlyTrackSet", default=None,
-                          help="""This selects loci that only the specified set of tracks.
-                                  Maybe specified multiple times.""")
-        parser.add_option("--notOnlyTrackSet",
-                          action="append", dest="notOnlyTrackSet", default=None,
-                          help="""This selects loci that don't have only the specified set of tracks.
-                                  Maybe specified multiple times.""")
-        parser.add_option("--geneIds", action="append", dest="geneIdFiles", default=None,
-                          help="""select loci containing these gene ids""")
-        parser.add_option("--trackFilter", action="store", dest="trackFilterSet", default=None,
-                          help="""Only output tracks in this set.  Loci that don't contain any of these tracks are dropped""")
-        parser.add_option("--clusterBedOutput", action="store_true", dest="clusterBedOutput", default=False,
-                          help="""Output loci bed for select loci""")
-        (opts, args) = parser.parse_args()
-        if len(args) != 2:
-            parser.error("wrong number of arguments")
-        (self.clusterFile, self.outFile) = args
-        self.__dict__.update(opts.__dict__)
-            
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("--trackSet",
+                        action="append", dest="trackSet", default=None,
+                        help="""selects loci that have at least the specified set of tracks. Maybe specified multiple times.""")
+    parser.add_argument("--notTrackSet",
+                        action="append", dest="notTrackSet", default=None,
+                        help="""selects loci that don't have any of the specified set of tracks. Maybe specified multiple times.""")
+    parser.add_argument("--onlyTrackSet",
+                        action="append", dest="onlyTrackSet", default=None,
+                        help="""This selects loci that only the specified set of tracks. Maybe specified multiple times.""")
+    parser.add_argument("--notOnlyTrackSet",
+                        action="append", dest="notOnlyTrackSet", default=None, help="""This selects loci that don't have only the specified set of tracks. Maybe specified multiple times.""")
+    parser.add_argument("--geneIds", action="append", dest="geneIdFiles", default=None,
+                        help="""select loci containing these gene ids""")
+    parser.add_argument("--trackFilter", action="store", dest="trackFilterSet", default=None,
+                        help="""Only output tracks in this set.  Loci that don't contain any of these tracks are dropped""")
+    parser.add_argument("--clusterBedOutput", action="store_true", dest="clusterBedOutput", default=False,
+                        help="""Output loci bed for select loci""")
+    parser.add_argument("clusterFile",
+                        help="""clusterGenes output file to process""")
+    parser.add_argument("outFile",
+                        help="""selected subset of clusters, in clusterGenes format unless BED is requested""")
+    return parser.parse_args()
 
 class ClusterSelect(object):
     def __init__(self, opts):
@@ -146,7 +138,7 @@ class ClusterSelect(object):
                 self.__writeClusterBed(outFh, cl)
         outFh.close()
 
-opts = CmdOpts()
+opts = parseArgs()
 clSelect = ClusterSelect(opts)
 if opts.clusterBedOutput:
     clSelect.outClusterBed(opts.outFile)

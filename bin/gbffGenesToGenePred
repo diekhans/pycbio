@@ -6,7 +6,7 @@ myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 import warnings
 from Bio import SeqIO
-from optparse import OptionParser
+import argparse
 from pycbio.sys import fileOps, setOps, typeOps
 from pycbio.sys.enumeration import Enumeration
 from pycbio.sys.fileOps import prLine
@@ -23,8 +23,8 @@ ActiveType = Enumeration("ActiveType",
                          ("unknown", "live", "pseudo"),
                          bitSetValues=True)
 
-class CmdOpts(object):
-    usage = """%prog [options] gbff genePred
+def parseArgs():
+    desc = """%prog [options] gbff genePred
 
 Parse gene features from genbank flat file records and create a genePred.
 Will do pseudogenes or non-pseudogenes.  This is designed to be used on the
@@ -48,73 +48,65 @@ The --mrnaProtMap file can be produce
 
 You will also need to lift the contigs to chromosomes.
 """
-    def __init__(self):
-        parser = OptionParser(usage=CmdOpts.usage)
-        parser.add_option("--rnaq", dest="rnaq", action="store", default=None,
-                          help="use this rna.q file to match CDS to mRNA")
-        parser.add_option("--mrnaProtMap", dest="mrnaProtMap", action="store", default=None,
-                          help="tab-separated file of /transcript_id mRNA field to corresponding CDS /protein_id field")
-        parser.add_option("--protGenes", dest="protGenes", action="store_true", default=False,
-                          help="extract protein coding gene annotations, default if no other get options are specified")
-        parser.add_option("--rnaGenes", dest="rnaGenes", action="store_true",
-                          default=False,
-                          help="extract non-protein coding gene annotations")
-        parser.add_option("--otherGenes", dest="otherGenes", action="store_true", default=False,
-                          help="extract gene annotations where type is undetermined")
-        parser.add_option("--immunoglobulins", dest="immunoglobulins", action="store_true", default=False,
-                          help="get immunoglobulins genes")
-        parser.add_option("--allGenes", dest="allGenes", action="store_true", default=False,
-                          help="extra all genes, and immunoglobulins, both pseudo and live")
-        parser.add_option("--pseudo", dest="pseudo", action="store_true", default=False,
-                          help="extract  pseudogenes, either immunoglobulin or assumed protein coding (since type not annotated)")
-        parser.add_option("--live", dest="live", action="store_true", default=False,
-                          help="extract live gene annotations; default if --pseudo is not specified")
-        parser.add_option("--refSeqOnly", dest="refSeqOnly", action="store_true", default=False,
-                          help="only convert entries that appear to have RefSeq accessions")
-        parser.add_option("--ext", dest="ext", action="store_true", default=False,
-                          help="make extended genePreds")
-        parser.add_option("--dropLocusVer", dest="dropLocusVer", action="store_true", default=False,
-                          help="remove the version from the locus (contig or chrom) accession")
-        parser.add_option("--verbose", dest="verbose", action="store", type="int", default=0,
-                          help="set verbosity level")
-        parser.add_option("--errorOnWarn", dest="errorOnWarn", action="store_true", default=False,
-                          help="generate an error at the end if warnings are encountered")
-        parser.add_option("--ignoreShortSequence", dest="ignoreShortSequence", action="store_true", default=False,
-                          help="ignore complaints about short sequences that are used in test cases")
-        parser.add_option("--noPsycho", dest="usePsycho", action="store_false", default=True,
-                          help="disable pyscho compiler")
-
-        (opts, args) = parser.parse_args()
-        if len(args) != 2:
-            parser.error("wrong number of arguments")
-        (self.gbff, self.genePredFile) = args
-        self.__dict__.update(opts.__dict__)
-        if (self.rnaq is not None) and (self.mrnaProtMap is not None):
-            parser.error("can only specify one of -rnaq or -mrnaProtMap")
-        if self.allGenes:
-            self.protGenes = self.rnaGenes = self.other = self.immunoglobulins = True
-        elif not (self.protGenes or self.rnaGenes or self.otherGenes or self.immunoglobulins):
-            self.protGenes = True
-        if not self.pseudo:
-            self.alive = True
-        self.selected = set()
-        if self.protGenes:
-            self.selected.add(GeneType.protGene)
-        if self.rnaGenes:
-            self.selected.add(GeneType.rnaGene)
-        if self.otherGenes:
-            self.selected.add(GeneType.other)
-        if self.immunoglobulins:
-            self.selected.add(GeneType.immunoglobulin)
-        self.active = set()
-        if self.live:
-            self.active.add(ActiveType.live)
-        if self.pseudo:
-            self.active.add(ActiveType.pseudo)
-        if len(self.active) == 0:
-            self.active.add(ActiveType.live)
-        if self.verbose >= 1:
-            prLine(sys.stderr, "selecting: genes: ", setOps.setJoin(self.selected), "  ", setOps.setJoin(self.active))
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("--rnaq", dest="rnaq", action="store", default=None,
+                        help="use this rna.q file to match CDS to mRNA")
+    parser.add_argument("--mrnaProtMap", dest="mrnaProtMap", action="store", default=None,
+                        help="tab-separated file of /transcript_id mRNA field to corresponding CDS /protein_id field")
+    parser.add_argument("--protGenes", dest="protGenes", action="store_true", default=False,
+                        help="extract protein coding gene annotations, default if no other get options are specified")
+    parser.add_argument("--rnaGenes", dest="rnaGenes", action="store_true", default=False,
+                        help="extract non-protein coding gene annotations")
+    parser.add_argument("--otherGenes", dest="otherGenes", action="store_true", default=False,
+                        help="extract gene annotations where type is undetermined")
+    parser.add_argument("--immunoglobulins", dest="immunoglobulins", action="store_true", default=False,
+                        help="get immunoglobulins genes")
+    parser.add_argument("--allGenes", dest="allGenes", action="store_true", default=False,
+                        help="extra all genes, and immunoglobulins, both pseudo and live")
+    parser.add_argument("--pseudo", dest="pseudo", action="store_true", default=False,
+                        help="extract  pseudogenes, either immunoglobulin or assumed protein coding (since type not annotated)")
+    parser.add_argument("--live", dest="live", action="store_true", default=False,
+                        help="extract live gene annotations; default if --pseudo is not specified")
+    parser.add_argument("--refSeqOnly", dest="refSeqOnly", action="store_true", default=False,
+                        help="only convert entries that appear to have RefSeq accessions")
+    parser.add_argument("--ext", dest="ext", action="store_true", default=False,
+                        help="make extended genePreds")
+    parser.add_argument("--dropLocusVer", dest="dropLocusVer", action="store_true", default=False,
+                        help="remove the version from the locus (contig or chrom) accession")
+    parser.add_argument("--verbose", type=int, default=0,
+                        help="set verbosity level")
+    parser.add_argument("--errorOnWarn", dest="errorOnWarn", action="store_true", default=False,
+                        help="generate an error at the end if warnings are encountered")
+    parser.add_argument("--ignoreShortSequence", dest="ignoreShortSequence", action="store_true", default=False,
+                        help="ignore complaints about short sequences that are used in test cases")
+    parser.add_argument("gbff", 
+                        help="GENBANK flat file to process")
+    parser.add_argument("genePredFile", 
+                        help="output file in genePred format")
+    opts = parser.parse_args()
+    if (opts.rnaq is not None) and (opts.mrnaProtMap is not None):
+        parser.error("can only specify one of -rnaq or -mrnaProtMap")
+    if opts.allGenes:
+        opts.protGenes = opts.rnaGenes = opts.other = opts.immunoglobulins = True
+    elif not (opts.protGenes or opts.rnaGenes or opts.otherGenes or opts.immunoglobulins):
+        opts.protGenes = True
+    opts.selected = set()
+    if opts.protGenes:
+        opts.selected.add(GeneType.protGene)
+    if opts.rnaGenes:
+        opts.selected.add(GeneType.rnaGene)
+    if opts.otherGenes:
+        opts.selected.add(GeneType.other)
+    if opts.immunoglobulins:
+        opts.selected.add(GeneType.immunoglobulin)
+    opts.active = set()
+    if opts.live:
+        opts.active.add(ActiveType.live)
+    if opts.pseudo:
+        opts.active.add(ActiveType.pseudo)
+    if len(opts.active) == 0:
+        opts.active.add(ActiveType.live)
+    return opts
 
 warnCnt = 0
 def prWarn(*objs):
@@ -749,13 +741,9 @@ class GbffToGenes(object):
         self.outFh.close()
         gbsFh.close()
 
-opts = CmdOpts()
-if opts.usePsycho:
-    try:
-        import psyco
-        psyco.full()
-    except ImportError,e:
-        pass
+opts = parseArgs()
+if opts.verbose >= 1:
+    prLine(sys.stderr, "selecting: genes: ", setOps.setJoin(opts.selected), "  ", setOps.setJoin(opts.active))
 
 # Bio/GenBank/__init__.py issues UserWarning on problems rather than
 # something more specific, mean we must filter for all types

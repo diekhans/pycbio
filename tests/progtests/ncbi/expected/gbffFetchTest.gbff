@@ -2,7 +2,7 @@ LOCUS       NM_013266               3248 bp    mRNA    linear   PRI 12-MAR-2014
 DEFINITION  Homo sapiens catenin (cadherin-associated protein), alpha 3
             (CTNNA3), transcript variant 1, mRNA.
 ACCESSION   NM_013266
-VERSION     NM_013266.2  GI:188497715
+VERSION     NM_013266.2
 KEYWORDS    RefSeq.
 SOURCE      Homo sapiens (human)
   ORGANISM  Homo sapiens
@@ -203,7 +203,6 @@ FEATURES             Location/Qualifiers
                      /codon_start=1
                      /product="catenin alpha-3"
                      /protein_id="NP_037398.2"
-                     /db_xref="GI:188497716"
                      /db_xref="CCDS:CCDS7269.1"
                      /db_xref="GeneID:29119"
                      /db_xref="HGNC:HGNC:2511"
@@ -362,7 +361,7 @@ ORIGIN
 LOCUS       BG187649                 790 bp    mRNA    linear   EST 29-JAN-2011
 DEFINITION  RST6530 Athersys RAGE Library Homo sapiens cDNA, mRNA sequence.
 ACCESSION   BG187649
-VERSION     BG187649.1  GI:13709224
+VERSION     BG187649.1
 DBLINK      BioSample: LIBEST_008655
 KEYWORDS    EST.
 SOURCE      Homo sapiens (human)
@@ -422,7 +421,7 @@ LOCUS       AK289756                3137 bp    mRNA    linear   PRI 09-JAN-2008
 DEFINITION  Homo sapiens cDNA FLJ78082 complete cds, highly similar to Homo
             sapiens alphaT-catenin (CTNNA3) mRNA.
 ACCESSION   AK289756
-VERSION     AK289756.1  GI:158260534
+VERSION     AK289756.1
 KEYWORDS    FLI_CDNA; oligo capping.
 SOURCE      Homo sapiens (human)
   ORGANISM  Homo sapiens
@@ -469,7 +468,6 @@ FEATURES             Location/Qualifiers
                      sapiens alphaT-catenin (CTNNA3) mRNA"
                      /codon_start=1
                      /protein_id="BAF82445.1"
-                     /db_xref="GI:158260535"
                      /translation="MSAETPITLNIDPQDLQVQTFTVEKLLEPLIIQVTTLVNCPQNP
                      SSRKKGRSKRASVLLASVEEATWNLLDKGEKIAQEATVLKDELTASLEEVRKESEALK
                      VSAERFTDDPCFLPKREAVVQAARALLAAVTRLLILADMIDVMCLLQHVSAFQRTFES
@@ -547,7 +545,7 @@ LOCUS       HSU14680                5711 bp    mRNA    linear   PRI 10-JUN-2002
 DEFINITION  Homo sapiens breast and ovarian cancer susceptibility (BRCA1) mRNA,
             complete cds.
 ACCESSION   U14680
-VERSION     U14680.1  GI:555931
+VERSION     U14680.1
 KEYWORDS    .
 SOURCE      Homo sapiens (human)
   ORGANISM  Homo sapiens
@@ -600,7 +598,6 @@ FEATURES             Location/Qualifiers
                      /codon_start=1
                      /product="breast and ovarian cancer susceptibility"
                      /protein_id="AAA73985.1"
-                     /db_xref="GI:555932"
                      /translation="MDLSALRVEEVQNVINAMQKILECPICLELIKEPVSTKCDHIFC
                      KFCMLKLLNQKKGPSQCPLCKNDITKRSLQESTRFSQLVEELLKIICAFQLDTGLEYA
                      NSYNFAKKENNSPEHLKDEVSIIQSMGYRNRAKRLLQSEPENPSLQETSLSVQLSNLG

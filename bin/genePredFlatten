@@ -4,7 +4,7 @@
 import sys, os
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, os.path.join(myBinDir, "../lib"))
-from optparse import OptionParser
+import argparse
 from pycbio.hgdata.genePred import GenePred
 from pycbio.tsv.tabFile import TabFile
 from pycbio.sys import fileOps, multiDict
@@ -14,28 +14,24 @@ methodUniqExons = "uniqExons"
 
 allMethods = frozenset([methodUniqExons])
 
-class CmdOpts(object):
-    usage="""%prog [options] method [genePredIn] [genePredOut]
+def parseArgs():
+    desc = """%prog [options] method [genePredIn] [genePredOut]
 
     Flatten exon structure of genePreds in a variety of ways.
 
     method:
       o uniqExons - build map of uniq exons
     """
-
-    def __init__(self):
-        parser = OptionParser(usage=CmdOpts.usage)
-        parser.add_option("--dropNames", action="store_true", dest="dropNames", default=False,
-                          help="""make name empty, which can be overwhelming in browser display""")
-        (opts, args) = parser.parse_args()
-        if (len(args) < 1) or (len(args) > 2):
-            parser.error("wrong number of arguments")
-        self.method = args[0]
-        self.genePredIn = args[1] if len(args) > 1 else "/dev/stdin"
-        self.genePredOut = args[2] if len(args) > 2 else "/dev/stdout"
-        self.__dict__.update(opts.__dict__)
-        if self.method not in allMethods:
-            paser.error("invalid method \"" + self.method + "\", expected on of: " + ",".join(allMethods))
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("--dropNames", action="store_true", dest="dropNames", default=False,
+                        help="""make name empty, which can be overwhelming in browser display""")
+    parser.add_argument("method",  choices=allMethods,
+                        help="method of flattening")
+    parser.add_argument("genePredIn", default="/dev/stdin",
+                        help="input genePred")
+    parser.add_argument("genePredOut", default="/dev/stdout",
+                        help="output genePred")
+    return parser.parse_args()
 
 class GeneSet(object):
     def __init__(self, genePredFile):
@@ -89,6 +85,6 @@ class GenePredSelect(object):
             if self._selected(gp):
                 fileOps.prRow(outFh, gp.getRow())
 
-opts = CmdOpts()
+opts = parseArgs()
 gs = GenePredSelect(opts)
 gs.select(opts.genePredIn, opts.genePredOut)

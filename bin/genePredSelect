@@ -4,43 +4,35 @@
 import sys, os
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, os.path.join(myBinDir, "../lib"))
-from optparse import OptionParser
+import argparse
 from pycbio.hgdata.genePred import GenePred
 from pycbio.tsv.tabFile import TabFile
 from pycbio.sys import fileOps
 
-class CmdOpts(object):
-    usage="""%prog [options] [genePredIn] [genePredOut]
+def parseArgs():
+    desc = """%prog [options] [genePredIn] [genePredOut]
 
     Select clusters based on the criteria specified by the options.
     By default, output a clusterGenes file with just the selected
     records.  If multiple select criteria are specified, they all
     must be be true to select a gene."""
 
-    def __init__(self):
-        parser = OptionParser(usage=CmdOpts.usage)
-        parser.add_option("--singleExon", action="store_true", dest="singleExon", default=False,
-                          help="""select genes that have a single exon""")
-        parser.add_option("--multiExon", action="store_true", dest="multiExon", default=False,
-                          help="""select genes that have multiple exons""")
-        parser.add_option("--singleCdsExon", action="store_true", dest="singleCdsExon", default=False,
-                          help="""select genes that have a single CDS exon""")
-        parser.add_option("--multiCdsExon", action="store_true", dest="multiCdsExon", default=False,
-                          help="""select genes that have multiple CDS exons""")
-        parser.add_option("--geneIds", action="append", dest="geneIdFiles", default=None,
-                          help="""select genes with these gene ids""")
-        (opts, args) = parser.parse_args()
-        if len(args) > 2:
-            parser.error("wrong number of arguments")
-        if len(args) > 0:
-            self.genePredIn = args[0]
-        else:
-            self.genePredIn = "/dev/stdin"
-        if len(args) > 1:
-            self.genePredOut = args[1]
-        else:
-            self.genePredOut = "/dev/stdout"
-        self.__dict__.update(opts.__dict__)
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("--singleExon", action="store_true", dest="singleExon", default=False,
+                        help="""select genes that have a single exon""")
+    parser.add_argument("--multiExon", action="store_true", dest="multiExon", default=False,
+                        help="""select genes that have multiple exons""")
+    parser.add_argument("--singleCdsExon", action="store_true", dest="singleCdsExon", default=False,
+                        help="""select genes that have a single CDS exon""")
+    parser.add_argument("--multiCdsExon", action="store_true", dest="multiCdsExon", default=False,
+                        help="""select genes that have multiple CDS exons""")
+    parser.add_argument("--geneIds", action="append", dest="geneIdFiles", default=None,
+                        help="""select genes with these gene ids""")
+    parser.add_argument("genePredIn", default="/dev/stdin",
+                        help="input genePred")
+    parser.add_argument("genePredOut", default="/dev/stdout",
+                        help="output genePred")
+    return parser.parse_args()
 
 class GenePredSelect(object):
     def __init__(self, opts):
@@ -79,6 +71,6 @@ class GenePredSelect(object):
             if self._selected(gp):
                 fileOps.prRow(outFh, gp.getRow())
 
-opts = CmdOpts()
+opts = parseArgs()
 gs = GenePredSelect(opts)
 gs.select(opts.genePredIn, opts.genePredOut)

@@ -4,7 +4,7 @@
 import sys, os
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, os.path.join(myBinDir, "../lib"))
-from optparse import OptionParser
+import argparse
 from pycbio.sys.fileOps import prRowv
 from pycbio.sys.enumeration import Enumeration
 from pycbio.hgdata import geneCheck
@@ -21,18 +21,17 @@ def fmtRate(cnt, tot):
     else:
         return "%0.3f" % (float(cnt)/float(tot))
 
-class CmdOpts(object):
-    usage = """%prog geneChk statsOut
+def parseArgs():
+    desc = """%prog geneChk statsOut
 
     get stats on gene-check
 """
-    def __init__(self):
-        parser = OptionParser(usage=CmdOpts.usage)
-        (opts, args) = parser.parse_args()
-        if len(args) != 2:
-            parser.error("wrong number of arguments")
-        (self.geneChks, self.statsOut) = args
-        self.__dict__.update(opts.__dict__)
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("geneChks", 
+                        help="gene-check output file to process")
+    parser.add_argument("statsOut", 
+                        help="statistics TSV output")
+    return parser.parse_args()
 
 class CountChks(object):
     def __init__(self, geneChks):
@@ -94,6 +93,6 @@ class CountChks(object):
                    self.probInstCnts[v])
         outFh.close()
 
-opts = CmdOpts()
+opts = parseArgs()
 counter = CountChks(opts.geneChks)
 counter.count(opts.statsOut)
