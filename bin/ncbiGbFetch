@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 # Copyright 2006-2012 Mark Diekhans
 
-import sys, os, re, socket
+import sys
+import os
+import socket
 import argparse
 from Bio import Entrez
 
-host="eutils.ncbi.nlm.nih.gov"
+host = "eutils.ncbi.nlm.nih.gov"
+
 
 def parseArgs():
     desc = """%prog [options] [id1 ...]
@@ -28,7 +31,7 @@ give accessions or other ids understood by efetch server.
                         help="override defaulting of email address")
     parser.add_argument("ids", nargs="*",  default=[],
                         help="explicit list of ids to fetch")
-    opts= parser.parse_args()
+    opts = parser.parse_args()
     loadIdFiles(opts)
     if len(opts.ids) == 0:
         parser.error("no ids specified on command line or with --idFile")
@@ -37,21 +40,26 @@ give accessions or other ids understood by efetch server.
         opts.email = getEmail()
     return opts
 
+
 def loadIdFiles(opts):
     for idFile in opts.idFiles:
         opts.ids.extend(loadIdFile(idFile))
 
-def loadIdFile(self, idFile):
+
+def loadIdFile(idFile):
     fh = open(idFile)
     ids = []
     for line in fh:
-        line=line.strip()
+        line = line.strip()
         if (len(line) > 0) and (line[0] != '#'):
-            self.ids.add(line)
+            ids.add(line)
     fh.close()
+    return ids
+
 
 def getEmail():
     return os.getenv("USER") + "@" + socket.gethostbyaddr(socket.gethostname())[0]
+
 
 def efetch(opts, gbid, outFh):
     "fetch a genbank entry or fasta"
@@ -62,8 +70,9 @@ def efetch(opts, gbid, outFh):
     resp = Entrez.efetch(db="nucleotide", id=gbid, rettype=fmt, email=opts.email)
     ent = resp.read()
     if len(ent) <= 1:
-        raise Exception("no entry found for \""+id+"\"")
+        raise Exception("no entry found for \"{}\"".format(id))
     outFh.write(ent)
+
 
 def doFetch(opts, outFh):
     for gbid in opts.ids:

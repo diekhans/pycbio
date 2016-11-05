@@ -7,6 +7,7 @@ from collections import namedtuple
 from pycbio.hgdata.psl import Psl
 from pycbio.tsv import TabFileReader
 from pycbio.hgdata.rangeFinder import Binner
+from Bio import SeqIO
 
 
 class HgLiteTable(object):
@@ -182,12 +183,17 @@ class PslLite(HgLiteTable):
             binnedRows.append((bin,) + tuple(row))
         self.loadsWithBin(binnedRows)
 
+    @staticmethod
+    def __binPslRow(row):
+        "add bin; note modifies row"
+        row.insert(0, Binner.calcBin(int(row[15]), int(row[16])))
+        return row
+        
     def loadPslFile(self, pslFile):
         """load a PSL file, adding bin"""
         rows = []
         for row in TabFileReader(pslFile):
-            row.insert(0, Binner.calcBin(int(row[15]), int(row[16])))
-            rows.append(row)
+            rows.append(self.__binPslRow(row))
         self.loadsWithBin(rows)
 
     @staticmethod

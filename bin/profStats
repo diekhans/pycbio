@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # Copyright 2006-2012 Mark Diekhans
 
-import sys, os
+import sys
+import os
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 import argparse
@@ -13,31 +14,28 @@ validSortKeys = ('calls', 'cumulative', 'file', 'module', 'pcalls', 'line',
 
 ReportType = Enumeration("ReportType", ("basic", "callers", "callees"))
 
+
 def parseArgs():
     desc = """%prog [options] profLog [profOut]
 
     format python profile logs from hotshot.
     """
-    
+
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument("--sort", action="append", dest="sortKeys", default=["cumulative"],
+                        choice=validSortKeys,
                         help="sort result by specified key, which maybe repeated, one of: "
                         + ", ".join(validSortKeys))
-    parser.add_argument("--report", action="store", dest="reportType", default=str(ReportType.basic),
+    parser.add_argument("--report", dest="reportType", type=ReportType, default=ReportType.basic,
                         help="specify type of report to produce, one of: "
                         + ", ".join([str(v) for v in ReportType.values]))
     parser.add_argument("--stripDirs", action="store_true", dest="stripDirs", default=False,
                         help="strip directory names from output")
-    parser.add_argument("profLog", 
+    parser.add_argument("profLog",
                         help="profile log file input")
-    parser.add_argument("profStats", 
+    parser.add_argument("profStats",
                         help="statistics output")
-    opts = parser.parse_args()
-    for sortKey in opts.sortKeys:
-        if not sortKey in validSortKeys:
-            raise Exception("invalid sort key: {}, expected one of: {}".format(sortKey, ", ".join(validSortKeys)))
-    opts.reportType = ReportType(opts.reportType)
-    return opts
+    return parser.parse_args()
 
 def generateReport(opts, outFh):
     profStats = pstats.Stats(opts.profLog, stream=outFh)
