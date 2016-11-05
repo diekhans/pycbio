@@ -55,6 +55,12 @@ class SequenceLiteTests(TestCaseBase):
         self.assertEqual(list(seqDb.getRows(2, 4)), [Sequence(*self.__test2Seq),
                                                      Sequence(*self.__test3Seq)])
 
+    def testLoadFasta(self):
+        seqDb = SequenceLite(self.conn, "seqs", True)
+        seqDb.loadFastaFile(self.getInputFile("ncbi.fa"))
+        seqDb.index()
+        self.assertEqual(sorted(seqDb.names()), ['AK289756.1', 'BG187649.1', 'NM_013266.2', 'U14680.1'])
+
 
 class PslLiteTests(TestCaseBase):
     testPsl1Row = (24, 14, 224, 0, 5, 18, 7, 1109641, "-", "NM_144706.2", 1430, 1126, 1406, "chr22", 49554710, 16248348, 17358251, 9, "24,23,11,14,12,20,12,17,129", "24,48,72,85,111,123,145,157,175", "16248348,16612125,16776474,16911622,17054523,17062699,17291413,17358105,17358122,")

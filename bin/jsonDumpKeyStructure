@@ -4,11 +4,11 @@ from __future__ import print_function
 import sys
 import os
 import argparse
-from shutil import copyfile
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 from pycbio.sys import fileOps
 import json
+
 
 def parseArgs():
     desc = """program to poke a JSON file and print out the
@@ -22,13 +22,16 @@ def parseArgs():
                         help="write results to this file; format depends on options")
     return parser.parse_args()
 
+
 def loadFromJson(fname):
     with open(fname, "r") as fh:
         return json.load(fh)
 
+
 def saveToJson(fname, obj):
     with open(fname, "w") as fh:
         json.dump(obj, fh, indent=4, separators=(',', ': '))
+
 
 def getKeysList(data):
     "build set hierarchical keys starting at an array"
@@ -39,6 +42,7 @@ def getKeysList(data):
             keys.add((key,) + key2)
     return keys
 
+
 def getKeysDict(data):
     "build set hierarchical keys starting at an dict"
     keys = set()
@@ -46,6 +50,7 @@ def getKeysDict(data):
         for key2 in getKeys(data[key]):
             keys.add((key,) + key2)
     return keys
+
 
 def getKeys(data):
     "get the unique set of hierarchical keys"
@@ -56,22 +61,25 @@ def getKeys(data):
     else:
         return set([(type(data).__name__,)])
 
+
 def printKeys(outfile, keys):
     with open(outfile, "w") as fh:
         for key in sorted(list(keys)):
             fileOps.prRow(fh, [str(k) for k in key])
 
+
 def keyToStruct(key, iKey, keyStruct):
-    if iKey < len(key)-2:
+    if iKey < len(key) - 2:
         if key[iKey] not in keyStruct:
             keyStruct[key[iKey]] = dict()
-        keyToStruct(key, iKey+1, keyStruct[key[iKey]])
+        keyToStruct(key, iKey + 1, keyStruct[key[iKey]])
     else:
         # save final value as string of types
         if key[iKey] not in keyStruct:
-            keyStruct[key[iKey]] = key[iKey+1]
+            keyStruct[key[iKey]] = key[iKey + 1]
         else:
-            keyStruct[key[iKey]] += ","+key[iKey+1]
+            keyStruct[key[iKey]] += "," + key[iKey + 1]
+
 
 def keysToStruct(keys):
     "recursively convert set of tuple keys to a dict"
@@ -80,9 +88,9 @@ def keysToStruct(keys):
         keyToStruct(key, 0, keyStruct)
     return keyStruct
 
+
 def jsonAnalyze(opts):
     data = loadFromJson(opts.inJson)
-    collect = dict()
     keys = getKeys(data)
     if opts.printKeyPaths:
         printKeys(opts.outfile, keys)

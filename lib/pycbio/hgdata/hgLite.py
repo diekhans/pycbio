@@ -93,6 +93,13 @@ class SequenceLite(HgLiteTable):
         """load rows into table.  Each element of row is a list, tuple, or Sequence object of name and seq"""
         self.inserts(self.__insertSql, rows)
 
+    def loadFastaFile(self, faFile):
+        """load a FASTA file"""
+        rows = []
+        for faRec in SeqIO.parse(faFile, "fasta"):
+            rows.append((faRec.id, repr(faRec.seq)))
+        self.loads(rows)
+
     def index(self):
         """create index after loading"""
         self.execute(self.__indexSql)
@@ -188,7 +195,7 @@ class PslLite(HgLiteTable):
         "add bin; note modifies row"
         row.insert(0, Binner.calcBin(int(row[15]), int(row[16])))
         return row
-        
+
     def loadPslFile(self, pslFile):
         """load a PSL file, adding bin"""
         rows = []

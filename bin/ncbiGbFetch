@@ -29,7 +29,7 @@ give accessions or other ids understood by efetch server.
                         help="set HTTP debug level to this value")
     parser.add_argument("--email", dest="email", action="store", default=None,
                         help="override defaulting of email address")
-    parser.add_argument("ids", nargs="*",  default=[],
+    parser.add_argument("ids", nargs="*", default=[],
                         help="explicit list of ids to fetch")
     opts = parser.parse_args()
     loadIdFiles(opts)

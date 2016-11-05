@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # Copyright 2006-2012 Mark Diekhans
 
-import sys, os
+import sys
+import os
 myBinDir = os.path.dirname(os.path.realpath(sys.argv[0]))
 sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 import argparse
-from pycbio.sys import fileOps
 from pycbio.tsv import TsvReader, TsvTable
+
 
 def parseArgs():
     desc = """%prog [options] selectCol selectTsv inCol inTsv outTsv
@@ -15,29 +16,32 @@ def parseArgs():
     Currently only string comparisons are supported.
     """
     parser = argparse.ArgumentParser(description=desc)
-    parser.add_argument("selectCol", 
+    parser.add_argument("selectCol",
                         help="")
-    parser.add_argument("selectTsv", 
+    parser.add_argument("selectTsv",
                         help="")
-    parser.add_argument("inCol", 
+    parser.add_argument("inCol",
                         help="")
-    parser.add_argument("inTsv", 
+    parser.add_argument("inTsv",
                         help="")
-    parser.add_argument("outTsv", 
+    parser.add_argument("outTsv",
                         help="")
     return parser.parse_args()
+
 
 def openTsv(col, tsv):
     "create a TsvReader, ensuring that it contains col"
     rd = TsvReader(tsv)
-    if not col in rd.colMap:
-        raise Exception("column \"" + col + " not found in " + tsv)
+    if col not in rd.colMap:
+        raise Exception("column \"{}\" not found in {}".format(col, tsv))
+
 
 def loadSelect(selectCol, selectTsv):
     selectTbl = dict()
     rd = openTsv(selectCol, selectTsv)
     for row in rd:
         selectTbl[row[selectCol]] = True
+
 
 def selectById(selectCol, selectTsv, inCol, inTsv, outTsv):
     selectTbl = loadSelect(selectCol, selectTsv)
@@ -50,5 +54,5 @@ def selectById(selectCol, selectTsv, inCol, inTsv, outTsv):
     outFh.close()
 
 raise Exception("FIXME: not done")
-opts = parser.parse_args()
+opts = parseArgs()
 selectById(opts.selectCol, opts.selectTsv, opts.inCol, opts.inTsv, opts.outTsv)

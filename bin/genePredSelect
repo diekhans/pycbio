@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # Copyright 2006-2012 Mark Diekhans
 
-import sys, os
+import sys
+import os
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 import argparse
 from pycbio.hgdata.genePred import GenePred
-from pycbio.tsv.tabFile import TabFile
 from pycbio.sys import fileOps
+
 
 def parseArgs():
     desc = """%prog [options] [genePredIn] [genePredOut]
@@ -34,6 +35,7 @@ def parseArgs():
                         help="output genePred")
     return parser.parse_args()
 
+
 class GenePredSelect(object):
     def __init__(self, opts):
         self.geneIds = None
@@ -42,17 +44,17 @@ class GenePredSelect(object):
         self.singleCdsExon = opts.singleCdsExon
         self.multiCdsExon = opts.multiCdsExon
         if opts.geneIdFiles is not None:
-            self.geneIds = self._loadIdFiles(opts.geneIdFiles)
-            
-    def _loadIdFiles(self, idFiles):
+            self.geneIds = self.__loadIdFiles(opts.geneIdFiles)
+
+    def __loadIdFiles(self, idFiles):
         ids = set()
         for f in idFiles:
             for line in fileOps.readFileLines(f):
                 ids.add(line.strip())
         return ids
 
-    def _selected(self, gp):
-        if (self.geneIds is not None) and not gp.name in geneIds:
+    def __selected(self, gp):
+        if (self.geneIds is not None) and (gp.name not in self.geneIds):
             return False
         if self.singleExon and (len(gp.exons) != 1):
             return False
@@ -60,7 +62,7 @@ class GenePredSelect(object):
             return False
         if self.singleCdsExon and (gp.getNumCdsExons() != 1):
             return False
-        if self.multiCdsExon and  (gp.getNumCdsExons() <= 1):
+        if self.multiCdsExon and (gp.getNumCdsExons() <= 1):
             return False
         return True
 

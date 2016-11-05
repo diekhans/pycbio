@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 # Copyright 2006-2012 Mark Diekhans
 
-import sys, os
+import sys
+import os
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 import argparse
-from pycbio.sys import fileOps
 from pycbio.hgdata.clusterGenes import ClusterGenes
 from pycbio.stats.venn import Venn
 from pycbio.sys.fileOps import prRowv
 from pycbio.tsv.tabFile import TabFile
+
 
 def parseArgs():
     desc = """%prog [options] clusterFile statsFile
@@ -34,25 +35,28 @@ def parseArgs():
                         help="""output statistics to this file""")
     return parser.parse_args()
 
+
 def readLociCats(self, catsFile):
     cats = {}
     for row in TabFile(catsFile):
         if len(row) < 2:
-            raise Exception("rows must have at least two columns: "+catsFile)
+            raise Exception("rows must have at least two columns: {}".format(catsFile))
         cats[int(row[0])] = intern(row[1])
     return cats
+
 
 def fmtFrac(cnt, total):
     if (total == 0):
         return "0"
     else:
-        return "%0.3f" % (float(cnt)/float(total))
+        return "%0.3f" % (float(cnt) / float(total))
+
 
 class Total(object):
     def __init__(self, name):
         self.name = name
         self.transCnt = 0
-        self.lociCnt = 0;
+        self.lociCnt = 0
 
     def sum(self, other):
         self.transCnt += other.transCnt
@@ -61,11 +65,12 @@ class Total(object):
     def __str__(self):
         return str(self.lociCnt) + "/" + str(self.transCnt)
 
+
 class ClusterStats(object):
     def __init__(self, clusterFile, lociCats=None, omitZero=False):
         self.clusters = ClusterGenes(clusterFile)
         if lociCats is None:
-            self.lociCats = {} # empty
+            self.lociCats = {}  # empty
         else:
             self.lociCats = lociCats
         self.omitZero = omitZero
@@ -79,7 +84,7 @@ class ClusterStats(object):
             return intern(locusCat + "+" + gene.table)
         else:
             return gene.table
-        
+
     def _buildClusterVenn(self):
         self.venn = Venn()
         for cluster in self.clusters:
@@ -93,7 +98,7 @@ class ClusterStats(object):
                 total.lociCnt += 1
                 total.transCnt += len(self.clusters[clusterId])
         return total
-        
+
     def _getSetTotal(self, name):
         t = self.setTotals.get(name)
         if t is None:
@@ -128,8 +133,8 @@ class ClusterStats(object):
 
     def _prTotal(self, statsFh):
         prRowv(statsFh, "TOTAL", self.total.lociCnt, self.total.transCnt,
-                   fmtFrac(self.total.lociCnt, self.total.lociCnt),
-                   fmtFrac(self.total.transCnt, self.total.transCnt))
+               fmtFrac(self.total.lociCnt, self.total.lociCnt),
+               fmtFrac(self.total.transCnt, self.total.transCnt))
 
     def saveVenn(self, statsFile, total):
         fh = file(statsFile, "w")

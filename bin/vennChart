@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 # Copyright 2006-2012 Mark Diekhans
 
-import sys, os, re
+import sys
+import os
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, os.path.join(myBinDir, "../lib"))
-
+from python.tsv import TsvReader
 import argparse
-from pycbio.tsv import TsvReader,TsvError
 
-from matplotlib.patches import Circle
-from matplotlib import pyplot
 
 def parseArgs():
     desc = """%prog [options] inStats outImage
@@ -26,26 +24,26 @@ Output defaults to PDF format.
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument("--countCol", dest="rnaq", action="store", default="Counts",
                         help="column name of counts column, default is 'Counts'")
-    parser.add_argument("inStats", 
+    parser.add_argument("inStats",
                         help="input statistics")
-    parser.add_argument("outImage", 
+    parser.add_argument("outImage",
                         help="output image")
     return parser.parse_args()
+
 
 class BoolStats(object):
     "stats extract from boolean Tsv"
     def __init__(self, statsFile, countsCol):
         reader = TsvReader(statsFile, typeMap={countsCol: int}, defaultColType=bool)
-        if not countsCol in reader.colMap:
-            raise TsvReader("counts column \"" + countsCol + "\" not found", reader)
+        if countsCol not in reader.colMap:
+            raise TsvReader("counts column \"{}\" not found".format(countsCol), reader)
+
 
 class VennCircle(object):
     diameter = 1.0
 
     def __init__(self, pos):
         pass
-
-
 
 
 raise Exception("FIXME: not done")

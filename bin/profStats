@@ -37,6 +37,7 @@ def parseArgs():
                         help="statistics output")
     return parser.parse_args()
 
+
 def generateReport(opts, outFh):
     profStats = pstats.Stats(opts.profLog, stream=outFh)
     if opts.stripDirs:
