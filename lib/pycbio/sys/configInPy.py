@@ -15,7 +15,7 @@ def _evalConfigFile(configPyFile, extraEnv=None):
         execfile(configPyFile, configEnv, configEnv)
     except:
         ei = sys.exc_info()
-        raise PycbioException("Error evaluating configuration file: " + configPyFile, ei[0]), None, ei[2]
+        raise PycbioException("Error evaluating configuration file: {}".format(configPyFile), ei[0]), None, ei[2]
     return configEnv
 
 # FIXME: now that configEnv has locals, we could get by varname.
@@ -23,11 +23,11 @@ def _evalConfigFile(configPyFile, extraEnv=None):
 
 
 def evalConfigFunc(configPyFile, getFuncName="getConfig", getFuncArgs=[], getFuncKwargs={}, extraEnv=None):
-    """Evaluate the specified configuration file and call the specified function
-    (defaulting to getConfig()) define in the file.  The value of the call of
-    this function is returned. This is useful for config files that should
-    construct complex objects.  Arguments and keyword arguments can be passed
-    to this functions getFuncArgs, and getFuncKwargs.  A variable
+    """Evaluate the specified configuration file and call the specified
+    function (defaulting to getConfig()) define in the file.  The value of the
+    call of this function is returned. This is useful for config files that
+    need to construct complex objects.  Arguments and keyword arguments can be
+    passed to this functions getFuncArgs, and getFuncKwargs.  A variable
     configPyFile, containing the configuration file name, is set in the module
     globals before evaluation.  If specified, the dict extraEnv contents will
     be passed as a module globals.

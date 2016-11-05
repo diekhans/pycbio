@@ -68,7 +68,7 @@ class FileOpsTests(TestCaseBase):
         fileOps.atomicInstall(outfTmp, outf)
         self.diffFiles(inf, outf)
 
-        
+
 # FIXME: many more tests needed
 
 

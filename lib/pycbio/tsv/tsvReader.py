@@ -32,6 +32,7 @@ strOrNoneType = (lambda v: None if (v == "") else v,
 intOrNoneType = (lambda v: None if (v == "") else int(v),
                  lambda v: "" if (v is None) else str(v))
 
+
 class TsvReader(object):
     """Class for reading TSV files.  Reads header and builds column name to
     column index map.  After a next, object contains a row and each column

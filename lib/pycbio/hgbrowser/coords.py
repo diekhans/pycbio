@@ -63,7 +63,7 @@ class Coords(Immutable):
     def name(self):
         # FIXME: need to generalizes this
         return self.chrom
-    
+
     def size(self):
         return self.end - self.start
 
@@ -94,7 +94,7 @@ class Coords(Immutable):
                       self.chromSize - self.end,
                       self.chromSize - self.start,
                       db=self.db, chromSize=self.chromSize, strand=strand)
-    
+
     def __cmp__(self, other):
         if other is None:
             return -1

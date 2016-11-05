@@ -92,6 +92,7 @@ class Binner(object):
                 parts.append("({}>={} and {}<={})".format(binCol, bins[0], binCol, bins[1]))
         return "(({}=\"{}\") and ({}<{}) and ({}>{}) and ({}))".format(seqCol, seq, startCol, end, endCol, start, " or ".join(parts))
 
+
 class Entry(object):
     "entry associating a range with a value"
     __slots__ = ("start", "end", "value")

@@ -8,4 +8,4 @@ class Barney(object):
 
 def getConfig(f1, f2=None, f3=None):
     global configPyFile
-    return Barney(f1, f2, f3, configPyFile)
+    return Barney(f1, f2, f3, configPyFile)  # noqa: F821

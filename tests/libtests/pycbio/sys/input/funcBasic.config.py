@@ -1,5 +1,7 @@
 # global passedInModule is optional
 
+global configPyFile
+
 
 class Fred(object):
     def __init__(self, n, configPyFile, passedInModule):
@@ -11,4 +13,4 @@ class Fred(object):
 
 def getConfig():
     global configPyFile
-    return Fred(10, configPyFile, globals().get("passedInModule"))
+    return Fred(10, configPyFile, globals().get("passedInModule"))  # noqa: F821

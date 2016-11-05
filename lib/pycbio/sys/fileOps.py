@@ -6,6 +6,7 @@ import errno
 import sys
 import socket
 import tempfile
+from pycbio.sys import PycbioException
 
 
 _pipelineMod = None
@@ -309,7 +310,8 @@ def tmpDirGet(prefix=None, suffix="tmp", tmpDir=None):
     return tempfile.mkdtemp(prefix=prefix, suffix=suffix, dir=findTmpDir(tmpDir))
 
 _hostName = None  # don't get multiple times
-_atomicNextNum = 0 # number to include in atomicTmpFile, just in case same process tries creates multiple
+_atomicNextNum = 0  # number to include in atomicTmpFile, just in case same process tries creates multiple
+
 
 def atomicTmpFile(finalPath):
     """Return a tmp file name to use with atomicInstall.  This will be in the

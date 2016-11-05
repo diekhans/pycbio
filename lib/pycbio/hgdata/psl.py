@@ -8,8 +8,10 @@ from Bio.Seq import reverse_complement
 # FIXME: Should have factory rather than __init__ multiplexing nonsense **
 # FIXME: should have builder functions
 
+
 def reverseCoords(start, end, size):
-    return (size-end, size-start)
+    return (size - end, size - start)
+
 
 def reverseStrand(s):
     "return reverse of a strand character"
@@ -262,7 +264,7 @@ class Psl(object):
             row.append(strArrayJoin([b.qSeq for b in self.blocks]))
             row.append(strArrayJoin([b.tSeq for b in self.blocks]))
         return row
-        
+
     def __str__(self):
         "return psl as a tab-separated string"
         return str.join("\t", self.toRow())
