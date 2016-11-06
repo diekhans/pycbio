@@ -3,6 +3,7 @@
 Storage of genome data in sqlite for use in cluster jobs and other random
 access uses.
 """
+import sqlite3
 from collections import namedtuple
 from pycbio.hgdata.psl import Psl
 from pycbio.tsv import TabFileReader
@@ -20,16 +21,22 @@ class HgLiteTable(object):
         self.executes(["DROP TABLE IF EXISTS {table};".format(table=self.table),
                        createSql])
 
-    def query(self, query, *queryargs):
-        """run query, formatting table name and generator over results"""
+    def queryRows(self, query, rowFactory, *queryargs):
+        """run query, formatting table name and generator over results and
+        setting row factory"""
         with self.conn:
             cur = self.conn.cursor()
+            cur.row_factory = rowFactory
             try:
                 cur.execute(query.format(table=self.table), queryargs)
                 for row in cur:
                     yield row
             finally:
                 cur.close()
+
+    def query(self, query, *queryargs):
+        """run query, formatting table name and generator over results"""
+        return self.queryRows(query, None, *queryargs)
 
     def execute(self, query):
         """execute a query formatting table name, with no results"""
@@ -122,8 +129,8 @@ class SequenceLite(HgLiteTable):
     def getRows(self, startOid, endOid):
         "generator for sequence for a range of OIDs (1/2 open)"
         sql = "select name, seq from {table} where (oid >= ?) and (oid < ?)"
-        for row in self.query(sql, startOid, endOid):
-            yield Sequence(name=row[0], seq=row[1])
+        return self.queryRows(sql, lambda cur, row: Sequence(name=row[0], seq=row[1]),
+                              startOid, endOid)
 
 
 class PslLite(HgLiteTable):
@@ -204,37 +211,23 @@ class PslLite(HgLiteTable):
         self.loadsWithBin(rows)
 
     @staticmethod
-    def __pslObjectGenerator(rowGen):
-        """wrapper generator the converts rows to Psl objects"""
-        for row in rowGen:
-            yield Psl(row)
+    def __getRowFactory(raw):
+        return None if raw else lambda cur, row: Psl(row)
 
     def getByQName(self, qName, raw=False):
         """get list of Psl objects (or raw rows) for all alignments for qName """
         sql = "select {} from {{table}} where qName = ?".format(self.__columnsStr)
-        rowGen = self.query(sql, qName)
-        if raw:
-            return list(rowGen)
-        else:
-            return [Psl(row) for row in rowGen]
+        return list(self.queryRows(sql, self.__getRowFactory(raw), qName))
 
     def getRows(self, startOid, endOid, raw=False):
         """generator for PSLs for a range of OIDs (1/2 open).  If raw is
         specified, don't convert to Psl objects."""
         sql = "select {} from {} where (oid >= ?) and (oid < ?)".format(self.__columnsStr, self.table)
-        rowGen = self.query(sql, startOid, endOid)
-        if raw:
-            return rowGen
-        else:
-            return self.__pslObjectGenerator(rowGen)
+        return self.queryRows(sql, self.__getRowFactory(raw), startOid, endOid)
 
     def getTRangeOverlap(self, tName, tStart, tEnd, raw=False):
         """Get alignments overlapping tRange  If raw is
         specified, don't convert to Psl objects."""
         sql = "select {} from {{table}} where {};".format(self.__columnsStr,
                                                           Binner.getOverlappingSqlExpr("bin", "tName", "tStart", "tEnd", tName, tStart, tEnd))
-        rowGen = self.query(sql)
-        if raw:
-            return rowGen
-        else:
-            return self.__pslObjectGenerator(rowGen)
+        return self.queryRows(sql, self.__getRowFactory(raw))
