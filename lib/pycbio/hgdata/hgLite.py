@@ -18,8 +18,23 @@ class HgLiteTable(object):
         self.table = table
 
     def _create(self, createSql):
-        self.executes(["DROP TABLE IF EXISTS {table};".format(table=self.table),
-                       createSql])
+        self.executes(["DROP TABLE IF EXISTS {table};".format(table=self.table), createSql])
+
+    def _index(self, indexSql):
+        if isinstance(indexSql, str):
+            indexSql = [indexSql]
+        with self.conn:
+            self.executes(indexSql)
+
+    def _insert(self, insertSql, row):
+        """insert a row, formatting table name"""
+        with self.conn:
+            self.conn.execute(insertSql.format(table=self.table), row)
+
+    def _inserts(self, insertSql, rows):
+        """insert multiple rows, formatting table name"""
+        with self.conn:
+            self.conn.executemany(insertSql.format(table=self.table), rows)
 
     def queryRows(self, query, rowFactory, *queryargs):
         """run query, formatting table name and generator over results and
@@ -57,18 +72,14 @@ class HgLiteTable(object):
             finally:
                 cur.close()
 
-    def inserts(self, insertSql, rows):
-        """insert multiple rows, formatting table name"""
-        with self.conn:
-            self.conn.executemany(insertSql.format(table=self.table), rows)
-
     def getOidRange(self):
         """return half-open range of OIDs"""
         sql = "select min(oid), max(oid)+1 from {}".format(self.table)
-        return next(self.query(sql))
+        return next(self.query(sql), (0, 0))
 
 
-class Sequence(namedtuple("Sequence", ("name", "seq"))):
+class Sequence(namedtuple("Sequence",
+                          ("name", "seq"))):
     """a short sequence, such as  RNA or protein"""
     __slots__ = ()
 
@@ -96,20 +107,20 @@ class SequenceLite(HgLiteTable):
         """create table"""
         self._create(self.__createSql)
 
+    def index(self):
+        """create index after loading"""
+        self._index(self.__indexSql)
+
     def loads(self, rows):
         """load rows into table.  Each element of row is a list, tuple, or Sequence object of name and seq"""
-        self.inserts(self.__insertSql, rows)
+        self._inserts(self.__insertSql, rows)
 
     def loadFastaFile(self, faFile):
         """load a FASTA file"""
         rows = []
         for faRec in SeqIO.parse(faFile, "fasta"):
-            rows.append((faRec.id, repr(faRec.seq)))
+            rows.append((faRec.id, str(faRec.seq)))
         self.loads(rows)
-
-    def index(self):
-        """create index after loading"""
-        self.execute(self.__indexSql)
 
     def names(self):
         """get generator over all names in table"""
@@ -120,7 +131,7 @@ class SequenceLite(HgLiteTable):
     def get(self, name):
         "retrieve a sequence by name, or None"
         sql = "SELECT name, seq FROM {table} WHERE name = ?;"
-        row = next(self.query(sql, name))
+        row = next(self.query(sql, name), None)
         if row is None:
             return None
         else:
@@ -167,7 +178,7 @@ class PslLite(HgLiteTable):
         """CREATE INDEX {table}_qname on {table} (qName)"""]
 
     # doesn't include bin
-    __columnsStr = """matches, misMatches, repMatches, nCount, qNumInsert, qBaseInsert, tNumInsert,
+    columnsNamesSql = """matches, misMatches, repMatches, nCount, qNumInsert, qBaseInsert, tNumInsert,
     tBaseInsert, strand, qName, qSize, qStart, qEnd, tName, tSize, tStart, tEnd,
     blockCount, blockSizes, qStarts, tStarts"""
 
@@ -180,12 +191,13 @@ class PslLite(HgLiteTable):
         self._create(self.__createSql)
 
     def index(self):
-        self.executes(self.__indexSql)
+        """create index after loading"""
+        self._index(self.__indexSql)
 
     def loadsWithBin(self, binnedRows):
         """load PSLs rows which already have bin column"""
-        sql = "INSERT INTO {{table}} (bin, {}) VALUES ({});".format(self.__columnsStr, ",".join(22 * ["?"]))
-        self.inserts(sql, binnedRows)
+        sql = "INSERT INTO {{table}} (bin, {}) VALUES ({});".format(self.columnsNamesSql, ",".join(22 * ["?"]))
+        self._inserts(sql, binnedRows)
 
     def loads(self, rows):
         """load rows, which can be list-like or Psl objects, adding bin"""
@@ -216,18 +228,18 @@ class PslLite(HgLiteTable):
 
     def getByQName(self, qName, raw=False):
         """get list of Psl objects (or raw rows) for all alignments for qName """
-        sql = "select {} from {{table}} where qName = ?".format(self.__columnsStr)
+        sql = "select {} from {{table}} where qName = ?".format(self.columnsNamesSql)
         return list(self.queryRows(sql, self.__getRowFactory(raw), qName))
 
     def getRows(self, startOid, endOid, raw=False):
         """generator for PSLs for a range of OIDs (1/2 open).  If raw is
         specified, don't convert to Psl objects."""
-        sql = "select {} from {} where (oid >= ?) and (oid < ?)".format(self.__columnsStr, self.table)
+        sql = "select {} from {} where (oid >= ?) and (oid < ?)".format(self.columnsNamesSql, self.table)
         return self.queryRows(sql, self.__getRowFactory(raw), startOid, endOid)
 
     def getTRangeOverlap(self, tName, tStart, tEnd, raw=False):
         """Get alignments overlapping tRange  If raw is
         specified, don't convert to Psl objects."""
-        sql = "select {} from {{table}} where {};".format(self.__columnsStr,
+        sql = "select {} from {{table}} where {};".format(self.columnsNamesSql,
                                                           Binner.getOverlappingSqlExpr("bin", "tName", "tStart", "tEnd", tName, tStart, tEnd))
         return self.queryRows(sql, self.__getRowFactory(raw))

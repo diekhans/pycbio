@@ -42,13 +42,12 @@ def ensureFileDir(fname):
         return "."
 
 
-def rmFiles(files):
-    """remove one or more files if they exist. files can be a single file
-    name of a list of file names"""
-    if isinstance(files, str):
-        if os.path.exists(files):
-            os.unlink(files)
-    else:
+def rmFiles(*fileArgs):
+    """Remove one or more files if they exist. Each file argument can be a
+    single file name of a list of file names"""
+    for files in fileArgs:
+        if isinstance(files, str):
+            files = [files]
         for f in files:
             if os.path.exists(f):
                 os.unlink(f)

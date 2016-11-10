@@ -48,6 +48,7 @@ class SequenceLiteTests(TestCaseBase):
         self.assertEqual(sorted(seqDb.names()), ["name1", "name2", "name3", "name4"])
         self.assertEqual(seqDb.get("name1"), Sequence(*self.__test1Seq))
         self.assertEqual(seqDb.get("name2"), Sequence(*self.__test2Seq))
+        self.assertEqual(seqDb.get("notthere"), None)
 
     def testRowRange(self):
         seqDb = self.__loadTestSeqs()
@@ -60,6 +61,21 @@ class SequenceLiteTests(TestCaseBase):
         seqDb.loadFastaFile(self.getInputFile("ncbi.fa"))
         seqDb.index()
         self.assertEqual(sorted(seqDb.names()), ['AK289756.1', 'BG187649.1', 'NM_013266.2', 'U14680.1'])
+        seq = seqDb.get("BG187649.1")
+        self.assertEqual(seq.name, "BG187649.1")
+        self.assertEqual(seq.seq,
+                         "TGCCCAGATCCATCTTGTAAACAGGACTTGTTGGCCTACCTGGAACAGATTAAGTTCTACTCCCACCAAC"
+                         "TGAAAATCTGCAGTCAAGTTAAAGCTGAGATCCAGAACCTGGGAGGAGAGCTCATCATGTCAGCTTTGGA"
+                         "CAGTGTCACATCCCTGATCCAAGCAGCCAAAAATTTAATGAATGCTGTAGTGCAAACAGTGAAAATGTCT"
+                         "TACATTGCCTCAACCAAGATCATCCGAATCCAGAGTCCTGCTGGGCCCCGGCACCCAGTTGTGATGTGGA"
+                         "GAATGAAGGCTCCTGCAAAAAAACCCTTGATTAAAAGAGAGAAGCCAGAGGAAACGTGTGCAGCTGTCAG"
+                         "ACGAGGCTCAGCAAAGAAAAAAATCCATCCATTGCAAGTCATGAGTGAATTTAGAGGAAGACAAATCTAC"
+                         "TGAAACCACTATTCTACATATAGTGCCTATATGACAAAATCCTGCCTAACCACACTGCTTTATTTTACAC"
+                         "TTAAGAAGTTCTGTAATTTCACTGAGTTTTGGTGTTTAACTCACAAATAACATAAAATATTGGGCGCTAA"
+                         "ATCAACAAAAGCAATATATATTTGGGATCATATCACTGTCATTTCTGTATGGTCAGCACCCTATAGTTAA"
+                         "GGAATATTTGCTTGTTGAATGAATGAAATTATCACGTGTTATTCACCGTTTCCCATAATAGAGATTATCT"
+                         "ACTATTCGTTACCAAATAAACACAGGAGATGGCAGAGAGTCCGGTTTATCTGGAATCTTCATGTACCTTA"
+                         "TAATCCTTACTTGAATTAAN")
 
 
 class PslLiteTests(TestCaseBase):
