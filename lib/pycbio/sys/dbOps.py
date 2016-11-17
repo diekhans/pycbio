@@ -2,6 +2,7 @@
 """Operations on dbapi objects"""
 import MySQLdb
 import warnings
+import MySQLdb.cursors
 
 _mySqlErrorOnWarnDone = False
 
@@ -47,7 +48,16 @@ def query(conn, sql, args=None):
         cur.close()
 
 
+def getTablesLike(conn, pattern, db=None):
+    frm = "" if db is None else "from " + db
+    sql = "show tables {} like \"{}\"".format(frm, pattern)
+    cur = conn.cursor(cursorclass=MySQLdb.cursors.Cursor)
+    try:
+        cur.execute(sql)
+        return [row[0] for row in cur]
+    finally:
+        cur.close()
+
 def haveTableLike(conn, pattern, db=None):
-    frm = "" if db is None else " from " + db
-    # FIXME: mysql-specific
-    return len(list(query(conn, 'show tables{} like "{}";'.format(frm, pattern)))) > 0
+    return len(getTablesLike(conn, pattern, db)) > 0
+

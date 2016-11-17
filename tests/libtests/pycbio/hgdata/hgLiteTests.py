@@ -9,7 +9,7 @@ if __name__ == '__main__':
     sys.path.append("../../../../lib")
 import sqlite3
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.hgdata.hgLite import SequenceLite, Sequence, PslLite
+from pycbio.hgdata.hgLite import SequenceDbTable, Sequence, PslDbTable
 from pycbio.hgdata.psl import Psl
 
 
@@ -23,7 +23,7 @@ class SequenceTests(TestCaseBase):
         self.assertEqual(seq.toFasta(), ">name1\ntagtcaaacccgtcgcctgcgcgaaa\n")
 
 
-class SequenceLiteTests(TestCaseBase):
+class SequenceDbTableTests(TestCaseBase):
     __test1Seq = ("name1", "gcctgcgcgaaacctccgctagtcaaacccgtccttagagcagtcgaaggg")
     __test2Seq = ("name2", "tagtcaaacccgtcgcctgcgcgaaacctccgccttagagcagtcgaaggg")
     __test3Seq = ("name3", "tagtcaaacccgtcgcctgcgcgaaa")
@@ -38,7 +38,7 @@ class SequenceLiteTests(TestCaseBase):
 
     def __loadTestSeqs(self):
         # try both tuple and sequence
-        seqDb = SequenceLite(self.conn, "seqs", True)
+        seqDb = SequenceDbTable(self.conn, "seqs", True)
         seqDb.loads([self.__test1Seq, Sequence(*self.__test2Seq), Sequence(*self.__test3Seq), self.__test4Seq])
         seqDb.index()
         return seqDb
@@ -57,7 +57,7 @@ class SequenceLiteTests(TestCaseBase):
                                                      Sequence(*self.__test3Seq)])
 
     def testLoadFasta(self):
-        seqDb = SequenceLite(self.conn, "seqs", True)
+        seqDb = SequenceDbTable(self.conn, "seqs", True)
         seqDb.loadFastaFile(self.getInputFile("ncbi.fa"))
         seqDb.index()
         self.assertEqual(sorted(seqDb.names()), ['AK289756.1', 'BG187649.1', 'NM_013266.2', 'U14680.1'])
@@ -78,7 +78,7 @@ class SequenceLiteTests(TestCaseBase):
                          "TAATCCTTACTTGAATTAAN")
 
 
-class PslLiteTests(TestCaseBase):
+class PslDbTableTests(TestCaseBase):
     testPsl1Row = (24, 14, 224, 0, 5, 18, 7, 1109641, "-", "NM_144706.2", 1430, 1126, 1406, "chr22", 49554710, 16248348, 17358251, 9, "24,23,11,14,12,20,12,17,129", "24,48,72,85,111,123,145,157,175", "16248348,16612125,16776474,16911622,17054523,17062699,17291413,17358105,17358122,")
     testPsl2Row = (0, 10, 111, 0, 1, 13, 3, 344548, "+", "NM_025031.1", 664, 21, 155, "chr22", 49554710, 48109515, 48454184, 4, "17,11,12,81", "21,38,49,74", "48109515,48109533,48453547,48454103,")
 
@@ -99,7 +99,7 @@ class PslLiteTests(TestCaseBase):
         if self.clsConn is None:
             # don't load for each test
             self.clsConn = memDbConnect()
-            self.pslTestDb = PslLite(self.clsConn, "aligns", True)
+            self.pslTestDb = PslDbTable(self.clsConn, "aligns", True)
             self.pslTestDb.loadPslFile(self.getInputFile("pslTest.psl"))
             self.pslTestDb.index()
 
@@ -135,7 +135,7 @@ class PslLiteTests(TestCaseBase):
     def testMemLoadPsl(self):
         conn = memDbConnect()
         try:
-            pslDb = PslLite(conn, "pslRows", True)
+            pslDb = PslDbTable(conn, "pslRows", True)
             pslDb.loads([Psl(self.testPsl1Row), Psl(self.testPsl2Row)])
             pslDb.index()
             coords = self.__makeObjCoords(pslDb.getByQName("NM_025031.1"))
@@ -146,7 +146,7 @@ class PslLiteTests(TestCaseBase):
     def testMemLoadRow(self):
         conn = memDbConnect()
         try:
-            pslDb = PslLite(conn, "pslRows", True)
+            pslDb = PslDbTable(conn, "pslRows", True)
             pslDb.loads([self.testPsl1Row, self.testPsl2Row])
             pslDb.index()
             coords = self.__makeRawCoords(pslDb.getByQName("NM_025031.1", raw=True))
@@ -158,8 +158,8 @@ class PslLiteTests(TestCaseBase):
 def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(SequenceTests))
-    ts.addTest(unittest.makeSuite(SequenceLiteTests))
-    ts.addTest(unittest.makeSuite(PslLiteTests))
+    ts.addTest(unittest.makeSuite(SequenceDbTableTests))
+    ts.addTest(unittest.makeSuite(PslDbTableTests))
     return ts
 
 if __name__ == '__main__':

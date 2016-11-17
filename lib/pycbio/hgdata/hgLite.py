@@ -88,7 +88,7 @@ class Sequence(namedtuple("Sequence",
         return ">{}\n{}\n".format(self.name, self.seq)
 
 
-class SequenceLite(HgLiteTable):
+class SequenceDbTable(HgLiteTable):
     """
     Storage for short sequences (RNA or protein).
     """
@@ -99,7 +99,7 @@ class SequenceLite(HgLiteTable):
     __indexSql = """CREATE UNIQUE INDEX {table}_name on {table} (name);"""
 
     def __init__(self, conn, table, create=False):
-        super(SequenceLite, self).__init__(conn, table)
+        super(SequenceDbTable, self).__init__(conn, table)
         if create:
             self.create()
 
@@ -144,7 +144,7 @@ class SequenceLite(HgLiteTable):
                               startOid, endOid)
 
 
-class PslLite(HgLiteTable):
+class PslDbTable(HgLiteTable):
     """
     Storage for PSL alignments.  Psl objects, or raw sql rows can be
     return.  Raw return is to save object creation overhead when results are
@@ -183,7 +183,7 @@ class PslLite(HgLiteTable):
     blockCount, blockSizes, qStarts, tStarts"""
 
     def __init__(self, conn, table, create=False):
-        super(PslLite, self).__init__(conn, table)
+        super(PslDbTable, self).__init__(conn, table)
         if create:
             self.create()
 
