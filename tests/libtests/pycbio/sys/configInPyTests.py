@@ -4,7 +4,7 @@ import sys
 import re
 if __name__ == '__main__':
     sys.path.append("../../../../lib")
-from pycbio.sys.configInPy import evalConfigFunc, evalConfigObj
+from pycbio.sys.configInPy import evalConfigFunc, evalConfigFile
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.sys import PycbioException
 
@@ -42,8 +42,8 @@ class ConfigInPyTests(TestCaseBase):
         "return non-reserved name fields"
         return sorted([f for f in dir(c) if not re.match("^__.*__", f)])
 
-    def testConfigObjBasic(self):
-        c = evalConfigObj(self.getInputFile("objBasic.config.py"))
+    def testConfigFileBasic(self):
+        c = evalConfigFile(self.getInputFile("objBasic.config.py"))
         self.assertEqual(c.value1, 10)
         self.assertEqual(c.value2, 20)
         self.assertEqual(getattr(c, "_hidden", None), None)
@@ -51,9 +51,9 @@ class ConfigInPyTests(TestCaseBase):
         self.assertEqual(getattr(c, "passedInModule", None), None)
         self.assertEqual(self.__getFields(c), ['configPyFile', 'value1', 'value2'])
 
-    def testConfigObjPassModule(self):
+    def testConfigFilePassModule(self):
         extraEnv = {"passedInModule": "stuck in a global"}
-        c = evalConfigObj(self.getInputFile("objBasic.config.py"), extraEnv=extraEnv)
+        c = evalConfigFile(self.getInputFile("objBasic.config.py"), extraEnv=extraEnv)
         self.assertEqual(c.value1, 10)
         self.assertEqual(c.value2, 20)
         self.assertEqual(getattr(c, "_hidden", None), None)

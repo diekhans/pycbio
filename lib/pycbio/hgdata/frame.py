@@ -45,7 +45,7 @@ def frameIncr(frame, amt):
 class Frame(Immutable):
     """Immutable object the represents a frame, integer value of 0, 1, 2, or
     -1 for no frame."""
-    # FIXME: not done or tested
+    # FIXME: not done or tested, should just extend int
 
     __slots__ = ("val",)
 

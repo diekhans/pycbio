@@ -54,7 +54,7 @@ def _includeField(key, value):
     return not (isinstance(value, ModuleType) or key.startswith('_'))
 
 
-def evalConfigObj(configPyFile, extraEnv=None):
+def evalConfigFile(configPyFile, extraEnv=None):
     """Evaluate the specified configuration file and return a object containing
     all values define in the module as fields.  This is useful for config
     files that just need to set values.  Builtins, modules, and fields
@@ -72,4 +72,4 @@ def evalConfigObj(configPyFile, extraEnv=None):
             setattr(configObj, key, configEnv[key])
     return configObj
 
-__all__ = (evalConfigFunc.__name__, Config.__name__, evalConfigObj.__name__)
+__all__ = (evalConfigFunc.__name__, Config.__name__, evalConfigFile.__name__)
