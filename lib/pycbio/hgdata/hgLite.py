@@ -10,6 +10,8 @@ from pycbio.tsv import TabFileReader
 from pycbio.hgdata.rangeFinder import Binner
 from Bio import SeqIO
 
+# FIXME: HgLiteTable could become wrapper around a connection,
+# and make table operations functions.?
 
 class HgLiteTable(object):
     """Base class for SQL list table interface object"""
@@ -18,7 +20,8 @@ class HgLiteTable(object):
         self.table = table
 
     def _create(self, createSql):
-        self.executes(["DROP TABLE IF EXISTS {table};".format(table=self.table), createSql])
+        self.executes(["DROP TABLE IF EXISTS {table};".format(table=self.table),
+                       createSql])
 
     def _index(self, indexSql):
         if isinstance(indexSql, str):

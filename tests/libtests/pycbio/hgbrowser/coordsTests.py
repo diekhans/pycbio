@@ -11,13 +11,13 @@ from pycbio.sys.testCaseBase import TestCaseBase
 
 class CoordsTests(TestCaseBase):
     def testCoordsCombined(self):
-        c = Coords("chr22:10000-20000")
+        c = Coords.parse("chr22:10000-20000")
         self.assertEqual(c.chrom, "chr22")
         self.assertEqual(c.start, 10000)
         self.assertEqual(c.end, 20000)
 
     def testCoordsThree(self):
-        c = Coords("chr22", 10000, "20000")  # int and str numbers
+        c = Coords("chr22", 10000, 20000)
         self.assertEqual(c.chrom, "chr22")
         self.assertEqual(c.start, 10000)
         self.assertEqual(c.end, 20000)
@@ -29,7 +29,7 @@ class CoordsTests(TestCaseBase):
         self.assertEqual(c.end, None)
 
     def testCoordsCombinedKwArgs(self):
-        c = Coords("chr22:10000-20000", db="hg38", chromSize=50818468)
+        c = Coords.parse("chr22:10000-20000", db="hg38", chromSize=50818468)
         self.assertEqual(c.chrom, "chr22")
         self.assertEqual(c.start, 10000)
         self.assertEqual(c.end, 20000)

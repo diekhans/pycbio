@@ -116,7 +116,7 @@ def _annonStr(self):
 
 def annon(**kwargs):
     """create an anonymous object with fields that are same as the keyword
-    arguments.  This is different from a named tuple as it create and object without
+    arguments.  This is different from a named tuple as it create an object without
     defining a class.
     """
     kwargs.update({"__str__": _annonStr})

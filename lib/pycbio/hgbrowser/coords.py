@@ -1,7 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 "browser coordinates object"
 
-from pycbio.sys.immutable import Immutable
+from collections import namedtuple
 
 # FIXME: support MAF db.chrom syntax, single base syntax, etc.
 # FIXME: maybe use factory methods instead of __init trying to figure it out
@@ -12,7 +12,7 @@ class CoordsError(Exception):
     pass
 
 
-class Coords(Immutable):
+class Coords(namedtuple("Coords", ("chrom", "start", "end", "db", "chromSize", "strand"))):
     """Browser coordinates
     Fields:
        chrom, start, end - start/end maybe None to indicate a full chromosome
@@ -20,41 +20,21 @@ class Coords(Immutable):
        chromSize - optional size of chromosome
        strand - optional strand
     """
-    __slots__ = ("chrom", "start", "end", "db", "chromSize", "strand")
+    __slots__ = ()
 
-    def __parseCombined(self, coordsStr):
-        "parse chrom:start-end "
+    def __new__(cls, chrom, start, end, db=None, chromSize=None, strand=None):
+        return super(Coords, cls).__new__(cls, chrom, start, end, db, chromSize, strand)
+
+
+    @staticmethod
+    def parse(coordsStr, db=None, chromSize=None, strand=None):
+        "construct an object from genome browser chrom:start-end type string"
         try:
-            self.chrom, rng = str.split(coordsStr, ":")
-            self.start, self.end = str.split(rng, "-")
-            self.start = int(self.start)
-            self.end = int(self.end)
+            chrom, rng = str.split(coordsStr, ":")
+            start, end = str.split(rng, "-")
+            return Coords(chrom, int(start), int(end), db, chromSize, strand)
         except Exception as ex:
             raise CoordsError("invalid coordinates: \"" + str(coordsStr) + "\": " + str(ex))
-
-    def __parseThree(self, chrom, start, end):
-        "parse chrom, start, end. start/end maybe strings, int or None  "
-        try:
-            self.chrom = chrom
-            self.start = int(start) if start is not None else None
-            self.end = int(end) if end is not None else None
-        except Exception as ex:
-            raise CoordsError("invalid coordinates: \"{}:{}-{}\": {}".format(chrom, start, end, ex))
-
-    def __init__(self, *args, **kwargs):
-        """args are either one argument in the form chr:start-end, or
-        chr, start, end. options are db= and chromSize="""
-        Immutable.__init__(self)
-        if len(args) == 1:
-            self.__parseCombined(args[0])
-        elif len(args) == 3:
-            self.__parseThree(args[0], args[1], args[2])
-        else:
-            raise CoordsError("Coords() excepts either one or three arguments")
-        self.db = kwargs.get("db")
-        self.chromSize = kwargs.get("chromSize")
-        self.strand = kwargs.get("strand")
-        self.mkImmutable()
 
     def __str__(self):
         return self.chrom + ":" + str(self.start) + "-" + str(self.end)
@@ -95,17 +75,3 @@ class Coords(Immutable):
                       self.chromSize - self.start,
                       db=self.db, chromSize=self.chromSize, strand=strand)
 
-    def __cmp__(self, other):
-        if other is None:
-            return -1
-        d = cmp(self.db, other.db)
-        if d == 0:
-            d = cmp(self.chrom, other.chrom)
-        if d == 0:
-            d = cmp(self.start, other.start)
-        if d == 0:
-            d = cmp(self.end, other.end)
-        return d
-
-    def __hash__(self):
-        return hash(self.db) + hash(self.chrom) + hash(self.start)
