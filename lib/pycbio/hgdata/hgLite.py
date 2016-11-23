@@ -11,7 +11,15 @@ from pycbio.hgdata.rangeFinder import Binner
 from Bio import SeqIO
 
 # FIXME: HgLiteTable could become wrapper around a connection,
-# and make table operations functions.?
+# and make table operations functions.???  probably not
+# Need to avoid `select *'
+
+def sqliteHaveTable(conn, table):
+    "check if a table exists"
+    sql = """select count(*) from sqlite_master where type="table" and name="{}";""".format(table)
+    rows = conn.execute(table)
+    return rows[0][0] > 0
+
 
 class HgLiteTable(object):
     """Base class for SQL list table interface object"""
@@ -139,6 +147,13 @@ class SequenceDbTable(HgLiteTable):
             return None
         else:
             return Sequence(*row)
+
+    def getByName(self, name):
+        "get or error if not found"
+        seq = self.get(name)
+        if seq == None:
+            raise Exception("can't find sequence {} in table {}".format(name, self.table))
+        return seq
 
     def getRows(self, startOid, endOid):
         "generator for sequence for a range of OIDs (1/2 open)"
