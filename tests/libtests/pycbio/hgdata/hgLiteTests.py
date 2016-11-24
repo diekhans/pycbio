@@ -9,7 +9,7 @@ if __name__ == '__main__':
     sys.path.append("../../../../lib")
 import sqlite3
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.hgdata.hgLite import SequenceDbTable, Sequence, PslDbTable
+from pycbio.hgdata.hgLite import SequenceDbTable, Sequence, PslDbTable, sqliteHaveTable
 from pycbio.hgdata.psl import Psl
 
 
@@ -41,6 +41,7 @@ class SequenceDbTableTests(TestCaseBase):
         seqDb = SequenceDbTable(self.conn, "seqs", True)
         seqDb.loads([self.__test1Seq, Sequence(*self.__test2Seq), Sequence(*self.__test3Seq), self.__test4Seq])
         seqDb.index()
+        self.assertTrue(sqliteHaveTable(seqDb.conn, "seqs"))
         return seqDb
 
     def testSeqLoad(self):
@@ -153,6 +154,7 @@ class PslDbTableTests(TestCaseBase):
             self.assertEqual(coords, [('NM_025031.1', 'chr22', 48109515, 48454184)])
         finally:
             conn.close()
+
 
 
 def suite():

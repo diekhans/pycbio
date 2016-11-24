@@ -16,9 +16,14 @@ from Bio import SeqIO
 
 def sqliteHaveTable(conn, table):
     "check if a table exists"
-    sql = """select count(*) from sqlite_master where type="table" and name="{}";""".format(table)
-    rows = conn.execute(table)
-    return rows[0][0] > 0
+    sql = """SELECT count(*) FROM sqlite_master WHERE type="table" AND name=?;"""
+    cur = conn.cursor()
+    try:
+        cur.execute(sql, (table, ))
+        row = next(cur)
+        return row[0] > 0
+    finally:
+        cur.close()
 
 
 class HgLiteTable(object):
