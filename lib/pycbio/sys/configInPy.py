@@ -27,10 +27,10 @@ def evalConfigFunc(configPyFile, getFuncName="getConfig", getFuncArgs=[], getFun
     function (defaulting to getConfig()) define in the file.  The value of the
     call of this function is returned. This is useful for config files that
     need to construct complex objects.  Arguments and keyword arguments can be
-    passed to this functions getFuncArgs, and getFuncKwargs.  A variable
-    configPyFile, containing the configuration file name, is set in the module
-    globals before evaluation.  If specified, the dict extraEnv contents will
-    be passed as a module globals.
+    passed to this functions getFuncArgs, and getFuncKwargs.  The first argument is
+    configPyFile, containing the configuration file name, which is also is set
+    in the module globals before evaluation.  If specified, the dict extraEnv
+    contents will be passed as a module globals.
     """
     configEnv = _evalConfigFile(configPyFile, extraEnv)
     configFunc = configEnv.get(getFuncName)
@@ -38,6 +38,7 @@ def evalConfigFunc(configPyFile, getFuncName="getConfig", getFuncArgs=[], getFun
         raise PycbioException("configuration script does not define function %s(): %s " % (getFuncName, configPyFile))
     if not isinstance(configFunc, FunctionType):
         raise PycbioException("configuration script defines %s, however it is not a function: %s " % (getFuncName, configPyFile))
+    getFuncArgs = [configPyFile] + list(getFuncArgs)
     try:
         return configFunc(*getFuncArgs, **getFuncKwargs)
     except:

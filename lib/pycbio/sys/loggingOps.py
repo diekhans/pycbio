@@ -7,6 +7,9 @@ import sys
 from logging.handlers import SysLogHandler
 
 
+# FIXME: need to be able to specify logger name
+
+
 def parseFacility(facilityStr):
     "convert case-insensitive facility string to a facility number"
     facilityStrLower = facilityStr.lower()

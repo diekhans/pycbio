@@ -6,6 +6,5 @@ class Barney(object):
         self.configPyFile = configPyFile
 
 
-def getConfig(f1, f2=None, f3=None):
-    global configPyFile
-    return Barney(f1, f2, f3, configPyFile)  # noqa: F821
+def getConfig(configPyFile, f1, f2=None, f3=None):
+    return Barney(f1, f2, f3, configPyFile)

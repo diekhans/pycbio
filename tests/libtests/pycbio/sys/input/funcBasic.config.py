@@ -11,6 +11,5 @@ class Fred(object):
         self.passedInModule = passedInModule
 
 
-def getConfig():
-    global configPyFile
-    return Fred(10, configPyFile, globals().get("passedInModule"))  # noqa: F821
+def getConfig(configPyFile):
+    return Fred(10, configPyFile, globals().get("passedInModule"))
