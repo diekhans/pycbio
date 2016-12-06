@@ -21,8 +21,13 @@ class PycbioException(Exception):
             # store stack trace in other Exception types
             exi = sys.exc_info()
             if exi is not None:
-                setattr(cause, "stackTrace", traceback.format_list(traceback.extract_tb(exi[2])))
-        Exception.__init__(self, msg)
+                try:
+                    setattr(cause, "stackTrace", traceback.format_list(traceback.extract_tb(exi[2])))
+                except:
+                    # FIXME: not the best way to handle
+                    # TypeError: can't set attributes of built-in/extension type 'exceptions.IOError'
+                    pass
+            Exception.__init__(self, msg)
         self.msg = msg
         self.cause = cause
         self.stackTrace = traceback.format_list(traceback.extract_stack())[0:-1]
