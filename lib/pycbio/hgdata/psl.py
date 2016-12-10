@@ -348,7 +348,10 @@ class Psl(object):
 
     def identity(self):
         aligned = float(self.match + self.misMatch + self.repMatch)
-        return float(self.match + self.repMatch) / aligned
+        if aligned == 0.0:
+            return 0.0  # just matches Ns
+        else:
+            return float(self.match + self.repMatch) / aligned
 
     def basesAligned(self):
         return self.match + self.misMatch + self.repMatch
