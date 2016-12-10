@@ -10,7 +10,6 @@ from pycbio.sys import procOps, fileOps
 
 # FIXME: need to figure out verbose stuff with indentation
 
-
 class BatchStats(object):
     "statistics on jobs in the current batch"
 
@@ -80,12 +79,28 @@ class BatchStats(object):
 
 class Para(object):
     "interface to the parasol para command"
-    def __init__(self, paraHost, paraDir, jobFile=None):
-        "job file should be relative to paraDir"
+    def __init__(self, paraHost, runDir, paraDir, jobFile=None):
+        """"will chdir to run dir.. paraDir should be relative
+        to runDir or absolute, jobFile should be relative to runDir
+        for absolute
+        """
         self.paraHost = paraHost
-        self.paraDir = os.path.abspath(paraDir)
+        self.runDir = os.path.abspath(runDir)
+        self.paraDir = paraDir
         self.jobFile = jobFile
+        fileOps.ensureDir(self.__mkAbs(self.runDir, self.paraDir))
+        if jobFile is not None:
+            absJobFile = self.__mkAbs(self.runDir, self.jobFile)
+            if not os.path.exists(absJobFile):
+                raise Exception("job file not found: {}".format(absJobFile))
 
+    @staticmethod
+    def __mkAbs(parent, child):
+        if os.path.isabs(child):
+            return child
+        else:
+            return os.path.join(parent, child)
+                
     def close(self):
         "close up para connection"
         # might do something one data if we keep ssh open
@@ -96,7 +111,7 @@ class Para(object):
         passed as arguments to the para command. Returns stdout as a list of
         lines, stderr in ProcException if the remote program encouners an
         error. There is a possibility for quoting hell here."""
-        remCmd = "cd " + self.paraDir + "; para " + " ".join(paraArgs)
+        remCmd = "cd {} &&  para -batch={} {}".format(self.runDir, self.paraDir, " ".join(paraArgs))
         fileOps.prLine(sys.stderr, "ssh ", self.paraHost, " ", remCmd)
         return procOps.callProcLines(["ssh", "-o", "ClearAllForwardings=yes", self.paraHost, remCmd])
 
