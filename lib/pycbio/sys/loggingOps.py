@@ -89,6 +89,8 @@ def addCmdOptions(parser):
     parser.add_argument("--logLevel", default="warn", type=parseLevel,
                         help="Set level to case-insensitive symbolic value, one of {}".format(
                             ", ".join([n for n in logging._levelNames.itervalues() if isinstance(n, str)])))
+    parser.add_argument("--logConfFile",
+                        help="Python logging configuration file, see logging.config.fileConfig()")
 
 
 def setupFromCmd(opts, prog=None):
@@ -101,3 +103,5 @@ def setupFromCmd(opts, prog=None):
         setupSyslogLogger(opts.syslogFacility, opts.logLevel, prog=prog)
     else:
         setupStderrLogger(opts.logLevel)
+    if opts.logConfFile is not None:
+        logging.config.fileConfig(opts.logConfFile)
