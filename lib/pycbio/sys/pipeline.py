@@ -139,7 +139,6 @@ class _StatusPipe(object):
                 break
             data += datapart
         os.close(self.rfd)
-        print "picklen",len(data)
         if len(data) > 0:
             return pickle.loads(data)
         else:
