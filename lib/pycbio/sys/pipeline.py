@@ -132,9 +132,14 @@ class _StatusPipe(object):
     def recvStatus(self):
         """read status from child, return exception if received, otherwise
         None or True"""
-        # FIXME add read loop, or read through pickle??
-        data = os.read(self.rfd, 1024 * 1024)
+        data = ""
+        while True:
+            datapart = os.read(self.rfd, 1024 * 1024)
+            if len(datapart) == 0:
+                break
+            data += datapart
         os.close(self.rfd)
+        print "picklen",len(data)
         if len(data) > 0:
             return pickle.loads(data)
         else:

@@ -65,13 +65,10 @@ class ProcDagTests(TestCaseBase):
         pd = ProcDag()
         dw = DataWriter("one\ntwo\nthree\n")
         pd.create(("procDoesNotExist", "-r"), stdin=dw)
-        with self.assertRaises(ProcException) as cm:
+        expectRe = re.compile("exec failed:.*procDoesNotExist -r,.+caused by: OSError: \\[Errno 2\\] No such file or directory.*",
+                              re.MULTILINE|re.DOTALL)
+        with self.assertRaisesRegexp(ProcException, expectRe) as cm:
             pd.wait()
-        expect = "exec failed: procDoesNotExist -r,\n    caused by: OSError: [Errno 2] No such file or directory"
-        msg = str(cm.exception)
-        if not msg.startswith(expect):
-            self.fail("'" + msg + "' does not start with '"
-                      + expect + "', cause: " + str(getattr(expect, "cause", None)))
         self.commonChecks(nopen, pd, "procDoesNotExist -r <[DataWriter]")
 
     def testStdinMem(self):
