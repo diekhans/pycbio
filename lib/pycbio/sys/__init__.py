@@ -27,14 +27,13 @@ class PycbioException(Exception):
                     # FIXME: not the best way to handle
                     # TypeError: can't set attributes of built-in/extension type 'exceptions.IOError'
                     pass
-            Exception.__init__(self, msg)
-        self.msg = msg
+        Exception.__init__(self, msg)
         self.cause = cause
         self.stackTrace = traceback.format_list(traceback.extract_stack())[0:-1]
 
     def __str__(self):
         "recursively construct message for chained exception"
-        desc = self.msg
+        desc = self.message
         if self.cause is not None:
             desc += ",\n    caused by: {}: {}".format(self.cause.__class__.__name__, self.cause)
         return desc
@@ -50,7 +49,7 @@ class PycbioException(Exception):
         desc = type(ex).__name__ + ": "
         # don't recurse on PycbioExceptions, as they will include cause in message
         if isinstance(ex, PycbioException):
-            desc += ex.msg + "\n"
+            desc += ex.message + "\n"
         else:
             desc += str(ex) + "\n"
         st = getattr(ex, "stackTrace", None)
