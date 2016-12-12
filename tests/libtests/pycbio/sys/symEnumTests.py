@@ -57,6 +57,15 @@ class SymEnumTests(TestCaseBase):
         self.assertTrue(Name("Fred") is Name.Fred)
         self.assertEqual([n for n in Name], [Name.Fred, Name.Rick, Name.Bill])
 
+    def testAliasesStrValue(self):
+        # alias should not be returned for string name
+        class Name(SymEnum):
+            Fred = 1
+            Rick = 2
+            Arther = Rick
+        self.assertTrue(str(Name.Arther), "Rick")
+        self.assertTrue(str(Name.Rick), "Rick")
+        
     def testSetOps(self):
         colSet = set([Color.blue, Color.green])
         self.assertTrue(Color.green in colSet)
