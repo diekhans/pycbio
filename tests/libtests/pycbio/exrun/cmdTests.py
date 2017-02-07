@@ -46,7 +46,7 @@ class CmdSuppliedTests(ExRunTestCaseBase):
         er.addRule(CmdRule(c))
         try:
             er.run()
-        except Exception, ex:
+        except Exception as ex:
             prExceptions(er, ex)
             raise
         self.diffExpected(".txt")
@@ -61,7 +61,7 @@ class CmdSuppliedTests(ExRunTestCaseBase):
         er.addRule(CmdRule(c, requires=ifp, produces=ofp))
         try:
             er.run()
-        except Exception, ex:
+        except Exception as ex:
             prExceptions(er, ex)
             raise
         self.diffExpected(".txt")
@@ -78,7 +78,7 @@ class CmdSuppliedTests(ExRunTestCaseBase):
         er.addRule(CmdRule((c1, c2), requires=ifp))
         try:
             er.run()
-        except Exception, ex:
+        except Exception as ex:
             prExceptions(er, ex)
             raise
         self.diffExpected(".txt")
@@ -97,7 +97,7 @@ class CmdSuppliedTests(ExRunTestCaseBase):
         er.addRule(CmdRule(c1, requires=ifp))
         try:
             er.run()
-        except Exception, ex:
+        except Exception as ex:
             prExceptions(er, ex)
             raise
         self.diffExpected(".txt")
@@ -116,7 +116,7 @@ class CmdSuppliedTests(ExRunTestCaseBase):
         er.addRule(CmdRule(c1))
         try:
             er.run()
-        except Exception, ex:
+        except Exception as ex:
             prExceptions(er, ex)
             raise
         self.diffExpected(".txt")
@@ -132,7 +132,7 @@ class CmdSuppliedTests(ExRunTestCaseBase):
         er.addRule(CmdRule(c))
         try:
             er.run()
-        except Exception, ex:
+        except Exception as ex:
             prExceptions(er, ex)
             raise
         self.diffExpected(".txt")
@@ -159,7 +159,7 @@ class CmdSubclassTests(ExRunTestCaseBase):
         er.addRule(Sort(ifp, ofp))
         try:
             er.run()
-        except Exception, ex:
+        except Exception as ex:
             prExceptions(er, ex)
             raise
         self.diffExpected(".txt")
@@ -183,7 +183,7 @@ class CmdSubclassTests(ExRunTestCaseBase):
         er.addRule(Sort(ifp, ofp))
         try:
             er.run()
-        except Exception, ex:
+        except Exception as ex:
             prExceptions(er, ex)
             raise
         self.diffExpected(".txt")
@@ -210,7 +210,7 @@ class CmdSubclassTests(ExRunTestCaseBase):
         er.addRule(Sort(ifp, ofp1, ofp2))
         try:
             er.run()
-        except Exception, ex:
+        except Exception as ex:
             prExceptions(er, ex)
             raise
         self.diffExpected(".txt")
@@ -247,7 +247,7 @@ class CmdSubclassTests(ExRunTestCaseBase):
         er.addRule(Sort(ifp, ofp1))
         try:
             er.run()
-        except Exception, ex:
+        except Exception as ex:
             prExceptions(er, ex)
             raise
         self.diffExpected(".txt")
@@ -267,7 +267,7 @@ class CmdCompressTests(ExRunTestCaseBase):
         er.addCmd((["zcat", FileIn(ofp1, autoDecompress=False)], ["sed", "-e", "s/^/= /"]), stdout=ofp2)
         try:
             er.run()
-        except Exception, ex:
+        except Exception as ex:
             prExceptions(er, ex)
             raise
         self.diffExpected(".txt")
@@ -282,7 +282,7 @@ class CmdCompressTests(ExRunTestCaseBase):
         er.addCmd(["sed", "-e", "s/^/= /", FileIn(ofp1)], stdout=FileOut(ofp2))
         try:
             er.run()
-        except Exception, ex:
+        except Exception as ex:
             prExceptions(er, ex)
             raise
         self.diffExpected(".txt")
@@ -321,7 +321,7 @@ class CmdCompressTests(ExRunTestCaseBase):
         ex = None
         try:
             er.run()
-        except Exception, ex:
+        except Exception as ex:
             prExceptions(er, ex)
             raise
         self.checkGraphStates(er)
