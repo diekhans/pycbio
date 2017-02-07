@@ -62,69 +62,7 @@ class ExonerateCigar(Cigar):
     def __init__(self, cigarStr):
         super(ExonerateCigar, self).__init__(cigarStr, ExonerateCigar.validOps)
 
-
+# FIXME: gencode-icedb/bin/cdnaEnsemblAligns2 has pslFromCigar, might move to here
     
-# /* create a PSL from an ENSEMBL-style cigar formatted alignment */
-# static struct psl* pslFromCigar(char *qName, int qSize, int qStart, int qEnd,
-#                                 char *tName, int tSize, int tStart, int tEnd,
-#                                 char *strand, char *cigar) {
-#     int blocksAlloced = 4;
-#     struct psl *psl = pslNew(qName, qSize, qStart, qEnd, tName, tSize, tStart, tEnd, strand, blocksAlloced, 0);
-
-#     char cigarSpec[strlen(cigar+1)];  // copy since parsing is destructive
-#     strcpy(cigarSpec, cigar);
-#     char *cigarNext = cigarSpec;
-#     char op;
-#     int size;
-#     int qNext = qStart, qBlkEnd = qEnd;
-#     if (strand[0] == '-') {
-#         reverseIntRange(&qNext, &qBlkEnd, qSize);
-#     }
-#     int tNext = tStart, tBlkEnd = tEnd;
-#     if (strand[1] == '-') {
-#         reverseIntRange(&tNext, &tBlkEnd, tSize);
-#     }
-
-#     while (getNextCigarOp(&cigarNext, &op, &size)) {
-#         switch (op) {
-#         case 'M': // match or mismatch (gapless aligned block)
-#             if (psl->blockCount == blocksAlloced)
-#                 pslGrow(psl, &blocksAlloced);
-            
-#             psl->blockSizes[psl->blockCount] = size;
-#             psl->qStarts[psl->blockCount] = qNext;
-#             psl->tStarts[psl->blockCount] = tNext;
-#             psl->blockCount++;
-#             psl->match += size;
-#             tNext += size;
-#             qNext += size;
-#             break;
-#         case 'I': // inserted in target
-#             tNext += size;
-#             psl->tNumInsert++;
-#             psl->tBaseInsert += size;
-#             break;
-#         case 'D': // deleted from target
-#             qNext += size;
-#             psl->qNumInsert++;
-#             psl->qBaseInsert += size;
-#             break;
-
-#         default:
-#             errAbort("invalid CIGAR op %c in %s", op, cigar);
-#         }
-#     }
-#     if (qNext != qBlkEnd) {
-#         errAbort("CIGAR length does not match aligned query range: %s %s", qName, cigar);
-#     }
-#     if (tNext != tBlkEnd) {
-#         errAbort("CIGAR length does not match aligned target range: %s %s", qName, cigar);
-#     }
-#     if (psl->strand[1] == '-') {
-#         pslRc(psl);
-#     }
-#     psl->strand[1] = '\0';
-#     return psl;
-# }
 
     

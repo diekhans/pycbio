@@ -86,10 +86,8 @@ class TestCaseBase(unittest.TestCase):
                                                                       ext))
 
     def __getLines(self, file):
-        fh = open(file)
-        lines = fh.readlines()
-        fh.close()
-        return lines
+        with open(file) as fh:
+            return fh.readlines()
 
     def mustExist(self, path):
         if not os.path.exists(path):

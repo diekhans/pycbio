@@ -194,8 +194,8 @@ class PslDbTable(HgLiteTable):
             tEnd int unsigned not null,
             blockCount int unsigned not null,
             blockSizes blob not null,
-            qStarts text not null,
-            tStarts text not null)"""
+            qStarts blob not null,
+            tStarts blob not null)"""
     __indexSql = [
         """CREATE INDEX {table}_tName_bin on {table} (tName, bin)""",
         """CREATE INDEX {table}_qname on {table} (qName)"""]
