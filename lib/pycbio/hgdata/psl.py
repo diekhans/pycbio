@@ -2,8 +2,8 @@
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin, strArraySplit, strArrayJoin
 from pycbio.sys import fileOps, dbOps
 from pycbio.hgdata.rangeFinder import Binner
+from pycbio.hgdata import dnaOps
 from collections import defaultdict
-from Bio.Seq import reverse_complement
 
 # FIXME: Should have factory rather than __init__ multiplexing nonsense **
 # FIXME: should have builder functions
@@ -76,8 +76,8 @@ class PslBlock(object):
         "construct a block that is the reverse complement of this block"
         return PslBlock(newPsl, self.psl.qSize - self.qEnd,
                         self.psl.tSize - self.tEnd, self.size,
-                        (reverse_complement(self.qSeq) if (self.qSeq is not None) else None),
-                        (reverse_complement(self.tSeq) if (self.tSeq is not None) else None))
+                        (dnaOps.reverseComplement(self.qSeq) if (self.qSeq is not None) else None),
+                        (dnaOps.reverseComplement(self.tSeq) if (self.tSeq is not None) else None))
 
     def swapSides(self, newPsl):
         "construct a block with query and target swapped "
@@ -87,8 +87,8 @@ class PslBlock(object):
         "construct a block with query and target swapped and reverse complemented "
         return PslBlock(newPsl, self.psl.tSize - self.tEnd,
                         self.psl.qSize - self.qEnd, self.size,
-                        (reverse_complement(self.tSeq) if (self.tSeq is not None) else None),
-                        (reverse_complement(self.qSeq) if (self.qSeq is not None) else None))
+                        (dnaOps.reverseComplement(self.tSeq) if (self.tSeq is not None) else None),
+                        (dnaOps.reverseComplement(self.qSeq) if (self.qSeq is not None) else None))
 
 
 class Psl(object):
