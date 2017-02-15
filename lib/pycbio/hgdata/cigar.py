@@ -11,6 +11,7 @@ OP_ALIGNED = 'M'  # match or mismatch
 OP_TINSERT = 'I'  # target insert
 OP_TDELETE = 'D'  # target deletion
 
+
 class Cigar(list):
     """cigar parser and representation.  Derived class implement specific
     cigar encodings"""
@@ -27,33 +28,31 @@ class Cigar(list):
                 opStrs.append(str(op.count))
             opStrs.append(str(op.code))
         return "".join(opStrs)
-        
-    @staticmethod
-    def __invalidCigar(msg, cigarStr):
-        raise TypeError("Invalid cigar string, {}: {}".format(msg, cigarStr))
 
     def __parseOp(self, cigarStr, validOps, opParts):
         if opParts[0] != "":
-            raise TypeError("Invalid cigar string, {} at '{}' : {}".format(msg, "".join(opParts), cigarStr))
+            self.__invalidCigar
+            raise TypeError("Invalid cigar string at '{}' : {}".format("".join(opParts), cigarStr))
         try:
             cnt = 1 if opParts[1] == "" else int(opParts[1])
-        except ValueError, ex:
-            raise TypeError("Invalid cigar string, {} at '{}' : {}".format(msg, "".join(opParts), cigarStr))
+        except ValueError:
+            raise TypeError("Invalid cigar string at '{}' : {}".format("".join(opParts), cigarStr))
         op = opParts[2].upper()
-        if not op in validOps:
-            raise TypeError("Invalid cigar string, {} unknown operation '{}' : {}".format(msg, "".join(opParts), cigarStr))
+        if op not in validOps:
+            raise TypeError("Invalid cigar string, unknown operation '{}' : {}".format("".join(opParts), cigarStr))
         return Cigar.OpType(cnt, op)
-        
+
     def __parseCigar(self, cigarStr, validOps):
         # remove white space first, then convert to (count, op).  Re split will
         # result in triples of ("", count, op), where count might be empty.
         # Also as a trailing space.
         parts = re.split("([0-9]*)([A-Za-z])",
                          re.sub("\\s+", "", cigarStr))
-        if ((len(parts)-1) % 3) != 0:
-            self.__invalidCigar("doesn't parse into a valid cigar", cigarStr)
-        return tuple([self.__parseOp(cigarStr, validOps, parts[i:i+3])
-                      for i in xrange(0, len(parts)-1, 3)])
+        if ((len(parts) - 1) % 3) != 0:
+            raise TypeError("Invalid cigar string, doesn't parse into a valid cigar: {}".format(cigarStr))
+        return tuple([self.__parseOp(cigarStr, validOps, parts[i:i + 3])
+                      for i in xrange(0, len(parts) - 1, 3)])
+
 
 class ExonerateCigar(Cigar):
     "exonerate cigar string"
@@ -63,6 +62,3 @@ class ExonerateCigar(Cigar):
         super(ExonerateCigar, self).__init__(cigarStr, ExonerateCigar.validOps)
 
 # FIXME: gencode-icedb/bin/cdnaEnsemblAligns2 has pslFromCigar, might move to here
-    
-
-    

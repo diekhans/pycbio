@@ -25,7 +25,6 @@ class Coords(namedtuple("Coords", ("chrom", "start", "end", "db", "chromSize", "
     def __new__(cls, chrom, start, end, db=None, chromSize=None, strand=None):
         return super(Coords, cls).__new__(cls, chrom, start, end, db, chromSize, strand)
 
-
     @staticmethod
     def parse(coordsStr, db=None, chromSize=None, strand=None):
         "construct an object from genome browser chrom:start-end type string"
@@ -74,4 +73,3 @@ class Coords(namedtuple("Coords", ("chrom", "start", "end", "db", "chromSize", "
                       self.chromSize - self.end,
                       self.chromSize - self.start,
                       db=self.db, chromSize=self.chromSize, strand=strand)
-

@@ -156,7 +156,6 @@ class PslDbTableTests(TestCaseBase):
             conn.close()
 
 
-
 def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(SequenceTests))

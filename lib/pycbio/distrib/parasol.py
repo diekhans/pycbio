@@ -10,6 +10,7 @@ from pycbio.sys import procOps, fileOps
 
 # FIXME: need to figure out verbose stuff with indentation
 
+
 class BatchStats(object):
     "statistics on jobs in the current batch"
 
@@ -100,7 +101,7 @@ class Para(object):
             return child
         else:
             return os.path.join(parent, child)
-                
+
     def close(self):
         "close up para connection"
         # might do something one data if we keep ssh open

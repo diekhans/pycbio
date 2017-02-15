@@ -58,6 +58,6 @@ def getTablesLike(conn, pattern, db=None):
     finally:
         cur.close()
 
+
 def haveTablesLike(conn, pattern, db=None):
     return len(getTablesLike(conn, pattern, db)) > 0
-

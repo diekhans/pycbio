@@ -3,7 +3,6 @@
 Storage of genome data in sqlite for use in cluster jobs and other random
 access uses.
 """
-import sqlite3
 from collections import namedtuple
 from pycbio.hgdata.psl import Psl
 from pycbio.tsv import TabFileReader
@@ -13,6 +12,7 @@ from Bio import SeqIO
 # FIXME: HgLiteTable could become wrapper around a connection,
 # and make table operations functions.???  probably not
 # Need to avoid `select *'
+
 
 def sqliteHaveTable(conn, table):
     "check if a table exists"
@@ -156,7 +156,7 @@ class SequenceDbTable(HgLiteTable):
     def getByName(self, name):
         "get or error if not found"
         seq = self.get(name)
-        if seq == None:
+        if seq is None:
             raise Exception("can't find sequence {} in table {}".format(name, self.table))
         return seq
 

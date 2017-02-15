@@ -8,7 +8,7 @@ from pycbio.hgdata.cigar import ExonerateCigar
 
 
 class CigarTests(TestCaseBase):
-    
+
     def testExonerateCigars(self):
         cases = ("2354MD150M",
                  "175M4D832M52516I10M3I755M",
@@ -18,14 +18,13 @@ class CigarTests(TestCaseBase):
         for cigarStr in cases:
             cigar = ExonerateCigar(cigarStr)
             self.assertEqual(cigarStr, str(cigar))
-        
+
     def testExonerateSpaceCigars(self):
         cases = (("235 4M D1 50M", "2354MD150M"),
-                 ("175M 4D 832M	52516I1\n0M3I755M","175M4D832M52516I10M3I755M"))
+                 ("175M 4D 832M	52516I1\n0M3I755M", "175M4D832M52516I10M3I755M"))
         for cigarStrSp, cigarStr in cases:
             cigar = ExonerateCigar(cigarStrSp)
             self.assertEqual(cigarStr, str(cigar))
-        
 
 
 def suite():

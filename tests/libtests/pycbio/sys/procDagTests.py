@@ -66,8 +66,8 @@ class ProcDagTests(TestCaseBase):
         dw = DataWriter("one\ntwo\nthree\n")
         pd.create(("procDoesNotExist", "-r"), stdin=dw)
         expectRe = re.compile("exec failed:.*procDoesNotExist -r,.+caused by: OSError: \\[Errno 2\\] No such file or directory.*",
-                              re.MULTILINE|re.DOTALL)
-        with self.assertRaisesRegexp(ProcException, expectRe) as cm:
+                              re.MULTILINE | re.DOTALL)
+        with self.assertRaisesRegexp(ProcException, expectRe):
             pd.wait()
         self.commonChecks(nopen, pd, "procDoesNotExist -r <[DataWriter]")
 
