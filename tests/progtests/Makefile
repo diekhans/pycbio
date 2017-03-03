@@ -1,4 +1,4 @@
-subdirs = gbff geneCheck ncbi
+subdirs = gbff geneCheck ncbi csvToTsv
 # FIXME: not done: vennChart
 
 all:

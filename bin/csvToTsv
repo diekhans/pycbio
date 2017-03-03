@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+# Copyright 2006-2012 Mark Diekhans
+
+import sys
+import os
+myBinDir = os.path.dirname(os.path.realpath(sys.argv[0]))
+sys.path.insert(0, os.path.join(myBinDir, "../lib"))
+import argparse
+import csv
+from pycbio.sys import fileOps
+
+def parseArgs():
+    desc = """convert a CSV to a TSV"""
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("inCsv",
+                        help="input CSV, maybe compressed")
+    parser.add_argument("outTsv",
+                        help="output TSV, may have compression extensions")
+    return parser.parse_args()
+
+def copyCsvToTsv(csvReader, tsvWriter):
+    for row in csvReader:
+        tsvWriter.writerow(row)
+
+def main(opts):
+    with fileOps.opengz(opts.inCsv) as csvFh:
+        csvReader = csv.reader(csvFh, csv.excel)
+        with fileOps.opengz(opts.outTsv, "w") as tsvFh:
+            tsvWriter = csv.writer(tsvFh, dialect=csv.excel_tab, quoting=csv.QUOTE_MINIMAL)
+            copyCsvToTsv(csvReader, tsvWriter)
+
+main(parseArgs())
