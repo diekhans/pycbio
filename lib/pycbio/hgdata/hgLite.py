@@ -106,9 +106,8 @@ class HgLiteTable(object):
 
     def getOidRange(self):
         """return half-open range of OIDs"""
-        columns = ("min(oid)", "max(oid)+1")
-        sql = "select {columns} from {table}"
-        return next(self.query(sql, columns), (0, 0))
+        sql = "select min(oid), max(oid)+1 from {table}"
+        return next(self.query(sql, []), (0, 0))
 
 
 class Sequence(namedtuple("Sequence",
