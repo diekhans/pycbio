@@ -17,6 +17,7 @@ def reverseComplement(dna):
     else:
         return dna.translate(_complements)[::-1]
 
+
 def reverseCoords(start, end, size):
     "reverse coordinate pair"
     return (size - end, size - start)

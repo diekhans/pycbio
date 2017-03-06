@@ -9,6 +9,7 @@ import argparse
 import csv
 from pycbio.sys import fileOps
 
+
 def parseArgs():
     desc = """convert a CSV to a TSV"""
     parser = argparse.ArgumentParser(description=desc)
@@ -18,15 +19,18 @@ def parseArgs():
                         help="output TSV, may have compression extensions")
     return parser.parse_args()
 
+
 def copyCsvToTsv(csvReader, tsvWriter):
     for row in csvReader:
         tsvWriter.writerow(row)
 
+
 def main(opts):
     with fileOps.opengz(opts.inCsv) as csvFh:
-        csvReader = csv.reader(csvFh, csv.excel)
+        csvReader = csv.reader(csvFh, dialect=csv.excel)
         with fileOps.opengz(opts.outTsv, "w") as tsvFh:
-            tsvWriter = csv.writer(tsvFh, dialect=csv.excel_tab, quoting=csv.QUOTE_MINIMAL)
+            tsvWriter = csv.writer(tsvFh, dialect=csv.excel_tab, quoting=csv.QUOTE_MINIMAL,
+                                   lineterminator="\n")
             copyCsvToTsv(csvReader, tsvWriter)
 
 main(parseArgs())

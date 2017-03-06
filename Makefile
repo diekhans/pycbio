@@ -6,7 +6,7 @@ PKGS =  pycbio.align pycbio.distrib pycbio.exrun pycbio.hgbrowser pycbio.hgdata 
 
 PROGS = clusterGenesSelect genePredFlatten ncbiGbFetch clusterGenesStats \
 	genePredSelect profStats gbffGenesToGenePred jsonDumpKeyStructure tsvSelectById \
-	geneCheckStats ncbiAssemblyReportConvert vennChart
+	geneCheckStats ncbiAssemblyReportConvert vennChart csvToTsv
 
 all: libcomp
 
