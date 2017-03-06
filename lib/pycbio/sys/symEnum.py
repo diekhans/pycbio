@@ -8,6 +8,8 @@ SymEnum = None  # class defined after use
 
 class SymEnumValue(object):
     "Class used to define SymEnum member that have additional attributes."
+    __slots__ = ("value", "externalName")
+
     def __init__(self, value, externalName=None):
         self.value = value
         self.externalName = externalName
@@ -15,21 +17,26 @@ class SymEnumValue(object):
 
 class _SysEnumExternalNameMap(object):
     "Mapping between internal and external member names"
+    __slots__ = ("internalToExternal", "externalToInternal")
+
     def __init__(self):
-        self.intToExt = {}
-        self.extToInt = {}
+        self.internalToExternal = {}
+        self.externalToInternal = {}
 
-    def add(self, intName, extName):
-        self.intToExt[intName] = extName
-        self.extToInt[extName] = intName
+    def add(self, internalName, externalName):
+        self.internalToExternal[internalName] = externalName
+        self.externalToInternal[externalName] = internalName
 
-    def toExtName(self, intName):
+    def toExternalName(self, internalName):
         "return name unchanged in no mapping"
-        return self.intToExt.get(intName, intName)
+        return self.internalToExternal.get(internalName, internalName)
 
-    def toIntName(self, extName):
+    def toInternalName(self, externalName):
         "return name unchanged in no mapping"
-        return self.extToInt.get(extName, extName)
+        return self.externalToInternal.get(externalName, externalName)
+
+    def __str__(self):
+        return "intToExt={} extToInt={}".format(self.internalToExternal, self.externalToInternal)
 
 
 class SymEnumMeta(EnumMeta):
@@ -37,19 +44,19 @@ class SymEnumMeta(EnumMeta):
     by string name."""
 
     @staticmethod
-    def __symEnumValueUpdate(classdict, name, extNameMap):
+    def __symEnumValueUpdate(classdict, name, externalNameMap):
         "record info about a member specified with SymEnum and update value in classdict"
         symValue = classdict[name]
         classdict[name] = symValue.value
-        extNameMap.add(name, symValue.externalName)
+        externalNameMap.add(name, symValue.externalName)
 
     @staticmethod
     def __symEnumDerivedNew(metacls, cls, bases, classdict):
         "update class fields defined as SymEnumValue to register external names"
-        extNameMap = classdict["__extNameMap__"] = _SysEnumExternalNameMap()
+        externalNameMap = classdict["__externalNameMap__"] = _SysEnumExternalNameMap()
         for name in classdict.iterkeys():
             if isinstance(classdict[name], SymEnumValue):
-                SymEnumMeta.__symEnumValueUpdate(classdict, name, extNameMap)
+                SymEnumMeta.__symEnumValueUpdate(classdict, name, externalNameMap)
         return EnumMeta.__new__(metacls, cls, bases, classdict)
 
     def __new__(metacls, cls, bases, classdict):
@@ -60,12 +67,15 @@ class SymEnumMeta(EnumMeta):
 
     def __call__(cls, value, names=None, module=None, typ=None):
         "look up a value object, either by name of value,"
+        if isinstance(value, unicode):
+            value = str(value)
         if (names is None) and isinstance(value, str):
             # map string name to instance, check for external name
-            value = cls.__extNameMap__.toIntName(value)
-            member = cls._member_map_.get(value)
+            member = cls._member_map_.get(cls.__externalNameMap__.toInternalName(value))
             if member is None:
-                raise ValueError("'%s' is not a member or alias of %s" % (value, cls.__name__))
+                member = cls._member_map_.get(cls.__externalNameMap__.toExternalName(value))
+            if member is None:
+                raise ValueError("'%s' is not a member, external name, or alias of %s" % (value, cls.__name__))
             else:
                 return member
         else:
@@ -91,7 +101,7 @@ class SymEnum(Enum):
     __metaclass__ = SymEnumMeta
 
     def __str__(self):
-        return self.__extNameMap__.toExtName(self.name)
+        return self.__externalNameMap__.toExternalName(self.name)
 
     def __le__(self, other):
         if isinstance(other, SymEnum):

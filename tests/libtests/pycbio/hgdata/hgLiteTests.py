@@ -9,8 +9,9 @@ if __name__ == '__main__':
     sys.path.append("../../../../lib")
 import sqlite3
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.hgdata.hgLite import SequenceDbTable, Sequence, PslDbTable, sqliteHaveTable
+from pycbio.hgdata.hgLite import SequenceDbTable, Sequence, PslDbTable, GenePredDbTable, sqliteHaveTable
 from pycbio.hgdata.psl import Psl
+from pycbio.hgdata.genePred import GenePred
 
 
 def memDbConnect():
@@ -105,11 +106,11 @@ class PslDbTableTests(TestCaseBase):
             self.pslTestDb.index()
 
     def __makeObjCoords(self, psls):
-        "return lists of qName and target coordiates for easy assert checking"
+        "return lists of qName and target coordinates for easy assert checking"
         return sorted([(psl.qName, psl.tName, psl.tStart, psl.tEnd) for psl in psls])
 
     def __makeRawCoords(self, rows):
-        "return lists of qName and target coordiates for easy assert checking"
+        "return lists of qName and target coordinates for easy assert checking"
         return sorted([(row[9], row[13], row[15], row[16]) for row in rows])
 
     def testGetQName(self):
@@ -156,11 +157,86 @@ class PslDbTableTests(TestCaseBase):
             conn.close()
 
 
+class GenePredDbTableTests(TestCaseBase):
+    testGenePred1Row = ("NM_000017.1", "chr12", "+", 119575618, 119589763, 119575641, 119589204, 10, "119575618,119576781,119586741,119587111,119587592,119588035,119588288,119588575,119588895,119589051,", "119575687,119576945,119586891,119587223,119587744,119588206,119588426,119588671,119588952,119589763,", 0, "one", "none", "none", "0,0,2,2,0,2,2,2,2,2,")
+    testGenePred2Row = ("NM_000066.1", "chr1", "-", 56764802, 56801567, 56764994, 56801540, 12, "56764802,56767400,56768925,56776439,56779286,56781411,56785145,56787638,56790276,56792359,56795610,56801447,", "56765149,56767469,56769079,56776603,56779415,56781652,56785343,56787771,56790418,56792501,56795767,56801567,", 0, "two", "unk", "unk", "1,1,0,1,1,0,0,2,1,0,2,1,")
+
+    @classmethod
+    def setUpClass(cls):
+        # cache
+        cls.gpTestDb = None
+        cls.clsConn = None
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.gpTestdb = None
+        if cls.clsConn is not None:
+            cls.clsConn.close()
+            cls.clsConn = None
+
+    def setUp(self):
+        if self.clsConn is None:
+            # don't load for each test
+            self.clsConn = memDbConnect()
+            self.gpTestDb = GenePredDbTable(self.clsConn, "refGene", True)
+            self.gpTestDb.loadGenePredFile(self.getInputFile("fileFrameStatTest.gp"))
+            self.gpTestDb.index()
+
+    def __makeObjCoords(self, gps):
+        "return lists of name and target coordinates for easy assert checking"
+        return sorted([(gp.name, gp.chrom, gp.txStart, gp.txEnd) for gp in gps])
+
+    def __makeRawCoords(self, rows):
+        "return lists of name and target coordinates for easy assert checking"
+        return sorted([(row[0], row[1], row[3], row[4]) for row in rows])
+
+    def testGetName(self):
+        gps = self.gpTestDb.getByName("NM_000017.1")
+        coords = self.__makeObjCoords(gps)
+        self.assertEqual(coords, [("NM_000017.1", "chr12", 119575618, 119589763)])
+        gps = self.gpTestDb.getByName("fred")
+        self.assertEqual(gps, [])
+
+    def testRangeOverlap(self):
+        gps = self.gpTestDb.getRangeOverlap("chr12", 100000000, 200000000)
+        expect = [("NM_000017.1", "chr12", 119575618, 119589763),
+                  ("NM_000277.1", "chr12", 101734570, 101813848)]
+        coords = self.__makeObjCoords(gps)
+        self.assertEqual(coords, expect)
+
+        rows = self.gpTestDb.getRangeOverlap("chr12", 100000000, 200000000, raw=True)
+        coords = self.__makeRawCoords(rows)
+        self.assertEqual(coords, expect)
+
+    def testMemLoadGenePred(self):
+        conn = memDbConnect()
+        try:
+            gpDb = GenePredDbTable(conn, "refGene", True)
+            gpDb.loads([GenePred(self.testGenePred1Row), GenePred(self.testGenePred2Row)])
+            gpDb.index()
+            coords = self.__makeObjCoords(gpDb.getByName("NM_000017.1"))
+            self.assertEqual(coords, [("NM_000017.1", "chr12", 119575618, 119589763)])
+        finally:
+            conn.close()
+
+    def testMemLoadRow(self):
+        conn = memDbConnect()
+        try:
+            gpDb = GenePredDbTable(conn, "refGene", True)
+            gpDb.loads([self.testGenePred1Row, self.testGenePred2Row])
+            gpDb.index()
+            coords = self.__makeRawCoords(gpDb.getByName("NM_000017.1", raw=True))
+            self.assertEqual(coords, [("NM_000017.1", "chr12", 119575618, 119589763)])
+        finally:
+            conn.close()
+
+
 def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(SequenceTests))
     ts.addTest(unittest.makeSuite(SequenceDbTableTests))
     ts.addTest(unittest.makeSuite(PslDbTableTests))
+    ts.addTest(unittest.makeSuite(GenePredDbTableTests))
     return ts
 
 if __name__ == '__main__':

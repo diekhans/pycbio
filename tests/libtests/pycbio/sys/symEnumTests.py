@@ -147,6 +147,17 @@ class SymEnumTests(TestCaseBase):
         self.assertTrue(FnColor.red is not None)
         self.assertTrue(None != FnColor.red)
 
+    def testWithSymEnumValue(self):
+        class CdsStat(SymEnum):
+            none = SymEnumValue("none", "none")
+            unknown = SymEnumValue("unknown", "unk")
+            incomplete = SymEnumValue("incomplete", "incmpl")
+            complete = SymEnumValue("complete", "cmpl")
+
+        self.assertEqual(str(CdsStat("incomplete")), "incmpl")
+        self.assertEqual(str(CdsStat("incmpl")), "incmpl")
+        self.assertEqual(str(CdsStat(u"incmpl")), "incmpl")
+
 def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(SymEnumTests))

@@ -438,6 +438,7 @@ class GenePred(object):
             return [self.exons[i] for i in xrange(len(self.exons) - 1, -1, -1)]
 
     def getRow(self):
+        # FIXME standardize on getRow or Psl.toRow
         row = [self.name, self.chrom, self.strand, str(self.txStart), str(self.txEnd), str(self.cdsStart), str(self.cdsEnd)]
         row.append(str(len(self.exons)))
         starts = []
