@@ -11,9 +11,7 @@ from pycbio.sys.fileOps import prRow, prRowv, readFileLines
 
 
 def parseArgs():
-    desc = """%prog [options] clusterFile outFile
-
-    Select clusters based on the criteria specified by the options.
+    desc = """Select clusters based on the criteria specified by the options.
     By default, output a clusterGenes file with just the selected
     records.  If multiple select criteria are specified, they all
     must be true to select the loci.
