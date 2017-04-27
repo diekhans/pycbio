@@ -21,6 +21,13 @@ class GeneFeature(SymEnum):
     utr3 = SymEnumValue(4, "3'UTR")
     coding = cds
 
+class ColorNoDict(SymEnum):
+    __slots__ = ()
+    purple = 1
+    gold = 2
+    black = 3
+
+
 class SymEnumTests(TestCaseBase):
     def testBasics(self):
         self.assertEqual(Color.red.name, "red")
@@ -157,6 +164,26 @@ class SymEnumTests(TestCaseBase):
         self.assertEqual(str(CdsStat("incomplete")), "incmpl")
         self.assertEqual(str(CdsStat("incmpl")), "incmpl")
         self.assertEqual(str(CdsStat(u"incmpl")), "incmpl")
+
+    def testBasicsNoDict(self):
+        self.assertEqual(ColorNoDict.purple.name, "purple")
+        self.assertEqual(ColorNoDict.gold.name, "gold")
+        self.assertEqual(ColorNoDict.black.name, "black")
+        self.assertTrue(ColorNoDict.purple < ColorNoDict.black)
+        self.assertTrue(ColorNoDict.purple == ColorNoDict.purple)
+        self.assertTrue(ColorNoDict.purple != ColorNoDict.black)
+        self.assertTrue(ColorNoDict.purple is not None)
+        self.assertTrue(None != ColorNoDict.purple)  # flake8: noqa
+
+    def testLookupNoDict(self):
+        self.assertTrue(ColorNoDict.purple == ColorNoDict("purple"))
+        self.assertTrue(ColorNoDict.gold == ColorNoDict("gold"))
+        self.assertTrue(ColorNoDict.gold != ColorNoDict("purple"))
+
+    def testStringsNoDict(self):
+        self.assertTrue(str(ColorNoDict.purple) == "purple")
+        self.assertTrue(str(ColorNoDict.gold) == "gold")
+        self.assertTrue(sorted([str(c) for c in ColorNoDict]), ["purple", "gold", "black"])
 
 def suite():
     ts = unittest.TestSuite()
