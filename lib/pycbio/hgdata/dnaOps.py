@@ -2,6 +2,7 @@
 Operations on strings of DNA sequences
 """
 import string
+from pycbio.sys import PycbioException
 
 ##
 # from: http://edwards.sdsu.edu/labsite/index.php/robs/396-reverse-complement-dna-sequences-in-python
@@ -21,3 +22,15 @@ def reverseComplement(dna):
 def reverseCoords(start, end, size):
     "reverse coordinate pair"
     return (size - end, size - start)
+
+
+def reverseStrand(strand):
+    "get reverse strand, or None if none"
+    if strand is None:
+        return None
+    elif strand == '+':
+        return '-'
+    elif strand == '-':
+        return '+'
+    else:
+        raise PycbioException("invalid strand '{}'".format(strand))

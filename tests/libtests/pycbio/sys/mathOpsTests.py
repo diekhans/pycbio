@@ -44,6 +44,7 @@ class RoundToOrderOfMagnitudeTests(TestCaseBase):
     def testMagnitudeZero(self):
         self.__assertRound(1, 0)
 
+
 def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(RoundToOrderOfMagnitudeTests))

@@ -56,7 +56,7 @@ class HgLiteTable(object):
         return sql.format(table=self.table,
                           columns=self._joinColNames(columns),
                           values=self._makeValueTokens(columns))
-    
+
     def _insert(self, insertSql, columns, row):
         """insert a row, formatting {table}, {columns}, {values} into sql"""
         with self.conn:
@@ -90,7 +90,7 @@ class HgLiteTable(object):
         with self.conn:
             cur = self.conn.cursor()
             try:
-                cur.execute(query.format(table=self.table))
+                cur.execute(querySql.format(table=self.table))
             finally:
                 cur.close()
 
@@ -131,7 +131,7 @@ class SequenceDbTable(HgLiteTable):
     __indexSql = """CREATE UNIQUE INDEX {table}_name on {table} (name);"""
 
     columnNames = ("name", "seq")
-    
+
     def __init__(self, conn, table, create=False):
         super(SequenceDbTable, self).__init__(conn, table)
         if create:
