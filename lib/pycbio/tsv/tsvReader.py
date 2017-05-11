@@ -7,6 +7,8 @@ from pycbio.sys import fileOps
 from pycbio.tsv.tsvRow import TsvRow
 from pycbio.tsv import TsvError
 
+csv.field_size_limit(sys.maxsize)
+
 # FIXME:  pass owndership of row to Row instead of having Row inherit from list
 # FIXME: create error with file name/line number
 # FIMXE: carefully consider naming of functions in Row, as they could

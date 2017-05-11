@@ -294,6 +294,13 @@ def findTmpDir(tmpDir=None):
     raise Exception("can't find a tmp directory")
 
 
+def setTmpEnv(tmpDir=None):
+    """Setup TMPDIR env. If tmpDir arg is not None, set TMPDIR to this value.
+    If tmpDir arg is not, keep TMPDIR if set, otherwise set to value returned
+    by findTmpDir"""
+    os.environ["TMPDIR"] = findTmpDir(tmpDir)
+
+
 def tmpFileGet(prefix=None, suffix="tmp", tmpDir=None):
     """Obtain a tmp file with a unique name in a secure way. File
     will only be accessible to user."""
