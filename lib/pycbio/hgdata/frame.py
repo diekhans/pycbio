@@ -1,6 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 
-# FIXME: should None just be uses a no frame?
+# FIXME: should None just be uses as no frame?
+
 
 class Frame(int):
     """Immutable object the represents a frame, integer value of 0, 1, 2, or
@@ -12,7 +13,7 @@ class Frame(int):
     def __checkFrameValue(val):
         if not ((val >= -1) and (val <= 2)):
             raise TypeError("frame must be an integer in the range -1..2, got {}".format(val))
-    
+
     def __new__(cls, val=-1):
         obj = super(Frame, cls).__new__(cls, val)
         cls.__checkFrameValue(obj)
@@ -37,11 +38,11 @@ class Frame(int):
     def toPhase(self):
         """frame expressed as a GFF/GTF like phase, which is the number of bases
         to the start of the next codon"""
-        if frame == 0:
+        if self == 0:
             return 0
-        elif frame == 1:
+        elif self == 1:
             return 2
-        elif frame == 2:
+        elif self == 2:
             return 1
         else:
             return -1
