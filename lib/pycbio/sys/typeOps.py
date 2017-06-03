@@ -132,6 +132,7 @@ def attrdict(obj):
     except AttributeError:
         return {a: getattr(obj, a) for a in dir(obj)}
 
+
 __all__ = (isListLike.__name__, listInit.__name__, listAppend.__name__,
            isIterable.__name__, mkiter.__name__, mkset.__name__,
            noneOrZero.__name__, addUniq.__name__, dictObtain.__name__,
