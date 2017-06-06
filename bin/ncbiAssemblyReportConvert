@@ -27,8 +27,7 @@ INCLUDE_MAIN_ASM = "mainAsm"
 
 
 def parseArgs():
-    usage = """%prog outputType assemblyReport outFile
-
+    usage = """
 Convert or extract information from an NCBI assembly report file.
 Id types based on columns in file, or special handling for gencode naming.
 

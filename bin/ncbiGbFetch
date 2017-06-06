@@ -11,11 +11,8 @@ host = "eutils.ncbi.nlm.nih.gov"
 
 
 def parseArgs():
-    desc = """%prog [options] [id1 ...]
-
-Retrieve genbank records or sequences from NCBI nucleotide (GenBank/RefSeq),
-give accessions or other ids understood by efetch server.
-"""
+    desc = """Retrieve genbank records or sequences from NCBI nucleotide
+    (GenBank/RefSeq), give accessions or other ids understood by efetch server."""
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument("--idFile", dest="idFiles", action="append", default=[],
                         help="file containing ids, can be specified multiple times.")

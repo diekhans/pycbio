@@ -11,9 +11,7 @@ from pycbio.sys import fileOps
 
 
 def parseArgs():
-    desc = """%prog [options] [genePredIn] [genePredOut]
-
-    Select clusters based on the criteria specified by the options.
+    desc = """Select clusters based on the criteria specified by the options.
     By default, output a clusterGenes file with just the selected
     records.  If multiple select criteria are specified, they all
     must be be true to select a gene."""

@@ -10,9 +10,7 @@ import argparse
 
 
 def parseArgs():
-    desc = """%prog [options] inStats outImage
-
-Generate a simple Venn diagram.
+    desc = """Generate a simple Venn diagram.
 
 The Boolean set Tsv input format consists of a columns
 for each input set with a boolean value indicating if

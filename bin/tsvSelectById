@@ -10,9 +10,7 @@ from pycbio.tsv import TsvReader, TsvTable
 
 
 def parseArgs():
-    desc = """%prog [options] selectCol selectTsv inCol inTsv outTsv
-
-    Select rows from inTsv where inCol is in selectTsv selectCol.
+    desc = """Select rows from inTsv where inCol is in selectTsv selectCol.
     Currently only string comparisons are supported.
     """
     parser = argparse.ArgumentParser(description=desc)

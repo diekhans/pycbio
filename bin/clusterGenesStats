@@ -13,10 +13,7 @@ from pycbio.tsv.tabFile import TabFile
 
 
 def parseArgs():
-    desc = """%prog [options] clusterFile statsFile
-
-    Get stats on clusterGenes clusters
-    """
+    desc = """Get stats on clusterGenes clusters"""
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument("--totalsOut", action="store", dest="totalsOut", default=None,
                         help="output count of total loci for each track to this file")

@@ -16,9 +16,7 @@ allMethods = frozenset([methodUniqExons])
 
 
 def parseArgs():
-    desc = """%prog [options] method [genePredIn] [genePredOut]
-
-    Flatten exon structure of genePreds in a variety of ways.
+    desc = """Flatten exon structure of genePreds in a variety of ways.
 
     method:
       o uniqExons - build map of uniq exons

@@ -16,10 +16,7 @@ ReportType = Enumeration("ReportType", ("basic", "callers", "callees"))
 
 
 def parseArgs():
-    desc = """%prog [options] profLog [profOut]
-
-    format python profile logs from hotshot.
-    """
+    desc = """format python profile logs from hotshot."""
 
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument("--sort", action="append", dest="sortKeys", default=["cumulative"],

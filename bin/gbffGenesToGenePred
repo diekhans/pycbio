@@ -30,8 +30,7 @@ ActiveType = Enumeration("ActiveType",
 
 
 def parseArgs():
-    desc = """%prog [options] gbff genePred
-
+    desc = """
 Parse gene features from genbank flat file records and create a genePred.
 Will do pseudogenes or non-pseudogenes.  This is designed to be used on the
 NCBI *.gbs.gz files to extract chromosome annotations.  Will read compressed

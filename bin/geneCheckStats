@@ -26,10 +26,7 @@ def fmtRate(cnt, tot):
 
 
 def parseArgs():
-    desc = """%prog geneChk statsOut
-
-    get stats on gene-check
-"""
+    desc = """get stats on gene-check"""
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument("geneChks",
                         help="gene-check output file to process")
