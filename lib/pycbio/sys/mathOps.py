@@ -17,9 +17,13 @@ def roundToOrderOfMagnitude(n):
     return -rounded if n < 0 else rounded
 
 
-def calcFreq(amt, total):
-    "calculates a frequency, etc or zero if total is zero"
-    return 0.0 if total == 0.0 else (float(amt) / float(total))
+def calcFreq(amt, total, oneForUndef=False):
+    """calculates a frequency or rate. Return the total is zero
+     return zero, or one if oneForUndef is True """
+    if total == 0.0:
+        return 1.0 if oneForUndef else 0.0
+    else:
+        return float(amt) / float(total)
 
 
 def fmtFreq(freq, precision=2):
@@ -27,6 +31,6 @@ def fmtFreq(freq, precision=2):
     return "%0.*f" % (precision, freq)
 
 
-def calcFmtFreq(amt, total, precision=2):
+def calcFmtFreq(amt, total, precision=2, oneForUndef=False):
     "calculate and format a frequency"
-    return fmtFreq(calcFreq(amt, total), precision)
+    return fmtFreq(calcFreq(amt, total, oneForUndef), precision)
