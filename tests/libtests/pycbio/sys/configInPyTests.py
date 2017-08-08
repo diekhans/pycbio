@@ -67,5 +67,6 @@ def suite():
     ts.addTest(unittest.makeSuite(ConfigInPyTests))
     return ts
 
+
 if __name__ == '__main__':
     unittest.main()

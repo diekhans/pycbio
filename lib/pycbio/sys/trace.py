@@ -115,4 +115,5 @@ class Trace(object):
                 self.__logLine(frame, event)
         return self.__callback
 
+
 __all__ = (getActiveTraceFds.__name__, Trace.__name__)

@@ -75,6 +75,7 @@ def doFetch(opts, outFh):
     for gbid in opts.ids:
         efetch(opts, gbid, outFh)
 
+
 opts = parseArgs()
 outFh = open(opts.out, "w") if opts.out is not None else sys.stdout
 doFetch(opts, outFh)

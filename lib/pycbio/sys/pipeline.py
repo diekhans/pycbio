@@ -1344,6 +1344,7 @@ class Pipeline(Procline):
         if not self.finished:
             self.wait()
 
+
 __all__ = [ProcException.__name__, PIn.__name__, POut.__name__, Dev.__name__,
            DataReader.__name__, DataWriter.__name__, Pipe.__name__, File.__name__,
            Proc.__name__, ProcDag.__name__, Procline.__name__, Pipeline.__name__]

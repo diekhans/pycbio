@@ -61,5 +61,6 @@ def suite():
         ts.addTest(unittest.makeSuite(DbReadTests))
     return ts
 
+
 if __name__ == '__main__' and onTestHost:
     unittest.main()

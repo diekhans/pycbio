@@ -315,6 +315,7 @@ def tmpDirGet(prefix=None, suffix="tmp", tmpDir=None):
     will only be accessible to user."""
     return tempfile.mkdtemp(prefix=prefix, suffix=suffix, dir=findTmpDir(tmpDir))
 
+
 _hostName = None  # don't get multiple times
 _atomicNextNum = 0  # number to include in atomicTmpFile, just in case same process tries creates multiple
 

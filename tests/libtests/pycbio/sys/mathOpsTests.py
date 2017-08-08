@@ -50,5 +50,6 @@ def suite():
     ts.addTest(unittest.makeSuite(RoundToOrderOfMagnitudeTests))
     return ts
 
+
 if __name__ == '__main__':
     unittest.main()

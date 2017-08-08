@@ -21,4 +21,5 @@ class OverlapSelectStatsTbl(TsvTable):
     def __init__(self, fileName):
         TsvTable.__init__(self, fileName, typeMap=typeMap, multiKeyCols=("inId", "selectId"))
 
+
 __all__ = [OverlapSelectStatsReader.__name__, OverlapSelectStatsTbl.__name__]

@@ -20,6 +20,7 @@ def strArrayJoin(strs):
     else:
         return ","
 
+
 # TSV typeMap tuple for str arrays
 strArrayType = (strArraySplit, strArrayJoin)
 
@@ -41,6 +42,7 @@ def intArrayJoin(ints):
         return string.join(strs, ",") + ","
     else:
         return ","
+
 
 # TSV typeMap tuple for str arrays
 intArrayType = (intArraySplit, intArrayJoin)

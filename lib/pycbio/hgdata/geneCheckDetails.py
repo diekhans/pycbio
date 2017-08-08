@@ -9,6 +9,7 @@ def strOrNone(val):
     else:
         return intern(val)
 
+
 # acc	problem	info	chr	chrStart	chrEnd
 typeMap = {"acc": intern,
            "problem": intern,

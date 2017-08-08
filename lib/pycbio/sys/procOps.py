@@ -67,6 +67,7 @@ def which(prog, makeAbs=False):
                 return f
     raise Exception("Can't find program \"" + prog + "\" on path \"" + os.environ["PATH"] + "\"")
 
+
 shSafeRe = re.compile("^[-+./_=,:@0-9A-Za-z]+$")
 
 
@@ -90,6 +91,7 @@ def shQuote(words):
 def sshCmd(host, cmd, direct=None):
     ""
     pass
+
 
 __all__ = (callProc.__name__, callProcLines.__name__, runProc.__name__, which.__name__,
            shQuoteWord.__name__, shQuote.__name__)

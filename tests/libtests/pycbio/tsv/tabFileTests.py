@@ -44,5 +44,6 @@ def suite():
     ts.addTest(unittest.makeSuite(TabFileTests))
     return ts
 
+
 if __name__ == '__main__':
     unittest.main()

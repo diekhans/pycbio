@@ -7,11 +7,16 @@ from collections import namedtuple
 from pycbio.hgdata.psl import Psl
 from pycbio.hgdata.genePred import GenePred
 from pycbio.tsv import TabFileReader
+from pycbio.tsv import TsvReader
 from pycbio.hgdata.rangeFinder import Binner
 from Bio import SeqIO
 
 # FIXME: HgLiteTable could become wrapper around a connection,
 # and make table operations functions.???  probably not
+
+
+def noneIfEmpty(s):
+    return s if s != "" else None
 
 
 def sqliteHaveTable(conn, table):
@@ -82,7 +87,7 @@ class HgLiteTable(object):
                 cur.close()
 
     def query(self, querySql, columns, *queryargs):
-        """run query, formatting {table} into sql and generator over results"""
+        """run query, formatting {table} into sql and generator over result rows """
         return self.queryRows(querySql, columns, None, *queryargs)
 
     def execute(self, querySql):
@@ -130,7 +135,7 @@ class SequenceDbTable(HgLiteTable):
     __insertSql = """INSERT INTO {table} (name, seq) VALUES (?, ?);"""
     __indexSql = """CREATE UNIQUE INDEX {table}_name on {table} (name);"""
 
-    columnNames = ("name", "seq")
+    columnNames = Sequence._fields
 
     def __init__(self, conn, table, create=False):
         super(SequenceDbTable, self).__init__(conn, table)
@@ -151,9 +156,8 @@ class SequenceDbTable(HgLiteTable):
 
     def loadFastaFile(self, faFile):
         """load a FASTA file"""
-        rows = []
-        for faRec in SeqIO.parse(faFile, "fasta"):
-            rows.append((faRec.id, str(faRec.seq)))
+        rows = [(faRec.id, str(faRec.seq))
+                for faRec in SeqIO.parse(faFile, "fasta")]
         self.loads(rows)
 
     def names(self):
@@ -386,3 +390,88 @@ class GenePredDbTable(HgLiteTable):
         binWhere = Binner.getOverlappingSqlExpr("bin", "chrom", "txStart", "txEnd", chrom, start, end)
         sql = "select {{columns}} from {{table}} where {};".format(binWhere)
         return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw))
+
+
+class GencodeAttrs(namedtuple("GencodeAttrs",
+                              ("geneId", "geneName", "geneType", "geneStatus", "transcriptId",
+                               "transcriptName", "transcriptType", "transcriptStatus", "havanaGeneId",
+                               "havanaTranscriptId", "ccdsId", "level", "transcriptClass"))):
+    """Attributes of a GENCODE transcript"""
+    pass
+
+
+class GencodeAttrsDbTable(HgLiteTable):
+    """
+    GENCODE attributes table from UCSC databases.
+    """
+    __createSql = """CREATE TABLE {table} (
+            geneId text not null,
+            geneName text not null,
+            geneType text not null,
+            geneStatus text default null,
+            transcriptId text not null,
+            transcriptName text not null,
+            transcriptType text not null,
+            transcriptStatus text default null,
+            havanaGeneId text default null,
+            havanaTranscriptId text default null,
+            ccdsId text default null,
+            level int not null,
+            transcriptClass text not null)"""
+    __indexSql = [
+        """CREATE INDEX {table}_geneId on {table} (geneId)""",
+        """CREATE INDEX {table}_geneName on {table} (geneName)""",
+        """CREATE INDEX {table}_geneType on {table} (geneType)""",
+        """CREATE INDEX {table}_transcriptId on {table} (transcriptId)""",
+        """CREATE INDEX {table}_transcriptType on {table} (transcriptType)""",
+        """CREATE INDEX {table}_havanaGeneId on {table} (havanaGeneId)""",
+        """CREATE INDEX {table}_havanaTranscriptId on {table} (havanaTranscriptId)""",
+        """CREATE INDEX {table}_ccdsId on {table} (ccdsId)""",
+    ]
+
+    columnNames = GencodeAttrs._fields
+
+    def __init__(self, conn, table, create=False):
+        super(GencodeAttrsDbTable, self).__init__(conn, table)
+        if create:
+            self.create()
+
+    def create(self):
+        self._create(self.__createSql)
+
+    def index(self):
+        """create index after loading"""
+        self._index(self.__indexSql)
+
+    def loads(self, rows):
+        """load rows, which can be list-like or GencodeAttrs object"""
+        sql = "INSERT INTO {table} ({columns}) VALUES ({values});"
+        self._inserts(sql, self.columnNames, rows)
+
+    def __loadTsvRow(self, tsvRow):
+        "convert to list in column order"
+        return [getattr(tsvRow, cn) for cn in self.columnNames]
+
+    def loadTsv(self, attrsFile):
+        """load a GENCODE attributes file, adding bin"""
+        typeMap = {"geneStatus": noneIfEmpty,
+                   "transcriptStatus": noneIfEmpty,
+                   "havanaGeneId": noneIfEmpty,
+                   "havanaTranscriptId": noneIfEmpty,
+                   "ccdsId": noneIfEmpty,
+                   "level": int}
+        rows = [self.__loadTsvRow(row) for row in TsvReader(attrsFile, typeMap=typeMap)]
+        self.loads(rows)
+
+    def __queryRows(self, sql, key):
+        return self.queryRows(sql, self.columnNames, lambda cur, row: GencodeAttrs(*row), key)
+
+    def getByTranscriptId(self, transcriptId):
+        """get the GencodeAttrs object for transcriptId, or None if not found."""
+        sql = "select {columns} from {table} where transcriptId = ?"
+        return next(self.__queryRows(sql, transcriptId), None)
+
+    def getByGeneId(self, geneId):
+        """get GencodeAttrs objects for geneId or empty list if not found"""
+        sql = "select {columns} from {table} where geneId = ?"
+        return list(self.__queryRows(sql, geneId))

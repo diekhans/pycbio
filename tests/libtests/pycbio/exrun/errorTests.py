@@ -104,5 +104,6 @@ def suite():
     ts.addTest(unittest.makeSuite(ErrorTests))
     return ts
 
+
 if __name__ == '__main__':
     unittest.main()

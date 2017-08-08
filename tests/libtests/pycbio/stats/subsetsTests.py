@@ -37,5 +37,6 @@ def suite():
     ts.addTest(unittest.makeSuite(SubsetsTests))
     return ts
 
+
 if __name__ == '__main__':
     unittest.main()

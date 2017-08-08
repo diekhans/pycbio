@@ -28,4 +28,5 @@ def lsOpen(msg=None, fh=sys.stderr, pid=None):
         if os.path.exists(fdp):
             _prLine(fh, "    ", fd, " -> ", os.readlink(fdp))
 
+
 __all__ = [lsOpen.__name__]

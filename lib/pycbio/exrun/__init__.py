@@ -88,6 +88,7 @@ class Verb(object):
         if self.enabled(flag) and (len(msg) > 0):
             self.__prIndent(msg)
 
+
 # make classes commonly used externally part of top module
 from pycbio.exrun.graph import Production, Rule
 from pycbio.exrun.cmdRule import CmdRule, Cmd, FileIn, FileOut, File

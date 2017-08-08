@@ -28,6 +28,7 @@ class GFF3Exception(PycbioException):
             message = "{}:{}: {}".format(fileName, lineNumber, message)
         super(GFF3Exception, self).__init__(message, cause)
 
+
 # characters forcing encode for columns
 _encodeColRegexpStr = "\t|\n|\r|%|[\x00-\x1F]|\x7f"
 _encodeColRegexp = re.compile(_encodeColRegexpStr)

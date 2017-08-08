@@ -213,4 +213,5 @@ class RangeFinder(object):
         for bins in self.seqBins.itervalues():
             bins.dump(fh)
 
+
 __all__ = (RangeFinder.__name__,)

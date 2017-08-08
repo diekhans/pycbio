@@ -97,4 +97,5 @@ def jsonAnalyze(opts):
     else:
         saveToJson(opts.outfile, keysToStruct(keys))
 
+
 jsonAnalyze(parseArgs())

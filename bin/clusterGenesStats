@@ -161,6 +161,7 @@ class ClusterStats(object):
                     prRowv(fh, gene.gene, clusterId, " ".join(subset))
         fh.close()
 
+
 opts = parseArgs()
 
 lociCats = readLociCats(opts.lociCatsFile) if opts.lociCatsFile is not None else None

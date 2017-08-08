@@ -26,6 +26,7 @@ class CycleException(ExRunException):
             desc.append("  " + str(n) + " ->")
         ExRunException.__init__(self, "cycle detected:\n" + "\n".join(desc))
 
+
 # state of a Production and valid transitions
 #  - bad - doesn't exist and no rule to create
 #  - failed - rule to create failed
@@ -646,5 +647,6 @@ class Graph(object):
             for r in roots:
                 self.__getReady(r, ready)
             return ready
+
 
 __all__ = (CycleException.__name__, Target.__name__, Production.__name__, Rule.__name__, Graph.__name__, "RuleState", Node.__name__)

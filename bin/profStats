@@ -47,6 +47,7 @@ def generateReport(opts, outFh):
     elif opts.reportType == ReportType.callees:
         profStats.print_callees()
 
+
 opts = parseArgs()
 with open(opts.profOut, "w") as outFh:
     generateReport(opts, outFh)

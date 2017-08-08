@@ -39,5 +39,6 @@ def suite():
     ts.addTest(unittest.makeSuite(ImmutableTests))
     return ts
 
+
 if __name__ == '__main__':
     unittest.main()

@@ -33,4 +33,5 @@ def main(opts):
                                    lineterminator="\n")
             copyCsvToTsv(csvReader, tsvWriter)
 
+
 main(parseArgs())

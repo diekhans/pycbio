@@ -38,4 +38,5 @@ def noneForEmpty(s):
     "return non if s is a empty string, else s"
     return None if s == "" else s
 
+
 __all__ = (hasSpaces.__name__, splitAtSpaces.__name__, dup.__name__, emptyForNone.__name__, noneForEmpty.__name__)

@@ -22,5 +22,6 @@ def suite():
     ts.addTest(unittest.makeSuite(TypeOpsTests))
     return ts
 
+
 if __name__ == '__main__':
     unittest.main()

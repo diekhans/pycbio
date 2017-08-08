@@ -14,6 +14,7 @@ class CdsStat(SymEnum):
     incomplete = SymEnumValue("incomplete", "incmpl")  # CDS is not complete at this end
     complete = SymEnumValue("complete", "cmpl")        # CDS is complete at this end
 
+
 genePredColumns = ("name", "chrom", "strand", "txStart", "txEnd", "cdsStart", "cdsEnd", "exonCount", "exonStarts", "exonEnds", "score", "name2", "cdsStartStat", "cdsEndStat", "exonFrames")
 genePredExtColumns = ("name", "chrom", "strand", "txStart", "txEnd", "cdsStart", "cdsEnd", "exonCount", "exonStarts", "exonEnds")
 

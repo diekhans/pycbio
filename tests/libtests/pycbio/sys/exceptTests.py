@@ -69,5 +69,6 @@ def suite():
     ts.addTest(unittest.makeSuite(ExceptTests))
     return ts
 
+
 if __name__ == '__main__':
     unittest.main()

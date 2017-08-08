@@ -754,6 +754,7 @@ class GbffToGenes(object):
         self.outFh.close()
         gbsFh.close()
 
+
 opts = parseArgs()
 if opts.verbose >= 1:
     prLine(sys.stderr, "selecting: genes: ", setOps.setJoin(opts.selected), "  ", setOps.setJoin(opts.active))

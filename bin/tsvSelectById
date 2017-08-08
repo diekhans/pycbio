@@ -51,6 +51,7 @@ def selectById(selectCol, selectTsv, inCol, inTsv, outTsv):
             row.write(rd)
     outFh.close()
 
+
 raise Exception("FIXME: not done")
 opts = parseArgs()
 selectById(opts.selectCol, opts.selectTsv, opts.inCol, opts.inTsv, opts.outTsv)

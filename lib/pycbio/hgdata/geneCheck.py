@@ -20,6 +20,7 @@ def statFmt(val):
     else:
         return "err"
 
+
 statType = (statParse, statFmt)
 
 
@@ -39,6 +40,8 @@ def startStopFmt(val):
         return "ok"
     else:
         return "no"
+
+
 startStopType = (startStopParse, startStopFmt)
 
 
@@ -59,6 +62,7 @@ def nmdFmt(val):
     else:
         return "nmd"
 
+
 nmdType = (nmdParse, nmdFmt)
 
 
@@ -76,6 +80,7 @@ def strListJoin(strs):
         return ",".join(strs)
     else:
         return ""
+
 
 strListType = (strListSplit, strListJoin)
 

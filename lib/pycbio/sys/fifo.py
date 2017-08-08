@@ -149,6 +149,7 @@ class _NamedFifo(_Fifo):
             os.unlink(self.rpath)
             self.rpath = self.wpath = None
 
+
 _fifoClass = None
 
 

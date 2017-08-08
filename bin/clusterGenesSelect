@@ -138,6 +138,7 @@ class ClusterSelect(object):
                 self.__writeClusterBed(outFh, cl)
         outFh.close()
 
+
 opts = parseArgs()
 clSelect = ClusterSelect(opts)
 if opts.clusterBedOutput:

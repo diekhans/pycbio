@@ -62,5 +62,6 @@ def suite():
     ts.addTest(unittest.makeSuite(ColorTests))
     return ts
 
+
 if __name__ == '__main__':
     unittest.main()

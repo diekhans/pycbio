@@ -161,5 +161,6 @@ def suite():
     ts.addTest(unittest.makeSuite(PipelineTests))
     return ts
 
+
 if __name__ == '__main__':
     unittest.main()

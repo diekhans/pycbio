@@ -9,7 +9,7 @@ if __name__ == '__main__':
     sys.path.append("../../../../lib")
 import sqlite3
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.hgdata.hgLite import SequenceDbTable, Sequence, PslDbTable, GenePredDbTable, sqliteHaveTable
+from pycbio.hgdata.hgLite import SequenceDbTable, Sequence, PslDbTable, GenePredDbTable, GencodeAttrsDbTable, GencodeAttrs, sqliteHaveTable
 from pycbio.hgdata.psl import Psl
 from pycbio.hgdata.genePred import GenePred
 
@@ -25,10 +25,10 @@ class SequenceTests(TestCaseBase):
 
 
 class SequenceDbTableTests(TestCaseBase):
-    __test1Seq = ("name1", "gcctgcgcgaaacctccgctagtcaaacccgtccttagagcagtcgaaggg")
-    __test2Seq = ("name2", "tagtcaaacccgtcgcctgcgcgaaacctccgccttagagcagtcgaaggg")
-    __test3Seq = ("name3", "tagtcaaacccgtcgcctgcgcgaaa")
-    __test4Seq = ("name4", "tagtcctccgccttagagcagtcgaaggg")
+    test1Seq = ("name1", "gcctgcgcgaaacctccgctagtcaaacccgtccttagagcagtcgaaggg")
+    test2Seq = ("name2", "tagtcaaacccgtcgcctgcgcgaaacctccgccttagagcagtcgaaggg")
+    test3Seq = ("name3", "tagtcaaacccgtcgcctgcgcgaaa")
+    test4Seq = ("name4", "tagtcctccgccttagagcagtcgaaggg")
 
     def setUp(self):
         self.conn = memDbConnect()
@@ -40,7 +40,7 @@ class SequenceDbTableTests(TestCaseBase):
     def __loadTestSeqs(self):
         # try both tuple and sequence
         seqDb = SequenceDbTable(self.conn, "seqs", True)
-        seqDb.loads([self.__test1Seq, Sequence(*self.__test2Seq), Sequence(*self.__test3Seq), self.__test4Seq])
+        seqDb.loads([self.test1Seq, Sequence(*self.test2Seq), Sequence(*self.test3Seq), self.test4Seq])
         seqDb.index()
         self.assertTrue(sqliteHaveTable(seqDb.conn, "seqs"))
         return seqDb
@@ -48,15 +48,15 @@ class SequenceDbTableTests(TestCaseBase):
     def testSeqLoad(self):
         seqDb = self.__loadTestSeqs()
         self.assertEqual(sorted(seqDb.names()), ["name1", "name2", "name3", "name4"])
-        self.assertEqual(seqDb.get("name1"), Sequence(*self.__test1Seq))
-        self.assertEqual(seqDb.get("name2"), Sequence(*self.__test2Seq))
+        self.assertEqual(seqDb.get("name1"), Sequence(*self.test1Seq))
+        self.assertEqual(seqDb.get("name2"), Sequence(*self.test2Seq))
         self.assertEqual(seqDb.get("notthere"), None)
 
     def testRowRange(self):
         seqDb = self.__loadTestSeqs()
         self.assertEqual(seqDb.getOidRange(), (1, 5))
-        self.assertEqual(list(seqDb.getRows(2, 4)), [Sequence(*self.__test2Seq),
-                                                     Sequence(*self.__test3Seq)])
+        self.assertEqual(list(seqDb.getRows(2, 4)), [Sequence(*self.test2Seq),
+                                                     Sequence(*self.test3Seq)])
 
     def testLoadFasta(self):
         seqDb = SequenceDbTable(self.conn, "seqs", True)
@@ -231,13 +231,68 @@ class GenePredDbTableTests(TestCaseBase):
             conn.close()
 
 
+class GencodeAttrsDbTableTests(TestCaseBase):
+    test1Attrs = ("ENSG00000187191.14", "DAZ3", "protein_coding", None, "ENST00000315357.9", "DAZ3-201", "protein_coding", None, "OTTHUMG00000045099.2", None, None, 3, "coding")
+    test2Attrs = ("ENSG00000187191.14", "DAZ3", "protein_coding", None, "ENST00000382365.6", "DAZ3-001", "protein_coding", None, "OTTHUMG00000045099.2", "OTTHUMT00000104777.2", "CCDS35489.1", 2, "coding")
+    test3Attrs = ("ENSG00000187191.14", "DAZ3", "protein_coding", None, "ENST00000446723.4", "DAZ3-202", "protein_coding", None, "OTTHUMG00000045099.2", None, None, 3, "coding")
+    testAttrs = (test1Attrs, test2Attrs, test3Attrs)
+
+    @classmethod
+    def setUpClass(cls):
+        # cache
+        cls.attrsTestDb = None
+        cls.clsConn = None
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.gpTestdb = None
+        if cls.clsConn is not None:
+            cls.clsConn.close()
+            cls.clsConn = None
+
+    def setUp(self):
+        if self.clsConn is None:
+            # don't load for each test
+            self.clsConn = memDbConnect()
+            self.attrsTestDb = GencodeAttrsDbTable(self.clsConn, "gencodeAttrs", True)
+            self.attrsTestDb.loadTsv(self.getInputFile("gencodeAttrs.tsv"))
+            self.attrsTestDb.index()
+
+    def testGetTranscriptId(self):
+        attrs = self.attrsTestDb.getByTranscriptId("ENST00000315357.9")
+        self.assertEqual(attrs, GencodeAttrs(*self.test1Attrs))
+        attrs = self.attrsTestDb.getByTranscriptId("fred")
+        self.assertEqual(attrs, None)
+
+    def testGetGeneId(self):
+        attrs = self.attrsTestDb.getByGeneId("ENSG00000187191.14")
+        self.assertEqual(len(attrs), 3)
+        attrs.sort(key=lambda a: a.transcriptId)
+        self.assertEqual(attrs, [GencodeAttrs(*a) for a in self.testAttrs])
+        attrs = self.attrsTestDb.getByGeneId("fred")
+        self.assertEqual(attrs, [])
+
+    def testMemLoadGencodeAttrs(self):
+        conn = memDbConnect()
+        try:
+            db = GencodeAttrsDbTable(conn, "gencodeAttrs", True)
+            db.loads([GencodeAttrs(*self.test1Attrs), GencodeAttrs(*self.test2Attrs)])
+            db.index()
+            attrs = db.getByTranscriptId("ENST00000382365.6")
+            self.assertEqual(attrs, GencodeAttrs(*self.test2Attrs))
+        finally:
+            conn.close()
+
+
 def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(SequenceTests))
     ts.addTest(unittest.makeSuite(SequenceDbTableTests))
     ts.addTest(unittest.makeSuite(PslDbTableTests))
     ts.addTest(unittest.makeSuite(GenePredDbTableTests))
+    ts.addTest(unittest.makeSuite(GencodeAttrsDbTableTests))
     return ts
+
 
 if __name__ == '__main__':
     unittest.main()

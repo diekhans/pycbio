@@ -77,5 +77,6 @@ def suite():
     ts.addTest(unittest.makeSuite(FileOpsTests))
     return ts
 
+
 if __name__ == '__main__':
     unittest.main()
