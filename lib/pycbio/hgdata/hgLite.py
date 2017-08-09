@@ -475,3 +475,7 @@ class GencodeAttrsDbTable(HgLiteTable):
         """get GencodeAttrs objects for geneId or empty list if not found"""
         sql = "select {columns} from {table} where geneId = ?"
         return list(self.__queryRows(sql, geneId))
+
+    def getAllGeneIds(self):
+        sql = "select distinct geneId from {table}"
+        return list(self.queryRows(sql, (), lambda cur, row: row[0]))
