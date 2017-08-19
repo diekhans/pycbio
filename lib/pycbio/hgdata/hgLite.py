@@ -479,3 +479,58 @@ class GencodeAttrsDbTable(HgLiteTable):
     def getAllGeneIds(self):
         sql = "select distinct geneId from {table}"
         return list(self.queryRows(sql, (), lambda cur, row: row[0]))
+
+class GencodeTranscriptSource(namedtuple("GencodeTranscriptSource",
+                                         ("transcriptId", "source",))):
+    """GENCODE transcript source"""
+    pass
+
+
+class GencodeTranscriptSourceDbTable(HgLiteTable):
+    """
+    GENCODE transcript source from UCSC databases.
+    """
+    __createSql = """CREATE TABLE {table} (
+            transcriptId text not null,
+            source text not null)"""
+    __indexSql = [
+        """CREATE INDEX {table}_transcriptId on {table} (transcriptId)""",
+        """CREATE INDEX {table}_source on {table} (source)""",
+    ]
+
+    columnNames = GencodeTranscriptSource._fields
+
+    def __init__(self, conn, table, create=False):
+        super(GencodeTranscriptSourceDbTable, self).__init__(conn, table)
+        if create:
+            self.create()
+
+    def create(self):
+        self._create(self.__createSql)
+
+    def index(self):
+        """create index after loading"""
+        self._index(self.__indexSql)
+
+    def loads(self, rows):
+        """load rows, which can be list-like or GencodeTranscriptSource object"""
+        sql = "INSERT INTO {table} ({columns}) VALUES ({values});"
+        self._inserts(sql, self.columnNames, rows)
+
+    def __loadTsvRow(self, tsvRow):
+        "convert to list in column order"
+        return [getattr(tsvRow, cn) for cn in self.columnNames]
+
+    def loadTsv(self, sourceFile):
+        """load a GENCODE attributes file, adding bin"""
+        rows = [self.__loadTsvRow(row) for row in TsvReader(sourceFile)]
+        self.loads(rows)
+
+    def __queryRows(self, sql, key):
+        return self.queryRows(sql, self.columnNames, lambda cur, row: GencodeTranscriptSource(row[0], intern(str(row[1]))), key)
+
+    def getByTranscriptId(self, transcriptId):
+        """get the GencodeTranscriptSource object for transcriptId, or None if not found."""
+        sql = "select {columns} from {table} where transcriptId = ?"
+        return next(self.__queryRows(sql, transcriptId), None)
+

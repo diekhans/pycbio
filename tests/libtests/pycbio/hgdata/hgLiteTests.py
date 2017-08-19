@@ -9,7 +9,7 @@ if __name__ == '__main__':
     sys.path.append("../../../../lib")
 import sqlite3
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.hgdata.hgLite import SequenceDbTable, Sequence, PslDbTable, GenePredDbTable, GencodeAttrsDbTable, GencodeAttrs, sqliteHaveTable
+from pycbio.hgdata.hgLite import SequenceDbTable, Sequence, PslDbTable, GenePredDbTable, GencodeAttrsDbTable, GencodeAttrs, GencodeTranscriptSource, GencodeTranscriptSourceDbTable, sqliteHaveTable
 from pycbio.hgdata.psl import Psl
 from pycbio.hgdata.genePred import GenePred
 
@@ -245,7 +245,6 @@ class GencodeAttrsDbTableTests(TestCaseBase):
 
     @classmethod
     def tearDownClass(cls):
-        cls.gpTestdb = None
         if cls.clsConn is not None:
             cls.clsConn.close()
             cls.clsConn = None
@@ -284,6 +283,53 @@ class GencodeAttrsDbTableTests(TestCaseBase):
             conn.close()
 
 
+class GencodeTranscriptSourceDbTableTests(TestCaseBase):
+    test1TranscriptSource = ("ENST00000382365.6", "ensembl_havana_transcript")
+    test2TranscriptSource = ("ENST00000446723.4", "ensembl")
+    test3TranscriptSource = ("ENST00000315357.9", "ensembl")
+    testTranscriptSource = (test1TranscriptSource, test2TranscriptSource, test3TranscriptSource)
+
+    @classmethod
+    def setUpClass(cls):
+        # cache
+        cls.transSrcTestDb = None
+        cls.clsConn = None
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.gpTestdb = None
+        if cls.clsConn is not None:
+            cls.clsConn.close()
+            cls.clsConn = None
+
+    def setUp(self):
+        if self.clsConn is None:
+            # don't load for each test
+            self.clsConn = memDbConnect()
+            self.transSrcTestDb = GencodeTranscriptSourceDbTable(self.clsConn, "gencodeTranscriptSource", True)
+            self.transSrcTestDb.loadTsv(self.getInputFile("gencodeTransSource.tsv"))
+            self.transSrcTestDb.index()
+
+    def testGetTranscriptId(self):
+        transSrc = self.transSrcTestDb.getByTranscriptId("ENST00000315357.9")
+        self.assertEqual(transSrc, GencodeTranscriptSource(*self.test3TranscriptSource))
+        transSrc = self.transSrcTestDb.getByTranscriptId("fred")
+        self.assertEqual(transSrc, None)
+
+    def testMemLoadGencodeTranscriptSource(self):
+        conn = memDbConnect()
+        try:
+            db = GencodeTranscriptSourceDbTable(conn, "gencodeTransSource", True)
+            db.loads([GencodeTranscriptSource(*self.test1TranscriptSource), GencodeTranscriptSource(*self.test2TranscriptSource)])
+            db.index()
+            transSrc = db.getByTranscriptId("ENST00000382365.6")
+            self.assertEqual(transSrc, GencodeTranscriptSource(*self.test1TranscriptSource))
+        finally:
+            conn.close()
+
+
+
+
 def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(SequenceTests))
@@ -291,6 +337,7 @@ def suite():
     ts.addTest(unittest.makeSuite(PslDbTableTests))
     ts.addTest(unittest.makeSuite(GenePredDbTableTests))
     ts.addTest(unittest.makeSuite(GencodeAttrsDbTableTests))
+    ts.addTest(unittest.makeSuite(GencodeTranscriptSourceDbTableTests))
     return ts
 
 
