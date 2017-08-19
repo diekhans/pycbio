@@ -4,7 +4,8 @@
 from collections import namedtuple
 
 # FIXME: support MAF db.chrom syntax, single base syntax, etc.
-# FIXME: maybe use factory methods instead of __init trying to figure it out
+# FIXME: use factory methods instead of __init trying to figure it out
+# FIXME: make generic, don't use chrom, use seq
 
 
 class CoordsError(Exception):
@@ -37,6 +38,16 @@ class Coords(namedtuple("Coords", ("chrom", "start", "end", "db", "chromSize", "
 
     def __str__(self):
         return self.chrom + ":" + str(self.start) + "-" + str(self.end)
+
+    def __lt__(self, other):
+        "less than, ignoring strand"
+        if self.chrom < other.chrom:
+            return True
+        if self.start < other.start:
+            return True
+        if self.end < other.end:
+            return True
+        return False
 
     @property
     def name(self):

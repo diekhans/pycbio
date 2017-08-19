@@ -10,6 +10,8 @@ from pycbio.tsv import TsvError
 csv.field_size_limit(sys.maxsize)
 
 # FIXME:  pass owndership of row to Row instead of having Row inherit from list
+# FIXME: make rowClass (rename rowFactory) so that it can be able to construct any
+#        object.  Move parsing of columns outside of tsvRow (good for peewee)
 # FIXME: create error with file name/line number
 # FIMXE: carefully consider naming of functions in Row, as they could
 #  conflict with fields.  Maybe put in a base-class??

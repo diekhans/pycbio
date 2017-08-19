@@ -1,7 +1,8 @@
 # Copyright 2006-2012 Mark Diekhans
 
 # FIXME: danger of bdump, etc, methods conflicting with columns.  maybe
-# a better convention to avoid collisions
+# a better convention to avoid collisions or make these functions rather
+# than methods
 # FIXME: need accessor functions for columns
 import sys
 from pycbio.tsv import TsvError
