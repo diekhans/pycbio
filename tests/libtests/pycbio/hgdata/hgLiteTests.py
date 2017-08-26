@@ -9,7 +9,9 @@ if __name__ == '__main__':
     sys.path.append("../../../../lib")
 import sqlite3
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.hgdata.hgLite import SequenceDbTable, Sequence, PslDbTable, GenePredDbTable, GencodeAttrsDbTable, GencodeAttrs, GencodeTranscriptSource, GencodeTranscriptSourceDbTable, sqliteHaveTable
+from pycbio.hgdata.hgLite import sqliteHaveTable
+from pycbio.hgdata.hgLite import SequenceDbTable, Sequence, PslDbTable, GenePredDbTable
+from pycbio.hgdata.hgLite import GencodeAttrs, GencodeAttrsDbTable, GencodeTranscriptSource, GencodeTranscriptSourceDbTable, GencodeTranscriptionSupportLevel, GencodeTranscriptionSupportLevelDbTable
 from pycbio.hgdata.psl import Psl
 from pycbio.hgdata.genePred import GenePred
 
@@ -284,10 +286,10 @@ class GencodeAttrsDbTableTests(TestCaseBase):
 
 
 class GencodeTranscriptSourceDbTableTests(TestCaseBase):
-    test1TranscriptSource = ("ENST00000382365.6", "ensembl_havana_transcript")
-    test2TranscriptSource = ("ENST00000446723.4", "ensembl")
-    test3TranscriptSource = ("ENST00000315357.9", "ensembl")
-    testTranscriptSource = (test1TranscriptSource, test2TranscriptSource, test3TranscriptSource)
+    test1Src = ("ENST00000382365.6", "ensembl_havana_transcript")
+    test2Src = ("ENST00000446723.4", "ensembl")
+    test3Src = ("ENST00000315357.9", "ensembl")
+    testSrcs = (test1Src, test2Src, test3Src)
 
     @classmethod
     def setUpClass(cls):
@@ -307,12 +309,12 @@ class GencodeTranscriptSourceDbTableTests(TestCaseBase):
             # don't load for each test
             self.clsConn = memDbConnect()
             self.transSrcTestDb = GencodeTranscriptSourceDbTable(self.clsConn, "gencodeTranscriptSource", True)
-            self.transSrcTestDb.loadTsv(self.getInputFile("gencodeTransSource.tsv"))
+            self.transSrcTestDb.loadTsv(self.getInputFile("gencodeTranscriptSource.tsv"))
             self.transSrcTestDb.index()
 
     def testGetTranscriptId(self):
         transSrc = self.transSrcTestDb.getByTranscriptId("ENST00000315357.9")
-        self.assertEqual(transSrc, GencodeTranscriptSource(*self.test3TranscriptSource))
+        self.assertEqual(transSrc, GencodeTranscriptSource(*self.test3Src))
         transSrc = self.transSrcTestDb.getByTranscriptId("fred")
         self.assertEqual(transSrc, None)
 
@@ -320,10 +322,55 @@ class GencodeTranscriptSourceDbTableTests(TestCaseBase):
         conn = memDbConnect()
         try:
             db = GencodeTranscriptSourceDbTable(conn, "gencodeTransSource", True)
-            db.loads([GencodeTranscriptSource(*self.test1TranscriptSource), GencodeTranscriptSource(*self.test2TranscriptSource)])
+            db.loads([GencodeTranscriptSource(*self.test1Src), GencodeTranscriptSource(*self.test2Src)])
             db.index()
             transSrc = db.getByTranscriptId("ENST00000382365.6")
-            self.assertEqual(transSrc, GencodeTranscriptSource(*self.test1TranscriptSource))
+            self.assertEqual(transSrc, GencodeTranscriptSource(*self.test1Src))
+        finally:
+            conn.close()
+
+
+class GencodeTranscriptionSupportLevelDbTableTests(TestCaseBase):
+    test1Src = ("ENST00000382365.6", 1)
+    test2Src = ("ENST00000446723.4", 1)
+    test3Src = ("ENST00000315357.9", 1)
+    testSrcs = (test1Src, test2Src, test3Src)
+
+    @classmethod
+    def setUpClass(cls):
+        # cache
+        cls.transSrcTestDb = None
+        cls.clsConn = None
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.gpTestdb = None
+        if cls.clsConn is not None:
+            cls.clsConn.close()
+            cls.clsConn = None
+
+    def setUp(self):
+        if self.clsConn is None:
+            # don't load for each test
+            self.clsConn = memDbConnect()
+            self.transSrcTestDb = GencodeTranscriptionSupportLevelDbTable(self.clsConn, "gencodeTranscriptionSupportLevel", True)
+            self.transSrcTestDb.loadTsv(self.getInputFile("gencodeTranscriptionSupportLevel.tsv"))
+            self.transSrcTestDb.index()
+
+    def testGetTranscriptId(self):
+        transSrc = self.transSrcTestDb.getByTranscriptId("ENST00000315357.9")
+        self.assertEqual(transSrc, GencodeTranscriptionSupportLevel(*self.test3Src))
+        transSrc = self.transSrcTestDb.getByTranscriptId("fred")
+        self.assertEqual(transSrc, None)
+
+    def testMemLoadGencodeTranscriptionSupportLevel(self):
+        conn = memDbConnect()
+        try:
+            db = GencodeTranscriptionSupportLevelDbTable(conn, "gencodeTransSource", True)
+            db.loads([GencodeTranscriptionSupportLevel(*self.test1Src), GencodeTranscriptionSupportLevel(*self.test2Src)])
+            db.index()
+            transSrc = db.getByTranscriptId("ENST00000382365.6")
+            self.assertEqual(transSrc, GencodeTranscriptionSupportLevel(*self.test1Src))
         finally:
             conn.close()
 
@@ -338,6 +385,7 @@ def suite():
     ts.addTest(unittest.makeSuite(GenePredDbTableTests))
     ts.addTest(unittest.makeSuite(GencodeAttrsDbTableTests))
     ts.addTest(unittest.makeSuite(GencodeTranscriptSourceDbTableTests))
+    ts.addTest(unittest.makeSuite(GencodeTranscriptionSupportLevelDbTableTests))
     return ts
 
 

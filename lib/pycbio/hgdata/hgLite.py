@@ -13,6 +13,7 @@ from Bio import SeqIO
 
 # FIXME: HgLiteTable could become wrapper around a connection,
 # and make table operations functions.???  probably not
+# FIXME: removed duplicated functions and move to base class or mix-in
 
 
 def noneIfEmpty(s):
@@ -32,7 +33,7 @@ def sqliteHaveTable(conn, table):
 
 
 class HgLiteTable(object):
-    """Base class for SQL list table interface object"""
+    """Base class for SQL list table interface object."""
     def __init__(self, conn, table):
         self.conn = conn
         self.table = table
@@ -129,11 +130,11 @@ class SequenceDbTable(HgLiteTable):
     """
     Storage for short sequences (RNA or protein).
     """
-    __createSql = """CREATE TABLE {table} (
+    createSql = """CREATE TABLE {table} (
             name text not null,
             seq text not null);"""
-    __insertSql = """INSERT INTO {table} (name, seq) VALUES (?, ?);"""
-    __indexSql = """CREATE UNIQUE INDEX {table}_name on {table} (name);"""
+    insertSql = """INSERT INTO {table} ({columns}) VALUES ({values});"""
+    indexSql = """CREATE UNIQUE INDEX {table}_name on {table} (name);"""
 
     columnNames = Sequence._fields
 
@@ -144,15 +145,15 @@ class SequenceDbTable(HgLiteTable):
 
     def create(self):
         """create table"""
-        self._create(self.__createSql)
+        self._create(self.createSql)
 
     def index(self):
         """create index after loading"""
-        self._index(self.__indexSql)
+        self._index(self.indexSql)
 
     def loads(self, rows):
         """load rows into table.  Each element of row is a list, tuple, or Sequence object of name and seq"""
-        self._inserts(self.__insertSql, self.columnNames, rows)
+        self._inserts(self.insertSql, self.columnNames, rows)
 
     def loadFastaFile(self, faFile):
         """load a FASTA file"""
@@ -196,7 +197,7 @@ class PslDbTable(HgLiteTable):
     return.  Raw return is to save object creation overhead when results are
     going to be written to a file.
     """
-    __createSql = """CREATE TABLE {table} (
+    createSql = """CREATE TABLE {table} (
             bin int unsigned not null,
             matches int unsigned not null,
             misMatches int unsigned not null,
@@ -219,7 +220,8 @@ class PslDbTable(HgLiteTable):
             blockSizes blob not null,
             qStarts blob not null,
             tStarts blob not null)"""
-    __indexSql = [
+    insertSql = """INSERT INTO {table} ({columns}) VALUES ({values});"""
+    indexSql = [
         """CREATE INDEX {table}_tName_bin on {table} (tName, bin)""",
         """CREATE INDEX {table}_qname on {table} (qName)"""]
 
@@ -237,16 +239,15 @@ class PslDbTable(HgLiteTable):
             self.create()
 
     def create(self):
-        self._create(self.__createSql)
+        self._create(self.createSql)
 
     def index(self):
         """create index after loading"""
-        self._index(self.__indexSql)
+        self._index(self.indexSql)
 
     def loadsWithBin(self, binnedRows):
         """load PSLs rows which already have bin column"""
-        sql = "INSERT INTO {table} ({columns}) VALUES ({values});"
-        self._inserts(sql, self.columnNamesBin, binnedRows)
+        self._inserts(self.insertSql, self.columnNamesBin, binnedRows)
 
     def loads(self, rows):
         """load rows, which can be list-like or Psl objects, adding bin"""
@@ -301,7 +302,7 @@ class GenePredDbTable(HgLiteTable):
     return.  Raw return is to save object creation overhead when results are
     going to be written to a file.
     """
-    __createSql = """CREATE TABLE {table} (
+    createSql = """CREATE TABLE {table} (
             bin int unsigned not null,
             name text not null,
             chrom text not null,
@@ -318,7 +319,8 @@ class GenePredDbTable(HgLiteTable):
             cdsStartStat text not null,
             cdsEndStat text not null,
             exonFrames blob not null)"""
-    __indexSql = [
+    insertSql = """INSERT INTO {table} ({columns}) VALUES ({values});"""
+    indexSql = [
         """CREATE INDEX {table}_chrom_bin on {table} (chrom, bin)""",
         """CREATE INDEX {table}_name on {table} (name)"""]
 
@@ -334,16 +336,15 @@ class GenePredDbTable(HgLiteTable):
             self.create()
 
     def create(self):
-        self._create(self.__createSql)
+        self._create(self.createSql)
 
     def index(self):
         """create index after loading"""
-        self._index(self.__indexSql)
+        self._index(self.indexSql)
 
     def loadsWithBin(self, binnedRows):
         """load genePred rows which already have bin column"""
-        sql = "INSERT INTO {table} ({columns}) VALUES ({values});"
-        self._inserts(sql, self.columnNamesBin, binnedRows)
+        self._inserts(self.insertSql, self.columnNamesBin, binnedRows)
 
     def loads(self, rows):
         """load rows, which can be list-like or genePred objects, adding bin"""
@@ -404,7 +405,7 @@ class GencodeAttrsDbTable(HgLiteTable):
     """
     GENCODE attributes table from UCSC databases.
     """
-    __createSql = """CREATE TABLE {table} (
+    createSql = """CREATE TABLE {table} (
             geneId text not null,
             geneName text not null,
             geneType text not null,
@@ -418,7 +419,8 @@ class GencodeAttrsDbTable(HgLiteTable):
             ccdsId text default null,
             level int not null,
             transcriptClass text not null)"""
-    __indexSql = [
+    insertSql = """INSERT INTO {table} ({columns}) VALUES ({values});"""
+    indexSql = [
         """CREATE INDEX {table}_geneId on {table} (geneId)""",
         """CREATE INDEX {table}_geneName on {table} (geneName)""",
         """CREATE INDEX {table}_geneType on {table} (geneType)""",
@@ -437,16 +439,15 @@ class GencodeAttrsDbTable(HgLiteTable):
             self.create()
 
     def create(self):
-        self._create(self.__createSql)
+        self._create(self.createSql)
 
     def index(self):
         """create index after loading"""
-        self._index(self.__indexSql)
+        self._index(self.indexSql)
 
     def loads(self, rows):
         """load rows, which can be list-like or GencodeAttrs object"""
-        sql = "INSERT INTO {table} ({columns}) VALUES ({values});"
-        self._inserts(sql, self.columnNames, rows)
+        self._inserts(self.insertSql, self.columnNames, rows)
 
     def __loadTsvRow(self, tsvRow):
         "convert to list in column order"
@@ -463,8 +464,8 @@ class GencodeAttrsDbTable(HgLiteTable):
         rows = [self.__loadTsvRow(row) for row in TsvReader(attrsFile, typeMap=typeMap)]
         self.loads(rows)
 
-    def __queryRows(self, sql, key):
-        return self.queryRows(sql, self.columnNames, lambda cur, row: GencodeAttrs(*row), key)
+    def __queryRows(self, sql, *queryargs):
+        return self.queryRows(sql, self.columnNames, lambda cur, row: GencodeAttrs(*row), *queryargs)
 
     def getByTranscriptId(self, transcriptId):
         """get the GencodeAttrs object for transcriptId, or None if not found."""
@@ -480,6 +481,7 @@ class GencodeAttrsDbTable(HgLiteTable):
         sql = "select distinct geneId from {table}"
         return list(self.queryRows(sql, (), lambda cur, row: row[0]))
 
+
 class GencodeTranscriptSource(namedtuple("GencodeTranscriptSource",
                                          ("transcriptId", "source",))):
     """GENCODE transcript source"""
@@ -490,10 +492,11 @@ class GencodeTranscriptSourceDbTable(HgLiteTable):
     """
     GENCODE transcript source from UCSC databases.
     """
-    __createSql = """CREATE TABLE {table} (
+    createSql = """CREATE TABLE {table} (
             transcriptId text not null,
             source text not null)"""
-    __indexSql = [
+    insertSql = """INSERT INTO {table} ({columns}) VALUES ({values});"""
+    indexSql = [
         """CREATE INDEX {table}_transcriptId on {table} (transcriptId)""",
         """CREATE INDEX {table}_source on {table} (source)""",
     ]
@@ -506,16 +509,15 @@ class GencodeTranscriptSourceDbTable(HgLiteTable):
             self.create()
 
     def create(self):
-        self._create(self.__createSql)
+        self._create(self.createSql)
 
     def index(self):
         """create index after loading"""
-        self._index(self.__indexSql)
+        self._index(self.indexSql)
 
     def loads(self, rows):
         """load rows, which can be list-like or GencodeTranscriptSource object"""
-        sql = "INSERT INTO {table} ({columns}) VALUES ({values});"
-        self._inserts(sql, self.columnNames, rows)
+        self._inserts(self.insertSql, self.columnNames, rows)
 
     def __loadTsvRow(self, tsvRow):
         "convert to list in column order"
@@ -526,11 +528,72 @@ class GencodeTranscriptSourceDbTable(HgLiteTable):
         rows = [self.__loadTsvRow(row) for row in TsvReader(sourceFile)]
         self.loads(rows)
 
-    def __queryRows(self, sql, key):
-        return self.queryRows(sql, self.columnNames, lambda cur, row: GencodeTranscriptSource(row[0], intern(str(row[1]))), key)
+    def __queryRows(self, sql, *queryargs):
+        return self.queryRows(sql, self.columnNames, lambda cur, row: GencodeTranscriptSource(row[0], intern(str(row[1]))), *queryargs)
 
     def getByTranscriptId(self, transcriptId):
         """get the GencodeTranscriptSource object for transcriptId, or None if not found."""
         sql = "select {columns} from {table} where transcriptId = ?"
         return next(self.__queryRows(sql, transcriptId), None)
 
+    def queryAll(self):
+        sql = "select * from {table}"
+        return self.__queryRows(sql)
+
+
+class GencodeTranscriptionSupportLevel(namedtuple("GencodeTranscriptionSupportLevel",
+                                                  ("transcriptId", "level",))):
+    """GENCODE transcription support level"""
+    pass
+
+
+class GencodeTranscriptionSupportLevelDbTable(HgLiteTable):
+    """
+    GENCODE transcript support levels from UCSC databases.
+    """
+    createSql = """CREATE TABLE {table} (
+            transcriptId text not null,
+            level int not null)"""
+    insertSql = """INSERT INTO {table} ({columns}) VALUES ({values});"""
+    indexSql = [
+        """CREATE INDEX {table}_transcriptId on {table} (transcriptId)""",
+    ]
+
+    columnNames = GencodeTranscriptionSupportLevel._fields
+
+    def __init__(self, conn, table, create=False):
+        super(GencodeTranscriptionSupportLevelDbTable, self).__init__(conn, table)
+        if create:
+            self.create()
+
+    def create(self):
+        self._create(self.createSql)
+
+    def index(self):
+        """create index after loading"""
+        self._index(self.indexSql)
+
+    def loads(self, rows):
+        """load rows, which can be list-like or GencodeTranscriptSource object"""
+        self._inserts(self.insertSql, self.columnNames, rows)
+
+    def __loadTsvRow(self, tsvRow):
+        "convert to list in column order"
+        return [getattr(tsvRow, cn) for cn in self.columnNames]
+
+    def loadTsv(self, sourceFile):
+        """load a GENCODE attributes file, adding bin"""
+        rows = [self.__loadTsvRow(row) for row in TsvReader(sourceFile)]
+        self.loads(rows)
+
+    def __queryRows(self, sql, *queryargs):
+        return self.queryRows(sql, self.columnNames, lambda cur, row: GencodeTranscriptionSupportLevel(row[0], row[1]), *queryargs)
+
+    def getByTranscriptId(self, transcriptId):
+        """get the GencodeTranscriptionSupportLevel object for transcriptId, or None if not found."""
+        sql = "select {columns} from {table} where transcriptId = ?"
+        return next(self.__queryRows(sql, transcriptId), None)
+
+    def queryAll(self):
+        sql = "select * from {table}"
+        return self.__queryRows(sql)
