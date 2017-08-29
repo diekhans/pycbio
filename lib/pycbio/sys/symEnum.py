@@ -88,8 +88,8 @@ class SymEnum(Enum):
     string values and Enum objects.  This support construction from string
     values and str() returns value without class name.  Aliases can be
     added using the Enum approach of:
-        val = 1
-        valalias = val
+        name = 1
+        namealias = name
 
     To handle string values that are not valid Python member names, an external
     name maybe associated with a field using a SymEnumValue object
@@ -97,6 +97,11 @@ class SymEnum(Enum):
 
     Either field name or external name maybe used to obtain a value.  The external
     name is returned with str().
+
+    Instances of the enumerations are obtained by either string name or int
+    value:
+       SymEnum(strName)
+       SymEnum(intVal)
     """
     __metaclass__ = SymEnumMeta
 
