@@ -60,8 +60,8 @@ def _encodeAttr(v):
 
 class Feature(object):
     """
-    One feature notation from a GFF3, missing attribute, as code by `.' in
-    the file are stored as None.
+    One feature notation from a GFF3 file.  Coordinates are in zero-based, half-open.
+    Missing attribute, as code by `.' in the file are stored as None.
     """
 
     __slots__ = ("seqname", "source", "type", "start", "end", "score",
@@ -72,12 +72,13 @@ class Feature(object):
                  frame, attributes, gff3Set, lineNumber=None):
         """
         The attributes field is a dict of lists/tupes as attributes maybe
-        multi-valued.
+        multi-valued.  Range should be one based and will be converted to
+        zero-based, half-open.
         """
         self.seqname = seqname
         self.source = source
         self.type = type
-        self.start = start
+        self.start = start - 1
         self.end = end
         self.score = score
         self.strand = strand
@@ -113,7 +114,7 @@ class Feature(object):
         Return the object as a valid GFF3 record line.
         """
         return "\t".join([self.seqname, self.source, self.type,
-                          str(self.start), str(self.end), self.__dotIfNone(self.score),
+                          str(self.start + 1), str(self.end), self.__dotIfNone(self.score),
                           self.__dotIfNone(self.strand), self.__dotIfNone(self.frame),
                           self.__attributeStrs()])
 

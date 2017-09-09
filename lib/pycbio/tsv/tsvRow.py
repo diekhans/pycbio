@@ -97,6 +97,9 @@ class TsvRow(object):
     def __str__(self):
         return "\t".join(self.getRow())
 
+    def __repr__(self):
+        return str(self)
+
     def getColumns(self, colNames):
         """get a subset of the columns in the row as a list"""
         subRow = []
