@@ -1,84 +1,118 @@
 # Copyright 2006-2012 Mark Diekhans
 from pycbio.tsv.tabFile import TabFile, TabFileReader
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin
-from pycbio.sys.multiDict import MultiDict
+from collections import defaultdict, namedtuple
 
 
 # FIXME: not complete, needs tests
 
 class Bed(object):
-    """Object wrapper for a parsing a BED record"""
+    """Object wrapper for a BED record"""
+    __slots__ = ("chrom", "chromStart", "chromEnd", "name", "score",
+                 "strand", "thickStart", "thickEnd", "itemRgb", "blocks")
 
-    class Block(object):
-        __slots__ = ("relStart", "size", "start", "end")
+    class Block(namedtuple("Block", ("start", "end"))):
+        """A block in the BED.  Coordinates are absolute, not relative"""
+        __slots__ = ()
 
-        def __init__(self, relStart, size, start):
-            self.relStart = relStart
-            self.size = size
-            self.start = start
-            self.end = start + size
+        def __len__(self):
+            return self.end - self.start
 
-        def __str__(self):
-            return str(self.start) + "-" + str(self.end) + "[+" + str(self.relStart) + "/" + str(self.size) + "]"
+    def __init__(self, chrom, chromStart, chromEnd, name=None, score=None, strand=None,
+                 thickStart=None, thickEnd=None, itemRgb=None, blocks=None):
+        self.chrom = chrom
+        self.chromStart = chromStart
+        self.chromEnd = chromEnd
+        self.name = name
+        self.score = score
+        self.strand = strand
+        self.thickStart = thickStart
+        self.thickEnd = thickEnd
+        self.itemRgb = itemRgb
+        self.blocks = blocks
 
-    def __init__(self, row):
-        self.numCols = len(row)
-        self.chrom = row[0]
-        self.chromStart = int(row[1])
-        self.chromEnd = int(row[2])
-        if self.numCols > 3:
-            self.name = row[3]
-        else:
-            self.name = None
-        if self.numCols > 4:
-            self.score = int(row[4])
-        else:
-            self.score = None
-        if self.numCols > 5:
-            self.strand = row[5]
-        else:
-            self.strand = None
-        if self.numCols > 7:
-            self.thickStart = int(row[6])
-            self.thickEnd = int(row[7])
-        else:
-            self.thickStart = None
-            self.thickEnd = None
+    @property
+    def numCols(self):
+        "Returns the number of columns in the BED"
+        for i in xrange(len(self.__slots__)):
+            if getattr(self, self.__slots__[i]) is None:
+                break
+        if i == 9:
+            i = 11  # blocks take up three columns
+        return i
 
-        if self.numCols > 8:
-            self.itemRgb = row[8]
-        else:
-            self.itemRgb = None
-        if self.numCols > 11:
-            sizes = intArraySplit(row[10])
-            relStarts = intArraySplit(row[11])
-            self.blocks = []
-            for i in xrange(len(relStarts)):
-                self.blocks.append(Bed.Block(relStarts[i], sizes[i], self.chromStart + relStarts[i]))
-        else:
-            self.blocks = None
+    def __getBlockColumns(self):
+        relStarts = []
+        sizes = []
+        for blk in self.blocks:
+            relStarts.append(str(blk.start - self.chromStart))
+            sizes.append(str(len(blk)))
+        return [intArrayJoin(sizes), intArrayJoin(relStarts)]
 
     def getRow(self):
-        row = [self.chrom, str(self.chromStart), str(self.chromEnd), self.name]
-        if self.numCols > 4:
+        numCols = self.numCols
+        row = [self.chrom, str(self.chromStart), str(self.chromEnd)]
+        if numCols > 3:
+            row.append(str(self.name))
+        if numCols > 4:
             row.append(str(self.score))
-        if self.numCols > 5:
+        if numCols > 5:
             row.append(self.strand)
-        if self.numCols > 7:
+        if numCols > 7:
             row.append(str(self.thickStart))
             row.append(str(self.thickEnd))
-        if self.numCols > 8:
+        if numCols > 9:
             row.append(str(self.itemRgb))
-        if self.numCols > 11:
+        if numCols > 10:
             row.append(str(len(self.blocks)))
-            relStarts = []
-            sizes = []
-            for blk in self.blocks:
-                relStarts.append(str(blk.relStart))
-                sizes.append(str(blk.size))
-            row.append(intArrayJoin(relStarts))
-            row.append(intArrayJoin(sizes))
+            row.extend(self.__getBlockColumns())
         return row
+
+    @staticmethod
+    def __parseBlockColumns(chromStart, row):
+        sizes = intArraySplit(row[10])
+        relStarts = intArraySplit(row[11])
+        blocks = []
+        for i in xrange(len(relStarts)):
+            start = chromStart + relStarts[i]
+            blocks.append(Bed.Block(start, start + sizes[i]))
+        return blocks
+
+    @staticmethod
+    def parse(row):
+        """parse bed string columns into a bed object"""
+        numCols = len(row)
+        chrom = row[0]
+        chromStart = int(row[1])
+        chromEnd = int(row[2])
+        if numCols > 3:
+            name = row[3]
+        else:
+            name = None
+        if numCols > 4:
+            score = int(row[4])
+        else:
+            score = None
+        if numCols > 5:
+            strand = row[5]
+        else:
+            strand = None
+        if numCols > 7:
+            thickStart = int(row[6])
+            thickEnd = int(row[7])
+        else:
+            thickStart = None
+            thickEnd = None
+        if numCols > 8:
+            itemRgb = row[8]
+        else:
+            itemRgb = None
+        if numCols > 11:
+            blocks = Bed.__parseBlockColumns(chromStart, row)
+        else:
+            blocks = None
+        return Bed(chrom, chromStart, chromEnd, name, score, strand,
+                   thickStart, thickEnd, itemRgb, blocks)
 
     def __str__(self):
         "return BED as a tab-separated string"
@@ -97,17 +131,24 @@ class BedReader(TabFileReader):
         TabFileReader.__init__(self, fileName, rowClass=Bed, hashAreComments=True, skipBlankLines=True)
 
 
-class BedTbl(TabFile):
+class BedTable(TabFile):
     """Table of BED objects loaded from a tab-file
     """
 
     def __mkNameIdx(self):
-        self.nameMap = MultiDict()
+        self.nameMap = defaultdict(list)
         for bed in self:
-            self.nameMap.add(bed.name, bed)
+            self.nameMap[bed.name].append(bed)
 
     def __init__(self, fileName, nameIdx=False):
-        TabFile.__init__(self, fileName, rowClass=Bed, hashAreComments=True)
+        TabFile.__init__(self, fileName, rowClass=lambda r: Bed.parse(r), hashAreComments=True)
         self.nameMap = None
         if nameIdx:
             self.__mkNameIdx()
+
+    def getByName(self, name):
+        "get *tuple* of BEDs by name"
+        if name in self.nameMap:
+            return tuple(self.nameMap[name])
+        else:
+            return ()

@@ -41,7 +41,6 @@ class Gff3Tests(TestCaseBase):
         # check that it is zero-based internally
         self.assertEquals(feats[0].start, 334)
         self.assertEquals(feats[0].end, 649)
-        
 
     def testSpecialCases(self):
         self.__parseTest("specialCasesTest.gff3")
