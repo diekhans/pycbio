@@ -15,7 +15,6 @@ from Bio import SeqIO
 # and make table operations functions.???  probably not
 # FIXME: removed duplicated functions and move to base class or mix-in
 
-
 def noneIfEmpty(s):
     return s if s != "" else None
 
@@ -392,6 +391,9 @@ class GenePredDbTable(HgLiteTable):
         sql = "select {{columns}} from {{table}} where {};".format(binWhere)
         return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw))
 
+    def queryAll(self, raw=False):
+        sql = "select {columns} from {table}"
+        return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw))
 
 class GencodeAttrs(namedtuple("GencodeAttrs",
                               ("geneId", "geneName", "geneType", "geneStatus", "transcriptId",
@@ -537,7 +539,7 @@ class GencodeTranscriptSourceDbTable(HgLiteTable):
         return next(self.__queryRows(sql, transcriptId), None)
 
     def queryAll(self):
-        sql = "select * from {table}"
+        sql = "select {columns} from {table}"
         return self.__queryRows(sql)
 
 
@@ -595,5 +597,5 @@ class GencodeTranscriptionSupportLevelDbTable(HgLiteTable):
         return next(self.__queryRows(sql, transcriptId), None)
 
     def queryAll(self):
-        sql = "select * from {table}"
+        sql = "select {columns} from {table}"
         return self.__queryRows(sql)
