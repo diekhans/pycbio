@@ -6,19 +6,8 @@ import errno
 import sys
 import socket
 import tempfile
+import pipettor
 from pycbio.sys import PycbioException
-
-
-_pipelineMod = None
-
-
-def _getPipelineClass():
-    """To avoid mutual import issues, we get the Pipeline class dynamically on
-    first use"""
-    global _pipelineMod
-    if _pipelineMod is None:
-        _pipelineMod = __import__("pycbio.sys.pipeline", fromlist=["pycbio.sys.pipeline"])
-    return _pipelineMod.Pipeline
 
 
 def ensureDir(dir):
@@ -108,17 +97,17 @@ def opengz(fileName, mode="r"):
     if isCompressed(fileName):
         if mode == "r":
             cmd = decompressCmd(fileName)
-            return _getPipelineClass()([cmd, fileName], mode="r")
+            return pipettor.Popen([cmd, fileName], mode="r")
         elif mode == "w":
             cmd = compressCmd(fileName)
-            return _getPipelineClass()([cmd], mode="w", otherEnd=fileName)
+            return pipettor.Popen([cmd], mode="w", stdout=fileName)
         else:
             raise PycbioException("mode {} not support with compression for {}".format(mode, fileName))
     else:
         return open(fileName, mode)
 
 # FIXME: make these consistent and remove redundant code.  Maybe use
-# keyword for flush
+# keyword for flush. Do we even need them with print function?
 
 
 def prLine(fh, *objs):
