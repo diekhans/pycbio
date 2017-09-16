@@ -5,6 +5,7 @@
 # than methods
 # FIXME: need accessor functions for columns
 from builtins import range
+from future.utils import raise_from
 import sys
 from pycbio.tsv import TsvError
 
@@ -35,7 +36,7 @@ class TsvRow(object):
                 col = ct(col)
             setattr(self, self._columns_[i], col)
         except Exception as ex:
-            raise TsvError("Error converting TSV column {} ({}) to object, value \"{}\"".format(i, self._columns_[i], row[i]), None, ex), None, sys.exc_info()[2]
+            raise_from(TsvError("Error converting TSV column {} ({}) to object, value \"{}\"".format(i, self._columns_[i], row[i])), ex)
 
     def __parse(self, row):
         for i in range(len(self._columns_)):

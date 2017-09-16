@@ -1,6 +1,9 @@
 # Copyright 2006-2012 Mark Diekhans
 """Module to access output of ClusterGenes"""
 
+import six
+if six.PY3:
+    from sys import intern
 from pycbio.hgdata.autoSql import strArrayType
 from pycbio.tsv import TsvReader
 from pycbio.sys.multiDict import MultiDict

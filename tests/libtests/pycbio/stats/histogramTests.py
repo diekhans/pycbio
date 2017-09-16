@@ -2,7 +2,7 @@
 import unittest
 import sys
 if __name__ == '__main__':
-    sys.path.extend([["../../..", "../../../.."], "../../../.."])
+    sys.path.append("../../../../lib")
 from pycbio.stats.histogram import Histogram
 from pycbio.sys.testCaseBase import TestCaseBase
 

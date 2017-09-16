@@ -13,7 +13,7 @@ from pycbio.sys.testCaseBase import TestCaseBase
 class EnumerationTests(TestCaseBase):
 
     def __getColors(self):
-	return Enumeration("Colors", ["red", "green", "blue"])
+        return Enumeration("Colors", ["red", "green", "blue"])
 
     def __checkColors(self, Colors):
         self.assertEqual(Colors.red.name, "red")
@@ -108,7 +108,8 @@ class EnumerationTests(TestCaseBase):
         self.__checkColors(Color2)
 
     def testPickle2(self):
-        self.assertTrue(pickle.HIGHEST_PROTOCOL == 2)
+        # FIXME: higher in py3, but enumeration is going to be replaced by symEnum, so this goes away
+        # self.assertTrue(pickle.HIGHEST_PROTOCOL == 2)
         self.__testPickleProt(2)
 
     def testPickle1(self):

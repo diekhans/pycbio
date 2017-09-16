@@ -3,6 +3,7 @@ Configuration files written as python programs.
 """
 from past.builtins import execfile
 from builtins import object
+from future.utils import raise_from
 import sys
 from types import FunctionType, ModuleType
 from pycbio.sys import PycbioException
@@ -15,9 +16,8 @@ def _evalConfigFile(configPyFile, extraEnv=None):
         configEnv.update(extraEnv)
     try:
         execfile(configPyFile, configEnv, configEnv)
-    except:
-        ei = sys.exc_info()
-        raise PycbioException("Error evaluating configuration file: {}".format(configPyFile), ei[0]), None, ei[2]
+    except Exception as ex:
+        raise_from(PycbioException("Error evaluating configuration file: {}".format(configPyFile)), e)
     return configEnv
 
 # FIXME: now that configEnv has locals, we could get by varname.
@@ -37,15 +37,14 @@ def evalConfigFunc(configPyFile, getFuncName="getConfig", getFuncArgs=[], getFun
     configEnv = _evalConfigFile(configPyFile, extraEnv)
     configFunc = configEnv.get(getFuncName)
     if configFunc is None:
-        raise PycbioException("configuration script does not define function %s(): %s " % (getFuncName, configPyFile))
+        raise PycbioException("configuration script does not define function {}(): {} ".format(getFuncName, configPyFile))
     if not isinstance(configFunc, FunctionType):
-        raise PycbioException("configuration script defines %s, however it is not a function: %s " % (getFuncName, configPyFile))
+        raise PycbioException("configuration script defines {}, however it is not a function: {}".format(getFuncName, configPyFile))
     getFuncArgs = [configPyFile] + list(getFuncArgs)
     try:
         return configFunc(*getFuncArgs, **getFuncKwargs)
-    except:
-        ei = sys.exc_info()
-        raise PycbioException("Error from configuration function %s(): %s " % (getFuncName, configPyFile), ei[1]), None, ei[2]
+    except Exception as ex:
+        raise_from(PycbioException("Error from configuration function {}(): {}".format(getFuncName, configPyFile)), ex)
 
 
 class Config(object):

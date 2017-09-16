@@ -25,7 +25,7 @@ class Gff3Tests(TestCaseBase):
         gff3a = Gff3Parser(self.getInputFile(gff3RelIn)).parse()
         gff3Out1 = self.getOutputFile(".gff3")
         self.__write(gff3a, gff3Out1)
-        self.assertEquals(self.__countRows(gff3a.fileName), self.__countRows(gff3Out1))
+        self.assertEqual(self.__countRows(gff3a.fileName), self.__countRows(gff3Out1))
         self.diffExpected(".gff3")
         gff3b = Gff3Parser(self.getInputFile(gff3RelIn)).parse()
         gff3Out2 = self.getOutputFile(".2.gff3")
@@ -37,10 +37,10 @@ class Gff3Tests(TestCaseBase):
         gff3a = self.__parseTest("sacCerTest.gff3")
         #  gene	335	649
         feats = gff3a.byFeatureId["YAL069W"]
-        self.assertEquals(len(feats), 1)
+        self.assertEqual(len(feats), 1)
         # check that it is zero-based internally
-        self.assertEquals(feats[0].start, 334)
-        self.assertEquals(feats[0].end, 649)
+        self.assertEqual(feats[0].start, 334)
+        self.assertEqual(feats[0].end, 649)
 
     def testSpecialCases(self):
         self.__parseTest("specialCasesTest.gff3")

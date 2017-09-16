@@ -34,7 +34,7 @@ class PycbioException(Exception):
 
     def __str__(self):
         "recursively construct message for chained exception"
-        desc = self.message
+        desc = Exception.__str__(self)
         if self.cause is not None:
             desc += ",\n    caused by: {}: {}".format(self.cause.__class__.__name__, self.cause)
         return desc
@@ -47,12 +47,7 @@ class PycbioException(Exception):
     def formatExcept(ex, doneStacks=None):
         """Format any type of exception, handling PycbioException objects and
         stackTrace added to standard Exceptions."""
-        desc = type(ex).__name__ + ": "
-        # don't recurse on PycbioExceptions, as they will include cause in message
-        if isinstance(ex, PycbioException):
-            desc += ex.message + "\n"
-        else:
-            desc += str(ex) + "\n"
+        desc = str(ex)
         st = getattr(ex, "stackTrace", None)
         if st is not None:
             if doneStacks is None:

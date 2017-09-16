@@ -1,14 +1,19 @@
 """
 Operations on strings of DNA sequences
 """
-import string
+import six
+if six.PY2:
+    import string
+    maketrans = string.maketrans
+else:
+    maketrans = str.maketrans
 from pycbio.sys import PycbioException
 
 ##
 # from: http://edwards.sdsu.edu/labsite/index.php/robs/396-reverse-complement-dna-sequences-in-python
 ##
-_complements = string.maketrans('acgtrymkbdhvACGTRYMKBDHV',
-                                'tgcayrkmvhdbTGCAYRKMVHDB')
+_complements = maketrans('acgtrymkbdhvACGTRYMKBDHV',
+                         'tgcayrkmvhdbTGCAYRKMVHDB')
 
 
 def reverseComplement(dna):

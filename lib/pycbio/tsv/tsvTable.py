@@ -2,6 +2,7 @@
 from __future__ import print_function
 from builtins import range
 from builtins import object
+from future.utils import raise_from
 import six
 from pycbio.tsv.tsvReader import TsvReader
 from pycbio.tsv import TsvError
@@ -57,7 +58,7 @@ class TsvTable(list):
 
     def __indexCol(self, iCol, colDict, col, row):
         if (type(colDict) == dict) and colDict.get(col):
-            raise Exception("column {} unique index value already entered: {} from {} ".format(self.columns[iCol], col, row))
+            raise TsvError("column {} unique index value already entered: {} from {} ".format(self.columns[iCol], col, row))
         else:
             colDict[col] = row
 
@@ -109,12 +110,12 @@ class TsvTable(list):
             self.__buildIndices(uniqKeyCols, multiKeyCols)
             self.__readBody(reader)
         except Exception as ex:
-            raise TsvError("load failed", reader=reader, cause=ex), None, sys.exc_info()[2]
+            raise_from(TsvError("load failed", reader=reader), ex)
 
     def addColumn(self, colName, initValue=None, colType=None):
         "add a column to all rows in the table"
         if colName in self.colMap:
-            raise TsvError("column \"{}\" is already defined".format(colName)), None, sys.exc_info()[2]
+            raise_from(TsvError("column \"{}\" is already defined".format(colName)))
 
         self.colMap[colName] = len(self.columns)
         if colType:

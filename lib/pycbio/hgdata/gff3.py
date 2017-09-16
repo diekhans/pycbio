@@ -109,7 +109,7 @@ class Feature(object):
         url-style quoting
         """
         return ";".join([self.__attributeStr(name)
-                         for name in list(self.attributes.keys())])
+                         for name in sorted(self.attributes.keys())])
 
     def __str__(self):
         """

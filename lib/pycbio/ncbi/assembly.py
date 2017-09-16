@@ -2,6 +2,7 @@
 """Parsing of NCBI assembly information files.
 """
 from __future__ import print_function
+import six
 from pycbio.sys import PycbioException
 
 
@@ -63,7 +64,8 @@ class AssemblyReport(object):
         self.byGenBankAccn = dict()
         self.byRefSeqAccn = dict()
         self.byUcscStyleName = dict()
-        with open(asmReport, "rU") as fh:
+        mode = "r" if six.PY3 else "rU"
+        with open(asmReport, mode) as fh:
             self.__parseMetaData(fh)
             self.__skipToSeqTable(fh)
             self.__parseRecords(fh)

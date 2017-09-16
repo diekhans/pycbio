@@ -72,7 +72,7 @@ class TsvReader(object):
         row = self.__readRow()
         if row is None:
             if not allowEmpty:
-                raise TsvError("empty TSV file", reader=self), None, sys.exc_info()[2]
+                raise TsvError("empty TSV file", reader=self)
         else:
             if self.isRdb:
                 self.__readRow()  # skip format line
@@ -89,7 +89,7 @@ class TsvReader(object):
             col = sys.intern(col)
             self.columns.append(col)
             if col in self.colMap:
-                raise TsvError("Duplicate column name: {}".format(col)), None, sys.exc_info()[2]
+                raise TsvError("Duplicate column name: {}".format(col))
             self.colMap[col] = i
             i += 1
 
@@ -172,14 +172,13 @@ class TsvReader(object):
         try:
             row = self.__readRow()
         except Exception as ex:
-            raise TsvError("Error reading TSV row", self, ex), None, sys.exc_info()[2]
+            raise TsvError("Error reading TSV row", self, ex)
         if row is None:
             raise StopIteration
         if ((self.ignoreExtraCols and (len(row) < len(self.columns))) or ((not self.ignoreExtraCols) and (len(row) != len(self.columns)))):
             # FIXME: will hang: self.close()
-            raise TsvError("row has {} columns, expected {}".format((len(row), len(self.columns))),
-                           reader=self), None, sys.exc_info()[2]
+            raise TsvError("row has {} columns, expected {}".format((len(row), len(self.columns))), reader=self)
         try:
             return self.rowClass(self, row)
         except Exception as ex:
-            raise TsvError("Error converting TSV row to object", self, ex), None, sys.exc_info()[2]
+            raise TsvError("Error converting TSV row to object", self, ex)

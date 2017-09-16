@@ -16,7 +16,7 @@ class LoggingOpsTests(TestCaseBase):
         self.assertEqual(loggingOps.parseFacility("DAEMON"), 3)
 
     def testFacilityInvalid(self):
-        with self.assertRaisesRegexp(ValueError, '^invalid syslog facility: "Fred"$'):
+        with self.assertRaisesRegex(ValueError, '^invalid syslog facility: "Fred"$'):
             loggingOps.parseFacility("Fred")
 
     def testLevelLower(self):
@@ -26,7 +26,7 @@ class LoggingOpsTests(TestCaseBase):
         self.assertEqual(loggingOps.parseLevel("INFO"), 20)
 
     def testLevelInvalid(self):
-        with self.assertRaisesRegexp(ValueError, '^invalid logging level: "Fred"$'):
+        with self.assertRaisesRegex(ValueError, '^invalid logging level: "Fred"$'):
             loggingOps.parseLevel("Fred")
 
     def __mkParser(self):

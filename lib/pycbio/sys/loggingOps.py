@@ -10,6 +10,11 @@ from logging.handlers import SysLogHandler
 
 # FIXME: need to be able to specify logger name
 
+def getLevelNames():
+    if six.PY2:
+        return sorted([l for l in logging._levelNames.values() if isinstance(l, six.string_types)])
+    else:
+        return sorted(logging._nameToLevel.keys())
 
 def parseFacility(facilityStr):
     "convert case-insensitive facility string to a facility number"
@@ -22,8 +27,10 @@ def parseFacility(facilityStr):
 
 def parseLevel(levelStr):
     "convert a log level string to numeric value"
-    levelStrUp = levelStr.upper()
-    level = logging._levelNames.get(levelStrUp)
+    if six.PY2:
+        level = logging._levelNames.get(levelStr.upper())
+    else:
+        level = logging._nameToLevel.get(levelStr.upper())
     if level is None:
         raise ValueError("invalid logging level: \"" + levelStr + "\"")
     return level
@@ -88,8 +95,7 @@ def addCmdOptions(parser):
                         " one of {}".format(
                             ", ".join(iter(list(SysLogHandler.facility_names.keys())))))
     parser.add_argument("--logLevel", default="warn", type=parseLevel,
-                        help="Set level to case-insensitive symbolic value, one of {}".format(
-                            ", ".join([n for n in list(logging._levelNames.values()) if isinstance(n, six.string_types)])))
+                        help="Set level to case-insensitive symbolic value, one of {}".format(", ".join(getLevelNames())))
     parser.add_argument("--logConfFile",
                         help="Python logging configuration file, see logging.config.fileConfig()")
 

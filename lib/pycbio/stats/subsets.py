@@ -24,23 +24,10 @@ class Subsets(object):
         self.inclusiveSubsets = None
 
     @staticmethod
-    def __subListCmp(sub1, sub2):
-        "compare two subsets for sorting"
-        # first by length
-        diff = len(sub1).__cmp__(len(sub2))
-        if diff == 0:
-            # same length, compare elements lexically, first convert sets to
-            # lists
-            l1 = list(sub1)
-            l2 = list(sub2)
-            i = 0
-            while (i < len(l1)) and (diff == 0):
-                if l1[i] < l2[i]:
-                    diff = -1
-                elif l1[i] > l2[i]:
-                    diff = 1
-                i += 1
-        return diff
+    def __subListSortKey(sub):
+        "compare two subsets for sorting, first by length, then lexcelly"
+        # first by length; then lexically
+        return (len(sub), sorted(sub))
 
     def __makeSubset(self, bitSet, elements):
         "generated a subset for a bit set of the elements in list"
@@ -66,7 +53,7 @@ class Subsets(object):
         for bitSet in range(1, nSubsets + 1):
             subsets.append(self.__makeSubset(bitSet, elements))
         # sort and constructs sets
-        subsets.sort(cmp=Subsets.__subListCmp)
+        subsets.sort(key=Subsets.__subListSortKey)
         return tuple(subsets)
 
     def getSubsets(self):
@@ -89,7 +76,7 @@ class Subsets(object):
         inclSubsets = []
         for iss in self.__makeSubsets(subset):
             inclSubsets.append(iss)
-        inclSubsets.sort(cmp=Subsets.__subListCmp)
+        inclSubsets.sort(key=Subsets.__subListSortKey)
         return tuple(inclSubsets)
 
     def getInclusiveSubsets(self, subset):
