@@ -1,6 +1,8 @@
 # Copyright 2015-2015 Mark Diekhans
 """Parsing of NCBI assembly information files.
 """
+from __future__ import print_function
+from builtins import object
 from pycbio.sys import PycbioException
 
 

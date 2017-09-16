@@ -1,7 +1,9 @@
 # Copyright 2006-2014 Mark Diekhans
+from future import standard_library
+standard_library.install_aliases()
 import unittest
 import sys
-import cPickle
+import pickle
 if __name__ == '__main__':
     sys.path.append("../../../../lib")
 from pycbio.sys.symEnum import SymEnum, SymEnumValue
@@ -92,14 +94,14 @@ class SymEnumTests(TestCaseBase):
         stuff = {Color.red: "red one",
                  Color.green: "green one"}
 
-        world = cPickle.dumps((Color, stuff,), protocol)
-        color, stuff2 = cPickle.loads(world)
+        world = pickle.dumps((Color, stuff,), protocol)
+        color, stuff2 = pickle.loads(world)
 
         self.assertTrue(Color.red in stuff2)
         self.assertTrue(Color.green in stuff2)
 
     def testColorPickle2(self):
-        self.assertTrue(cPickle.HIGHEST_PROTOCOL == 2)
+        self.assertTrue(pickle.HIGHEST_PROTOCOL == 2)
         self.__testColorPickleProtocol(2)
 
     def testColorPickle1(self):
@@ -129,14 +131,14 @@ class SymEnumTests(TestCaseBase):
     def __testGeneFeaturePickleProtocol(self, protocol):
         stuff = {GeneFeature.utr3: "UTR'3 one",
                  GeneFeature.cds: "CDS one"}
-        world = cPickle.dumps((GeneFeature, stuff,), protocol)
-        geneFeature, stuff2 = cPickle.loads(world)
+        world = pickle.dumps((GeneFeature, stuff,), protocol)
+        geneFeature, stuff2 = pickle.loads(world)
 
         self.assertTrue(GeneFeature.utr3 in stuff2)
         self.assertTrue(GeneFeature.cds in stuff2)
 
     def testGeneFeaturePickle2(self):
-        self.assertTrue(cPickle.HIGHEST_PROTOCOL == 2)
+        self.assertTrue(pickle.HIGHEST_PROTOCOL == 2)
         self.__testGeneFeaturePickleProtocol(2)
     def testGeneFeaturePickle1(self):
         self.__testGeneFeaturePickleProtocol(1)

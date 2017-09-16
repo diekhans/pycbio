@@ -31,7 +31,7 @@ class NcbiParseTests(TestCaseBase):
         self.assertEquals(str(asmReport.byRefSeqAccn['NT_187670.1']), expectLine)
         self.assertEquals(str(asmReport.byUcscStyleName['chr19_KI270916v1_alt']), expectLine)
 
-        metaData = [(name, asmReport.metaData[name]) for name in sorted(asmReport.metaData.iterkeys())]
+        metaData = [(name, asmReport.metaData[name]) for name in sorted(asmReport.metaData.keys())]
         self.assertEquals(metaData,
                           [('Assembly Name', 'GRCh38.p2'),
                            ('Assembly level', 'Chromosome'),

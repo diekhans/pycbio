@@ -1,4 +1,10 @@
 # Copyright 2006-2012 Mark Diekhans
+from __future__ import print_function
+from __future__ import division
+from past.builtins import cmp
+from builtins import range
+from past.utils import old_div
+from builtins import object
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin, strArraySplit, strArrayJoin
 from pycbio.sys import fileOps, dbOps
 from pycbio.hgdata.rangeFinder import Binner
@@ -105,7 +111,7 @@ class Psl(object):
         if haveSeqs:
             qSeqs = strArraySplit(qSeqsStr)
             tSeqs = strArraySplit(tSeqsStr)
-        for i in xrange(self.blockCount):
+        for i in range(self.blockCount):
             self.blocks.append(PslBlock(self, qStarts[i], tStarts[i], blockSizes[i],
                                         (qSeqs[i] if haveSeqs else None),
                                         (tSeqs[i] if haveSeqs else None)))
@@ -316,7 +322,7 @@ class Psl(object):
             or (self.tEnd != other.tEnd)
             or (self.blockCount != other.blockCount)):
             return False
-        for i in xrange(self.blockCount):
+        for i in range(self.blockCount):
             if not self.blocks[i].sameAlign(other.blocks[i]):
                 return False
         return True
@@ -338,7 +344,7 @@ class Psl(object):
             or (self.tEnd != other.tEnd)
             or (self.blockCount != other.blockCount)):
             return False
-        for i in xrange(self.blockCount):
+        for i in range(self.blockCount):
             if not self.blocks[i].sameAlign(other.blocks[i]):
                 return False
         return True
@@ -351,13 +357,13 @@ class Psl(object):
         if aligned == 0.0:
             return 0.0  # just matches Ns
         else:
-            return float(self.match + self.repMatch) / aligned
+            return old_div(float(self.match + self.repMatch), aligned)
 
     def basesAligned(self):
         return self.match + self.misMatch + self.repMatch
 
     def queryAligned(self):
-        return float(self.match + self.misMatch + self.repMatch) / float(self.qSize)
+        return old_div(float(self.match + self.misMatch + self.repMatch), float(self.qSize))
 
     def reverseComplement(self):
         "create a new PSL that is reverse complemented"
@@ -381,7 +387,7 @@ class Psl(object):
         rc.tEnd = self.tEnd
         rc.blockCount = self.blockCount
         rc.blocks = []
-        for i in xrange(self.blockCount - 1, -1, -1):
+        for i in range(self.blockCount - 1, -1, -1):
             rc.blocks.append(self.blocks[i].reverseComplement(rc))
         return rc
 
@@ -429,10 +435,10 @@ class Psl(object):
         swap.blocks = []
 
         if doRc:
-            for i in xrange(self.blockCount - 1, -1, -1):
+            for i in range(self.blockCount - 1, -1, -1):
                 swap.blocks.append(self.blocks[i].swapSidesReverseComplement(swap))
         else:
-            for i in xrange(self.blockCount):
+            for i in range(self.blockCount):
                 swap.blocks.append(self.blocks[i].swapSides(swap))
         return swap
 
@@ -451,7 +457,7 @@ class PslReader(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         "read next PSL"
         while True:
             line = self.fh.readline()
@@ -495,7 +501,7 @@ class PslDbReader(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         "read next PSL"
         while True:
             row = self.cur.fetchone()
@@ -540,7 +546,7 @@ class PslTbl(list):
             self.__mkTNameIdx()
 
     def getQNameIter(self):
-        return self.qNameMap.iterkeys()
+        return iter(self.qNameMap.keys())
 
     def haveQName(self, qName):
         return (self.qNameMap.get(qName) is not None)
@@ -553,7 +559,7 @@ class PslTbl(list):
                 yield psl
 
     def getTNameIter(self):
-        return self.tNameMap.iterkeys()
+        return iter(self.tNameMap.keys())
 
     def haveTName(self, tName):
         return (self.tNameMap.get(tName) is not None)

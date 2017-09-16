@@ -1,4 +1,5 @@
 # Copyright 2006-2012 Mark Diekhans
+from builtins import range
 import unittest
 import sys
 if __name__ == '__main__':
@@ -89,7 +90,7 @@ class ReadTests(TestCaseBase):
 
         tStarts = (4222, 4832, 5658, 5766, 6469, 6719, 7095, 7355, 7777, 8130, 14600, 19183)
         self.assertEqual(len(r.tStarts), len(tStarts))
-        for i in xrange(len(tStarts)):
+        for i in range(len(tStarts)):
             self.assertEqual(r.tStarts[i], tStarts[i])
 
     def testMissingIdxCol(self):

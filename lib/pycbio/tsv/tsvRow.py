@@ -4,6 +4,8 @@
 # a better convention to avoid collisions or make these functions rather
 # than methods
 # FIXME: need accessor functions for columns
+from builtins import range
+from builtins import object
 import sys
 from pycbio.tsv import TsvError
 
@@ -21,7 +23,7 @@ class TsvRow(object):
         if self._colTypes_:
             self.__parse(row)
         else:
-            for i in xrange(len(self._columns_)):
+            for i in range(len(self._columns_)):
                 setattr(self, self._columns_[i], row[i])
 
     def __parseCol(self, row, i):
@@ -37,7 +39,7 @@ class TsvRow(object):
             raise TsvError("Error converting TSV column {} ({}) to object, value \"{}\"".format(i, self._columns_[i], row[i]), None, ex), None, sys.exc_info()[2]
 
     def __parse(self, row):
-        for i in xrange(len(self._columns_)):
+        for i in range(len(self._columns_)):
             self.__parseCol(row, i)
 
     def __getitem__(self, key):
@@ -66,7 +68,7 @@ class TsvRow(object):
 
     def __fmtWithTypes(self):
         row = []
-        for i in xrange(len(self._columns_)):
+        for i in range(len(self._columns_)):
             col = getattr(self, self._columns_[i])
             ct = self._colTypes_[i]
             if col is None:

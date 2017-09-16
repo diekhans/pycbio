@@ -1,4 +1,5 @@
 # Copyright 2006-2012 Mark Diekhans
+from builtins import range
 import unittest
 import sys
 if __name__ == '__main__':
@@ -72,7 +73,7 @@ class ReadTests(TestCaseBase):
     def chkFeatures(self, gene, expect):
         feats = gene.getFeatures()
         self.assertEqual(len(feats), len(expect))
-        for i in xrange(len(feats)):
+        for i in range(len(feats)):
             self.assertTrue(featureEq(feats[i], expect[i]))
 
     def testLoadMin(self):

@@ -3,6 +3,8 @@
 # FIXME: needed for faster readings, but needs cleaned up, need reader/writer
 # classes
 # FIXME add try and error msg with file/line num, move to row reader class; see fileOps.iterRows
+from builtins import next
+from builtins import object
 import sys
 import csv
 from pycbio.sys import fileOps
@@ -49,7 +51,7 @@ class TabFileReader(object):
         if self.csvRdr is None:
             return None
         try:
-            row = self.csvRdr.next()
+            row = next(self.csvRdr)
         except Exception as ex:
             self.close()
             if isinstance(ex, StopIteration):
@@ -70,7 +72,7 @@ class TabFileReader(object):
         else:
             return True
 
-    def next(self):
+    def __next__(self):
         while True:
             row = self.__readRow()
             if row is None:

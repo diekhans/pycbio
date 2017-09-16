@@ -1,6 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 "Generate Venn diagram set intersection statistics"
 
+from builtins import object
 from pycbio.stats.subsets import Subsets
 from pycbio.sys import fileOps
 
@@ -68,7 +69,7 @@ class Venn(object):
         "build Venn table"
         self.venn = SetDict(self.subsets.getSubsets())
 
-        for item in self.itemToNames.iterkeys():
+        for item in self.itemToNames.keys():
             nameSet = frozenset(self.itemToNames[item])
             self.venn.add(nameSet, item)
 
@@ -76,7 +77,7 @@ class Venn(object):
         "build as inclusive subsets"
         self.venn = SetDict(self.subsets.getSubsets())
 
-        for item in self.itemToNames.iterkeys():
+        for item in self.itemToNames.keys():
             setName = frozenset(self.itemToNames[item])
             for iss in self.subsets.getInclusiveSubsets(setName):
                 self.venn.add(iss, item)

@@ -1,4 +1,5 @@
 # Copyright 2006-2012 Mark Diekhans
+from builtins import object
 import os
 import errno
 import socket
@@ -134,7 +135,7 @@ class _NamedFifo(_Fifo):
             return False
         # atomic create
         try:
-            os.mkfifo(path, 0600)
+            os.mkfifo(path, 0o600)
         except OSError as ex:
             if ex.errno == errno.EEXIST:
                 return False

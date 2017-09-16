@@ -2,6 +2,9 @@
 
 # this module is tested by pycbio/src/progs/gbff/gbffGenesToGenePred
 
+from __future__ import print_function
+from builtins import range
+from builtins import object
 from pycbio.sys import PycbioException
 from Bio import SeqFeature
 
@@ -167,7 +170,7 @@ class Coords(list):
 
     def findContained(self, coord):
         "find index of first range containing coord, or None"
-        for i in xrange(len(self)):
+        for i in range(len(self)):
             if self[i].contains(coord):
                 return i
         return None

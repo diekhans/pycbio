@@ -4,6 +4,7 @@
 # FIXME: move to other modules
 
 
+from builtins import range
 def isListLike(v):
     "is variable a list or tuple?"
     return isinstance(v, list) or isinstance(v, tuple)
@@ -12,7 +13,7 @@ def isListLike(v):
 def listInit(size, val):
     "create a list of length size, with each element containing val"
     l = []
-    for i in xrange(size):
+    for i in range(size):
         l.append(val)
     return l
 
@@ -104,7 +105,7 @@ def sortedKeys(d, sortFunc=cmp):
     if d is None:
         return []
     else:
-        keys = list(d.iterkeys())
+        keys = list(d.keys())
         keys.sort(cmp=sortFunc)
         return keys
 

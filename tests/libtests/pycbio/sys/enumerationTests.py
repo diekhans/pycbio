@@ -1,7 +1,9 @@
 # Copyright 2006-2012 Mark Diekhans
+from future import standard_library
+standard_library.install_aliases()
 import unittest
 import sys
-import cPickle
+import pickle
 if __name__ == '__main__':
     sys.path.append("../../../../lib")
 from pycbio.sys.enumeration import Enumeration
@@ -98,15 +100,15 @@ class EnumerationTests(TestCaseBase):
         stuff = {}
         stuff[Colors.red] = "red one"
         stuff[Colors.green] = "green one"
-        world = cPickle.dumps((Colors, stuff), prot)
-        Color2, stuff2 = cPickle.loads(world)
+        world = pickle.dumps((Colors, stuff), prot)
+        Color2, stuff2 = pickle.loads(world)
 
         self.assertTrue(Color2.red in stuff2)
         self.assertTrue(Color2.green in stuff2)
         self.__checkColors(Color2)
 
     def testPickle2(self):
-        self.assertTrue(cPickle.HIGHEST_PROTOCOL == 2)
+        self.assertTrue(pickle.HIGHEST_PROTOCOL == 2)
         self.__testPickleProt(2)
 
     def testPickle1(self):

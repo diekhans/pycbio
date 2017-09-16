@@ -1,11 +1,14 @@
 # Copyright 2006-2012 Mark Diekhans
 """ Classes to handle creating HTML pages and fragments
 """
+from __future__ import print_function
+from builtins import range
 
 # FIXME: frameset kind of a hack
 # FIXME; probably some module to do all of this
 # maybe: http://starship.python.net/crew/friedrich/HTMLgen/html/main.html
 # FIXME: add class TableCell
+
 
 
 class HtmlPage(list):
@@ -65,7 +68,7 @@ class HtmlPage(list):
         self.header("h5", text)
 
     def br(self, numBr=1):
-        for i in xrange(numBr):
+        for i in range(numBr):
             self.append("<br>")
 
     def hr(self):

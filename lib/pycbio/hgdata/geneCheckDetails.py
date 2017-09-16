@@ -1,5 +1,9 @@
 # Copyright 2006-2012 Mark Diekhans
+from past.builtins import cmp
+from future.standard_library import install_aliases
+install_aliases()
 from pycbio.tsv import TsvTable, TsvReader
+import sys
 
 
 def strOrNone(val):
@@ -7,7 +11,7 @@ def strOrNone(val):
     if len(val) == 0:
         return None
     else:
-        return intern(val)
+        return sys.intern(val)
 
 
 # acc	problem	info	chr	chrStart	chrEnd

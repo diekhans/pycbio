@@ -1,6 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 "array and matrix classed, indexed by Enumerations"
 
+from builtins import range
 from pycbio.sys.enumeration import Enumeration
 
 
@@ -8,7 +9,7 @@ class EnumArray(list):
     """array indexed by an Enumeration."""
 
     def __init__(self, enum, initVal=None):
-        for i in xrange(enum.maxNumValue + 1):
+        for i in range(enum.maxNumValue + 1):
             self.append(initVal)
 
     def __getitem__(self, eval):

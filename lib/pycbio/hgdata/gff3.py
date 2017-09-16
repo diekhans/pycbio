@@ -4,11 +4,14 @@ Object representation of GFF3 data and parser for GFF3 files.
 See: http://www.sequenceontology.org/gff3.shtml
 """
 
-from __future__ import division
 from __future__ import print_function
+from __future__ import division
 from __future__ import unicode_literals
 
-import urllib
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
+import urllib.request, urllib.parse, urllib.error
 import copy
 import re
 import gzip
@@ -43,7 +46,7 @@ def _encodeCol(v):
     Encode a column if is has special characters.
     """
     if _encodeColRegexp.search(v):
-        return urllib.quote(v)
+        return urllib.parse.quote(v)
     else:
         return v
 
@@ -53,7 +56,7 @@ def _encodeAttr(v):
     Encode a attribute name or value if is has special characters.
     """
     if _encodeAttrRe.search(v):
-        return urllib.quote(v)
+        return urllib.parse.quote(v)
     else:
         return v
 
@@ -107,7 +110,7 @@ class Feature(object):
         url-style quoting
         """
         return ";".join([self.__attributeStr(name)
-                         for name in self.attributes.iterkeys()])
+                         for name in self.attributes.keys()])
 
     def __str__(self):
         """
@@ -184,7 +187,7 @@ class Gff3Set(object):
         finish loading the set, constructing the tree
         """
         # features maybe disjoint
-        for featureParts in self.byFeatureId.itervalues():
+        for featureParts in self.byFeatureId.values():
             for feature in featureParts:
                 self.__linkFeature(feature)
 
@@ -244,11 +247,11 @@ class Gff3Parser(object):
         if m is None:
             raise GFF3Exception("can't parse attribute/value: '" + attrStr +
                                 "'", self.fileName, self.lineNumber)
-        name = urllib.unquote(m.group(1))
+        name = urllib.parse.unquote(m.group(1))
         val = m.group(2)
         # Split by comma separate then unquote.  Commas in values must be
         # url encoded.
-        return (name, [urllib.unquote(v) for v in val.split(',')])
+        return (name, [urllib.parse.unquote(v) for v in val.split(',')])
 
     SPLIT_ATTR_COL_RE = re.compile("; *")
 
@@ -277,8 +280,8 @@ class Gff3Parser(object):
                 "Wrong number of columns, expected {}, got {}".format(
                     self.GFF3_NUM_COLS, len(row)),
                 self.fileName, self.lineNumber)
-        feature = Feature(urllib.unquote(row[0]), urllib.unquote(row[1]),
-                          urllib.unquote(row[2]),
+        feature = Feature(urllib.parse.unquote(row[0]), urllib.parse.unquote(row[1]),
+                          urllib.parse.unquote(row[2]),
                           int(row[3]), int(row[4]), row[5], row[6], row[7],
                           self.__parseAttrs(row[8]), gff3Set, self.lineNumber)
         gff3Set.add(feature)

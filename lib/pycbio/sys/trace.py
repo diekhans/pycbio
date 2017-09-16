@@ -3,6 +3,7 @@
 # ideas from:
 #  http://www.dalkescientific.com/writings/diary/archive/2005/04/20/tracing_python_code.html
 
+from builtins import object
 import sys
 import os
 import types

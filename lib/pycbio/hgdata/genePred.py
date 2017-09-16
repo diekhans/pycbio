@@ -1,4 +1,9 @@
 # Copyright 2006-2012 Mark Diekhans
+from __future__ import print_function
+from __future__ import division
+from builtins import range
+from past.utils import old_div
+from builtins import object
 import copy
 from pycbio.sys import fileOps, dbOps
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin
@@ -169,7 +174,7 @@ class GenePred(object):
         frame = None
         self.cdsStartIExon = None
         self.cdsEndIExon = None
-        for i in xrange(len(exonStarts)):
+        for i in range(len(exonStarts)):
             if exonFrames is not None:
                 frame = exonFrames[i]
             self.addExon(exonStarts[i], exonEnds[i], frame)
@@ -334,7 +339,7 @@ class GenePred(object):
             iEnd = -1
             iDir = -1
         cdsOff = 0
-        for i in xrange(iStart, iEnd, iDir):
+        for i in range(iStart, iEnd, iDir):
             e = self.exons[i]
             c = e.getCds()
             if c is not None:
@@ -373,7 +378,7 @@ class GenePred(object):
         # check each exon
         checkFrame = self.hasExonFrames and gene2.hasExonFrames
         iCds2 = 0
-        for iCds1 in xrange(nCds1):
+        for iCds1 in range(nCds1):
             exon1 = self.getCdsExon(iCds1)
             exon2 = gene2.getCdsExon(iCds2)
             if exon1.getCds() != exon2.getCds():
@@ -427,16 +432,16 @@ class GenePred(object):
     def getSortedExonIndexes(self):
         "generator for exon indexes sorted in order of transcription"
         if self.inDirectionOfTranscription():
-            return xrange(0, len(self.exons), 1)
+            return range(0, len(self.exons), 1)
         else:
-            return xrange(len(self.exons) - 1, -1, -1)
+            return range(len(self.exons) - 1, -1, -1)
 
     def getSortedExons(self):
         "get list of exons, sorted in order of transcription."
         if self.inDirectionOfTranscription():
             return list(self.exons)
         else:
-            return [self.exons[i] for i in xrange(len(self.exons) - 1, -1, -1)]
+            return [self.exons[i] for i in range(len(self.exons) - 1, -1, -1)]
 
     def getRow(self):
         # FIXME standardize on getRow or Psl.toRow
@@ -508,7 +513,7 @@ class GenePred(object):
         if overCnt == 0:
             return 0.0
         else:
-            return float(2 * overCnt) / float(self.getLenExons() + gp2.getLenExons())
+            return old_div(float(2 * overCnt), float(self.getLenExons() + gp2.getLenExons()))
 
     def cdsOverlapAmt(self, gp2):
         "count cds bases that overlap"
@@ -530,7 +535,7 @@ class GenePred(object):
         if overCnt == 0:
             return 0.0
         else:
-            return float(2 * overCnt) / float(self.getLenCds() + gp2.getLenCds())
+            return old_div(float(2 * overCnt), float(self.getLenCds() + gp2.getLenCds()))
 
     def cdsCover(self, gp2):
         "compute faction of CDS is covered a gene"
@@ -538,7 +543,7 @@ class GenePred(object):
         if overCnt == 0:
             return 0.0
         else:
-            return float(overCnt) / float(self.getLenCds())
+            return old_div(float(overCnt), float(self.getLenCds()))
 
     def __str__(self):
         return "\t".join(self.getRow())
@@ -592,7 +597,7 @@ class GenePredReader(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         "GPR next"
         while True:
             line = self.fh.readline()
@@ -612,7 +617,7 @@ class GenePredFhReader(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         "GPR next"
         while True:
             line = self.fh.readline()
@@ -640,7 +645,7 @@ class GenePredDbReader(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         "read the next record next"
         while True:
             row = self.cur.fetchone()

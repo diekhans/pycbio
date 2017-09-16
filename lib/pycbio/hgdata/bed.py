@@ -1,4 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
+from __future__ import print_function
+from builtins import range
+from builtins import object
 from pycbio.tsv.tabFile import TabFile, TabFileReader
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin
 from collections import defaultdict, namedtuple
@@ -34,7 +37,7 @@ class Bed(object):
     @property
     def numCols(self):
         "Returns the number of columns in the BED"
-        for i in xrange(len(self.__slots__)):
+        for i in range(len(self.__slots__)):
             if getattr(self, self.__slots__[i]) is None:
                 break
         if i == 9:
@@ -73,7 +76,7 @@ class Bed(object):
         sizes = intArraySplit(row[10])
         relStarts = intArraySplit(row[11])
         blocks = []
-        for i in xrange(len(relStarts)):
+        for i in range(len(relStarts)):
             start = chromStart + relStarts[i]
             blocks.append(Bed.Block(start, start + sizes[i]))
         return blocks

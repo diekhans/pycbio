@@ -1,4 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
+from __future__ import print_function
+from builtins import range
+from builtins import object
 from pycbio.tsv.tsvReader import TsvReader
 from pycbio.tsv import TsvError
 from pycbio.sys.multiDict import MultiDict
@@ -22,12 +25,12 @@ class TsvTable(list):
 
     def __addIndex(self, keyCol, dictClass):
         if keyCol not in self.colMap:
-            raise TsvError("key column \"" + keyCol + "\" is not defined"), None, sys.exc_info()[2]
+            raise TsvError("key column \"{}\" is not defined".format(keyCol)), None, sys.exc_info()[2]
         setattr(self.idx, keyCol, dictClass())
 
     def __createIndices(self, keyCols, dictClass):
         "keyCols maybe string or seq of strings"
-        if type(keyCols) == str:
+        if isinstance(keyCols, str):
             self.__addIndex(keyCols, dictClass)
         else:
             for kc in keyCols:
@@ -47,7 +50,7 @@ class TsvTable(list):
         if len(vars(self.idx)) == 0:
             return None
         tbl = []
-        for iCol in xrange(len(self.columns)):
+        for iCol in range(len(self.columns)):
             tbl.append(getattr(self.idx, self.columns[iCol], None))
         return tbl
 
@@ -58,7 +61,7 @@ class TsvTable(list):
             colDict[col] = row
 
     def __indexRow(self, colDictTbl, row):
-        for i in xrange(len(row)):
+        for i in range(len(row)):
             if colDictTbl[i] is not None:
                 self.__indexCol(i, colDictTbl[i], row[i], row)
 
@@ -110,7 +113,7 @@ class TsvTable(list):
     def addColumn(self, colName, initValue=None, colType=None):
         "add a column to all rows in the table"
         if colName in self.colMap:
-            raise TsvError("column \"" + colName + "\" is already defined"), None, sys.exc_info()[2]
+            raise TsvError("column \"{}\" is already defined".format(colName)), None, sys.exc_info()[2]
 
         self.colMap[colName] = len(self.columns)
         if colType:

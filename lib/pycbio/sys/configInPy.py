@@ -1,6 +1,8 @@
 """
 Configuration files written as python programs.
 """
+from past.builtins import execfile
+from builtins import object
 import sys
 from types import FunctionType, ModuleType
 from pycbio.sys import PycbioException
@@ -68,7 +70,7 @@ def evalConfigFile(configPyFile, extraEnv=None):
     configEnv = _evalConfigFile(configPyFile, extraEnv)
     # construct object excluding some
     configObj = Config()
-    for key in configEnv.keys():
+    for key in list(configEnv.keys()):
         if _includeField(key, configEnv[key]):
             setattr(configObj, key, configEnv[key])
     return configObj

@@ -2,6 +2,8 @@
 """
 Math operations
 """
+from __future__ import division
+from past.utils import old_div
 import math
 
 
@@ -23,7 +25,7 @@ def calcFreq(amt, total, oneForUndef=False):
     if total == 0.0:
         return 1.0 if oneForUndef else 0.0
     else:
-        return float(amt) / float(total)
+        return old_div(float(amt), float(total))
 
 
 def fmtFreq(freq, precision=2):

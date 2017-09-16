@@ -1,6 +1,8 @@
 """
 Cigar parsers and operations.
 """
+from __future__ import print_function
+from builtins import range
 import re
 from collections import namedtuple
 
@@ -51,7 +53,7 @@ class Cigar(list):
         if ((len(parts) - 1) % 3) != 0:
             raise TypeError("Invalid cigar string, doesn't parse into a valid cigar: {}".format(cigarStr))
         return tuple([self.__parseOp(cigarStr, validOps, parts[i:i + 3])
-                      for i in xrange(0, len(parts) - 1, 3)])
+                      for i in range(0, len(parts) - 1, 3)])
 
 
 class ExonerateCigar(Cigar):

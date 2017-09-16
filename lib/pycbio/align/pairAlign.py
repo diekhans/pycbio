@@ -3,6 +3,9 @@
 Pairwise alignment.  All coordinates are strand-specific
 
 """
+from __future__ import print_function
+from builtins import range
+from builtins import object
 import copy
 import re
 from pycbio.hgdata.psl import PslReader
@@ -231,14 +234,14 @@ class SubSeqs(list):
 
     def findFirstCdsIdx(self):
         "find index of first SubSeq with CDS"
-        for i in xrange(len(self)):
+        for i in range(len(self)):
             if (self[i] is not None) and (self[i].cds is not None):
                 return i
         return None
 
     def findLastCdsIdx(self):
         "find index of first SubSeq with CDS"
-        for i in xrange(len(self) - 1, -1, -1):
+        for i in range(len(self) - 1, -1, -1):
             if (self[i] is not None) and (self[i].cds is not None):
                 return i
         return None
@@ -282,10 +285,10 @@ class Block(object):
         self.q = q
         self.t = t
         # FIXME: remove???
-        self.prev = self.next = None
+        self.prev = self.__next__ = None
 
     def __getstate__(self):
-        return (self.aln, self.q, self.t, self.prev, self.next)
+        return (self.aln, self.q, self.t, self.prev, self.__next__)
 
     def __setstate__(self, st):
         (self.aln, self.q, self.t, self.prev, self.next) = st
@@ -368,7 +371,7 @@ class PairAlign(list):
         qSeq = self.qSeq.revCmpl()
         tSeq = self.tSeq.revCmpl()
         aln = PairAlign(qSeq, tSeq)
-        for i in xrange(len(self) - 1, -1, -1):
+        for i in range(len(self) - 1, -1, -1):
             blk = self[i]
             aln.addBlk((None if (blk.q is None) else blk.q.revCmpl(qSeq)),
                        (None if (blk.t is None) else blk.t.revCmpl(tSeq)))
@@ -387,7 +390,7 @@ class PairAlign(list):
                             return False
                         elif blk.t.overlaps(oblk.t.start, oblk.t.end):
                             return True
-                    oblk = oblk.next
+                    oblk = oblk.__next__
             if oblk is None:
                 break
         return False
@@ -408,7 +411,7 @@ class PairAlign(list):
         "project CDS from one alignment side to the other"
         assert(srcSubSeqs.seq.cds is not None)
         destSubSeqs.clearCds()
-        for i in xrange(srcSubSeqs.findFirstCdsIdx(), srcSubSeqs.findLastCdsIdx() + 1, 1):
+        for i in range(srcSubSeqs.findFirstCdsIdx(), srcSubSeqs.findLastCdsIdx() + 1, 1):
             PairAlign.__projectBlkCds(srcSubSeqs[i], destSubSeqs[i], contained)
 
     def targetOverlap(self, o):
@@ -547,7 +550,7 @@ def fromPsl(psl, qCdsRange=None, inclUnaln=False, projectCds=False, contained=Fa
     tSeq = _mkPslSeq(psl.tName, psl.tStart, psl.tEnd, psl.tSize, psl.getTStrand())
     aln = PairAlign(qSeq, tSeq)
     prevBlk = None
-    for i in xrange(psl.blockCount):
+    for i in range(psl.blockCount):
         prevBlk = _addPslBlk(psl.blocks[i], aln, prevBlk, inclUnaln)
     if projectCds and (aln.qSeq.cds is not None):
         aln.projectCdsToTarget(contained)

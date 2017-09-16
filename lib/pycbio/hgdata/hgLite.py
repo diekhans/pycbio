@@ -3,6 +3,11 @@
 Storage of genome data in sqlite for use in cluster jobs and other random
 access uses.
 """
+from __future__ import print_function
+from builtins import next
+from builtins import object
+from future.standard_library import install_aliases
+install_aliases()
 from collections import namedtuple
 from pycbio.hgdata.psl import Psl
 from pycbio.hgdata.genePred import GenePred
@@ -10,6 +15,7 @@ from pycbio.tsv import TabFileReader
 from pycbio.tsv import TsvReader
 from pycbio.hgdata.rangeFinder import Binner
 from Bio import SeqIO
+import sys
 
 # FIXME: HgLiteTable could become wrapper around a connection,
 # and make table operations functions.???  probably not
@@ -531,7 +537,7 @@ class GencodeTranscriptSourceDbTable(HgLiteTable):
         self.loads(rows)
 
     def __queryRows(self, sql, *queryargs):
-        return self.queryRows(sql, self.columnNames, lambda cur, row: GencodeTranscriptSource(row[0], intern(str(row[1]))), *queryargs)
+        return self.queryRows(sql, self.columnNames, lambda cur, row: GencodeTranscriptSource(row[0], sys.intern(str(row[1]))), *queryargs)
 
     def getByTranscriptId(self, transcriptId):
         """get the GencodeTranscriptSource object for transcriptId, or None if not found."""

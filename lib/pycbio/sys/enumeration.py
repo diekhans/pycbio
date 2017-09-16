@@ -1,4 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
+from past.builtins import cmp
+from builtins import object
 from pycbio.sys.immutable import Immutable
 from pycbio.sys.typeOps import isListLike
 

@@ -1,5 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
 """support classes for parsing autoSql generated objects"""
+from __future__ import print_function
 import string
 
 

@@ -1,6 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
-
-
+from __future__ import print_function
+from builtins import range
+from builtins import object
 class Subsets(object):
     "Generate possible subsets for a set of elements"
 
@@ -63,7 +64,7 @@ class Subsets(object):
         # build as lists for sorting
         nSubsets = (1 << len(elements)) - 1
         subsets = list()
-        for bitSet in xrange(1, nSubsets + 1):
+        for bitSet in range(1, nSubsets + 1):
             subsets.append(self.__makeSubset(bitSet, elements))
         # sort and constructs sets
         subsets.sort(cmp=Subsets.__subListCmp)

@@ -1,3 +1,4 @@
+from builtins import object
 class Barney(object):
     def __init__(self, f1, f2, f3, configPyFile):
         self.f1 = f1

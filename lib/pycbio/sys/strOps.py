@@ -1,5 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
 "operations on strings"
+from builtins import range
 import re
 
 # matches one or more whitespaces
@@ -19,7 +20,7 @@ def splitAtSpaces(s):
 def dup(n, s):
     "make a string with n copies of s"
     l = []
-    for i in xrange(n):
+    for i in range(n):
         l.append(s)
     return "".join(l)
 

@@ -10,6 +10,8 @@ see also
 http://www-pub.cise.ufl.edu/~hanson/IS-lists/
 """
 
+from builtins import range
+from builtins import object
 from pycbio.sys.immutable import Immutable
 
 
@@ -74,7 +76,7 @@ class IntervalSkipList(object):
         x = self.head
         vals = set()
         # Step down to bottom level
-        for i in xrange(self.maxLevel - 1, -1, -1):
+        for i in range(self.maxLevel - 1, -1, -1):
             # Search forward on current level as far as possible.
             while (x.forward[i] is not None) and (x.forward[i].start < start):
                 x = x.forward[i]

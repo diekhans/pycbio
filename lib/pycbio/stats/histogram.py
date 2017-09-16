@@ -1,4 +1,8 @@
+from __future__ import division
 # Copyright 2006-2012 Mark Diekhans
+from builtins import range
+from builtins import object
+from past.utils import old_div
 from pycbio.sys.fileOps import prLine, iterRows
 
 # FIXME: computed histo should be an object, not just a list
@@ -17,7 +21,7 @@ class Bin(object):
 
     def getCenter(self):
         "return center point of bin"
-        return self.binMin + (self.binSize / 2.0)
+        return self.binMin + (old_div(self.binSize, 2.0))
 
     def __str__(self):
         return "bin: {} min: {} size: {} cnt: {} freq: {}".format(self.idx, self.binMin, self.binSize, self.cnt, self.freq)
@@ -135,14 +139,14 @@ class Histogram(object):
             self.binSizeUse = self.binFloorUse = self.binCeilUse = 0
         elif self.binSizeUse is None:
             # compute bin size from num bins
-            estBinSize = float(self.binMaxUse - self.binMinUse) / float(self.numBinsUse - 1)
-            self.binSizeUse = float(self.binMaxUse - self.binMinUse + estBinSize) / float(self.numBinsUse)
-            self.binFloorUse = self.binMinUse - (self.binSizeUse / 2.0)
+            estBinSize = old_div(float(self.binMaxUse - self.binMinUse), float(self.numBinsUse - 1))
+            self.binSizeUse = old_div(float(self.binMaxUse - self.binMinUse + estBinSize), float(self.numBinsUse))
+            self.binFloorUse = self.binMinUse - (old_div(self.binSizeUse, 2.0))
             self.binCeilUse = self.binFloorUse + (self.numBinsUse * self.binSizeUse)
         else:
             # compute num bins from bin size
             raise Exception("doesn't work")
-            self.numBinsUse = int(float(self.binMaxUse - self.binMinUse) / float(self.binSizeUse))
+            self.numBinsUse = int(old_div(float(self.binMaxUse - self.binMinUse), float(self.binSizeUse)))
             self.binFloorUse = self.binMinUse
             self.binCeilUse = self.binMaxUse
 
@@ -155,11 +159,11 @@ class Histogram(object):
         elif val > self.binMaxUse:
             return None if self.truncMax else self.numBinsUse - 1
         else:
-            return int((val - self.binFloorUse) / float(self.binSizeUse))
+            return int(old_div((val - self.binFloorUse), float(self.binSizeUse)))
 
     def __mkBins(self):
         self.bins = []
-        for i in xrange(self.numBinsUse):
+        for i in range(self.numBinsUse):
             self.bins.append(Bin(self, i, self.binFloorUse + (i * self.binSizeUse), self.binSizeUse))
 
     def __binTupleData(self):
@@ -178,7 +182,7 @@ class Histogram(object):
         ndata = float(len(self.data))
         for bin in self.bins:
             if ndata != 0.0:
-                bin.freq = bin.cnt / ndata
+                bin.freq = old_div(bin.cnt, ndata)
             else:
                 bin.freq = 0.0
 

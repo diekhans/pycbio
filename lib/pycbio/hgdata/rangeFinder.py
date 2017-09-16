@@ -14,8 +14,9 @@ generating SQL where clauses to restrict by bin."""
 # start and end are int's, the practical limit is up to 2Gb-1, and thus, only
 # four result bins on the second level. A range goes into the smallest bin it
 # will fit in.
-
-
+from __future__ import print_function
+from builtins import range
+from builtins import object
 class Binner(object):
     "functions to translate ranges to bin numbers"
 
@@ -132,7 +133,7 @@ class RangeBins(object):
         "generator over values overlapping the specified range"
         if (start < end):
             for bins in Binner.getOverlappingBins(start, end):
-                for j in xrange(bins[0], bins[1] + 1):
+                for j in range(bins[0], bins[1] + 1):
                     bin = self.bins.get(j)
                     if (bin is not None):
                         for entry in bin:
@@ -141,13 +142,13 @@ class RangeBins(object):
 
     def values(self):
         "generator over all values"
-        for bin in self.bins.itervalues():
+        for bin in self.bins.values():
             for entry in bin:
                 yield entry.value
 
     def dump(self, fh):
         "print contents for debugging purposes"
-        for bin in self.bins.iterkeys():
+        for bin in self.bins.keys():
             fh.write(self.seqId + " (" + str(self.strand) + ") bin=" + str(bin) + "\n")
             for entry in self.bins[bin]:
                 fh.write("\t" + str(entry) + "\n")
@@ -205,12 +206,12 @@ class RangeFinder(object):
     def values(self):
         "generator over all values"
         for bins in self.seqBins:
-            for value in bins.values():
+            for value in list(bins.values()):
                 yield value
 
     def dump(self, fh):
         "print contents for debugging purposes"
-        for bins in self.seqBins.itervalues():
+        for bins in self.seqBins.values():
             bins.dump(fh)
 
 

@@ -31,7 +31,7 @@ class ExceptTests(TestCaseBase):
         def fn1():
             try:
                 fn2()
-            except Exception, e:
+            except Exception as e:
                 raise TestExcept("in-fn1", e)
 
         def fn2():
@@ -40,7 +40,7 @@ class ExceptTests(TestCaseBase):
         def fn3():
             try:
                 fn4()
-            except Exception, e:
+            except Exception as e:
                 raise TestExcept("in-fn3", e)
 
         def fn4():
@@ -52,7 +52,7 @@ class ExceptTests(TestCaseBase):
         def fn6():
             try:
                 fn7()
-            except Exception, e:
+            except Exception as e:
                 raise TestExcept("in-fn6", e)
 
         def fn7():

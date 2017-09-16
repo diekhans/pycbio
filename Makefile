@@ -22,3 +22,13 @@ lint:
 clean:
 	(cd tests && ${MAKE} clean)
 	find lib tests -name '*.pyc' -exec rm -f '{}' ';'
+
+
+pyfiles = $(shell find lib/pycbio tests/libtests -name '*.py') ${PROGS:%=bin/%}
+future1:
+	futurize -1 -n -w ${pyfiles}
+
+fix:
+	sed -i .bak '/from builtins import str/d'  ${pyfiles}
+
+

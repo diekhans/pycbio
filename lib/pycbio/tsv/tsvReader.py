@@ -1,6 +1,10 @@
 # Copyright 2006-2012 Mark Diekhans
 """TSV reading classes"""
-
+from builtins import next
+from builtins import range
+from builtins import object
+from future.standard_library import install_aliases
+install_aliases()
 import sys
 import csv
 from pycbio.sys import fileOps
@@ -54,7 +58,7 @@ class TsvReader(object):
         if self.reader is None:
             return None
         try:
-            row = self.reader.next()
+            row = next(self.reader)
         except Exception as ex:
             self.close()
             if isinstance(ex, StopIteration):
@@ -82,10 +86,10 @@ class TsvReader(object):
         for col in columns:
             if self.columnNameMapper is not None:
                 col = self.columnNameMapper(col)
-            col = intern(col)
+            col = sys.intern(col)
             self.columns.append(col)
             if col in self.colMap:
-                raise TsvError("Duplicate column name: " + col), None, sys.exc_info()[2]
+                raise TsvError("Duplicate column name: {}".format(col)), None, sys.exc_info()[2]
             self.colMap[col] = i
             i += 1
 
@@ -99,7 +103,7 @@ class TsvReader(object):
         elif defaultColType is not None:
             # fill in colTypes from default
             self.colTypes = []
-            for i in xrange(len(self.columns)):
+            for i in range(len(self.columns)):
                 self.colTypes.append(defaultColType)
 
     def __init__(self, fileName, rowClass=None, typeMap=None, defaultColType=None, columns=None, columnNameMapper=None,
@@ -164,7 +168,7 @@ class TsvReader(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         try:
             row = self.__readRow()
         except Exception as ex:
@@ -173,8 +177,7 @@ class TsvReader(object):
             raise StopIteration
         if ((self.ignoreExtraCols and (len(row) < len(self.columns))) or ((not self.ignoreExtraCols) and (len(row) != len(self.columns)))):
             # FIXME: will hang: self.close()
-            raise TsvError("row has %d columns, expected %d" %
-                           (len(row), len(self.columns)),
+            raise TsvError("row has {} columns, expected {}".format((len(row), len(self.columns))),
                            reader=self), None, sys.exc_info()[2]
         try:
             return self.rowClass(self, row)

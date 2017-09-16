@@ -1,6 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 "browser coordinates object"
 
+from __future__ import print_function
 from collections import namedtuple
 
 # FIXME: support MAF db.chrom syntax, single base syntax, etc.

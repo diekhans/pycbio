@@ -14,6 +14,7 @@ Base class used to define immutable objects
 # http://stackoverflow.com/questions/4828080/how-to-make-an-immutable-object-in-python
 #  builds on namedtuple
 
+from builtins import object
 class Immutable(object):
     """Base class to make an object instance immutable.  Call
     Immutable.__init__(self) after construction to make immutable"""

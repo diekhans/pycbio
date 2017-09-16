@@ -2,7 +2,11 @@
 """Create a frameset that that is a directory of locations in the genome
 browser.
 """
-
+from __future__ import print_function
+from __future__ import division
+from builtins import range
+from past.utils import old_div
+from builtins import object
 from pycbio.html.htmlPage import HtmlPage
 from pycbio.sys import fileOps
 
@@ -100,7 +104,7 @@ class Entry(object):
         hrow.append("</tr>\n")
 
         # remaining rows
-        for iRow in xrange(1, numSubRowRows):
+        for iRow in range(1, numSubRowRows):
             hrow.append("<tr>\n")
             for subRows in self.subRowGroups:
                 hrow.append(subRows.toTdRow(iRow))
@@ -109,7 +113,7 @@ class Entry(object):
 
     def __toHtmlRowWithStyle(self):
         hrow = ["<tr>"]
-        for i in xrange(len(self.row)):
+        for i in range(len(self.row)):
             if self.tdStyles[i] is not None:
                 td = '<td style="%s">' % self.tdStyles[i]
             else:
@@ -240,7 +244,7 @@ class BrowserDir(object):
 
         # page number links
         if inclPageLinks:
-            for p in xrange(1, numPages + 1):
+            for p in range(1, numPages + 1):
                 if p != pageNum:
                     html.append("<a href=\"dir{}.html\">{}</a>".format(p, p))
                 else:
@@ -258,7 +262,7 @@ class BrowserDir(object):
             pr = "<tr colspan=\"{}\"></tr>".format(numColumns)
         else:
             pr = "<tr></tr>"
-        for i in xrange(numPadRows):
+        for i in range(numPadRows):
             pg.add(pr)
 
     def __addPageRows(self, pg, pgEntries, numPadRows):
@@ -278,10 +282,10 @@ class BrowserDir(object):
     def __addMultiColEntryTbl(self, pg, pgEntries):
         pg.tableStart()
         nEnts = len(pgEntries)
-        rowsPerCol = nEnts / self.numColumns
+        rowsPerCol = old_div(nEnts, self.numColumns)
         iEnt = 0
         pg.add("<tr>")
-        for icol in xrange(self.numColumns):
+        for icol in range(self.numColumns):
             pg.add("<td>")
             if iEnt < nEnts - rowsPerCol:
                 n = rowsPerCol
@@ -325,8 +329,8 @@ class BrowserDir(object):
             self.__writeDirPage(outDir, self.entries, 1, 1)
         else:
             # split
-            numPages = (len(self.entries) + self.pageSize - 1) / self.pageSize
-            for pageNum in xrange(1, numPages + 1):
+            numPages = old_div((len(self.entries) + self.pageSize - 1), self.pageSize)
+            for pageNum in range(1, numPages + 1):
                 first = (pageNum - 1) * self.pageSize
                 last = first + (self.pageSize - 1)
                 pgEntries = self.entries[first:last]
