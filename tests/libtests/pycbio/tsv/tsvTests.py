@@ -7,8 +7,8 @@ from pycbio.tsv import TsvTable
 from pycbio.tsv import TsvError
 from pycbio.tsv import TsvReader
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.sys import procOps
 from pycbio.hgdata.autoSql import intArrayType
+import pipettor
 
 
 class ReadTests(TestCaseBase):
@@ -148,12 +148,12 @@ class ReadTests(TestCaseBase):
 
     def testReadGzip(self):
         tsvGz = self.getOutputFile("tsv.gz")
-        procOps.runProc(["gzip", "-c", self.getInputFile("mrna1.tsv")], stdout=tsvGz)
+        pipettor.run(["gzip", "-c", self.getInputFile("mrna1.tsv")], stdout=tsvGz)
         self.readMRna1(tsvGz)
 
     def testReadBzip2(self):
         tsvBz = self.getOutputFile("tsv.bz2")
-        procOps.runProc(["bzip2", "-c", self.getInputFile("mrna1.tsv")], stdout=tsvBz)
+        pipettor.run(["bzip2", "-c", self.getInputFile("mrna1.tsv")], stdout=tsvBz)
         self.readMRna1(tsvBz)
 
     def testDupColumn(self):

@@ -1,13 +1,14 @@
 
 export PYTHONPATH=../../..
 binDir = ../../../bin
+diff = diff -u
 
 test: bool3PdfTest
 
 bool3PdfTest: mkdirs
 	${binDir}/vennChart input/bool3.tsv output/$@.pdf
 
-#diff expected/$@.out output/$@.out
+#${diff} expected/$@.out output/$@.out
 
 mkdirs:
 	@mkdir -p output

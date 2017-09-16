@@ -21,3 +21,4 @@ lint:
 
 clean:
 	(cd tests && ${MAKE} clean)
+	find lib tests -name '*.pyc' -exec rm -f '{}' ';'

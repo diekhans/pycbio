@@ -5,8 +5,8 @@ import shutil
 if __name__ == '__main__':
     sys.path.append("../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.sys import fileOps, procOps
-
+from pycbio.sys import fileOps
+import pipettor
 
 class FileOpsTests(TestCaseBase):
     def testOpengzReadPlain(self):
@@ -26,7 +26,7 @@ class FileOpsTests(TestCaseBase):
     def testOpengzReadGz(self):
         inf = self.getInputFile("simple1.txt")
         infGz = self.getOutputFile(".out.gz")
-        procOps.runProc(("gzip", "-c", inf), stdout=infGz)
+        pipettor.run(("gzip", "-c", inf), stdout=infGz)
         outf = self.getOutputFile(".out")
         with fileOps.opengz(infGz) as inFh, open(outf, "w") as outFh:
             shutil.copyfileobj(inFh, outFh)
@@ -38,13 +38,13 @@ class FileOpsTests(TestCaseBase):
         outfGz = self.getOutputFile(".out.gz")
         with open(inf) as inFh, fileOps.opengz(outfGz, "w") as outFh:
             shutil.copyfileobj(inFh, outFh)
-        procOps.runProc(("gunzip", "-c", outfGz), stdout=outf)
+        pipettor.run(("gunzip", "-c", outfGz), stdout=outf)
         self.diffFiles(inf, outf)
 
     def testOpengzReadBz2(self):
         inf = self.getInputFile("simple1.txt")
         infBz2 = self.getOutputFile(".out.bz2")
-        procOps.runProc(("bzip2", "-c", inf), stdout=infBz2)
+        pipettor.run(("bzip2", "-c", inf), stdout=infBz2)
         outf = self.getOutputFile(".out")
         with fileOps.opengz(infBz2) as inFh, open(outf, "w") as outFh:
             shutil.copyfileobj(inFh, outFh)
@@ -56,7 +56,7 @@ class FileOpsTests(TestCaseBase):
         outfBz2 = self.getOutputFile(".out.bz2")
         with open(inf) as inFh, fileOps.opengz(outfBz2, "w") as outFh:
             shutil.copyfileobj(inFh, outFh)
-        procOps.runProc(("bunzip2", "-c", outfBz2), stdout=outf)
+        pipettor.run(("bunzip2", "-c", outfBz2), stdout=outf)
         self.diffFiles(inf, outf)
 
     def testAtomicInstall(self):

@@ -357,7 +357,6 @@ ORIGIN
      3241 ttatcttg
 //
 
-
 LOCUS       BG187649                 790 bp    mRNA    linear   EST 29-JAN-2011
 DEFINITION  RST6530 Athersys RAGE Library Homo sapiens cDNA, mRNA sequence.
 ACCESSION   BG187649
@@ -415,7 +414,6 @@ ORIGIN
       721 cacaggagat ggcagagagt ccggtttatc tggaatcttc atgtacctta taatccttac
       781 ttgaattaan
 //
-
 
 LOCUS       AK289756                3137 bp    mRNA    linear   PRI 09-JAN-2008
 DEFINITION  Homo sapiens cDNA FLJ78082 complete cds, highly similar to Homo
@@ -539,7 +537,6 @@ ORIGIN
      3061 taccaaataa acacaggaga ggccagagag tcctgtttat ctgtaatact tcatgtacac
      3121 ttatcatcct tatcttg
 //
-
 
 LOCUS       HSU14680                5711 bp    mRNA    linear   PRI 10-JUN-2002
 DEFINITION  Homo sapiens breast and ovarian cancer susceptibility (BRCA1) mRNA,
@@ -792,5 +789,4 @@ ORIGIN
      5641 gtgtagcact ctaccagtgc caggagctgg acacctacct gataccccag atcccccaca
      5701 gccactactg a
 //
-
 

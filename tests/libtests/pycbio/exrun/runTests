@@ -1,9 +1,0 @@
-#!/bin/bash
-# Copyright 2006-2012 Mark Diekhans
-
-tests="basicTests.py cmdTests.py errorTests.py schedTests.py bigTests.py"
-
-for t in $tests ; do
-    echo ==== $t ====
-    python $t
-done
