@@ -94,11 +94,13 @@ def addCmdOptions(parser):
 
 
 def setupFromCmd(opts, prog=None):
-    """configure logging based on command options.  If prog is specified, then
-    the user it to set syslog program name.  This can be obtained from parser.prog.
+    """configure logging based on command options. Prog is used it to set the
+    syslog program name. If prog is not specified, it is obtained from sys.arg.
 
     N.B: logging must be initialized after daemonization
     """
+    if prog is None:
+        prog = os.path.basesname(sys.argv[0])
     if opts.syslogFacility is not None:
         setupSyslogLogger(opts.syslogFacility, opts.logLevel, prog=prog)
     else:
