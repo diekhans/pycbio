@@ -16,6 +16,8 @@ generating SQL where clauses to restrict by bin."""
 # will fit in.
 from __future__ import print_function
 from builtins import range
+
+
 class Binner(object):
     "functions to translate ranges to bin numbers"
 

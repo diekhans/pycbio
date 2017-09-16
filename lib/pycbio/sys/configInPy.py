@@ -4,7 +4,6 @@ Configuration files written as python programs.
 from past.builtins import execfile
 from builtins import object
 from future.utils import raise_from
-import sys
 from types import FunctionType, ModuleType
 from pycbio.sys import PycbioException
 
@@ -17,7 +16,7 @@ def _evalConfigFile(configPyFile, extraEnv=None):
     try:
         execfile(configPyFile, configEnv, configEnv)
     except Exception as ex:
-        raise_from(PycbioException("Error evaluating configuration file: {}".format(configPyFile)), e)
+        raise_from(PycbioException("Error evaluating configuration file: {}".format(configPyFile)), ex)
     return configEnv
 
 # FIXME: now that configEnv has locals, we could get by varname.

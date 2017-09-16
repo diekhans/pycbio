@@ -183,7 +183,7 @@ class TestCaseBase(unittest.TestCase):
 
         def assertRaisesRegex(self, *args):
             return self.assertRaisesRegexp(*args)
-    
+
     def assertRegexDotAll(self, obj, expectRe, msg=None):
         """Fail if the str(obj) does not match expectRe operator, including `.' matching newlines"""
         if not re.match(expectRe, str(obj), re.DOTALL):

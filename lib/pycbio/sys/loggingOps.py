@@ -16,6 +16,7 @@ def getLevelNames():
     else:
         return sorted(logging._nameToLevel.keys())
 
+
 def parseFacility(facilityStr):
     "convert case-insensitive facility string to a facility number"
     facilityStrLower = facilityStr.lower()

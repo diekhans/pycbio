@@ -10,7 +10,7 @@ from pycbio.sys.testCaseBase import TestCaseBase
 class RoundToOrderOfMagnitudeTests(TestCaseBase):
     def __assertRound(self, expect, value):
         "asserted that value is same as expect when rounded to it's order of magnitude"
-        # FIXME: could this be done another way. 
+        # FIXME: could this be done another way.
         self.assertEqual(expect, mathOps.roundToOrderOfMagnitude(value))
 
     def testMagnitudeFifty(self):

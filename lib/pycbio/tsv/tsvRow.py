@@ -6,7 +6,6 @@
 # FIXME: need accessor functions for columns
 from builtins import range
 from future.utils import raise_from
-import sys
 from pycbio.tsv import TsvError
 
 

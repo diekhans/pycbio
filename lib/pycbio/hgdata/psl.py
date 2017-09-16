@@ -283,22 +283,24 @@ class Psl(object):
     @staticmethod
     def queryCmp(psl1, psl2):
         "sort compairson using query address"
-        cmp = cmp(psl1.qName, psl2.qName)
-        if cmp != 0:
-            cmp = psl1.qStart - psl2.qStart
-            if cmp != 0:
-                cmp = psl1.qEnd - psl2.qEnd
-        return cmp
+        # FIXME: convert to key
+        diff = cmp(psl1.qName, psl2.qName)
+        if diff != 0:
+            diff = psl1.qStart - psl2.qStart
+            if diff != 0:
+                diff = psl1.qEnd - psl2.qEnd
+        return diff
 
     @staticmethod
     def targetCmp(psl1, psl2):
         "sort compairson using target address"
-        cmp = cmp(psl1.tName, psl2.tName)
-        if cmp != 0:
-            cmp = psl1.tStart - psl2.tStart
-            if cmp != 0:
-                cmp = psl1.tEnd - psl2.tEnd
-        return cmp
+        # FIXME: convert to key
+        diff = cmp(psl1.tName, psl2.tName)
+        if diff != 0:
+            diff = psl1.tStart - psl2.tStart
+            if diff != 0:
+                diff = psl1.tEnd - psl2.tEnd
+        return diff
 
     def __eq__(self, other):
         "compare for equality of alignment"

@@ -8,6 +8,7 @@ from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.sys import fileOps
 import pipettor
 
+
 class FileOpsTests(TestCaseBase):
     def testOpengzReadPlain(self):
         inf = self.getInputFile("simple1.txt")

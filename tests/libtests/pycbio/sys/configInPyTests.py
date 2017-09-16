@@ -1,7 +1,6 @@
 # Copyright 2006-2014 Mark Diekhans
 import unittest
 import sys
-import re
 if __name__ == '__main__':
     sys.path.append("../../../../lib")
 from pycbio.sys.configInPy import evalConfigFunc, evalConfigFile

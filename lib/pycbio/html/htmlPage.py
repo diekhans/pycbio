@@ -10,7 +10,6 @@ from builtins import range
 # FIXME: add class TableCell
 
 
-
 class HtmlPage(list):
     """ Object to assist in creating an HTML page.  Page is stored as a list
     of lines.  The lines will not contain any newlines"""

@@ -20,6 +20,7 @@ import sys
 # and make table operations functions.???  probably not
 # FIXME: removed duplicated functions and move to base class or mix-in
 
+
 def noneIfEmpty(s):
     return s if s != "" else None
 
@@ -399,6 +400,7 @@ class GenePredDbTable(HgLiteTable):
     def queryAll(self, raw=False):
         sql = "select {columns} from {table}"
         return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw))
+
 
 class GencodeAttrs(namedtuple("GencodeAttrs",
                               ("geneId", "geneName", "geneType", "geneStatus", "transcriptId",

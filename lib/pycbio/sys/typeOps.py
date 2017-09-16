@@ -1,10 +1,9 @@
 # Copyright 2006-2012 Mark Diekhans
 """Miscellaneous type operations"""
-
-# FIXME: move to other modules
-
-
+# FIXME: move to other modules or move set in here.
 from builtins import range
+
+
 def isListLike(v):
     "is variable a list or tuple?"
     return isinstance(v, list) or isinstance(v, tuple)

@@ -7,7 +7,6 @@ import six
 from pycbio.tsv.tsvReader import TsvReader
 from pycbio.tsv import TsvError
 from pycbio.sys.multiDict import MultiDict
-import sys
 import csv
 
 # FIX: maybe make each index it's own class to handle uniq check, etc.
@@ -32,7 +31,7 @@ class TsvTable(list):
 
     def __createIndices(self, keyCols, dictClass):
         "keyCols maybe string or seq of strings"
-        if isinstance(keyCols,  six.string_types):
+        if isinstance(keyCols, six.string_types):
             self.__addIndex(keyCols, dictClass)
         else:
             for kc in keyCols:
