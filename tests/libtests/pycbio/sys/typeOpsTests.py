@@ -1,5 +1,4 @@
 # Copyright 2015-2015 Mark Diekhans
-from builtins import str
 import unittest
 import sys
 if __name__ == '__main__':

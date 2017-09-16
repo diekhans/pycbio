@@ -1,6 +1,5 @@
 # Copyright 2006-2012 Mark Diekhans
 """Functions useful for debugging"""
-from builtins import str
 import os.path
 import sys
 import posix

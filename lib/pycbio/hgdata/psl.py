@@ -1,7 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
 from __future__ import print_function
 from __future__ import division
-from builtins import str
 from past.builtins import cmp
 from builtins import range
 from past.utils import old_div

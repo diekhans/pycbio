@@ -4,7 +4,6 @@
 # FIXME: move to other modules
 
 
-from builtins import str
 from builtins import range
 def isListLike(v):
     "is variable a list or tuple?"

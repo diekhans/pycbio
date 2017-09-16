@@ -4,9 +4,7 @@
 
 from __future__ import print_function
 from past.builtins import cmp
-from builtins import str
 from builtins import range
-from builtins import object
 from pycbio.sys import PycbioException
 from Bio import SeqFeature
 

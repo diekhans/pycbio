@@ -4,9 +4,7 @@ Pairwise alignment.  All coordinates are strand-specific
 
 """
 from __future__ import print_function
-from builtins import str
 from builtins import range
-from builtins import object
 import copy
 import re
 from pycbio.hgdata.psl import PslReader
@@ -286,10 +284,10 @@ class Block(object):
         self.q = q
         self.t = t
         # FIXME: remove???
-        self.prev = self.__next__ = None
+        self.prev = self.next = None
 
     def __getstate__(self):
-        return (self.aln, self.q, self.t, self.prev, self.__next__)
+        return (self.aln, self.q, self.t, self.prev, self.next)
 
     def __setstate__(self, st):
         (self.aln, self.q, self.t, self.prev, self.next) = st
@@ -391,7 +389,7 @@ class PairAlign(list):
                             return False
                         elif blk.t.overlaps(oblk.t.start, oblk.t.end):
                             return True
-                    oblk = oblk.__next__
+                    oblk = oblk.next
             if oblk is None:
                 break
         return False

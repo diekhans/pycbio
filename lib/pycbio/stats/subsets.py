@@ -1,8 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
 from __future__ import print_function
-from builtins import str
 from builtins import range
-from builtins import object
 class Subsets(object):
     "Generate possible subsets for a set of elements"
 

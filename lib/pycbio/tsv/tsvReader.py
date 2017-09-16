@@ -1,9 +1,8 @@
 # Copyright 2006-2012 Mark Diekhans
 """TSV reading classes"""
-from builtins import str
 from builtins import next
-from builtins import range
 from builtins import object
+from builtins import range
 from future.standard_library import install_aliases
 install_aliases()
 import sys

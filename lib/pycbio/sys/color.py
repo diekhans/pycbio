@@ -2,7 +2,6 @@
 from __future__ import print_function
 from __future__ import division
 from builtins import round
-from builtins import str
 import colorsys
 from collections import namedtuple
 

@@ -1,8 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
 """support classes for parsing autoSql generated objects"""
 from __future__ import print_function
-from builtins import str
-import string
 
 
 def strArraySplit(commaStr):
@@ -18,7 +16,7 @@ def strArraySplit(commaStr):
 def strArrayJoin(strs):
     "formatter for a list into a comma seperated string"
     if strs is not None:
-        return string.join(strs, ",") + ","
+        return ",".join(strs, ) + ","
     else:
         return ","
 
@@ -41,7 +39,7 @@ def intArrayJoin(ints):
         strs = []
         for i in ints:
             strs.append(str(i))
-        return string.join(strs, ",") + ","
+        return ",".join(strs) + ","
     else:
         return ","
 
