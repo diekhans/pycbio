@@ -2,6 +2,7 @@
 from __future__ import print_function
 from builtins import range
 from builtins import object
+import six
 from pycbio.tsv.tsvReader import TsvReader
 from pycbio.tsv import TsvError
 from pycbio.sys.multiDict import MultiDict
@@ -25,12 +26,12 @@ class TsvTable(list):
 
     def __addIndex(self, keyCol, dictClass):
         if keyCol not in self.colMap:
-            raise TsvError("key column \"{}\" is not defined".format(keyCol)), None, sys.exc_info()[2]
+            raise TsvError("key column \"{}\" is not defined".format(keyCol))
         setattr(self.idx, keyCol, dictClass())
 
     def __createIndices(self, keyCols, dictClass):
         "keyCols maybe string or seq of strings"
-        if isinstance(keyCols, str):
+        if isinstance(keyCols,  six.string_types):
             self.__addIndex(keyCols, dictClass)
         else:
             for kc in keyCols:

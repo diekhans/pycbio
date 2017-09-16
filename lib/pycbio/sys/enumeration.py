@@ -1,4 +1,5 @@
 # Copyright 2006-2012 Mark Diekhans
+from builtins import str
 from past.builtins import cmp
 from builtins import object
 from pycbio.sys.immutable import Immutable

@@ -15,6 +15,7 @@ generating SQL where clauses to restrict by bin."""
 # four result bins on the second level. A range goes into the smallest bin it
 # will fit in.
 from __future__ import print_function
+from builtins import str
 from builtins import range
 from builtins import object
 class Binner(object):
@@ -142,13 +143,13 @@ class RangeBins(object):
 
     def values(self):
         "generator over all values"
-        for bin in self.bins.values():
+        for bin in list(self.bins.values()):
             for entry in bin:
                 yield entry.value
 
     def dump(self, fh):
         "print contents for debugging purposes"
-        for bin in self.bins.keys():
+        for bin in list(self.bins.keys()):
             fh.write(self.seqId + " (" + str(self.strand) + ") bin=" + str(bin) + "\n")
             for entry in self.bins[bin]:
                 fh.write("\t" + str(entry) + "\n")
@@ -211,7 +212,7 @@ class RangeFinder(object):
 
     def dump(self, fh):
         "print contents for debugging purposes"
-        for bins in self.seqBins.values():
+        for bins in list(self.seqBins.values()):
             bins.dump(fh)
 
 

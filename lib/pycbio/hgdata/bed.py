@@ -1,5 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
 from __future__ import print_function
+from builtins import str
 from builtins import range
 from builtins import object
 from pycbio.tsv.tabFile import TabFile, TabFileReader
@@ -119,7 +120,7 @@ class Bed(object):
 
     def __str__(self):
         "return BED as a tab-separated string"
-        return str.join("\t", self.getRow())
+        return "\t".join(self.getRow())
 
     def write(self, fh):
         """write BED to a tab-seperated file"""

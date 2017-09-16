@@ -1,5 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
 from __future__ import print_function
+from builtins import str
 import sys
 import traceback
 

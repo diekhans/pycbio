@@ -1,6 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 from __future__ import print_function
 from __future__ import division
+from builtins import str
 from past.builtins import cmp
 from builtins import range
 from past.utils import old_div
@@ -273,7 +274,7 @@ class Psl(object):
 
     def __str__(self):
         "return psl as a tab-separated string"
-        return str.join("\t", self.toRow())
+        return "\t".join(self.toRow())
 
     def write(self, fh):
         """write psl to a tab-seperated file"""
@@ -546,7 +547,7 @@ class PslTbl(list):
             self.__mkTNameIdx()
 
     def getQNameIter(self):
-        return iter(self.qNameMap.keys())
+        return iter(list(self.qNameMap.keys()))
 
     def haveQName(self, qName):
         return (self.qNameMap.get(qName) is not None)
@@ -559,7 +560,7 @@ class PslTbl(list):
                 yield psl
 
     def getTNameIter(self):
-        return iter(self.tNameMap.keys())
+        return iter(list(self.tNameMap.keys()))
 
     def haveTName(self, tName):
         return (self.tNameMap.get(tName) is not None)

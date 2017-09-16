@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # Copyright 2006-2012 Mark Diekhans
 
+from builtins import str
+from builtins import object
 import sys
 import os
 import traceback
@@ -402,7 +404,7 @@ class GeneFeatures(object):
         a default TransFeatures object is created"""
         if len(self.transTbl) == 0:
             self.getTrans(None)  # create default
-        transIds = self.transTbl.keys()
+        transIds = list(self.transTbl.keys())
         transIds.sort()
         return transIds
 
@@ -466,7 +468,7 @@ class GeneFeatures(object):
 
     def dump(self):
         prLine(sys.stderr, "gene:", self.geneSym)
-        for trans in self.transTbl.itervalues():
+        for trans in self.transTbl.values():
             trans.dump()
 
 
@@ -741,7 +743,7 @@ class GbffToGenes(object):
         if self.opts.verbose >= 3:
             prLine(sys.stderr, "parsing rec: ", rec.locus)
         recProc = RecProcessor(rec, self.opts, self.rnaCdsMap)
-        geneSyms = recProc.genesBySym.keys()
+        geneSyms = list(recProc.genesBySym.keys())
         geneSyms.sort()
         for geneSym in geneSyms:
             self.__procGene(recProc.genesBySym[geneSym])

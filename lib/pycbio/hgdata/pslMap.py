@@ -1,5 +1,6 @@
 # Copyright 2006-2016 Mark Diekhans
 from __future__ import print_function
+from builtins import str
 from builtins import object
 from pycbio.hgdata.psl import Psl, PslBlock, reverseCoords
 

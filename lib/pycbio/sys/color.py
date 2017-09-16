@@ -1,6 +1,8 @@
-from __future__ import division
 # Copyright 2006-2012 Mark Diekhans
-from past.utils import old_div
+from __future__ import print_function
+from __future__ import division
+from builtins import round
+from builtins import str
 import colorsys
 from collections import namedtuple
 
@@ -24,12 +26,11 @@ class Color(namedtuple("Color", ("red", "green", "blue",
     @staticmethod
     def __int8ToReal(v):
         assert(0 <= v <= 255)
-        return old_div(v, 255.0)
+        return v / 255.0
 
     @staticmethod
     def __realToInt8(v):
-        iv = int(round(v * 255))
-        return iv
+        return int(round(v * 255))
 
     @property
     def red8(self):
@@ -150,4 +151,4 @@ class Color(namedtuple("Color", ("red", "green", "blue",
     @staticmethod
     def fromHsvi(h, s, v):
         "construct from integer HSV values"
-        return Color.fromHsv(old_div(h, 306.0), old_div(s, 100.0), old_div(v, 100.0))
+        return Color.fromHsv(h / 306.0, s / 100.0, v / 100.0)

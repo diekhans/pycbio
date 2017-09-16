@@ -1,6 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 from __future__ import print_function
 from __future__ import division
+from builtins import str
 from builtins import range
 from past.utils import old_div
 from builtins import object
@@ -432,9 +433,9 @@ class GenePred(object):
     def getSortedExonIndexes(self):
         "generator for exon indexes sorted in order of transcription"
         if self.inDirectionOfTranscription():
-            return range(0, len(self.exons), 1)
+            return list(range(0, len(self.exons), 1))
         else:
-            return range(len(self.exons) - 1, -1, -1)
+            return list(range(len(self.exons) - 1, -1, -1))
 
     def getSortedExons(self):
         "get list of exons, sorted in order of transcription."

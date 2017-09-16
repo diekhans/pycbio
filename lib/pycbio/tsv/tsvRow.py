@@ -4,6 +4,7 @@
 # a better convention to avoid collisions or make these functions rather
 # than methods
 # FIXME: need accessor functions for columns
+from builtins import str
 from builtins import range
 from builtins import object
 import sys

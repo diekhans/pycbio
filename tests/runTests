@@ -33,7 +33,7 @@ class DynTest(object):
             mod = __import__(pkgName,  globals(), None, [modName])
             mod = getattr(mod, modName)
             self.suites.append(mod.suite())
-        except ImportError, e:
+        except ImportError as e:
             self.importErrCnt += 1
             sys.stderr.write("Error: import failed for: " + name + ": " + str(e) + "\n")
 

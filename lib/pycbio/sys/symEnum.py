@@ -1,7 +1,7 @@
 # Copyright 2006-2014 Mark Diekhans
 
 # required enum34: https://pypi.python.org/pypi/enum34
-from builtins import object
+import six
 from enum import Enum, EnumMeta
 from future.utils import with_metaclass
 
@@ -56,7 +56,7 @@ class SymEnumMeta(EnumMeta):
     def __symEnumDerivedNew(metacls, cls, bases, classdict):
         "update class fields defined as SymEnumValue to register external names"
         externalNameMap = classdict["__externalNameMap__"] = _SysEnumExternalNameMap()
-        for name in classdict.keys():
+        for name in list(classdict.keys()):
             if isinstance(classdict[name], SymEnumValue):
                 SymEnumMeta.__symEnumValueUpdate(classdict, name, externalNameMap)
         return EnumMeta.__new__(metacls, cls, bases, classdict)
@@ -69,9 +69,9 @@ class SymEnumMeta(EnumMeta):
 
     def __call__(cls, value, names=None, module=None, typ=None):
         "look up a value object, either by name of value,"
-        if (names is None) and (isinstance(value, str) or isinstance(value, unicode)):
-            if isinstance(value, unicode):
-                value = str(value)  # force unicode to str for field names
+        if (names is None) and isinstance(value, six.string_types):
+            if isinstance(value, six.text_type):
+                value = value.decode()  # force unicode to str for field names
             # map string name to instance, check for external name
             member = cls._member_map_.get(cls.__externalNameMap__.toInternalName(value))
             if member is None:

@@ -1,6 +1,7 @@
 """
 Operations associated with logging
 """
+import six
 import logging
 import os
 import sys
@@ -85,10 +86,10 @@ def addCmdOptions(parser):
     parser.add_argument("--syslogFacility", type=parseFacility,
                         help="Set syslog facility to case-insensitive symbolic value, if not specified, logging is not done to stderr, "
                         " one of {}".format(
-                            ", ".join(iter(SysLogHandler.facility_names.keys()))))
+                            ", ".join(iter(list(SysLogHandler.facility_names.keys())))))
     parser.add_argument("--logLevel", default="warn", type=parseLevel,
                         help="Set level to case-insensitive symbolic value, one of {}".format(
-                            ", ".join([n for n in logging._levelNames.values() if isinstance(n, str)])))
+                            ", ".join([n for n in list(logging._levelNames.values()) if isinstance(n, six.string_types)])))
     parser.add_argument("--logConfFile",
                         help="Python logging configuration file, see logging.config.fileConfig()")
 

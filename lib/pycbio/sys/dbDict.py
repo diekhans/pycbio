@@ -35,6 +35,7 @@ Modified by markd:
   - add truncate constructor option
 """
 
+from builtins import str
 import UserDict
 from sqlite3 import dbapi2 as sqlite
 

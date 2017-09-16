@@ -1,24 +1,14 @@
 # Copyright 2006-2012 Mark Diekhans
 """Miscellaneous file operations"""
 
+import six
 import os
 import errno
 import sys
 import socket
 import tempfile
+import pipettor
 from pycbio.sys import PycbioException
-
-
-_pipelineMod = None
-
-
-def _getPipelineClass():
-    """To avoid mutual import issues, we get the Pipeline class dynamically on
-    first use"""
-    global _pipelineMod
-    if _pipelineMod is None:
-        _pipelineMod = __import__("pycbio.sys.pipeline", fromlist=["pycbio.sys.pipeline"])
-    return _pipelineMod.Pipeline
 
 
 def ensureDir(dir):
@@ -46,7 +36,7 @@ def rmFiles(*fileArgs):
     """Remove one or more files if they exist. Each file argument can be a
     single file name of a list of file names"""
     for files in fileArgs:
-        if isinstance(files, str):
+        if isinstance(files, six.string_types):
             files = [files]
         for f in files:
             if os.path.exists(f):
@@ -108,17 +98,17 @@ def opengz(fileName, mode="r"):
     if isCompressed(fileName):
         if mode == "r":
             cmd = decompressCmd(fileName)
-            return _getPipelineClass()([cmd, fileName], mode="r")
+            return pipettor.Popen([cmd, fileName], mode="r")
         elif mode == "w":
             cmd = compressCmd(fileName)
-            return _getPipelineClass()([cmd], mode="w", otherEnd=fileName)
+            return pipettor.Popen([cmd], mode="w", stdout=fileName)
         else:
             raise PycbioException("mode {} not support with compression for {}".format(mode, fileName))
     else:
         return open(fileName, mode)
 
 # FIXME: make these consistent and remove redundant code.  Maybe use
-# keyword for flush
+# keyword for flush. Do we even need them with print function?
 
 
 def prLine(fh, *objs):
@@ -251,7 +241,7 @@ def iterLines(fspec):
     """generator over lines in file, dropping newlines.  If fspec is a string,
     open the file and close at end. Otherwise it is file-like object and will
     not be closed."""
-    if isinstance(fspec, str):
+    if isinstance(fspec, six.string_types):
         fh = opengz(fspec)
     else:
         fh = fspec
@@ -259,7 +249,7 @@ def iterLines(fspec):
         for line in fh:
             yield line[:-1]
     finally:
-        if isinstance(fspec, str):
+        if isinstance(fspec, six.string_types):
             fh.close()
 
 
@@ -268,7 +258,7 @@ def iterRows(fspec):
     parsed, split into columns and returned.  If fspec is a string, open the
     file and close at end. Otherwise it is file-like object and will not be
     closed."""
-    if isinstance(fspec, str):
+    if isinstance(fspec, six.string_types):
         fh = opengz(fspec)
     else:
         fh = fspec
@@ -276,7 +266,7 @@ def iterRows(fspec):
         for line in fh:
             yield line[0:-1].split("\t")
     finally:
-        if isinstance(fspec, str):
+        if isinstance(fspec, six.string_types):
             fh.close()
 
 

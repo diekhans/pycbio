@@ -8,6 +8,7 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 
+from builtins import str
 from future import standard_library
 standard_library.install_aliases()
 from builtins import object
@@ -110,7 +111,7 @@ class Feature(object):
         url-style quoting
         """
         return ";".join([self.__attributeStr(name)
-                         for name in self.attributes.keys()])
+                         for name in list(self.attributes.keys())])
 
     def __str__(self):
         """
@@ -187,7 +188,7 @@ class Gff3Set(object):
         finish loading the set, constructing the tree
         """
         # features maybe disjoint
-        for featureParts in self.byFeatureId.values():
+        for featureParts in list(self.byFeatureId.values()):
             for feature in featureParts:
                 self.__linkFeature(feature)
 

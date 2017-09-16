@@ -9,14 +9,14 @@ from pycbio.sys.testCaseBase import TestCaseBase
 
 class ColorTests(TestCaseBase):
     def assertRgb(self, color, r, g, b):
-        self.assertAlmostEquals(color.red, r)
-        self.assertAlmostEquals(color.green, g)
-        self.assertAlmostEquals(color.blue, b)
+        self.assertAlmostEqual(color.red, r)
+        self.assertAlmostEqual(color.green, g)
+        self.assertAlmostEqual(color.blue, b)
 
     def assertHsv(self, color, h, s, v):
-        self.assertAlmostEquals(color.hue, h)
-        self.assertAlmostEquals(color.saturation, s)
-        self.assertAlmostEquals(color.value, v)
+        self.assertAlmostEqual(color.hue, h)
+        self.assertAlmostEqual(color.saturation, s)
+        self.assertAlmostEqual(color.value, v)
 
     def testRealRgb(self):
         c = Color.fromRgb(0.5, 0.3, 0.4)
@@ -25,29 +25,29 @@ class ColorTests(TestCaseBase):
         self.assertRgb(c.setGreen(1.0), 0.5, 1.0, 0.4)
         self.assertRgb(c.setBlue(0.2), 0.5, 0.3, 0.2)
         rgb = c.rgb
-        self.assertAlmostEquals(rgb[0], 0.5)
-        self.assertAlmostEquals(rgb[1], 0.3)
-        self.assertAlmostEquals(rgb[2], 0.4)
-        self.assertEquals(c.rgb8, (128, 77, 102))
+        self.assertAlmostEqual(rgb[0], 0.5)
+        self.assertAlmostEqual(rgb[1], 0.3)
+        self.assertAlmostEqual(rgb[2], 0.4)
+        self.assertEqual(c.rgb8, (128, 76, 102))
         self.assertHsv(c, 0.9166666666, 0.4, 0.5)
         self.assertHsv(c.setHue(0.2), 0.2, 0.4, 0.5)
         self.assertHsv(c.setSaturation(0.2), 0.9166666666, 0.2, 0.5)
         self.assertHsv(c.setValue(1.0), 0.9166666666, 0.4, 1.0)
         hsv = c.hsv
-        self.assertAlmostEquals(hsv[0], 0.9166666666)
-        self.assertAlmostEquals(hsv[1], 0.4)
-        self.assertAlmostEquals(hsv[2], 0.5)
-        self.assertEquals(c.hsvi, (330, 40, 50))
-        self.assertEquals(c.toHtmlColor(), "#804d66")
+        self.assertAlmostEqual(hsv[0], 0.9166666666)
+        self.assertAlmostEqual(hsv[1], 0.4)
+        self.assertAlmostEqual(hsv[2], 0.5)
+        self.assertEqual(c.hsvi, (330, 40, 50))
+        self.assertEqual(c.toHtmlColor(), "#804c66")
 
     def testRegress(self):
         c = Color.fromRgb8(16, 78, 139)
-        self.assertEquals(c.red8, 16)
-        self.assertEquals(c.green8, 78)
-        self.assertEquals(c.blue8, 139)
-        self.assertEquals(c.toRgb8Str(), "16,78,139")
-        self.assertEquals(c.toHsviStr(), "210,88,55")
-        self.assertEquals(c.toHtmlColor(), "#104e8b")
+        self.assertEqual(c.red8, 16)
+        self.assertEqual(c.green8, 78)
+        self.assertEqual(c.blue8, 139)
+        self.assertEqual(c.toRgb8Str(), "16,78,139")
+        self.assertEqual(c.toHsviStr(), "210,88,55")
+        self.assertEqual(c.toHtmlColor(), "#104e8b")
 
     def testImmutable(self):
         c = Color.fromRgb8(16, 78, 139)

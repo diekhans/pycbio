@@ -4,6 +4,7 @@ Pairwise alignment.  All coordinates are strand-specific
 
 """
 from __future__ import print_function
+from builtins import str
 from builtins import range
 from builtins import object
 import copy

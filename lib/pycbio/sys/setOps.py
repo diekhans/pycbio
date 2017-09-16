@@ -4,6 +4,7 @@ from __future__ import absolute_import
 
 # FIXME: should not need `set' as part of function names, since qualified by
 # module. move mkset from typeOps.
+from builtins import str
 from . import typeOps
 
 

@@ -3,6 +3,7 @@
 # FIXME: needed for faster readings, but needs cleaned up, need reader/writer
 # classes
 # FIXME add try and error msg with file/line num, move to row reader class; see fileOps.iterRows
+from builtins import str
 from builtins import next
 from builtins import object
 import sys

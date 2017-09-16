@@ -3,6 +3,8 @@
 # this module is tested by pycbio/src/progs/gbff/gbffGenesToGenePred
 
 from __future__ import print_function
+from past.builtins import cmp
+from builtins import str
 from builtins import range
 from builtins import object
 from pycbio.sys import PycbioException

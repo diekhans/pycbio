@@ -2,6 +2,7 @@
 "browser coordinates object"
 
 from __future__ import print_function
+from builtins import str
 from collections import namedtuple
 
 # FIXME: support MAF db.chrom syntax, single base syntax, etc.
@@ -31,11 +32,11 @@ class Coords(namedtuple("Coords", ("chrom", "start", "end", "db", "chromSize", "
     def parse(coordsStr, db=None, chromSize=None, strand=None):
         "construct an object from genome browser chrom:start-end type string"
         try:
-            chrom, rng = str.split(coordsStr, ":")
-            start, end = str.split(rng, "-")
+            chrom, rng = coordsStr.split(":")
+            start, end = rng.split("-")
             return Coords(chrom, int(start), int(end), db, chromSize, strand)
         except Exception as ex:
-            raise CoordsError("invalid coordinates: \"" + str(coordsStr) + "\": " + str(ex))
+            raise CoordsError("invalid coordinates: \"{}\": {}".format(coordsStr, ex))
 
     def __str__(self):
         return self.chrom + ":" + str(self.start) + "-" + str(self.end)

@@ -69,7 +69,7 @@ class Venn(object):
         "build Venn table"
         self.venn = SetDict(self.subsets.getSubsets())
 
-        for item in self.itemToNames.keys():
+        for item in list(self.itemToNames.keys()):
             nameSet = frozenset(self.itemToNames[item])
             self.venn.add(nameSet, item)
 
@@ -77,7 +77,7 @@ class Venn(object):
         "build as inclusive subsets"
         self.venn = SetDict(self.subsets.getSubsets())
 
-        for item in self.itemToNames.keys():
+        for item in list(self.itemToNames.keys()):
             setName = frozenset(self.itemToNames[item])
             for iss in self.subsets.getInclusiveSubsets(setName):
                 self.venn.add(iss, item)

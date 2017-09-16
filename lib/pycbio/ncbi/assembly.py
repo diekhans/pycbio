@@ -2,6 +2,7 @@
 """Parsing of NCBI assembly information files.
 """
 from __future__ import print_function
+from builtins import str
 from builtins import object
 from pycbio.sys import PycbioException
 

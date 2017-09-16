@@ -1,4 +1,5 @@
 # Copyright 2006-2012 Mark Diekhans
+from builtins import str
 from future import standard_library
 standard_library.install_aliases()
 import unittest

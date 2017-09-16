@@ -1,3 +1,5 @@
 pipettor
 numpy
 biopython
+future
+enum34

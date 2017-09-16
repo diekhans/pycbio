@@ -1,6 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 """" TSV (Tab Separated File) parsing"""
 
+from builtins import str
 from pycbio.sys import PycbioException
 
 

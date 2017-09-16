@@ -4,8 +4,7 @@ Storage of genome data in sqlite for use in cluster jobs and other random
 access uses.
 """
 from __future__ import print_function
-from builtins import next
-from builtins import object
+import six
 from future.standard_library import install_aliases
 install_aliases()
 from collections import namedtuple
@@ -48,7 +47,7 @@ class HgLiteTable(object):
                        createSql])
 
     def _index(self, indexSql):
-        if isinstance(indexSql, str):
+        if isinstance(indexSql, six.string_types):
             indexSql = [indexSql]
         with self.conn:
             self.executes(indexSql)
