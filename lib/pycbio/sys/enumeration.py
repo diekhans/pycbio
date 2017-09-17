@@ -1,6 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 from past.builtins import cmp
 from builtins import object
+import six
 from pycbio.sys.immutable import Immutable
 from pycbio.sys.typeOps import isListLike
 
@@ -63,25 +64,60 @@ class EnumValue(object):
     def __int__(self):
         return self.numValue
 
-    def XXX__hash__(self):
-        # FIXME: attempt to work around enum pickle problem in GenomeDefs.
-        return hash(self.enum.name) + self.numValue
+    def __hash__(self):
+        return hash(self.numValue)
 
-    def __cmp__(self, otherVal):
-        # FIXME: attempt to work around enum pickle problem in GenomeDefs, compare names rather than
-        # class objects.  Below should test be: not (isinstance(otherVal, EnumValue) and (otherVal.enum == self.enum)):
-        if otherVal is None:
-            return -1
-        elif type(otherVal) == int:
-            return cmp(self.numValue, otherVal)
-        elif not isinstance(otherVal, EnumValue):
-            raise TypeError("can't compare enumeration to type: " + str(type(otherVal)))
-        elif otherVal.enum.name != self.enum.name:
-            raise TypeError("can't compare enumerations of different types: "
-                            + otherVal.enum.name + " and " + self.enum.name)
+    if six.PY2:
+        def __cmp__(self, otherVal):
+            # FIXME: attempt to work around enum pickle problem in GenomeDefs, compare names rather than
+            # class objects.  Below should test be: not (isinstance(otherVal, EnumValue) and (otherVal.enum == self.enum)):
+            if otherVal is None:
+                return -1
+            elif type(otherVal) == int:
+                return cmp(self.numValue, otherVal)
+            elif not isinstance(otherVal, EnumValue):
+                raise TypeError("can't compare enumeration to type: " + str(type(otherVal)))
+            elif otherVal.enum.name != self.enum.name:
+                raise TypeError("can't compare enumerations of different types: "
+                                + otherVal.enum.name + " and " + self.enum.name)
+            else:
+                return cmp(self.numValue, otherVal.numValue)
+
+    def __le__(self, other):
+        if isinstance(other, EnumValue):
+            return self.numValue <= other.numValue
         else:
-            return cmp(self.numValue, otherVal.numValue)
+            return self.numValue <= other
 
+    def __lt__(self, other):
+        if isinstance(other, EnumValue):
+            return self.numValue < other.numValue
+        else:
+            return self.numValue < other
+
+    def __ge__(self, other):
+        if isinstance(other, EnumValue):
+            return self.numValue >= other.numValue
+        else:
+            return self.numValue >= other
+
+    def __gt__(self, other):
+        if isinstance(other, EnumValue):
+            return self.numValue > other.numValue
+        else:
+            return self.numValue > other
+
+    def __eq__(self, other):
+        if isinstance(other, EnumValue):
+            return self.numValue == other.numValue
+        else:
+            return self.numValue == other
+
+    def __ne__(self, other):
+        if isinstance(other, EnumValue):
+            return self.numValue != other.numValue
+        else:
+            return self.numValue != other
 
 class Enumeration(object):
     """A class for creating enumeration objects.

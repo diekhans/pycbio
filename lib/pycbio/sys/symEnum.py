@@ -84,7 +84,7 @@ class SymEnumMeta(EnumMeta):
             return EnumMeta.__call__(cls, value, names, module, typ)
 
 
-class SymEnum(with_metaclass(SymEnumMeta, Enum)):
+class SymEnum(with_metaclass(SymEnumMeta, (Enum,))):
     """
     Metaclass for symbolic enumerations.  These are easily converted between
     string values and Enum objects.  This support construction from string
