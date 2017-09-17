@@ -11,9 +11,8 @@ from logging.handlers import SysLogHandler
 
 
 def parseFacility(facilityStr):
-    "convert case-insensitive facility string to a facility number"
-    facilityStrLower = facilityStr.lower()
-    facility = SysLogHandler.facility_names.get(facilityStrLower)
+    """convert case-insensitive facility string to a facility number."""
+    facility = SysLogHandler.facility_names.get(facilityStr.lower())
     if facility is None:
         raise ValueError("invalid syslog facility: \"" + facilityStr + "\"")
     return facility
@@ -28,6 +27,16 @@ def parseLevel(levelStr):
     return level
 
 
+def _convertFacility(facility):
+    """convert facility from string to number, if not already a number"""
+    return facility if isinstance(facility, int) else parseFacility(facility)
+
+
+def _convertLevel(level):
+    """convert level from string to number, if not already a number"""
+    return level if isinstance(level, int) else parseLevel(level)
+
+
 def setupLogger(handler):
     """add handle to logger and set logger level to the minimum of it's
     current and the handler level"""
@@ -37,16 +46,16 @@ def setupLogger(handler):
     logger.addHandler(handler)
 
 
-def setupStreamLogger(level, fh):
+def setupStreamLogger(fh, level):
     "configure logging to a specified open file."
     handler = logging.StreamHandler(stream=fh)
-    handler.setLevel(level)
+    handler.setLevel(_convertLevel(level))
     setupLogger(handler)
 
 
 def setupStderrLogger(level):
     "configure logging to stderr"
-    setupStreamLogger(level, sys.stderr)
+    setupStreamLogger(sys.stderr, _convertLevel(level))
 
 
 def getSyslogAddress():
@@ -74,19 +83,22 @@ def setupNullLogger(level=None):
     "configure discard logging"
     handler = logging.NullHandler()
     if level is not None:
-        handler.setLevel(level)
+        handler.setLevel(_convertLevel(level))
     setupLogger(handler)
 
 
 def addCmdOptions(parser):
     """
-    Add command line options related to logging
+    Add command line options related to logging.  None of these are defaulted,
+    as one might need to determine if they were explicitly set. The use case
+    being getting a value from a configuration file if it is not specified on
+    the command line.
     """
     parser.add_argument("--syslogFacility", type=parseFacility,
                         help="Set syslog facility to case-insensitive symbolic value, if not specified, logging is not done to stderr, "
                         " one of {}".format(
                             ", ".join(SysLogHandler.facility_names.iterkeys())))
-    parser.add_argument("--logLevel", default="warn", type=parseLevel,
+    parser.add_argument("--logLevel", type=parseLevel,
                         help="Set level to case-insensitive symbolic value, one of {}".format(
                             ", ".join([n for n in logging._levelNames.itervalues() if isinstance(n, str)])))
     parser.add_argument("--logConfFile",
