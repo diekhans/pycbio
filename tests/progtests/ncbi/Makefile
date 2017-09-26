@@ -8,6 +8,8 @@ diff = diff -u
 # refseq mRNAs, ESTs
 testAccver = NM_013266.2 AK289756.1 BG187649.1 U14680.1
 
+diff = diff -u
+
 test: fetchTests asmReportCnvTests
 
 fetchTests: gbffFetchTest faFetchTest

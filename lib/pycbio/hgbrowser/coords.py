@@ -54,6 +54,14 @@ class Coords(namedtuple("Coords", ("chrom", "start", "end", "db", "chromSize", "
         # FIXME: need to generalizes this
         return self.chrom
 
+    @property
+    def chromStart(self):
+        return self.start
+
+    @property
+    def chromEnd(self):
+        return self.end
+
     def size(self):
         return self.end - self.start
 

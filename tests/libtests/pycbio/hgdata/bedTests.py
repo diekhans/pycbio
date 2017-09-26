@@ -24,6 +24,7 @@ class BedTests(TestCaseBase):
                 bed.write(outFh)
         self.diffFiles(self.getInputFile("fromPslMinTest.bed"), outBedFile)
 
+
 def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(BedTests))
