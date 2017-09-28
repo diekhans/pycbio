@@ -7,7 +7,8 @@ import sys
 from logging.handlers import SysLogHandler
 
 
-# FIXME: need to be able to specify logger name
+# FIXME: need to be able to specify logger name,
+# FIXME: this really needs rethought
 
 
 def parseFacility(facilityStr):
@@ -20,7 +21,7 @@ def parseFacility(facilityStr):
 
 def parseLevel(levelStr):
     "convert a log level string to numeric value"
-    levelStrUp = levelStr.upper()
+    levelStrUp = levelStr.toupper()
     level = logging._levelNames.get(levelStrUp)
     if level is None:
         raise ValueError("invalid logging level: \"" + levelStr + "\"")
@@ -37,25 +38,27 @@ def _convertLevel(level):
     return level if isinstance(level, int) else parseLevel(level)
 
 
-def setupLogger(handler):
+def setupLogger(handler, formatter=None):
     """add handle to logger and set logger level to the minimum of it's
     current and the handler level"""
     logger = logging.getLogger()
     if handler.level is not None:
         logger.setLevel(min(handler.level, logger.level))
     logger.addHandler(handler)
+    if formatter is not None:
+        handler.setFormatter(formatter)
 
 
-def setupStreamLogger(fh, level):
+def setupStreamLogger(fh, level, formatter=None):
     "configure logging to a specified open file."
     handler = logging.StreamHandler(stream=fh)
     handler.setLevel(_convertLevel(level))
-    setupLogger(handler)
+    setupLogger(handler, formatter)
 
 
-def setupStderrLogger(level):
+def setupStderrLogger(level, formatter=None):
     "configure logging to stderr"
-    setupStreamLogger(sys.stderr, _convertLevel(level))
+    setupStreamLogger(sys.stderr, _convertLevel(level), formatter)
 
 
 def getSyslogAddress():
@@ -66,7 +69,7 @@ def getSyslogAddress():
     return ("localhost", 514)
 
 
-def setupSyslogLogger(facility, level, prog=None, address=None):
+def setupSyslogLogger(facility, level, prog=None, address=None, formatter=None):
     """configure logging to syslog based on the specified facility.  If
     prog specified, each line is prefixed with the name"""
     if address is None:
@@ -76,7 +79,7 @@ def setupSyslogLogger(facility, level, prog=None, address=None):
     if prog is not None:
         handler.setFormatter(logging.Formatter(fmt="{} %(message)s".format(prog)))
     handler.setLevel(level)
-    setupLogger(handler)
+    setupLogger(handler, formatter)
 
 
 def setupNullLogger(level=None):
