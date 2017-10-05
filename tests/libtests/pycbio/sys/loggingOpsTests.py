@@ -37,7 +37,6 @@ class LoggingOpsTests(TestCaseBase):
     def testParseArgsFacility(self):
         opts = self.__mkParser().parse_args(["--syslogFacility=local0"])
         self.assertEqual(opts.syslogFacility, loggingOps.parseFacility("local0"))
-        self.assertEqual(opts.logLevel, loggingOps.parseLevel("warn"))
 
     def testParseArgsFacilityLevel(self):
         opts = self.__mkParser().parse_args(["--syslogFacility=local1", "--logLevel=info"])

@@ -15,16 +15,16 @@ def parseFacility(facilityStr):
     """convert case-insensitive facility string to a facility number."""
     facility = SysLogHandler.facility_names.get(facilityStr.lower())
     if facility is None:
-        raise ValueError("invalid syslog facility: \"" + facilityStr + "\"")
+        raise ValueError("invalid syslog facility: \"{}\"".format(facilityStr))
     return facility
 
 
 def parseLevel(levelStr):
     "convert a log level string to numeric value"
-    levelStrUp = levelStr.toupper()
+    levelStrUp = levelStr.upper()
     level = logging._levelNames.get(levelStrUp)
     if level is None:
-        raise ValueError("invalid logging level: \"" + levelStr + "\"")
+        raise ValueError("invalid logging level: \"{}\"".format(levelStr))
     return level
 
 
