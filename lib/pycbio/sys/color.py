@@ -21,7 +21,7 @@ class Color(namedtuple("Color", ("red", "green", "blue",
 
     @staticmethod
     def __int8ToReal(v):
-        assert(0 <= v <= 255)
+        assert 0 <= v <= 255
         return v / 255.0
 
     @staticmethod
@@ -125,9 +125,9 @@ class Color(namedtuple("Color", ("red", "green", "blue",
     @staticmethod
     def fromRgb(r, g, b):
         "construct from real RGB values"
-        assert((0.0 <= r <= 1.0))
-        assert((0.0 <= g <= 1.0))
-        assert((0.0 <= b <= 1.0))
+        assert (0.0 <= r <= 1.0)
+        assert (0.0 <= g <= 1.0)
+        assert (0.0 <= b <= 1.0)
         h, s, v = colorsys.rgb_to_hsv(r, g, b)
         return Color(r, g, b, h, s, v)
 
@@ -139,9 +139,9 @@ class Color(namedtuple("Color", ("red", "green", "blue",
     @staticmethod
     def fromHsv(h, s, v):
         "construct from real HSV values"
-        assert((0.0 <= h <= 1.0))
-        assert((0.0 <= s <= 1.0))
-        assert((0.0 <= v <= 1.0))
+        assert (0.0 <= h <= 1.0)
+        assert (0.0 <= s <= 1.0)
+        assert (0.0 <= v <= 1.0)
         r, g, b = colorsys.hsv_to_rgb(h, s, v)
         return Color(r, g, b, h, s, v)
 
