@@ -65,13 +65,13 @@ class Feature(object):
     """
 
     __slots__ = ("seqname", "source", "type", "start", "end", "score",
-                 "strand", "frame", "attributes", "gff3Set", "lineNumber",
+                 "strand", "frame", "attrs", "gff3Set", "lineNumber",
                  "parents", "children")
 
     def __init__(self, seqname, source, type, start, end, score, strand,
-                 frame, attributes, gff3Set, lineNumber=None):
+                 frame, attrs, gff3Set, lineNumber=None):
         """
-        The attributes field is a dict of lists/tupes as attributes maybe
+        The attrs field is a dict of lists/tupes as attrs maybe
         multi-valued.  Range should be one based and will be converted to
         zero-based, half-open.
         """
@@ -83,7 +83,7 @@ class Feature(object):
         self.score = score
         self.strand = strand
         self.frame = frame
-        self.attributes = copy.deepcopy(attributes)
+        self.attrs = copy.deepcopy(attrs)
         self.gff3Set = gff3Set
         self.lineNumber = lineNumber
         self.parents = set()
@@ -93,21 +93,21 @@ class Feature(object):
     def __dotIfNone(val):
         return val if val is not None else '.'
 
-    def __attributeStr(self, name):
+    def __attrStr(self, name):
         """
         Return name=value for a single attribute
         """
         return "{}={}".format(
             _encodeAttr(name),
-            ",".join([_encodeAttr(v) for v in self.attributes[name]]))
+            ",".join([_encodeAttr(v) for v in self.attrs[name]]))
 
-    def __attributeStrs(self):
+    def __attrStrs(self):
         """
         Return name=value, semi-colon-separated string for attributes, including
         url-style quoting
         """
-        return ";".join([self.__attributeStr(name)
-                         for name in self.attributes.iterkeys()])
+        return ";".join([self.__attrStr(name)
+                         for name in self.attrs.iterkeys()])
 
     def __str__(self):
         """
@@ -116,26 +116,43 @@ class Feature(object):
         return "\t".join([self.seqname, self.source, self.type,
                           str(self.start + 1), str(self.end), self.__dotIfNone(self.score),
                           self.__dotIfNone(self.strand), self.__dotIfNone(self.frame),
-                          self.__attributeStrs()])
+                          self.__attrStrs()])
 
     @property
     def featureId(self):
         """
         ID attribute or None if records doesn't have an ID
         """
-        featId = self.attributes.get("ID")
+        featId = self.attrs.get("ID")
         if featId is not None:
             featId = featId[0]
         return featId
 
-    def getRequiredAttribute(self, name):
+    def get1(self, name, default=None):
+        """get a single valued attributes or default.  Error if multi-valued"""
+        values = self.get(name)
+        if values is None:
+            return default
+        if len(values) != 1:
+            raise GFF3Exception("expected single valued attr: {}".format(name),
+                                self.gff3Set.fileName, self.lineNumber)
+        return values[0]
+    
+    def getRAttr(self, name):
         "get a require attributes list of values, error if not found"
-        values = self.attributes.get(name)
+        values = self.attrs.get(name)
         if values is None:
             raise GFF3Exception("required attribute not found: {}".format(name),
                                 self.gff3Set.fileName, self.lineNumber)
         return values
 
+    def getRAttr1(self, name):
+        """get a require attributes with a single value, error if not found or multi-valued"""
+        values = self.getRAttr(name)
+        if len(values) != 1:
+            raise GFF3Exception("expected single valued attr: {}".format(name),
+                                self.gff3Set.fileName, self.lineNumber)
+        return values[0]
 
 class Gff3Set(object):
     """
@@ -159,7 +176,7 @@ class Gff3Set(object):
         """
         Link a feature with it's parents.
         """
-        parentIds = feature.attributes.get("Parent")
+        parentIds = feature.attrs.get("Parent")
         if parentIds is None:
             self.roots.add(feature)
         else:
@@ -212,25 +229,19 @@ class Gff3Parser(object):
     fully test for conformance.
     """
 
-    def __init__(self, fileName):
-        """
-        If fileName ends with .gz or .bz2, it will decompressed.  If fh is
-        specified, then parse the already opened stream, with file name still
-        used for error message, otherwise the file be opened and parsed.
-        """
-        self.fileName = fileName
-        self.lineNumber = 0
+    def __init__(self):
+        self.fileName = self.lineNumber = None
 
-    def __open(self):
+    def __open(self, fileName):
         """
         open input file, optionally with decompression
         """
-        if self.fileName.endswith(".gz"):
-            return gzip.open(self.fileName)
-        elif self.fileName.endswith(".bz2"):
-            return bz2.BZ2File(self.fileName)
+        if fileName.endswith(".gz"):
+            return gzip.open(fileName)
+        elif fileName.endswith(".bz2"):
+            return bz2.BZ2File(fileName)
         else:
-            return open(self.fileName)
+            return open(fileName)
 
     # parses `attr=val'; GFF3 spec is not very specific on the allowed values.
     SPLIT_ATTR_RE = re.compile("^([a-zA-Z][^=]*)=(.*)$")
@@ -242,7 +253,7 @@ class Gff3Parser(object):
         """
         m = self.SPLIT_ATTR_RE.match(attrStr)
         if m is None:
-            raise GFF3Exception("can't parse attribute/value: '" + attrStr +
+            raise GFF3Exception("can't parse attr/value: '" + attrStr +
                                 "'", self.fileName, self.lineNumber)
         name = urllib.unquote(m.group(1))
         val = m.group(2)
@@ -254,16 +265,16 @@ class Gff3Parser(object):
 
     def __parseAttrs(self, attrsStr):
         """
-        Parse the attributes and values
+        Parse the attrs and values
         """
-        attributes = dict()
+        attrs = dict()
         for attrStr in self.SPLIT_ATTR_COL_RE.split(attrsStr):
             name, vals = self.__parseAttrVal(attrStr)
-            if name in attributes:
+            if name in attrs:
                 raise GFF3Exception("duplicated attribute name: {}".format(name),
                                     self.fileName, self.lineNumber)
-            attributes[name] = vals
-        return attributes
+            attrs[name] = vals
+        return attrs
 
     GFF3_NUM_COLS = 9
 
@@ -303,17 +314,24 @@ class Gff3Parser(object):
         elif not self.__isIgnoredLine(line):
             self.__parseRecord(gff3Set, line)
 
-    def parse(self):
+    def parse(self, gff3File, gff3Fh=None):
         """
-        Parse and return a Gff3Set object in format.
+        Parse the gff3 files and return a Gff3Set object in format.  If
+        gff3File ends with .gz or .bz2, it will decompressed.  If gff3Fh is
+        specified, then parse the already opened stream, with gff3File used
+        for error message.
         """
-        fh = self.__open()
+        self.fileName = gff3File
+        self.lineNumber = 0
+        fh = self.__open(gff3File) if gff3Fh is None else gff3Fh
         try:
             gff3Set = Gff3Set(self.fileName)
             for line in fh:
                 self.lineNumber += 1
                 self.__parseLine(gff3Set, line[0:-1])
         finally:
-            fh.close()
+            self.fileName = self.lineNumber = None
+            if gff3Fh is None:
+                fh.close()
         gff3Set.finish()
         return gff3Set

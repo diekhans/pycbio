@@ -22,12 +22,12 @@ class Gff3Tests(TestCaseBase):
 
     def __parseTest(self, gff3RelIn):
         # parse and write
-        gff3a = Gff3Parser(self.getInputFile(gff3RelIn)).parse()
+        gff3a = Gff3Parser().parse(self.getInputFile(gff3RelIn))
         gff3Out1 = self.getOutputFile(".gff3")
         self.__write(gff3a, gff3Out1)
         self.assertEquals(self.__countRows(gff3a.fileName), self.__countRows(gff3Out1))
         self.diffExpected(".gff3")
-        gff3b = Gff3Parser(self.getInputFile(gff3RelIn)).parse()
+        gff3b = Gff3Parser().parse(self.getInputFile(gff3RelIn))
         gff3Out2 = self.getOutputFile(".2.gff3")
         self.__write(gff3b, gff3Out2)
         self.diffFiles(self.getExpectedFile(".gff3"), self.getOutputFile(".2.gff3"))
@@ -38,9 +38,11 @@ class Gff3Tests(TestCaseBase):
         #  gene	335	649
         feats = gff3a.byFeatureId["YAL069W"]
         self.assertEquals(len(feats), 1)
+        feat = feats[0]
         # check that it is zero-based internally
-        self.assertEquals(feats[0].start, 334)
-        self.assertEquals(feats[0].end, 649)
+        self.assertEquals(feat.start, 334)
+        self.assertEquals(feat.end, 649)
+        self.assertEquals(feat.getRAttr1("orf_classification"), "Dubious")
 
     def testSpecialCases(self):
         self.__parseTest("specialCasesTest.gff3")
