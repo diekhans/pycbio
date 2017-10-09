@@ -116,9 +116,10 @@ def setupFromCmd(opts, prog=None):
     """
     if prog is None:
         prog = os.path.basesname(sys.argv[0])
+    level = _convertLevel(opts.logLevel) if opts.logLevel is not None else logging.INFO
     if opts.syslogFacility is not None:
-        setupSyslogLogger(opts.syslogFacility, opts.logLevel, prog=prog)
+        setupSyslogLogger(opts.syslogFacility, level, prog=prog)
     else:
-        setupStderrLogger(opts.logLevel)
+        setupStderrLogger(level)
     if opts.logConfFile is not None:
         logging.config.fileConfig(opts.logConfFile)
