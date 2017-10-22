@@ -43,6 +43,7 @@ def evalConfigFunc(configPyFile, getFuncName="getConfig", getFuncArgs=[], getFun
     try:
         return configFunc(*getFuncArgs, **getFuncKwargs)
     except Exception as ex:
+        # FIXME really need traceback here
         raise_from(PycbioException("Error from configuration function {}(): {}".format(getFuncName, configPyFile)), ex)
 
 
