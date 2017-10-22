@@ -18,7 +18,8 @@ import sys
 
 # FIXME: HgLiteTable could become wrapper around a connection,
 # and make table operations functions.???  probably not
-# FIXME: removed duplicated functions and move to base class or mix-in
+# FIXME: removed duplicated functions and move to base class or mix-in especially gencode
+
 
 
 def noneIfEmpty(s):
@@ -83,8 +84,8 @@ class HgLiteTable(object):
         setting row factory"""
         with self.conn:
             cur = self.conn.cursor()
-            cur.row_factory = rowFactory
             try:
+                cur.row_factory = rowFactory
                 sql = querySql.format(table=self.table, columns=self._joinColNames(columns))
                 cur.execute(sql, queryargs)
                 for row in cur:
@@ -583,7 +584,7 @@ class GencodeTranscriptionSupportLevelDbTable(HgLiteTable):
         self._index(self.indexSql)
 
     def loads(self, rows):
-        """load rows, which can be list-like or GencodeTranscriptSource object"""
+        """load rows, which can be list-like or GencodeTranscriptionSupportLevel object"""
         self._inserts(self.insertSql, self.columnNames, rows)
 
     def __loadTsvRow(self, tsvRow):
@@ -602,6 +603,65 @@ class GencodeTranscriptionSupportLevelDbTable(HgLiteTable):
         """get the GencodeTranscriptionSupportLevel object for transcriptId, or None if not found."""
         sql = "select {columns} from {table} where transcriptId = ?"
         return next(self.__queryRows(sql, transcriptId), None)
+
+    def queryAll(self):
+        sql = "select {columns} from {table}"
+        return self.__queryRows(sql)
+
+
+class GencodeTag(namedtuple("GencodeTag",
+                            ("transcriptId", "tag",))):
+    """GENCODE transcription support level"""
+    pass
+
+
+class GencodeTagDbTable(HgLiteTable):
+    """
+    GENCODE transcript tags from UCSC databases.
+    """
+    createSql = """CREATE TABLE {table} (
+            transcriptId text not null,
+            tag text not null)"""
+    insertSql = """INSERT INTO {table} ({columns}) VALUES ({values});"""
+    indexSql = [
+        """CREATE INDEX {table}_transcriptId on {table} (transcriptId)""",
+        """CREATE INDEX {table}_tag on {table} (tag)""",
+    ]
+
+    columnNames = GencodeTag._fields
+
+    def __init__(self, conn, table, create=False):
+        super(GencodeTagDbTable, self).__init__(conn, table)
+        if create:
+            self.create()
+
+    def create(self):
+        self._create(self.createSql)
+
+    def index(self):
+        """create index after loading"""
+        self._index(self.indexSql)
+
+    def loads(self, rows):
+        """load rows, which can be list-like or GencodeTag object"""
+        self._inserts(self.insertSql, self.columnNames, rows)
+
+    def __loadTsvRow(self, tsvRow):
+        "convert to list in column order"
+        return [getattr(tsvRow, cn) for cn in self.columnNames]
+
+    def loadTsv(self, sourceFile):
+        """load a GENCODE attributes file, adding bin"""
+        rows = [self.__loadTsvRow(row) for row in TsvReader(sourceFile)]
+        self.loads(rows)
+
+    def __queryRows(self, sql, *queryargs):
+        return self.queryRows(sql, self.columnNames, lambda cur, row: GencodeTag(row[0], row[1]), *queryargs)
+
+    def getByTranscriptId(self, transcriptId):
+        """get the GencodeTag objects for transcriptId, or empty if not found."""
+        sql = "select {columns} from {table} where transcriptId = ?"
+        return self.__queryRows(sql, transcriptId)
 
     def queryAll(self):
         sql = "select {columns} from {table}"

@@ -19,13 +19,6 @@ def itemsInSet(seq, setFilter):
             yield item
 
 
-def toSortList(s):
-    "convert a set to a sorted list"
-    l = list(s)
-    l.sort()
-    return l
-
-
 def mkfzset(item):
     """create a frozenset from item.  If it's None, return an empty set, if
     it's iterable, convert to a set, if it's a single item, make a set of it,

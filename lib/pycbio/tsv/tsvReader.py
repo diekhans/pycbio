@@ -30,7 +30,7 @@ csv.field_size_limit(sys.maxsize)
 # FIXME: make a column object.
 # FIXME: save original column names before mapping for output
 
-# FIXME: switch row to deriving from named tuple or using properties?
+# FIXME: switch to row derived from namedtuple
 
 # typeMap converter for str types were empty represents None
 strOrNoneType = (lambda v: None if (v == "") else v,

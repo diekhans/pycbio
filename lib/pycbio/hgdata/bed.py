@@ -130,7 +130,7 @@ class BedReader(TabFileReader):
     """Reader for BED objects loaded from a tab-file"""
 
     def __init__(self, fileName):
-        TabFileReader.__init__(self, fileName, rowClass=Bed, hashAreComments=True, skipBlankLines=True)
+        TabFileReader.__init__(self, fileName, rowClass=Bed.parse, hashAreComments=True, skipBlankLines=True)
 
 
 class BedTable(TabFile):
