@@ -11,11 +11,15 @@ from logging.handlers import SysLogHandler
 # FIXME: need to be able to specify logger name,
 # FIXME: this really needs rethought
 
+def getFacilityNames():
+    return tuple(SysLogHandler.facility_names.keys())
+
+
 def getLevelNames():
     if six.PY2:
-        return sorted([l for l in logging._levelNames.values() if isinstance(l, six.string_types)])
+        return tuple(sorted([l for l in logging._levelNames.values() if isinstance(l, six.string_types)]))
     else:
-        return sorted(logging._nameToLevel.keys())
+        return tuple(sorted(logging._nameToLevel.keys()))
 
 
 def parseFacility(facilityStr):
@@ -106,11 +110,21 @@ def addCmdOptions(parser):
     being getting a value from a configuration file if it is not specified on
     the command line.
     """
-    parser.add_argument("--syslogFacility", type=parseFacility,
+    # want to validate name, but want to store the string in the arguments vector
+    # rather than the numeric value.
+    def validateFacility(facilityStr):
+        parseFacility(facilityStr)
+        return facilityStr
+    def validateLevel(levelStr):
+        parseLevel(levelStr)
+        return levelStr
+
+
+
+    parser.add_argument("--syslogFacility", type=validateFacility,
                         help="Set syslog facility to case-insensitive symbolic value, if not specified, logging is not done to stderr, "
-                        " one of {}".format(
-                            ", ".join(SysLogHandler.facility_names.keys())))
-    parser.add_argument("--logLevel", default="warn", type=parseLevel,
+                        " one of {}".format(", ".join(getFacilityNames())))
+    parser.add_argument("--logLevel", default="warn", type=validateLevel,
                         help="Set level to case-insensitive symbolic value, one of {}".format(", ".join(getLevelNames())))
     parser.add_argument("--logConfFile",
                         help="Python logging configuration file, see logging.config.fileConfig()")
