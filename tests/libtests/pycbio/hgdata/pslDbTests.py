@@ -6,6 +6,7 @@ if __name__ == '__main__':
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.hgdata.psl import PslDbReader
 from pycbio.hgdata.hgConf import HgConf
+from pycbio.hgdata import hgDb
 from socket import gethostname
 
 # only run on these machines
@@ -26,8 +27,7 @@ class DbReadTests(TestCaseBase):
     def __connect(self):
         if self.hgConf is None:
             self.hgConf = HgConf()
-        import MySQLdb
-        return MySQLdb.connect(host=self.hgConf["db.host"], user=self.hgConf["db.user"], passwd=self.hgConf["db.password"], db=testDb)
+        return hgDb.connect(db=testDb, hgConf=self.hgConf)
 
     def testDbQueryLoad(self):
         conn = self.__connect()
