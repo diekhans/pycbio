@@ -21,7 +21,6 @@ import sys
 # FIXME: removed duplicated functions and move to base class or mix-in especially gencode
 
 
-
 def noneIfEmpty(s):
     return s if s != "" else None
 

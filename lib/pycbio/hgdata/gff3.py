@@ -158,6 +158,7 @@ class Feature(object):
                                 self.gff3Set.fileName, self.lineNumber)
         return values[0]
 
+
 class Gff3Set(object):
     """
     A set of GFF3 sequence annotations

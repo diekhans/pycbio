@@ -110,9 +110,8 @@ def addCmdOptions(parser):
                         help="Set syslog facility to case-insensitive symbolic value, if not specified, logging is not done to stderr, "
                         " one of {}".format(
                             ", ".join(SysLogHandler.facility_names.keys())))
-    parser.add_argument("--logLevel", , default="warn", type=parseLevel,
-                        help="Set level to case-insensitive symbolic value, one of {}".format(
-                            ", ".join([n for n in logging._levelNames.itervalues() if isinstance(n, str)])))
+    parser.add_argument("--logLevel", default="warn", type=parseLevel,
+                        help="Set level to case-insensitive symbolic value, one of {}".format(", ".join(getLevelNames())))
     parser.add_argument("--logConfFile",
                         help="Python logging configuration file, see logging.config.fileConfig()")
 
