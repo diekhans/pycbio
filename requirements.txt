@@ -2,4 +2,4 @@ pipettor
 numpy
 biopython
 future
-enum34
+enum-compat

@@ -1,9 +1,13 @@
 # Copyright 2006-2014 Mark Diekhans
 
-# required enum34: https://pypi.python.org/pypi/enum34
+
+# for python2, requires enum34: https://pypi.python.org/pypi/enum34
+
+from __future__ import print_function
 import six
 from enum import Enum, EnumMeta
 from future.utils import with_metaclass
+from functools import total_ordering
 
 SymEnum = None  # class defined after use
 
@@ -13,6 +17,7 @@ class SymEnumValue(object):
     __slots__ = ("value", "externalName")
 
     def __init__(self, value, externalName=None):
+        #FIXME: print("@SymEnumValue", value, externalName)
         self.value = value
         self.externalName = externalName
 
@@ -30,11 +35,11 @@ class _SysEnumExternalNameMap(object):
         self.externalToInternal[externalName] = internalName
 
     def toExternalName(self, internalName):
-        "return name unchanged in no mapping"
+        "return name unchanged if no mapping"
         return self.internalToExternal.get(internalName, internalName)
 
     def toInternalName(self, externalName):
-        "return name unchanged in no mapping"
+        "return name unchanged if no mapping"
         return self.externalToInternal.get(externalName, externalName)
 
     def __str__(self):
@@ -42,7 +47,7 @@ class _SysEnumExternalNameMap(object):
 
 
 class SymEnumMeta(EnumMeta):
-    """metaclass for SysEnumMeta that implements looking up singleton members
+    """metaclass for SysEnumMeta that implements looking up of singleton members
     by string name."""
 
     @staticmethod
@@ -53,45 +58,69 @@ class SymEnumMeta(EnumMeta):
         externalNameMap.add(name, symValue.externalName)
 
     @staticmethod
-    def __symEnumDerivedNew(metacls, cls, bases, classdict):
-        "update class fields defined as SymEnumValue to register external names"
+    def __buildExternalNameMap(classdict):
         externalNameMap = classdict["__externalNameMap__"] = _SysEnumExternalNameMap()
         for name in list(classdict.keys()):
+            #FIXME: print("@__buildExternalNameMap", name, type(classdict[name]))
             if isinstance(classdict[name], SymEnumValue):
                 SymEnumMeta.__symEnumValueUpdate(classdict, name, externalNameMap)
+        
+    def __new__(metacls, cls, bases, classdict):
+        "updates class fields defined as SymEnumValue to register external names"
+        #FIXME: print("@__new__", cls, bases)
+        if SymEnum in bases:
+            SymEnumMeta.__buildExternalNameMap(classdict)
         return EnumMeta.__new__(metacls, cls, bases, classdict)
 
-    def __new__(metacls, cls, bases, classdict):
-        if SymEnum in bases:
-            return SymEnumMeta.__symEnumDerivedNew(metacls, cls, bases, classdict)
+    @staticmethod
+    def __lookUpByStr(cls, value):
+        if isinstance(value, six.text_type):
+            value = value.decode()  # force unicode to str for field names
+        # map string name to instance, check for external name
+        member = cls._member_map_.get(cls.__externalNameMap__.toInternalName(value))
+        if member is None:
+            member = cls._member_map_.get(cls.__externalNameMap__.toExternalName(value))
+        if member is None:
+            raise ValueError("'{}' is not a member, external name, or alias of {}".format(value, cls.__name__))
         else:
-            return EnumMeta.__new__(metacls, cls, bases, classdict)
-
+            return member
+    
     def __call__(cls, value, names=None, module=None, typ=None):
         "look up a value object, either by name of value,"
+        #FIXME: print("@__call__", value, names)
         if (names is None) and isinstance(value, six.string_types):
-            if isinstance(value, six.text_type):
-                value = value.decode()  # force unicode to str for field names
-            # map string name to instance, check for external name
-            member = cls._member_map_.get(cls.__externalNameMap__.toInternalName(value))
-            if member is None:
-                member = cls._member_map_.get(cls.__externalNameMap__.toExternalName(value))
-            if member is None:
-                raise ValueError("'{}' is not a member, external name, or alias of {}".format(value, cls.__name__))
-            else:
-                return member
+            return SymEnumMeta.__lookUpByStr(cls, value)
         else:
             return EnumMeta.__call__(cls, value, names, module, typ)
 
+@total_ordering
+class SymEnumMixin(object):
+    """Mixin that adds comparisons for SymEnum"""
 
-class SymEnum(with_metaclass(SymEnumMeta, (Enum,))):
+    def __eq__(self, other):
+        if isinstance(other, SymEnum):
+            return self.value == other.value
+        else:
+            return self.value == other
+
+    def __lt__(self, other):
+        if isinstance(other, SymEnum):
+            return self.value < other.value
+        else:
+            return self.value < other
+
+    def __reduce_ex__(self, proto):
+        return self.__class__, ()
+
+
+class SymEnum(six.with_metaclass(SymEnumMeta, SymEnumMixin, Enum)):
     """
     Metaclass for symbolic enumerations.  These are easily converted between
     string values and Enum objects.  This support construction from string
     values and str() returns value without class name.  Aliases can be
     added using the Enum approach of:
         name = 1
-        namealias = name
+        namealias = val
 
     To handle string values that are not valid Python member names, an external
     name maybe associated with a field using a SymEnumValue object
@@ -105,42 +134,10 @@ class SymEnum(with_metaclass(SymEnumMeta, (Enum,))):
        SymEnum(strName)
        SymEnum(intVal)
     """
+    #FIXME:__metaclass__ = SymEnumMeta
 
     def __str__(self):
         return self.__externalNameMap__.toExternalName(self.name)
 
-    def __le__(self, other):
-        if isinstance(other, SymEnum):
-            return self.value <= other.value
-        else:
-            return self.value <= other
 
-    def __lt__(self, other):
-        if isinstance(other, SymEnum):
-            return self.value < other.value
-        else:
-            return self.value < other
-
-    def __ge__(self, other):
-        if isinstance(other, SymEnum):
-            return self.value >= other.value
-        else:
-            return self.value >= other
-
-    def __gt__(self, other):
-        if isinstance(other, SymEnum):
-            return self.value > other.value
-        else:
-            return self.value > other
-
-    def __eq__(self, other):
-        if isinstance(other, SymEnum):
-            return self.value == other.value
-        else:
-            return False
-
-    def __ne__(self, other):
-        if isinstance(other, SymEnum):
-            return self.value != other.value
-        else:
-            return True
+__all__ = (SymEnumValue.__name__, SymEnum.__name__)

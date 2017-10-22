@@ -1,11 +1,11 @@
 # Copyright 2006-2014 Mark Diekhans
-from future import standard_library
-standard_library.install_aliases()
+from __future__ import print_function
 import unittest
 import sys
 import pickle
 if __name__ == '__main__':
     sys.path.append("../../../../lib")
+
 from pycbio.sys.symEnum import SymEnum, SymEnumValue
 from pycbio.sys.testCaseBase import TestCaseBase
 
