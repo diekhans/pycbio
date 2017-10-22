@@ -3,6 +3,7 @@ from __future__ import print_function
 import unittest
 import sys
 import pickle
+from builtins import range
 if __name__ == '__main__':
     sys.path.append("../../../../lib")
 
@@ -100,15 +101,9 @@ class SymEnumTests(TestCaseBase):
         self.assertTrue(Color.red in stuff2)
         self.assertTrue(Color.green in stuff2)
 
-    def testColorPickle2(self):
-        self.assertTrue(pickle.HIGHEST_PROTOCOL == 2)
-        self.__testColorPickleProtocol(2)
-
-    def testColorPickle1(self):
-        self.__testColorPickleProtocol(1)
-
-    def testColorPickle0(self):
-        self.__testColorPickleProtocol(0)
+    def testColorPickle(self):
+        for protocol in range(0, pickle.HIGHEST_PROTOCOL+1):
+            self.__testColorPickleProtocol(protocol)
 
     def testExtNameLookup(self):
         self.assertEqual(GeneFeature.promoter, GeneFeature("promoter"))
@@ -137,13 +132,9 @@ class SymEnumTests(TestCaseBase):
         self.assertTrue(GeneFeature.utr3 in stuff2)
         self.assertTrue(GeneFeature.cds in stuff2)
 
-    def testGeneFeaturePickle2(self):
-        self.assertTrue(pickle.HIGHEST_PROTOCOL == 2)
-        self.__testGeneFeaturePickleProtocol(2)
-    def testGeneFeaturePickle1(self):
-        self.__testGeneFeaturePickleProtocol(1)
-    def testGeneFeaturePickle0(self):
-        self.__testGeneFeaturePickleProtocol(0)
+    def testGeneFeaturePickle(self):
+        for protocol in range(0, pickle.HIGHEST_PROTOCOL+1):
+            self.__testGeneFeaturePickleProtocol(protocol)
 
     def testBasicsFn(self):
         FnColor = SymEnum("FnColor", ("red","green", "blue"))

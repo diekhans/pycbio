@@ -1,6 +1,4 @@
 # Copyright 2006-2014 Mark Diekhans
-
-
 # for python2, requires enum34: https://pypi.python.org/pypi/enum34
 
 from __future__ import print_function
@@ -52,8 +50,14 @@ class SymEnumMeta(EnumMeta):
 
     @staticmethod
     def __symEnumValueUpdate(classdict, name, externalNameMap):
-        "record info about a member specified with SymEnum and update value in classdict"
+        """record info about a member specified with SymEnum and update value in classdict
+        to be actual value rather than SymEnumValue"""
         symValue = classdict[name]
+        if six.PY3:
+            # under python3, enum does some sanity check, must remove from _EnumDict before
+            # reinserting
+            del classdict._member_names[classdict._member_names.index(name)]
+            del classdict[name]
         classdict[name] = symValue.value
         externalNameMap.add(name, symValue.externalName)
 
@@ -74,8 +78,9 @@ class SymEnumMeta(EnumMeta):
 
     @staticmethod
     def __lookUpByStr(cls, value):
-        if isinstance(value, six.text_type):
+        if six.PY2 and isinstance(value, six.text_type):
             value = value.decode()  # force unicode to str for field names
+
         # map string name to instance, check for external name
         member = cls._member_map_.get(cls.__externalNameMap__.toInternalName(value))
         if member is None:
@@ -91,12 +96,15 @@ class SymEnumMeta(EnumMeta):
         if (names is None) and isinstance(value, six.string_types):
             return SymEnumMeta.__lookUpByStr(cls, value)
         else:
-            return EnumMeta.__call__(cls, value, names, module, typ)
+            return EnumMeta.__call__(cls, value, names, module=module, type=typ)
 
 @total_ordering
 class SymEnumMixin(object):
     """Mixin that adds comparisons for SymEnum"""
 
+    def __hash__(self):
+        return hash(self.value)
+    
     def __eq__(self, other):
         if isinstance(other, SymEnum):
             return self.value == other.value
@@ -134,7 +142,6 @@ class SymEnum(six.with_metaclass(SymEnumMeta, SymEnumMixin, Enum)):
        SymEnum(strName)
        SymEnum(intVal)
     """
-    #FIXME:__metaclass__ = SymEnumMeta
 
     def __str__(self):
         return self.__externalNameMap__.toExternalName(self.name)
