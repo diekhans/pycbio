@@ -1,3 +1,6 @@
+root = ..
+include ${root}/defs.mk
+
 subdirs = libtests progtests
 
 all:
@@ -5,11 +8,10 @@ all:
 test: ${subdirs:%=%.test}
 
 libtests.test:
-	./runTests
+	${PYTHON} ./runTests
 
 progtests.test:
 	(cd progtests && ${MAKE} test)
 
 clean:
 	(cd progtests && ${MAKE} clean)
-

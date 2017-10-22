@@ -1,9 +1,11 @@
+root = ../../..
+include ${root}/defs.mk
 
-export PYTHONPATH=../../..
-binDir = ../../../bin
-ncbiGbFetch = ${binDir}/ncbiGbFetch
-ncbiAssemblyReportConvert = ${binDir}/ncbiAssemblyReportConvert
-diff = diff -u
+export PYTHONPATH
+
+ncbiGbFetch = ${runBin}/ncbiGbFetch
+ncbiAssemblyReportConvert = ${runBin}/ncbiAssemblyReportConvert
+
 
 # refseq mRNAs, ESTs
 testAccver = NM_013266.2 AK289756.1 BG187649.1 U14680.1

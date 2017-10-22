@@ -1,3 +1,6 @@
+root = ../..
+include ${root}/defs.mk
+
 subdirs = gbff geneCheck ncbi csvToTsv
 # FIXME: not done: vennChart
 
@@ -12,4 +15,3 @@ clean: ${subdirs:%=%.clean}
 
 %.clean:
 	(cd $* && ${MAKE} clean)
-

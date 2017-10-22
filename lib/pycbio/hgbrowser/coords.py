@@ -40,13 +40,20 @@ class Coords(namedtuple("Coords", ("chrom", "start", "end", "db", "chromSize", "
     def __str__(self):
         return self.chrom + ":" + str(self.start) + "-" + str(self.end)
 
+    def __eq__(self, other):
+        return ((self.chrom == other.chrom)
+                and (self.start == other.start)
+                and (self.end == other.end)
+                and (self.strand == other.strand))
+
     def __lt__(self, other):
-        "less than, ignoring strand"
         if self.chrom < other.chrom:
             return True
         if self.start < other.start:
             return True
         if self.end < other.end:
+            return True
+        if self.strand < other.strand:
             return True
         return False
 

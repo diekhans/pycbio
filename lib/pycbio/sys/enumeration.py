@@ -119,6 +119,7 @@ class EnumValue(object):
         else:
             return self.numValue != other
 
+
 class Enumeration(object):
     """A class for creating enumeration objects.
     """

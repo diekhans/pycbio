@@ -91,10 +91,8 @@ FrameStat = SymEnum("FrameStat",
 
 
 # acc	chr	chrStart	chrEnd	strand	stat	frame	start	stop	orfStop	cdsGap	cdsMult3Gap	utrGap	cdsUnknownSplice	utrUnknownSplice	cdsNonCanonSplice	utrNonCanonSplice	numExons	numCds	numUtr5	numUtr3	numCdsIntrons	numUtrIntrons	nmd	causes
-typeMap = {"acc": intern,
-           "chrStart": int,
+typeMap = {"chrStart": int,
            "chrEnd": int,
-           "strand": intern,
            "stat": statType,
            "frame": FrameStat,
            "start": startStopType,

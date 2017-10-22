@@ -1,8 +1,9 @@
+root = ../../..
+include ${root}/defs.mk
 
-export PYTHONPATH=../../..
-binDir = ../../../bin
-csvToTsv = ${binDir}/csvToTsv
-diff = diff -u
+export PYTHONPATH
+
+csvToTsv = ${runBin}/csvToTsv
 
 test: sraRunTest
 

@@ -1,8 +1,9 @@
+root = ../../..
+include ${root}/defs.mk
 
-export PYTHONPATH=../../..
-binDir = ../../../bin
-geneCheckStats = ${binDir}/geneCheckStats
-diff = diff -u
+export PYTHONPATH
+
+geneCheckStats = ${runBin}/geneCheckStats
 
 test: testAkrj
 

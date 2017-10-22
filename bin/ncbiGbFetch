@@ -72,7 +72,7 @@ def efetch(opts, gbid, outFh):
 
 
 def doFetch(opts, outFh):
-    for gbid in opts.ids:
+    for gbid in sorted(opts.ids):
         efetch(opts, gbid, outFh)
 
 

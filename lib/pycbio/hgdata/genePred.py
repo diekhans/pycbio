@@ -319,11 +319,14 @@ class GenePred(object):
         "are exons in the direction of transcriptions"
         return (self.strand == "+") or self.strandRel
 
+    def __overlapsCds(self, exonStart, exonEnd):
+        return (self.cdsStart is not None) and (self.cdsStart < self.cdsEnd) and (exonStart < self.cdsEnd) and (exonEnd > self.cdsStart)
+
     def addExon(self, exonStart, exonEnd, frame=None):
         "add an exon; which must be done in assending order"
         i = len(self.exons)
         self.exons.append(Exon(self, i, exonStart, exonEnd, frame))
-        if (self.cdsStart < self.cdsEnd) and (exonStart < self.cdsEnd) and (exonEnd > self.cdsStart):
+        if self.__overlapsCds(exonStart, exonEnd):
             if self.cdsStartIExon is None:
                 self.cdsStartIExon = i
             self.cdsEndIExon = i

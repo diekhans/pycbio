@@ -4,7 +4,6 @@
 from __future__ import print_function
 import six
 from enum import Enum, EnumMeta
-from future.utils import with_metaclass
 from functools import total_ordering
 
 SymEnum = None  # class defined after use
@@ -15,7 +14,6 @@ class SymEnumValue(object):
     __slots__ = ("value", "externalName")
 
     def __init__(self, value, externalName=None):
-        #FIXME: print("@SymEnumValue", value, externalName)
         self.value = value
         self.externalName = externalName
 
@@ -65,13 +63,11 @@ class SymEnumMeta(EnumMeta):
     def __buildExternalNameMap(classdict):
         externalNameMap = classdict["__externalNameMap__"] = _SysEnumExternalNameMap()
         for name in list(classdict.keys()):
-            #FIXME: print("@__buildExternalNameMap", name, type(classdict[name]))
             if isinstance(classdict[name], SymEnumValue):
                 SymEnumMeta.__symEnumValueUpdate(classdict, name, externalNameMap)
-        
+
     def __new__(metacls, cls, bases, classdict):
         "updates class fields defined as SymEnumValue to register external names"
-        #FIXME: print("@__new__", cls, bases)
         if SymEnum in bases:
             SymEnumMeta.__buildExternalNameMap(classdict)
         return EnumMeta.__new__(metacls, cls, bases, classdict)
@@ -89,14 +85,14 @@ class SymEnumMeta(EnumMeta):
             raise ValueError("'{}' is not a member, external name, or alias of {}".format(value, cls.__name__))
         else:
             return member
-    
+
     def __call__(cls, value, names=None, module=None, typ=None):
         "look up a value object, either by name of value,"
-        #FIXME: print("@__call__", value, names)
         if (names is None) and isinstance(value, six.string_types):
             return SymEnumMeta.__lookUpByStr(cls, value)
         else:
             return EnumMeta.__call__(cls, value, names, module=module, type=typ)
+
 
 @total_ordering
 class SymEnumMixin(object):
@@ -104,7 +100,7 @@ class SymEnumMixin(object):
 
     def __hash__(self):
         return hash(self.value)
-    
+
     def __eq__(self, other):
         if isinstance(other, SymEnum):
             return self.value == other.value

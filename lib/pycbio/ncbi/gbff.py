@@ -116,16 +116,19 @@ class Coord(object):
     def size(self):
         return self.end - self.start
 
-    def __cmp__(self, other):
-        if not isinstance(other, Coord):
-            return -1
-        else:
-            d = cmp(self.strand, other.strand)
-            if d == 0:
-                d = cmp(self.start, other.start)
-                if d == 0:
-                    d = cmp(self.end, other.end)
-            return d
+    def __eq__(self, other):
+        return ((self.start == other.start)
+                and (self.end == other.end)
+                and (self.strand == other.strand))
+
+    def __lt__(self, other):
+        if self.start < other.start:
+            return True
+        if self.end < other.end:
+            return True
+        if self.strand < other.strand:
+            return True
+        return False
 
     def overlaps(self, other):
         return (self.start < other.end) and (self.end > other.start) and (self.strand == other.strand)

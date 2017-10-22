@@ -513,7 +513,7 @@ class RecProcessor(object):
         for feat in rec.features:
             try:
                 self.__procFeat(feat)
-            except gbff.GbffExcept, ex:
+            except gbff.GbffExcept as ex:
                 prWarn(ex)
                 if self.opts.verbose >= 2:
                     traceback.print_exc(None, sys.stderr)
@@ -750,7 +750,7 @@ class GbffToGenes(object):
 
     def convert(self, genePredFile):
         gbsFh = fileOps.opengz(self.opts.gbff)
-        self.outFh = file(genePredFile, "w")
+        self.outFh = open(genePredFile, "w")
         for rec in SeqIO.parse(gbsFh, "genbank"):
             self.__procRec(rec)
         self.outFh.close()

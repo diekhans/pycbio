@@ -1,5 +1,6 @@
+root = .
+include ${root}/defs.mk
 
-PYTHON = python
 
 PKGS =  pycbio.align pycbio.distrib pycbio.exrun pycbio.hgbrowser pycbio.hgdata \
 	pycbio.html pycbio.ncbi pycbio.stats pycbio.sys pycbio.tsv
@@ -23,11 +24,3 @@ clean:
 	(cd tests && ${MAKE} clean)
 	find lib tests -name '*.pyc' -exec rm -f '{}' ';'
 	find lib -name '__pycache__' -exec rm -rf '{}' ';'
-
-
-pyfiles = $(shell find lib/pycbio tests/libtests -name '*.py') ${PROGS:%=bin/%}
-future:
-	futurize -2 ${pyfiles}
-
-
-

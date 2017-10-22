@@ -210,9 +210,12 @@ class BrowserDir(object):
         row = [self.mkAnchor(coords, name)]
         self.addRow(row, key=coords)
 
-    def sort(self, cmpFunc=cmp, reverse=False):
-        "sort by the key"
-        self.entries.sort(cmp=lambda a, b: cmpFunc(a.key, b.key), reverse=reverse)
+    def sort(self, keyFunc=None, reverse=False):
+        "sort by the keyfunc"
+        if keyFunc is None:
+            def keyFunc(r):
+                return r.key
+        self.entries.sort(key=keyFunc, reverse=reverse)
 
     def __mkFrame(self, title=None, dirPercent=15, below=False):
         """create frameset as a HtmlPage object"""
