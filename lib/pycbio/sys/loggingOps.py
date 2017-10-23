@@ -23,7 +23,7 @@ def getLevelNames():
 
 
 def parseFacility(facilityStr):
-    """convert case-insensitive facility string to a facility number."""
+    """Convert case-insensitive facility string to a facility number."""
     facility = SysLogHandler.facility_names.get(facilityStr.lower())
     if facility is None:
         raise ValueError("invalid syslog facility: \"{}\"".format(facilityStr))
