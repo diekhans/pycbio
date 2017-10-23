@@ -3,6 +3,8 @@ import unittest
 import sys
 if __name__ == '__main__':
     sys.path.append("../../../../lib")
+import logging
+from logging.handlers import SysLogHandler
 from pycbio.sys import loggingOps
 from pycbio.sys.testCaseBase import TestCaseBase
 import argparse
@@ -10,39 +12,24 @@ import argparse
 
 class LoggingOpsTests(TestCaseBase):
     def testFacilityLower(self):
-        self.assertEqual(loggingOps.parseFacility("daemon"), 3)
+        self.assertEqual(loggingOps.parseFacility("daemon"), SysLogHandler.LOG_DAEMON)
 
     def testFacilityUpper(self):
-        self.assertEqual(loggingOps.parseFacility("DAEMON"), 3)
+        self.assertEqual(loggingOps.parseFacility("DAEMON"), SysLogHandler.LOG_DAEMON)
 
     def testFacilityInvalid(self):
         with self.assertRaisesRegex(ValueError, '^invalid syslog facility: "Fred"$'):
             loggingOps.parseFacility("Fred")
 
     def testLevelLower(self):
-        self.assertEqual(loggingOps.parseLevel("info"), 20)
+        self.assertEqual(loggingOps.parseLevel("info"), logging.INFO)
 
     def testLevelUpper(self):
-        self.assertEqual(loggingOps.parseLevel("INFO"), 20)
+        self.assertEqual(loggingOps.parseLevel("INFO"), logging.INFO)
 
     def testLevelInvalid(self):
         with self.assertRaisesRegex(ValueError, '^invalid logging level: "Fred"$'):
             loggingOps.parseLevel("Fred")
-
-    def __mkParser(self):
-        parser = argparse.ArgumentParser(description="test")
-        loggingOps.addCmdOptions(parser)
-        return parser
-
-    def testParseArgsFacility(self):
-        opts = self.__mkParser().parse_args(["--syslogFacility=local0"])
-        self.assertEqual(opts.syslogFacility, loggingOps.parseFacility("local0"))
-
-    def testParseArgsFacilityLevel(self):
-        opts = self.__mkParser().parse_args(["--syslogFacility=local1", "--logLevel=info"])
-        self.assertEqual(opts.syslogFacility, loggingOps.parseFacility("local1"))
-        self.assertEqual(opts.logLevel, loggingOps.parseLevel("info"))
-
 
 def suite():
     ts = unittest.TestSuite()
