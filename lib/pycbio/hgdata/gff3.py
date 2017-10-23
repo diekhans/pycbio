@@ -93,6 +93,12 @@ class Feature(object):
         self.parents = set()
         self.children = set()
 
+    def __getstate__(self):
+        return (self.seqname, self.source, self.type, self.start, self.end, self.score, self.strand, self.frame, self.attrs, self.gff3Set, self.lineNumber, self.parents, self.children)
+
+    def __setstate__(self, state):
+        self.seqname, self.source, self.type, self.start, self.end, self.score, self.strand, self.frame, self.attrs, self.gff3Set, self.lineNumber, self.parents, self.children = state
+
     @staticmethod
     def __dotIfNone(val):
         return val if val is not None else '.'
@@ -111,7 +117,7 @@ class Feature(object):
         url-style quoting
         """
         return ";".join([self.__attrStr(name)
-                         for name in self.attrs.keys()])
+                         for name in sorted(self.attrs.keys())])
 
     def __str__(self):
         """
