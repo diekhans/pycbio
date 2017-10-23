@@ -19,6 +19,7 @@ import gzip
 import bz2
 import collections
 from pycbio.sys import PycbioException
+from pycbio.sys import fileOps
 
 GFF3_HEADER = "##gff-version 3"
 
@@ -243,17 +244,6 @@ class Gff3Parser(object):
     def __init__(self):
         self.fileName = self.lineNumber = None
 
-    def __open(self, fileName):
-        """
-        open input file, optionally with decompression
-        """
-        if fileName.endswith(".gz"):
-            return gzip.open(fileName)
-        elif fileName.endswith(".bz2"):
-            return bz2.BZ2File(fileName)
-        else:
-            return open(fileName)
-
     # parses `attr=val'; GFF3 spec is not very specific on the allowed values.
     SPLIT_ATTR_RE = re.compile("^([a-zA-Z][^=]*)=(.*)$")
 
@@ -334,7 +324,7 @@ class Gff3Parser(object):
         """
         self.fileName = gff3File
         self.lineNumber = 0
-        fh = self.__open(gff3File) if gff3Fh is None else gff3Fh
+        fh = fileOps.opengz(gff3File, 'r') if gff3Fh is None else gff3Fh
         try:
             gff3Set = Gff3Set(self.fileName)
             for line in fh:

@@ -2,16 +2,18 @@
 import unittest
 import sys
 import pickle
+import pipettor
 if __name__ == '__main__':
     sys.path.append("../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.hgdata.gff3 import Gff3Parser
+from pycbio.sys import fileOps
 
 
 class Gff3Tests(TestCaseBase):
     def __countRows(self, gff3File):
         cnt = 0
-        with open(gff3File) as fh:
+        with fileOps.opengz(gff3File) as fh:
             for line in fh:
                 if line[0].isalnum():
                     cnt += 1
@@ -63,6 +65,10 @@ class Gff3Tests(TestCaseBase):
         self.__write(gff3re, gff3out)
         self.__parseTest(gff3out)
 
+    def testCompressed(self):
+        gff3InGz = self.getOutputFile(".tmp.gff3.gz")
+        pipettor.run(("gzip", "-c", self.getInputFile("discontinuous.gff3")), stdout=gff3InGz)
+        self.__parseTest(gff3InGz)
 
 def suite():
     ts = unittest.TestSuite()
