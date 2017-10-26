@@ -139,9 +139,9 @@ class Feature(object):
             featId = featId[0]
         return featId
 
-    def get1(self, name, default=None):
+    def getAttr1(self, name, default=None):
         """get a single valued attributes or default.  Error if multi-valued"""
-        values = self.get(name)
+        values = self.attrs.get(name)
         if values is None:
             return default
         if len(values) != 1:

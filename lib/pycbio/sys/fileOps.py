@@ -10,6 +10,8 @@ import tempfile
 import pipettor
 from pycbio.sys import PycbioException
 
+# FIXME: normalize file line read routines to all take fh or name, remove redundant code.
+
 
 def ensureDir(dir):
     """Ensure that a directory exists, creating it (and parents) if needed."""
@@ -217,13 +219,26 @@ def prRowv(fh, *objs):
 
 def readFileLines(fname):
     "read lines from a file into a list, removing the newlines"
-    fh = opengz(fname)
     lines = []
-    for l in fh:
-        if l[-1:] == "\n":
-            l = l[:-1]
-        lines.append(l)
-    fh.close()
+    with opengz(fname) as fh:
+        for l in fh:
+            if l[-1:] == "\n":
+                l = l[:-1]
+            lines.append(l)
+    return lines
+
+
+def readNonCommentLines(fname):
+    """read lines from a file into a list, removing the newlines,
+    striping leading and training white space, and skipping blank lines
+    and those with the first non-space character is '#'."""
+    lines = []
+    with opengz(fname) as fh:
+        for l in fh:
+            l = strip(l)
+            if (len(l) > 0) and (l[0] != '#'):
+                l = l[:-1]
+            lines.append(l)
     return lines
 
 
