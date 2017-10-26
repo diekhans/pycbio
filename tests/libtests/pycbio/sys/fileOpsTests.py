@@ -69,6 +69,26 @@ class FileOpsTests(TestCaseBase):
         fileOps.atomicInstall(outfTmp, outf)
         self.diffFiles(inf, outf)
 
+    simple1Lines = ['one', 'two', 'three', 'four', 'five', 'six']
+
+    def testReadFileLines(self):
+        lines = fileOps.readFileLines(self.getInputFile("simple1.txt"))
+        self.assertEqual(self.simple1Lines, lines)
+
+    def testReadNonCommentLines(self):
+        lines = fileOps.readNonCommentLines(self.getInputFile("comments1.txt"))
+        self.assertEqual(self.simple1Lines, lines)
+
+    def testIterLineName(self):
+        lines = [l for l in fileOps.iterLines(self.getInputFile("simple1.txt"))]
+        self.assertEqual(self.simple1Lines, lines)
+
+    def testIterLineFh(self):
+        with open(self.getInputFile("simple1.txt")) as fh:
+            lines = [l for l in fileOps.iterLines(fh)]
+        self.assertEqual(self.simple1Lines, lines)
+
+
 
 # FIXME: many more tests needed
 

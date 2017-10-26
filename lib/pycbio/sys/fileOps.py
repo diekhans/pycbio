@@ -216,56 +216,29 @@ def prRowv(fh, *objs):
         first = False
     fh.write("\n")
 
+class FileAccessor(object):
+    """Context manager that opens a file (possibly compressed) if specified as
+    a string, otherwise assume it is file-like and don't open/close"""
+    def __init__(self, fspec, mode="r"):
+        self.fspec = fspec
+        self.mode = mode
+        self.fh = None
 
-def readFileLines(fname):
-    "read lines from a file into a list, removing the newlines"
-    lines = []
-    with opengz(fname) as fh:
-        for l in fh:
-            if l[-1:] == "\n":
-                l = l[:-1]
-            lines.append(l)
-    return lines
+    def __enter__(self):
+        self.fh = opengz(self.fspec, self.mode) if isinstance(self.fspec, six.string_types) else self.fspec
+        return self.fh
 
-
-def readNonCommentLines(fname):
-    """read lines from a file into a list, removing the newlines,
-    striping leading and training white space, and skipping blank lines
-    and those with the first non-space character is '#'."""
-    lines = []
-    with opengz(fname) as fh:
-        for l in fh:
-            l = strip(l)
-            if (len(l) > 0) and (l[0] != '#'):
-                l = l[:-1]
-            lines.append(l)
-    return lines
-
-
-def readLine(fh):
-    "read a line from a file, dropping a newline; None on eof"
-    l = fh.readline()
-    if len(l) == 0:
-        return None
-    if l[-1:] == "\n":
-        l = l[:-1]
-    return l
-
+    def __exit__(self, typ, value, traceback):
+        if isinstance(self.fspec, six.string_types):
+            self.fh.close()
 
 def iterLines(fspec):
     """generator over lines in file, dropping newlines.  If fspec is a string,
     open the file and close at end. Otherwise it is file-like object and will
     not be closed."""
-    if isinstance(fspec, six.string_types):
-        fh = opengz(fspec)
-    else:
-        fh = fspec
-    try:
+    with FileAccessor(fspec) as fh:
         for line in fh:
             yield line[:-1]
-    finally:
-        if isinstance(fspec, six.string_types):
-            fh.close()
 
 
 def iterRows(fspec):
@@ -273,16 +246,35 @@ def iterRows(fspec):
     parsed, split into columns and returned.  If fspec is a string, open the
     file and close at end. Otherwise it is file-like object and will not be
     closed."""
-    if isinstance(fspec, six.string_types):
-        fh = opengz(fspec)
-    else:
-        fh = fspec
-    try:
+    with FileAccessor(fspec) as fh:
         for line in fh:
             yield line[0:-1].split("\t")
-    finally:
-        if isinstance(fspec, six.string_types):
-            fh.close()
+
+def readFileLines(fspec):
+    "read lines from a open file or a file name into a list, removing the newlines"
+    return [l for l in iterLines(fspec)]
+
+
+def readNonCommentLines(fspec):
+    """read lines from an open file on file by name into a list, removing the
+    newlines, striping leading and training white space, and skipping blank
+    lines and those with the first non-space character is '#'."""
+    lines = []
+    for l in iterLines(fspec):
+        l = l.strip()
+        if (len(l) > 0) and (l[0] != '#'):
+            lines.append(l)
+    return lines
+
+def readLine(fh):
+    "read a line from a file, dropping a newline; None on eof"
+    # FIXME: delete?
+    l = fh.readline()
+    if len(l) == 0:
+        return None
+    if l[-1:] == "\n":
+        l = l[:-1]
+    return l
 
 
 def findTmpDir(tmpDir=None):

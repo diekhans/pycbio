@@ -1,0 +1,10 @@
+# test file with comments and white space that are stripped
+  one
+	two
+three
+        # another comment here
+four
+
+
+	five
+six
