@@ -70,6 +70,7 @@ class Gff3Tests(TestCaseBase):
         pipettor.run(("gzip", "-c", self.getInputFile("discontinuous.gff3")), stdout=gff3InGz)
         self.__parseTest(gff3InGz)
 
+
 def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(Gff3Tests))

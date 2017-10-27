@@ -174,10 +174,10 @@ class BrowserDir(object):
     def __mkTracksArgs(self, tracks):
         if (tracks is None) or (len(tracks) == 0):
             return ""
-        l = []
-        for t in tracks:
-            l.append(t + "=" + tracks[t])
-        return "&" + "&".join(l)
+        args = []
+        for track in tracks.keys():
+            args.append(track + "=" + tracks[tracks])
+        return "&" + "&".join(args)
 
     def mkDefaultUrl(self):
         return self.browserUrl + "/cgi-bin/hgTracks?db=" + self.defaultDb + "&position=default" + self.initTrackArgs + self.trackArgs

@@ -483,10 +483,10 @@ class PslDbReader(object):
         self.cur = conn.cursor()
         try:
             self.cur.execute(query)
-        except:
+        except Exception:
             try:
                 self.close()
-            except:
+            except Exception:
                 pass
             raise  # continue original exception
         # FIXME: could make this optional or require column names in query

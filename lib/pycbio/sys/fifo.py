@@ -17,7 +17,7 @@ class _Fifo(object):
         "finalizer"
         try:
             self.close()
-        except:
+        except Exception:
             pass
 
     def getRfh(self):
@@ -96,7 +96,7 @@ class _NamedFifo(_Fifo):
         fd = os.open(path, omode | os.O_NONBLOCK)
         try:
             fcntl.fcntl(fd, fcntl.F_SETFL, omode)  # clear O_NONBLOCK
-        except:
+        except Exception:
             try:
                 os.close(fd)
             finally:

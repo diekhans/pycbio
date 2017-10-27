@@ -216,6 +216,7 @@ def prRowv(fh, *objs):
         first = False
     fh.write("\n")
 
+
 class FileAccessor(object):
     """Context manager that opens a file (possibly compressed) if specified as
     a string, otherwise assume it is file-like and don't open/close"""
@@ -231,6 +232,7 @@ class FileAccessor(object):
     def __exit__(self, typ, value, traceback):
         if isinstance(self.fspec, six.string_types):
             self.fh.close()
+
 
 def iterLines(fspec):
     """generator over lines in file, dropping newlines.  If fspec is a string,
@@ -250,6 +252,7 @@ def iterRows(fspec):
         for line in fh:
             yield line[0:-1].split("\t")
 
+
 def readFileLines(fspec):
     "read lines from a open file or a file name into a list, removing the newlines"
     return [l for l in iterLines(fspec)]
@@ -260,21 +263,22 @@ def readNonCommentLines(fspec):
     newlines, striping leading and training white space, and skipping blank
     lines and those with the first non-space character is '#'."""
     lines = []
-    for l in iterLines(fspec):
-        l = l.strip()
-        if (len(l) > 0) and (l[0] != '#'):
-            lines.append(l)
+    for line in iterLines(fspec):
+        line = line.strip()
+        if (len(line) > 0) and (line[0] != '#'):
+            lines.append(line)
     return lines
+
 
 def readLine(fh):
     "read a line from a file, dropping a newline; None on eof"
     # FIXME: delete?
-    l = fh.readline()
-    if len(l) == 0:
+    line = fh.readline()
+    if len(line) == 0:
         return None
-    if l[-1:] == "\n":
-        l = l[:-1]
-    return l
+    if line[-1:] == "\n":
+        line = line[:-1]
+    return line
 
 
 def findTmpDir(tmpDir=None):

@@ -115,11 +115,10 @@ def addCmdOptions(parser):
     def validateFacility(facilityStr):
         parseFacility(facilityStr)
         return facilityStr
+
     def validateLevel(levelStr):
         parseLevel(levelStr)
         return levelStr
-
-
 
     parser.add_argument("--syslogFacility", type=validateFacility,
                         help="Set syslog facility to case-insensitive symbolic value, if not specified, logging is not done to stderr, "

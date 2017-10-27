@@ -15,8 +15,6 @@ import urllib.parse
 import urllib.error
 import copy
 import re
-import gzip
-import bz2
 import collections
 from pycbio.sys import PycbioException
 from pycbio.sys import fileOps

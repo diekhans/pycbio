@@ -24,7 +24,7 @@ class PycbioException(Exception):
             if exi is not None:
                 try:
                     setattr(cause, "stackTrace", traceback.format_list(traceback.extract_tb(exi[2])))
-                except:
+                except TypeError:
                     # FIXME: not the best way to handle
                     # TypeError: can't set attributes of built-in/extension type 'exceptions.IOError'
                     pass

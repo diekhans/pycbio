@@ -89,7 +89,6 @@ class FileOpsTests(TestCaseBase):
         self.assertEqual(self.simple1Lines, lines)
 
 
-
 # FIXME: many more tests needed
 
 

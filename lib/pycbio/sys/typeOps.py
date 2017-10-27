@@ -11,10 +11,10 @@ def isListLike(v):
 
 def listInit(size, val):
     "create a list of length size, with each element containing val"
-    l = []
+    lst = []
     for i in range(size):
-        l.append(val)
-    return l
+        lst.append(val)
+    return lst
 
 
 def listAppend(lst, item):

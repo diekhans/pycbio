@@ -7,7 +7,6 @@ import logging
 from logging.handlers import SysLogHandler
 from pycbio.sys import loggingOps
 from pycbio.sys.testCaseBase import TestCaseBase
-import argparse
 
 
 class LoggingOpsTests(TestCaseBase):
@@ -30,6 +29,7 @@ class LoggingOpsTests(TestCaseBase):
     def testLevelInvalid(self):
         with self.assertRaisesRegex(ValueError, '^invalid logging level: "Fred"$'):
             loggingOps.parseLevel("Fred")
+
 
 def suite():
     ts = unittest.TestSuite()

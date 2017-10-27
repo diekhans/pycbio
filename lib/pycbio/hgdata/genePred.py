@@ -403,19 +403,19 @@ class GenePred(object):
 
     def getLenExons(self):
         "get the total length of all exons"
-        l = 0
+        bases = 0
         for e in self.exons:
-            l += e.size()
-        return l
+            bases += e.size()
+        return bases
 
     def getLenCds(self):
         "get the total length of CDS"
-        l = 0
+        bases = 0
         for e in self.exons:
             cds = e.getCds()
             if cds is not None:
-                l += cds.end - cds.start
-        return l
+                bases += cds.end - cds.start
+        return bases
 
     def getSpan(self):
         "get the genomic span (txStart to txEnd length)"
@@ -637,10 +637,10 @@ class GenePredDbReader(object):
         self.cur = conn.cursor()
         try:
             self.cur.execute(query, queryArgs)
-        except:
+        except Exception:
             try:
                 self.cur.close()
-            except:
+            except Exception:
                 pass
             raise
         self.colIdxMap = dbOps.cursorColIdxMap(self.cur)

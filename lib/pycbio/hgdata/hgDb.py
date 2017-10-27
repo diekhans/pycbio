@@ -1,6 +1,5 @@
 # Copyright 2006-2012 Mark Diekhans
 """Connect to UCSC genome database using info in .hg.conf """
-import six
 from pycbio.hgdata.hgConf import HgConf
 from pycbio.sys import dbOps
 import MySQLdb

@@ -19,10 +19,10 @@ def splitAtSpaces(s):
 
 def dup(n, s):
     "make a string with n copies of s"
-    l = []
+    lst = []
     for i in range(n):
-        l.append(s)
-    return "".join(l)
+        lst.append(s)
+    return "".join(lst)
 
 
 def emptyOrNone(s):
