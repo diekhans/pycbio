@@ -1,5 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
 """Connect to UCSC genome database using info in .hg.conf """
+import six
 from pycbio.hgdata.hgConf import HgConf
 from pycbio.sys import dbOps
 import MySQLdb
@@ -15,4 +16,14 @@ def connect(db="", confFile=None, dictCursor=False, host=None, hgConf=None):
     cursorclass = MySQLdb.cursors.DictCursor if dictCursor else MySQLdb.cursors.Cursor
     if host is None:
         host = hgConf["db.host"]
-    return MySQLdb.Connect(host=host, user=hgConf["db.user"], passwd=hgConf["db.password"], db=db, cursorclass=cursorclass)
+    conn = MySQLdb.Connect(host=host, user=hgConf["db.user"], passwd=hgConf["db.password"], db=db, cursorclass=cursorclass)
+    # FIXME: these don't help
+    #  use_unicode=False, charset="ascii")
+    # other suggestions:
+    # init_command='SET NAMES UTF8'
+    #    SET NAMES UTF8;
+    #    SET character_set_client = utf8;
+    #    SET character_set_results = utf8;
+    #    SET character_set_connection = utf8;""")
+    #  also setting ascii doesn't 
+    return conn

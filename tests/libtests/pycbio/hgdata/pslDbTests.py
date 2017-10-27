@@ -1,4 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
+from __future__ import print_function
+import six
 import unittest
 import sys
 if __name__ == '__main__':
@@ -58,7 +60,10 @@ class DbReadTests(TestCaseBase):
 def suite():
     ts = unittest.TestSuite()
     if onTestHost:
-        ts.addTest(unittest.makeSuite(DbReadTests))
+        if six.PY3:
+            print("WARNING: mysql pslDbTests tests don't work on python3")
+        else:
+            ts.addTest(unittest.makeSuite(DbReadTests))
     return ts
 
 

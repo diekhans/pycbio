@@ -18,7 +18,7 @@ test:
 	(cd tests && ${MAKE} test)
 
 lint:
-	flake8 lib/pycbio tests/libtests ${PROGS:%=bin/%}
+	${FLAKE8} lib/pycbio tests/libtests ${PROGS:%=bin/%}
 
 clean:
 	(cd tests && ${MAKE} clean)

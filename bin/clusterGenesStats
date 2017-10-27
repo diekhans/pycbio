@@ -42,7 +42,7 @@ def readLociCats(self, catsFile):
     for row in TabFile(catsFile):
         if len(row) < 2:
             raise Exception("rows must have at least two columns: {}".format(catsFile))
-        cats[int(row[0])] = intern(row[1])
+        cats[int(row[0])] = row[1]
     return cats
 
 
@@ -82,7 +82,7 @@ class ClusterStats(object):
     def _getLocusTableCat(self, gene):
         locusCat = self.lociCats.get(gene.clusterObj.clusterId)
         if (locusCat is not None):
-            return intern(locusCat + "+" + gene.table)
+            return locusCat + "+" + gene.table
         else:
             return gene.table
 
@@ -138,7 +138,7 @@ class ClusterStats(object):
                fmtFrac(self.total.transCnt, self.total.transCnt))
 
     def saveVenn(self, statsFile, total):
-        fh = file(statsFile, "w")
+        fh = open(statsFile, "w")
         prRowv(fh, "subset", "loci", "trans", "fracLoci", "fracTrans")
         for subset in self.venn.subsets.getSubsets():
             self._prSubsetStats(fh, subset)
@@ -149,7 +149,7 @@ class ClusterStats(object):
     def saveSetTotals(self, totalsFile):
         if self.setTotals is None:
             self._buildSetTotals()
-        fh = file(totalsFile, "w")
+        fh = open(totalsFile, "w")
         prRowv(fh, "set", "loci", "transcripts")
         for t in self.setTotals.values():
             if (t.transCnt > 0) or not self.omitZero:
@@ -157,7 +157,7 @@ class ClusterStats(object):
         fh.close()
 
     def saveGeneSubsets(self, geneSubsetFile):
-        fh = file(geneSubsetFile, "w")
+        fh = open(geneSubsetFile, "w")
         prRowv(fh, "gene", "cluster", "subset")
         for subset in self.venn.subsets.getSubsets():
             for clusterId in self.venn.getSubsetIds(subset):

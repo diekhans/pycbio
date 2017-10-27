@@ -3,6 +3,7 @@
 #   include ${root}/defs.mk
 
 PYTHON = python2
+FLAKE8 = flake8
 
 binDir = ${root}/bin
 diff = diff -u

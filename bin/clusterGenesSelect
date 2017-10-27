@@ -59,7 +59,7 @@ class ClusterSelect(object):
     def __parseTrackSet(self, spec):
         selSet = set()
         for tr in spec.split(","):
-            selSet.add(intern(tr))
+            selSet.add(tr)
         return selSet
 
     def __parseTrackSetList(self, specs):

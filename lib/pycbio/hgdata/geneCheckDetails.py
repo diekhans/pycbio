@@ -15,10 +15,7 @@ def strOrNone(val):
 
 
 # acc	problem	info	chr	chrStart	chrEnd
-typeMap = {"acc": intern,
-           "problem": intern,
-           "info": strOrNone,
-           "chr": intern,
+typeMap = {"info": strOrNone,
            "chrStart": int,
            "chrEnd": int}
 

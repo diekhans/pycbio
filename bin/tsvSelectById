@@ -44,7 +44,7 @@ def loadSelect(selectCol, selectTsv):
 def selectById(selectCol, selectTsv, inCol, inTsv, outTsv):
     selectTbl = loadSelect(selectCol, selectTsv)
     rd = openTsv(inCol, inTsv)
-    outFh = file(outTsv, "w")
+    outFh = open(outTsv, "w")
     TsvTable.tsvPrRow(outFh, rd.columns)
     for row in rd:
         if row[inCol] in selectTbl:
