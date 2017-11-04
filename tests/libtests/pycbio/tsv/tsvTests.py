@@ -106,6 +106,8 @@ class ReadTests(TestCaseBase):
         typeMap = {"int_col": int, "float_col": float, "onOff_col": (self.onOffParse, self.onOffFmt)}
 
         tsv = TsvTable(self.getInputFile('typesColNameMap.tsv'), typeMap=typeMap, columnNameMapper=lambda s: s.replace(' ', '_'))
+        self.assertEqual(tsv.columns, ['str_col', 'int_col', 'float_col', 'onOff_col'])
+        self.assertEqual(tsv.extColumns, ['str col', 'int col', 'float col', 'onOff col'])
 
         r = tsv[0]
         self.assertEqual(r.str_col, "name1")

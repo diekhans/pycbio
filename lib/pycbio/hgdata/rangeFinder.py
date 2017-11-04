@@ -18,6 +18,7 @@ from __future__ import print_function
 from builtins import range
 from collections import namedtuple
 
+
 def RemoveValueError(ValueError):
     "error when removed not found"
     def __init__(self, start, end):
@@ -149,7 +150,9 @@ class RangeBins(object):
             bucket = self.buckets[(Binner.calcBin(start, end))]  # exception if no bucket
             bucket.remove(Entry(start, end, value))  # exception if no value
             return True
-        except IndexError, ValueError:
+        except IndexError:
+            return False
+        except ValueError:
             return False
 
     def values(self):
@@ -181,7 +184,7 @@ class RangeFinder(object):
     def __checkStrand(self, strand):
         if strand not in (None, "+", "-"):
             raise Exception("invalid strand: {}".format(strand))
-        
+
     def add(self, seqId, start, end, value, strand=None):
         "add an entry for a sequence and range, and optional strand"
         self.__checkStrand(strand)
@@ -201,7 +204,7 @@ class RangeFinder(object):
         if bins is not None:
             for value in bins.overlapping(start, end):
                 yield value
-        
+
     def __overlappingBothStrands(self, seqId, start, end):
         "return range overlaps, checking both strands"
         for value in self.__overlappingSpecificStrand(seqId, start, end, '+'):
@@ -232,17 +235,15 @@ class RangeFinder(object):
         "remove an entry on specific strand, which might be None"
         if not self.__removeIfExists(seqId, start, end, value, strand):
             raise RemoveValueError(start, end)
-            
+
     def __removeBothStrands(self, seqId, start, end, value):
         "remove an entry, checking both strands"
         removed = self.__removeIfExists(seqId, start, end, value, '+')
         if not removed:
             removed = self.__removeIfExists(seqId, start, end, value, '-')
-            if bins is not None:
-                removed = bins.removeIfExists(seqId, start, end, value)
         if not removed:
             raise RemoveValueError(start, end)
-        
+
     def remove(self, seqId, start, end, value, strand=None):
         """remove an entry with the particular range and value, value error if not found"""
         self.__checkStrand(strand)

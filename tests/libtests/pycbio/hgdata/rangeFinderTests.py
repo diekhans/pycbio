@@ -118,7 +118,6 @@ class RangeTests(TestCaseBase):
         self.doQueries(rf, queries2, True)
         self.doQueries(rf, queries2, False)
 
-
     def testRemoveNoStrand(self):
         "exact range matches"
         rf = self.mkRangeFinder(data1, False)
@@ -126,6 +125,7 @@ class RangeTests(TestCaseBase):
         rf.remove(ent.seqId, ent.start, ent.end, ent.value)
         left = sorted(rf.values())
         expect = ['val1.1', 'val1.3', 'val1.4', 'val1.5', 'val1.6']
+        self.assertEqual(left, expect)
 
     def testRemoveStrand(self):
         "exact range matches"
@@ -134,6 +134,7 @@ class RangeTests(TestCaseBase):
         rf.remove(ent.seqId, ent.start, ent.end, ent.value, ent.strand)
         left = sorted(rf.values())
         expect = ['val1.1', 'val1.3', 'val1.4', 'val1.5', 'val1.6']
+        self.assertEqual(left, expect)
 
 
 def suite():

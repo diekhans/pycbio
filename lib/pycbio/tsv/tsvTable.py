@@ -104,6 +104,7 @@ class TsvTable(list):
                            ignoreExtraCols=ignoreExtraCols, inFh=inFh, allowEmpty=allowEmpty, dialect=dialect)
         try:
             self.columns = reader.columns
+            self.extColumns = reader.extColumns
             self.colTypes = reader.colTypes
             self.colMap = reader.colMap
             self.__buildIndices(uniqKeyCols, multiKeyCols)

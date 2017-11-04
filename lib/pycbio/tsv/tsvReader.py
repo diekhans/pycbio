@@ -29,7 +29,7 @@ csv.field_size_limit(sys.maxsize)
 # rename  typeMap -> colTypes
 # FIXME: make a column object.
 # FIXME: save original column names before mapping for output
-
+# FIXME: check if column is a valid python field name
 # FIXME: switch to row derived from namedtuple
 
 # typeMap converter for str types were empty represents None
@@ -85,8 +85,8 @@ class TsvReader(object):
         i = 0
         for col in columns:
             if self.columnNameMapper is not None:
+                self.extColumns.append(col)
                 col = self.columnNameMapper(col)
-            col = sys.intern(col)
             self.columns.append(col)
             if col in self.colMap:
                 raise TsvError("Duplicate column name: {}".format(col))
@@ -132,6 +132,11 @@ class TsvReader(object):
         dialect - a csv dialect object or name.
         """
         self.columns = []
+        # external column name, before mapping with columnNameMapper
+        if columnNameMapper is None:
+            self.extColumns = self.columns
+        else:
+            self.extColumns = []
         self.colMap = {}
         self.fileName = fileName
         self.lineNum = 0

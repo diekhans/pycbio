@@ -1,6 +1,5 @@
 # Copyright 2006-2012 Mark Diekhans
 """Connect to UCSC genome database using info in .hg.conf """
-import six
 from pycbio.hgdata.hgConf import HgConf
 from pycbio.sys import dbOps
 import MySQLdb
@@ -25,5 +24,5 @@ def connect(db="", confFile=None, dictCursor=False, host=None, hgConf=None):
     #    SET character_set_client = utf8;
     #    SET character_set_results = utf8;
     #    SET character_set_connection = utf8;""")
-    #  also setting ascii doesn't 
+    #  also setting ascii doesn't
     return conn
