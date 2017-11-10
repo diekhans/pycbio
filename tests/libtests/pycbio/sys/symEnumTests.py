@@ -75,7 +75,7 @@ class SymEnumTests(TestCaseBase):
             Arther = Rick
         self.assertTrue(str(Name.Arther), "Rick")
         self.assertTrue(str(Name.Rick), "Rick")
-        
+
     def testSetOps(self):
         colSet = set([Color.blue, Color.green])
         self.assertTrue(Color.green in colSet)
@@ -177,6 +177,9 @@ class SymEnumTests(TestCaseBase):
         self.assertTrue(str(ColorNoDict.purple) == "purple")
         self.assertTrue(str(ColorNoDict.gold) == "gold")
         self.assertTrue(sorted([str(c) for c in ColorNoDict]), ["purple", "gold", "black"])
+
+    def testSelfConvert(self):
+        self.assertEqual(Color(Color.red), Color.red)
 
 def suite():
     ts = unittest.TestSuite()

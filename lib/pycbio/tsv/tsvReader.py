@@ -24,11 +24,10 @@ csv.field_size_limit(sys.maxsize)
 # FIXME: is colMap needed any more???
 # FIXME: need to add write stuff. (see GeneCheck), where str() is called on
 #        alfor all column ty
-# FIXME: change TsvRow to be based on collections.namedtuple **** (thanks Max)
-#
-# rename  typeMap -> colTypes
+# FIXME: add type mapping functions that gets column name
+# FIXME: rename  typeMap -> colTypes
 # FIXME: make a column object.
-# FIXME: save original column names before mapping for output
+# FIXME: document how colName mapping and type mappings works together
 # FIXME: check if column is a valid python field name
 # FIXME: switch to row derived from namedtuple
 
