@@ -302,7 +302,7 @@ def setTmpEnv(tmpDir=None):
     os.environ["TMPDIR"] = findTmpDir(tmpDir)
 
 
-def tmpFileGet(prefix=None, suffix="tmp", tmpDir=None):
+def tmpFileGet(prefix=None, suffix=".tmp", tmpDir=None):
     """Obtain a tmp file with a unique name in a secure way. File
     will only be accessible to user."""
     fh = tempfile.NamedTemporaryFile(prefix=prefix, suffix=suffix,
