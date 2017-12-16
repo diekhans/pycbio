@@ -311,7 +311,7 @@ def tmpFileGet(prefix=None, suffix=".tmp", tmpDir=None):
     return fh.name
 
 
-def tmpDirGet(prefix=None, suffix="tmp", tmpDir=None):
+def tmpDirGet(prefix=None, suffix=".tmp", tmpDir=None):
     """Obtain a tmp directory with a unique name in a secure way.  Directory
     will only be accessible to user."""
     return tempfile.mkdtemp(prefix=prefix, suffix=suffix, dir=findTmpDir(tmpDir))
