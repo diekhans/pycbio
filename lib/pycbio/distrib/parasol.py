@@ -1,9 +1,12 @@
 # Copyright 2006-2012 Mark Diekhans
 """classes for interacting with parasol batch system"""
 from builtins import object
+import six
 import sys
+from six.moves import shlex_quote
 import os.path
-from pycbio.sys import procOps, fileOps
+from pycbio.sys import fileOps
+import pipettor
 
 # FIXME: shell has multiple quoting hell issues; maybe something like
 # fsh (http://www.lysator.liu.se/fsh/) would fix this, and make it faster.
@@ -84,7 +87,7 @@ class Para(object):
     def __init__(self, paraHost, runDir, paraDir, jobFile=None):
         """"will chdir to run dir.. paraDir should be relative
         to runDir or absolute, jobFile should be relative to runDir
-        for absolute
+        or absolute.
         """
         self.paraHost = paraHost
         self.runDir = os.path.abspath(runDir)
@@ -113,14 +116,13 @@ class Para(object):
         passed as arguments to the para command. Returns stdout as a list of
         lines, stderr in ProcException if the remote program encouners an
         error. There is a possibility for quoting hell here."""
-        remCmd = "cd {} &&  para -batch={} {}".format(self.runDir, self.paraDir, " ".join(paraArgs))
-        fileOps.prLine(sys.stderr, "ssh ", self.paraHost, " ", remCmd)
-        return procOps.callProcLines(["ssh", "-o", "ClearAllForwardings=yes", self.paraHost, remCmd])
+        remCmd = "cd {} && para -batch={} {}".format(shlex_quote(self.runDir), shlex_quote(self.paraDir), " ".join(paraArgs))
+        return pipettor.runout(["ssh", "-no", "ClearAllForwardings=yes", self.paraHost, remCmd]).split('\n')
 
     def wasStarted(self):
         """check to see if it appears that the batch was started; this doens't mean
         it's currently running, or even succesfully started"""
-        return os.path.exists(self.paraDir + "/batch")
+        return os.path.exists(os.path.join(self.paraDir, "batch"))
 
     def make(self):
         "run para make"
@@ -137,8 +139,7 @@ class Para(object):
 
     def time(self):
         "run para check and return statistics as a list of lines"
-        lines = self._para("time")
-        return lines
+        return self._para("time")
 
 
 __all__ = [BatchStats.__name__, Para.__name__]
