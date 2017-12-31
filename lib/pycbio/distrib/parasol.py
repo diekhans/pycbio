@@ -1,8 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
 """classes for interacting with parasol batch system"""
 from builtins import object
-import six
-import sys
 from six.moves import shlex_quote
 import os.path
 from pycbio.sys import fileOps

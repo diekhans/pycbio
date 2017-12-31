@@ -1,5 +1,6 @@
 # Copyright 2015-2016 Mark Diekhans
 import unittest
+import os
 import sys
 import shutil
 if __name__ == '__main__':
@@ -91,6 +92,16 @@ class FileOpsTests(TestCaseBase):
     def testMd5Sum(self):
         md5 = fileOps.md5sum(self.getInputFile("simple1.txt"))
         self.assertEqual('b256e7fa23f105539085c7c895557c41', md5)
+
+    def testMd5Sums(self):
+        expected = [("simple1.txt", "b256e7fa23f105539085c7c895557c41"),
+                    ("comments1.txt", "4179a04267de41833d87e182b22999ca"),
+                    ("funcArgs.config.py", "6df2aec2f839ff35ea26ca8440baee2d")]
+        got = fileOps.md5sums([self.getInputFile(f[0]) for f in expected])
+        self.assertEquals(len(expected), len(got))
+        for e, g in zip(expected, got):
+            self.assertEquals(e[0], os.path.basename(g[0]))
+            self.assertEquals(e[1], g[1])
 
 
 # FIXME: many more tests needed

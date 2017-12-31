@@ -362,12 +362,48 @@ def getDevNull():
         _devNullFh = open("/dev/null", "r+")
     return _devNullFh
 
+
 def _parseMd5(line):
     "parse output of openssl md5"
-    m = re.match("^MD5\\((.+)= ([a-f0-9]+)\\n?", line)
+    m = re.match("^MD5\\((.+)\\)= ([a-f0-9]+)\\n?", line)
     return m.group(1), m.group(2)
 
 
 def md5sum(filePath):
     "compute md5 on a file"
     return _parseMd5(pipettor.runout(["openssl", "md5", filePath]))[1]
+
+
+_sc_arg_max = None
+
+
+def getArgMax():
+    global _sc_arg_max
+    if _sc_arg_max is None:
+        _sc_arg_max = os.sysconf("SC_ARG_MAX")
+    return _sc_arg_max
+
+
+def _mkMd5SumCmd(filePaths, i, maxCmdLen):
+    cmd = ["openssl", "md5"]
+    cmdLen = 0
+    while (cmdLen < maxCmdLen) and (i < len(filePaths)):
+        cmd.append(filePaths[i])
+        cmdLen += len(filePaths[i])
+        i += 1
+    return i, cmd
+
+
+def _runMd5SumCmd(cmd):
+    return [_parseMd5(line) for line in pipettor.runout(cmd)[0:-1].split('\n')]
+
+
+def md5sums(filePaths):
+    "compute md5 on a list of files, returning list of list of (path, sum)"
+    maxCmdLen = getArgMax() - 1024  # a little padding
+    i = 0
+    results = []
+    while i < len(filePaths):
+        i, cmd = _mkMd5SumCmd(filePaths, i, maxCmdLen)
+        results.extend(_runMd5SumCmd(cmd))
+    return results
