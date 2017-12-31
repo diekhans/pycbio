@@ -360,3 +360,8 @@ def getDevNull():
     if _devNullFh is None:
         _devNullFh = open("/dev/null", "r+")
     return _devNullFh
+
+
+def md5sum(filePath):
+    "compute md5 on a file"
+    return pipettor.runout(["md5sum", filePath]).split()[0]
