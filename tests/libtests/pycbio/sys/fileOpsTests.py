@@ -88,6 +88,10 @@ class FileOpsTests(TestCaseBase):
             lines = [l for l in fileOps.iterLines(fh)]
         self.assertEqual(self.simple1Lines, lines)
 
+    def testMd5Sum(self):
+        md5 = fileOps.md5sum(self.getInputFile("simple1.txt"))
+        self.assertEqual('b256e7fa23f105539085c7c895557c41', md5)
+
 
 # FIXME: many more tests needed
 

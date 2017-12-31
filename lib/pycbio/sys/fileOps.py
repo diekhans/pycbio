@@ -3,8 +3,9 @@
 
 import six
 import os
-import errno
 import sys
+import errno
+import re
 import socket
 import tempfile
 import pipettor
@@ -361,7 +362,12 @@ def getDevNull():
         _devNullFh = open("/dev/null", "r+")
     return _devNullFh
 
+def _parseMd5(line):
+    "parse output of openssl md5"
+    m = re.match("^MD5\\((.+)= ([a-f0-9]+)\\n?", line)
+    return m.group(1), m.group(2)
+
 
 def md5sum(filePath):
     "compute md5 on a file"
-    return pipettor.runout(["md5sum", filePath]).split()[0]
+    return _parseMd5(pipettor.runout(["openssl", "md5", filePath]))[1]
