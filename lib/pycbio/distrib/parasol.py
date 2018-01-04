@@ -88,8 +88,9 @@ class Para(object):
         or absolute.
         """
         self.paraHost = paraHost
-        self.runDir = os.path.abspath(runDir)
-        self.paraDir = paraDir
+        # symlinks can confuse parasol, as it can give two different names for a job.
+        self.runDir = os.path.realpath(os.path.abspath(runDir))
+        self.paraDir = os.path.realpath(paraDir)
         self.jobFile = jobFile
         fileOps.ensureDir(self.__mkAbs(self.runDir, self.paraDir))
         if jobFile is not None:
