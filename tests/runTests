@@ -95,7 +95,7 @@ dt.add("libtests.pycbio.stats.subsetsTests")
 dt.add("libtests.pycbio.stats.vennTests")
 dt.add("libtests.pycbio.align.pairAlignTest")
 dt.add("libtests.pycbio.hgbrowser.browserDirTests")
-dt.add("libtests.pycbio.hgbrowser.coordsTests")
+dt.add("libtests.pycbio.hgdata.coordsTests")
 dt.add("libtests.pycbio.ncbi.ncbiParseTests")
 dt.run()
 

@@ -4,6 +4,7 @@ browser.
 """
 from __future__ import print_function
 from __future__ import division
+from six.moves.urllib.parse import urlencode
 from builtins import range
 from past.utils import old_div
 from pycbio.html.htmlPage import HtmlPage
@@ -169,27 +170,24 @@ class BrowserDir(object):
         self.trackArgs = self.__mkTracksArgs(tracks)
         self.initTrackArgs = self.__mkTracksArgs(initTracks)
         if customTrackUrl is not None:
-            self.trackArgs += "&hgt.customText=" + self.customTrackUrl
+            self.trackArgs["hgt.customText"] = self.customTrackUrl
 
     def __mkTracksArgs(self, tracks):
-        if (tracks is None) or (len(tracks) == 0):
-            return ""
-        args = []
-        for track in tracks.keys():
-            args.append(track + "=" + tracks[tracks])
-        return "&" + "&".join(args)
+        args = {}
+        if tracks is not None:
+            args.join(tracks)
+        return args
+
+    def mkUrl(self, coords, db=None, extra=None):
+        # FIXME: use python library
+        args = {"db": db if db is not None else self.defaultDb,
+                "position": coords} | self.trackArgs
+        if extra is not None:
+            args |= extra
+        return "{}/cgi-bin/hgTracks?{}".format(self.browserUrl, urlencode(args))
 
     def mkDefaultUrl(self):
-        return self.browserUrl + "/cgi-bin/hgTracks?db=" + self.defaultDb + "&position=default" + self.initTrackArgs + self.trackArgs
-
-    def mkUrl(self, coords):
-        url = self.browserUrl + "/cgi-bin/hgTracks?db="
-        if coords.db is not None:
-            url += coords.db
-        else:
-            url += self.defaultDb
-        url += "&position=" + str(coords) + self.trackArgs
-        return url
+        return self.mkUrl("default", db=self.defaultDb, extra=self.initTrackArgs)
 
     def mkAnchor(self, coords, text=None, target="browser"):
         if text is None:
