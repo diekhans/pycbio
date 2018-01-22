@@ -82,7 +82,7 @@ class BatchStats(object):
 
 class Para(object):
     "interface to the parasol para command"
-    def __init__(self, paraHost, runDir, paraDir, jobFile=None):
+    def __init__(self, paraHost, runDir, paraDir, jobFile=None, mem=None):
         """"will chdir to run dir.. paraDir should be relative
         to runDir or absolute, jobFile should be relative to runDir
         or absolute.
@@ -92,6 +92,7 @@ class Para(object):
         self.runDir = os.path.realpath(os.path.abspath(runDir))
         self.paraDir = os.path.realpath(paraDir)
         self.jobFile = jobFile
+        self.mem = mem
         fileOps.ensureDir(self.__mkAbs(self.runDir, self.paraDir))
         if jobFile is not None:
             absJobFile = self.__mkAbs(self.runDir, self.jobFile)
@@ -115,7 +116,12 @@ class Para(object):
         passed as arguments to the para command. Returns stdout as a list of
         lines, stderr in ProcException if the remote program encouners an
         error. There is a possibility for quoting hell here."""
-        remCmd = "cd {} && para -batch={} {}".format(shlex_quote(self.runDir), shlex_quote(self.paraDir), " ".join(paraArgs))
+        paraCmd = ["para", "-batch={}".format(shlex_quote(self.paraDir))]
+        for pa in paraArgs:
+            paraCmd.append(shlex_quote(pa))
+        if self.mem is not None:
+            paraCmd.append("-ram={}".format(self.mem))
+        remCmd = "cd {} && {}".format(shlex_quote(self.runDir), " ".join(paraCmd))
         return pipettor.runout(["ssh", "-no", "ClearAllForwardings=yes", self.paraHost, remCmd]).split('\n')
 
     def wasStarted(self):
@@ -126,10 +132,6 @@ class Para(object):
     def make(self):
         "run para make"
         self._para("make", self.jobFile)
-
-    def shove(self):
-        "run para make"
-        self._para("shove")
 
     def check(self):
         "run para check and return statistics"
