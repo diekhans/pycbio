@@ -20,6 +20,9 @@ class Bed(object):
         def __len__(self):
             return self.end - self.start
 
+        def __str__(self):
+            return "{}-{}".format(self.start, self.end)
+
     def __init__(self, chrom, chromStart, chromEnd, name=None, score=None, strand=None,
                  thickStart=None, thickEnd=None, itemRgb=None, blocks=None):
         self.chrom = chrom

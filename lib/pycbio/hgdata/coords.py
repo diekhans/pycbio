@@ -15,7 +15,7 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
     Fields:
        name, start, end - start/end maybe None to indicate a full sequence
        size - optional size of sequence
-       strand - optional strand
+       strand - optional strand.
     """
     __slots__ = ()
 
@@ -51,7 +51,8 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         return ((self.name == other.name)
                 and (self.start == other.start)
                 and (self.end == other.end)
-                and (self.strand == other.strand))
+                and (self.strand == other.strand)
+                and (self.size == other.size))
 
     def __lt__(self, other):
         if self.name < other.name:
@@ -92,3 +93,10 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
             return self
         else:
             return self.reverse()
+
+    def base(self):
+        "return Coords with only name, start, and end set"
+        if (self.strand is None) and (self.size is None):
+            return self
+        else:
+            return Coords(self.name, self.start, self.end)

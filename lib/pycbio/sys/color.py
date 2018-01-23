@@ -18,6 +18,8 @@ class Color(namedtuple("Color", ("red", "green", "blue",
     :ivar saturation: saturation component in the range 0.0..1.0
     :ivar value: value component, in the range 0.0..1.0
     """
+    # FIXME: could HSV or RGB be properties?
+    __slots__ = ()
 
     def __str__(self):
         return str((self.red, self.green, self.blue))
