@@ -64,7 +64,7 @@ def efetch(opts, gbid, outFh):
         fmt = "fasta"
     else:
         fmt = "gbwithparts"
-    resp = Entrez.efetch(db="nucleotide", id=gbid, rettype=fmt, email=opts.email)
+    resp = Entrez.efetch(db="nucleotide", id=gbid, rettype=fmt, retmode="text", email=opts.email)
     ent = resp.read()
     if len(ent) <= 1:
         raise Exception("no entry found for \"{}\"".format(id))
