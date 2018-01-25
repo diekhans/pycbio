@@ -16,6 +16,18 @@ class CoordsTests(TestCaseBase):
         self.assertEqual(c.start, 10000)
         self.assertEqual(c.end, 20000)
 
+    def testCoordsParseNameOnly(self):
+        c = Coords.parse("chr22")
+        self.assertEqual(c.name, "chr22")
+        self.assertEqual(c.start, None)
+        self.assertEqual(c.end, None)
+
+    def testCoordsParseNameOnlySize(self):
+        c = Coords.parse("chr22", size=50818468)
+        self.assertEqual(c.name, "chr22")
+        self.assertEqual(c.start, 0)
+        self.assertEqual(c.end, 50818468)
+
     def testCoordsSimple(self):
         c = Coords("chr22", 10000, 20000)
         self.assertEqual(c.name, "chr22")

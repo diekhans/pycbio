@@ -22,15 +22,33 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
     def __new__(cls, name, start, end, strand=None, size=None):
         return super(Coords, cls).__new__(cls, name, start, end, strand, size)
 
-    @staticmethod
-    def parse(coordsStr, strand=None, size=None):
-        "construct an object from genome browser name:start-end type string"
+    @classmethod
+    def __parse_parts(cls, coordsStr, size):
+        cparts = coordsStr.split(":")
+        name = cparts[0]
+        if len(cparts) > 2:
+            raise CoordsError("invalid start-end")
+        if len(cparts) == 1:
+            if size is None:
+                return name, None, None
+            else:
+                return name, 0, size
+        else:
+            rparts = cparts[1].split("-")
+            return name, int(rparts[0]), int(rparts[1])
+
+    @classmethod
+    def parse(cls, coordsStr, strand=None, size=None):
+        """Construct an object from genome browser 'name:start-end'.
+        If allowSimpleName is specified, then only 'name' can be used. The range
+        will be None..None if size is not specified, otherwise 0..size"""
         try:
-            name, rng = coordsStr.split(":")
-            start, end = rng.split("-")
-            return Coords(name, int(start), int(end), strand, size)
+            if strand not in ('+', '-', None):
+                raise CoordsError("invalid strand")
+            name, start, end = cls.__parse_parts(coordsStr, size)
+            return Coords(name, start, end, strand, size)
         except Exception as ex:
-            raise CoordsError("invalid coordinates: {}: {}".format(coordsStr, ex))
+            raise CoordsError("invalid coordinates: \"{}\": {}".format(coordsStr, ex))
 
     def subrange(self, start, end):
         """Construct a Coords object that is a subrange of this one."""
