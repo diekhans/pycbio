@@ -109,3 +109,15 @@ class AssemblyReport(object):
             self.byRefSeqAccn[rec.refSeqAccn] = rec
         if rec.ucscStyleName is not None:
             self.byUcscStyleName[rec.ucscStyleName] = rec
+
+    def ucscNameToSeqName(self, ucscName):
+        try:
+            return self.byUcscStyleName[ucscName].sequenceName
+        except KeyError:
+            raise ValueError("unknown UCSC chromosome name: '{}'".format(ucscName))
+
+    def seqNameToUcscName(self, seqName):
+        try:
+            return self.bySequenceName[seqName].ucscStyleName
+        except KeyError:
+            raise ValueError("unknown chromosome name: '{}'".format(seqName))
