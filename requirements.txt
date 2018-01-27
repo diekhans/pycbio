@@ -4,3 +4,4 @@ biopython
 future
 enum-compat
 mysqlclient
+apsw

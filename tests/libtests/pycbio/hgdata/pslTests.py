@@ -88,13 +88,13 @@ class OpsTests(TestCaseBase):
         self.__swapDropImplicitTest(self.psTransNegPos, "71	5	0	0	2	213667	1	93	+-	chr5	180857866	157138232	157351975	AA608343.1a	186	0	169	3	27,29,20,	157138232,157351058,157351955,	17,137,166,")
         self.__swapDropImplicitTest(self.psTransNegNeg, "47	4	0	0	1	46	1	122	--	chr6	170899992	29962882	29962979	AA608343.1b	186	5	178	2	30,21,	140937013,140937089,	8,160,")
 
-
     def testCmpUniq(self):
         "check that PSL compares correctly"
         # set should product uniqueness
         psls = set([self.__splitToPsl(self.psPos),
                     self.__splitToPsl(self.psPos)])
         self.assertEqual(1, len(psls))
+
 
 def suite():
     ts = unittest.TestSuite()

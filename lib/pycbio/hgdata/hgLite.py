@@ -8,6 +8,7 @@ import six
 from future.standard_library import install_aliases
 install_aliases()
 from collections import namedtuple
+from pycbio.sys import PycbioException
 from pycbio.hgdata.psl import Psl
 from pycbio.hgdata.genePred import GenePred
 from pycbio.tsv import TabFileReader
@@ -15,17 +16,55 @@ from pycbio.tsv import TsvReader
 from pycbio.hgdata.rangeFinder import Binner
 from Bio import SeqIO
 import sys
+import apsw
 
 # FIXME: HgLiteTable could become wrapper around a connection,
 # and make table operations functions.???  probably not
 # FIXME: removed duplicated functions and move to base class or mix-in especially gencode
 
 
+def hgSqliteConnect(sqliteDb, create=False, readOnly=False):
+    """Connect to an sqlite3 database.  If create is specified, then database
+    is created if it doesn't exist.  If sqliteDb is None, and in-memory data
+    is created with create and readOnly flags being ignored."""
+    if create and readOnly:
+        raise PycbioException("can't specify both create=True and readOnly=True")
+    if sqliteDb is None:
+        sqliteDb = ":memory:"
+        create = True
+        readOnly = False
+
+    flags = apsw.SQLITE_OPEN_READONLY if readOnly else apsw.SQLITE_OPEN_READWRITE
+    if create:
+        flags |= apsw.SQLITE_OPEN_CREATE
+    return apsw.Connection(sqliteDb, flags)
+
+
+class HgSqliteCursor(object):
+    """context manager creating an sqlite cursor in a single transaction"""
+    def __init__(self, conn, rowFactory=None):
+        self.conn = conn
+        self.rowFactory = rowFactory
+        self.trans = None
+        self.cur = None
+
+    def __enter__(self):
+        self.trans = self.conn.__enter__()
+        self.cur = self.conn.cursor()
+        if self.rowFactory is not None:
+            self.cur.setrowtrace(self.rowFactory)
+        return self.cur
+
+    def __exit__(self, *args):
+        self.cur.close()
+        return self.trans.__exit__(*args)
+
+
 def noneIfEmpty(s):
     return s if s != "" else None
 
 
-def sqliteHaveTable(conn, table):
+def hgSqliteHaveTable(conn, table):
     "check if a table exists"
     sql = """SELECT count(*) FROM sqlite_master WHERE type="table" AND name=?;"""
     cur = conn.cursor()
@@ -50,8 +89,7 @@ class HgLiteTable(object):
     def _index(self, indexSql):
         if isinstance(indexSql, six.string_types):
             indexSql = [indexSql]
-        with self.conn:
-            self.executes(indexSql)
+        self.executes(indexSql)
 
     @staticmethod
     def _joinColNames(columns):
@@ -70,27 +108,22 @@ class HgLiteTable(object):
 
     def _insert(self, insertSql, columns, row):
         """insert a row, formatting {table}, {columns}, {values} into sql"""
-        with self.conn:
-            self.conn.execute(self.__formatSql(insertSql, columns), row)
+        with HgSqliteCursor(self.conn) as cur:
+            cur.execute(self.__formatSql(insertSql, columns), row)
 
     def _inserts(self, insertSql, columns, rows):
         """insert multiple rows, formatting {table}, {columns}, {values} into sql"""
-        with self.conn:
-            self.conn.executemany(self.__formatSql(insertSql, columns), rows)
+        with HgSqliteCursor(self.conn) as cur:
+            cur.executemany(self.__formatSql(insertSql, columns), rows)
 
     def queryRows(self, querySql, columns, rowFactory, *queryargs):
         """run query, formatting {table}, {columns} into sql and generator over results and
         setting row factory"""
-        with self.conn:
-            cur = self.conn.cursor()
-            try:
-                cur.row_factory = rowFactory
-                sql = querySql.format(table=self.table, columns=self._joinColNames(columns))
-                cur.execute(sql, queryargs)
-                for row in cur:
-                    yield row
-            finally:
-                cur.close()
+        sql = querySql.format(table=self.table, columns=self._joinColNames(columns))
+        with HgSqliteCursor(self.conn, rowFactory=rowFactory) as cur:
+            cur.execute(sql, queryargs)
+            for row in cur:
+                yield row
 
     def query(self, querySql, columns, *queryargs):
         """run query, formatting {table} into sql and generator over result rows """
@@ -98,22 +131,14 @@ class HgLiteTable(object):
 
     def execute(self, querySql):
         """execute a query formatting {table} into sql, with no results"""
-        with self.conn:
-            cur = self.conn.cursor()
-            try:
-                cur.execute(querySql.format(table=self.table))
-            finally:
-                cur.close()
+        with HgSqliteCursor(self.conn) as cur:
+            cur.execute(querySql.format(table=self.table))
 
     def executes(self, querySqls):
         """execute multiple queries formatting {table} into sql, with no results"""
-        with self.conn:
-            cur = self.conn.cursor()
-            try:
-                for querySql in querySqls:
-                    cur.execute(querySql.format(table=self.table))
-            finally:
-                cur.close()
+        with HgSqliteCursor(self.conn) as cur:
+            for querySql in querySqls:
+                cur.execute(querySql.format(table=self.table))
 
     def getOidRange(self):
         """return half-open range of OIDs"""
@@ -185,7 +210,7 @@ class SequenceDbTable(HgLiteTable):
         "get or error if not found"
         seq = self.get(name)
         if seq is None:
-            raise Exception("can't find sequence {} in table {}".format(name, self.table))
+            raise PycbioException("can't find sequence {} in table {}".format(name, self.table))
         return seq
 
     def getRows(self, startOid, endOid):
