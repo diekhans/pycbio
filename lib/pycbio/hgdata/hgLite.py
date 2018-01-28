@@ -21,14 +21,16 @@ import apsw
 # FIXME: HgLiteTable could become wrapper around a connection,
 # and make table operations functions.???  probably not
 # FIXME: removed duplicated functions and move to base class or mix-in especially gencode
+# FIXME: move generic sqlite to another module.
 
 
-def hgSqliteConnect(sqliteDb, create=False, readOnly=False):
+def sqliteConnect(sqliteDb, create=False, readOnly=True):
     """Connect to an sqlite3 database.  If create is specified, then database
     is created if it doesn't exist.  If sqliteDb is None, and in-memory data
-    is created with create and readOnly flags being ignored."""
-    if create and readOnly:
-        raise PycbioException("can't specify both create=True and readOnly=True")
+    is created with create and readOnly flags being ignored. If create is True,
+    readOnly is set to False."""
+    if create:
+        readOnly = False
     if sqliteDb is None:
         sqliteDb = ":memory:"
         create = True
@@ -40,7 +42,7 @@ def hgSqliteConnect(sqliteDb, create=False, readOnly=False):
     return apsw.Connection(sqliteDb, flags)
 
 
-class HgSqliteCursor(object):
+class SqliteCursor(object):
     """context manager creating an sqlite cursor in a single transaction"""
     def __init__(self, conn, rowFactory=None):
         self.conn = conn
@@ -64,16 +66,13 @@ def noneIfEmpty(s):
     return s if s != "" else None
 
 
-def hgSqliteHaveTable(conn, table):
+def sqliteHaveTable(conn, table):
     "check if a table exists"
-    sql = """SELECT count(*) FROM sqlite_master WHERE type="table" AND name=?;"""
-    cur = conn.cursor()
-    try:
+    sql = """SELECT count(*) FROM sqlite_master WHERE (type = "table") AND (name = ?);"""
+    with SqliteCursor(conn) as cur:
         cur.execute(sql, (table, ))
         row = next(cur)
         return row[0] > 0
-    finally:
-        cur.close()
 
 
 class HgLiteTable(object):
@@ -108,19 +107,19 @@ class HgLiteTable(object):
 
     def _insert(self, insertSql, columns, row):
         """insert a row, formatting {table}, {columns}, {values} into sql"""
-        with HgSqliteCursor(self.conn) as cur:
+        with SqliteCursor(self.conn) as cur:
             cur.execute(self.__formatSql(insertSql, columns), row)
 
     def _inserts(self, insertSql, columns, rows):
         """insert multiple rows, formatting {table}, {columns}, {values} into sql"""
-        with HgSqliteCursor(self.conn) as cur:
+        with SqliteCursor(self.conn) as cur:
             cur.executemany(self.__formatSql(insertSql, columns), rows)
 
     def queryRows(self, querySql, columns, rowFactory, *queryargs):
         """run query, formatting {table}, {columns} into sql and generator over results and
         setting row factory"""
         sql = querySql.format(table=self.table, columns=self._joinColNames(columns))
-        with HgSqliteCursor(self.conn, rowFactory=rowFactory) as cur:
+        with SqliteCursor(self.conn, rowFactory=rowFactory) as cur:
             cur.execute(sql, queryargs)
             for row in cur:
                 yield row
@@ -131,18 +130,18 @@ class HgLiteTable(object):
 
     def execute(self, querySql):
         """execute a query formatting {table} into sql, with no results"""
-        with HgSqliteCursor(self.conn) as cur:
+        with SqliteCursor(self.conn) as cur:
             cur.execute(querySql.format(table=self.table))
 
     def executes(self, querySqls):
         """execute multiple queries formatting {table} into sql, with no results"""
-        with HgSqliteCursor(self.conn) as cur:
+        with SqliteCursor(self.conn) as cur:
             for querySql in querySqls:
                 cur.execute(querySql.format(table=self.table))
 
     def getOidRange(self):
         """return half-open range of OIDs"""
-        sql = "select min(oid), max(oid)+1 from {table}"
+        sql = "SELECT MIN(oid), MAX(oid)+1 FROM {table}"
         return next(self.query(sql, []), (0, 0))
 
 
@@ -161,10 +160,10 @@ class SequenceDbTable(HgLiteTable):
     Storage for short sequences (RNA or protein).
     """
     createSql = """CREATE TABLE {table} (
-            name text not null,
-            seq text not null);"""
+            name TEXT NOT NULL,
+            seq TEXT NOT NULL);"""
     insertSql = """INSERT INTO {table} ({columns}) VALUES ({values});"""
-    indexSql = """CREATE UNIQUE INDEX {table}_name on {table} (name);"""
+    indexSql = """CREATE UNIQUE INDEX {table}_name ON {table} (name);"""
 
     columnNames = Sequence._fields
 
@@ -215,7 +214,7 @@ class SequenceDbTable(HgLiteTable):
 
     def getRows(self, startOid, endOid):
         "generator for sequence for a range of OIDs (1/2 open)"
-        sql = "select {columns} from {table} where (oid >= ?) and (oid < ?)"
+        sql = "SELECT {columns} FROM {table} WHERE (oid >= ?) AND (oid < ?)"
         return self.queryRows(sql, self.columnNames,
                               lambda cur, row: Sequence(name=row[0], seq=row[1]),
                               startOid, endOid)
@@ -228,25 +227,25 @@ class PslDbTable(HgLiteTable):
     going to be written to a file.
     """
     createSql = """CREATE TABLE {table} (
-            bin int unsigned not null,
-            matches int unsigned not null,
-            misMatches int unsigned not null,
-            repMatches int unsigned not null,
-            nCount int unsigned not null,
-            qNumInsert int unsigned not null,
-            qBaseInsert int unsigned not null,
-            tNumInsert int unsigned not null,
-            tBaseInsert int unsigned not null,
+            bin INT UNSIGNED NOT NULL,
+            matches INT UNSIGNED NOT NULL,
+            misMatches INT UNSIGNED NOT NULL,
+            repMatches INT UNSIGNED NOT NULL,
+            nCount INT UNSIGNED NOT NULL,
+            qNumInsert INT UNSIGNED NOT NULL,
+            qBaseInsert INT UNSIGNED NOT NULL,
+            tNumInsert INT UNSIGNED NOT NULL,
+            tBaseInsert INT UNSIGNED NOT NULL,
             strand text not null,
             qName text not null,
-            qSize int unsigned not null,
-            qStart int unsigned not null,
-            qEnd int unsigned not null,
+            qSize INT UNSIGNED NOT NULL,
+            qStart INT UNSIGNED NOT NULL,
+            qEnd INT UNSIGNED NOT NULL,
             tName text not null,
-            tSize int unsigned not null,
-            tStart int unsigned not null,
-            tEnd int unsigned not null,
-            blockCount int unsigned not null,
+            tSize INT UNSIGNED NOT NULL,
+            tStart INT UNSIGNED NOT NULL,
+            tEnd INT UNSIGNED NOT NULL,
+            blockCount INT UNSIGNED NOT NULL,
             blockSizes blob not null,
             qStarts blob not null,
             tStarts blob not null)"""
@@ -307,13 +306,19 @@ class PslDbTable(HgLiteTable):
     def __getRowFactory(raw):
         return None if raw else lambda cur, row: Psl(row)
 
+    def getAll(self, raw=False):
+        """Generator for PSLs for all rows in a table. If raw is
+        specified, don't convert to Psl objects if raw is True"""
+        sql = "select {columns} from {table}"
+        return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw))
+
     def getByQName(self, qName, raw=False):
         """get list of Psl objects (or raw rows) for all alignments for qName """
         sql = "select {columns} from {table} where qName = ?"
         return list(self.queryRows(sql, self.columnNames, self.__getRowFactory(raw), qName))
 
-    def getRows(self, startOid, endOid, raw=False):
-        """generator for PSLs for a range of OIDs (1/2 open).  If raw is
+    def getByOid(self, startOid, endOid, raw=False):
+        """Generator for PSLs for a range of OIDs (1/2 open).  If raw is
         specified, don't convert to Psl objects if raw is True"""
         sql = "select {columns} from {table} where (oid >= ?) and (oid < ?)"
         return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw), startOid, endOid)
@@ -333,26 +338,26 @@ class GenePredDbTable(HgLiteTable):
     going to be written to a file.
     """
     createSql = """CREATE TABLE {table} (
-            bin int unsigned not null,
+            bin INT UNSIGNED NOT NULL,
             name text not null,
             chrom text not null,
             strand char not null,
-            txStart int unsigned not null,
-            txEnd int unsigned not null,
-            cdsStart int unsigned not null,
-            cdsEnd int unsigned not null,
-            exonCount int unsigned not null,
-            exonStarts blob not null,
-            exonEnds blob not null,
-            score int default null,
-            name2 text not null,
-            cdsStartStat text not null,
-            cdsEndStat text not null,
-            exonFrames blob not null)"""
+            txStart INT UNSIGNED NOT NULL,
+            txEnd INT UNSIGNED NOT NULL,
+            cdsStart INT UNSIGNED NOT NULL,
+            cdsEnd INT UNSIGNED NOT NULL,
+            exonCount INT UNSIGNED NOT NULL,
+            exonStarts BLOB NOT NULL,
+            exonEnds BLOB NOT NULL,
+            score INT DEFAULT NULL,
+            name2 TEXT NOT NULL,
+            cdsStartStat TEXT NOT NULL,
+            cdsEndStat TEXT NOT NULL,
+            exonFrames BLOB NOT NULL)"""
     insertSql = """INSERT INTO {table} ({columns}) VALUES ({values});"""
     indexSql = [
-        """CREATE INDEX {table}_chrom_bin on {table} (chrom, bin)""",
-        """CREATE INDEX {table}_name on {table} (name)"""]
+        """CREATE INDEX {table}_chrom_bin ON {table} (chrom, bin)""",
+        """CREATE INDEX {table}_name ON {table} (name)"""]
 
     # doesn't include bin
     columnNames = ("name", "chrom", "strand", "txStart", "txEnd", "cdsStart",
@@ -404,26 +409,28 @@ class GenePredDbTable(HgLiteTable):
     def __getRowFactory(raw):
         return None if raw else lambda cur, row: GenePred(row)
 
+    def getAll(self, raw=False):
+        """Generator for all genePreds in a table.  If raw is
+        specified, don't convert to GenePred objects if raw is True."""
+        sql = "SELECT {columns} FROM {table}"
+        return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw))
+
     def getByName(self, name, raw=False):
         """get list of GenePred objects (or raw rows) for all alignments for name """
-        sql = "select {columns} from {table} where name = ?"
+        sql = "SELECT {columns} FROM {table} WHERE name = ?"
         return list(self.queryRows(sql, self.columnNames, self.__getRowFactory(raw), name))
 
-    def getRows(self, startOid, endOid, raw=False):
-        """generator for genePreds for a range of OIDs (1/2 open).  If raw is
+    def getByOid(self, startOid, endOid, raw=False):
+        """Generator for genePreds for a range of OIDs (1/2 open).  If raw is
         specified, don't convert to GenePred objects if raw is True."""
-        sql = "select {columns} from {table} where (oid >= ?) and (oid < ?)"
+        sql = "SELECT {columns} FROM {table} WHERE (oid >= ?) and (oid < ?)"
         return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw), startOid, endOid)
 
     def getRangeOverlap(self, chrom, start, end, raw=False):
         """Get alignments overlapping range  If raw is
         specified. Don't convert to GenePred objects if raw is True."""
         binWhere = Binner.getOverlappingSqlExpr("bin", "chrom", "txStart", "txEnd", chrom, start, end)
-        sql = "select {{columns}} from {{table}} where {};".format(binWhere)
-        return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw))
-
-    def queryAll(self, raw=False):
-        sql = "select {columns} from {table}"
+        sql = "SELECT {{columns}} FROM {{table}} WHERE {};".format(binWhere)
         return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw))
 
 
@@ -440,19 +447,19 @@ class GencodeAttrsDbTable(HgLiteTable):
     GENCODE attributes table from UCSC databases.
     """
     createSql = """CREATE TABLE {table} (
-            geneId text not null,
-            geneName text not null,
-            geneType text not null,
+            geneId TEXT NOT NULL,
+            geneName TEXT NOT NULL,
+            geneType TEXT NOT NULL,
             geneStatus text default null,
-            transcriptId text not null,
-            transcriptName text not null,
-            transcriptType text not null,
+            transcriptId TEXT NOT NULL,
+            transcriptName TEXT NOT NULL,
+            transcriptType TEXT NOT NULL,
             transcriptStatus text default null,
             havanaGeneId text default null,
             havanaTranscriptId text default null,
             ccdsId text default null,
             level int not null,
-            transcriptClass text not null)"""
+            transcriptClass TEXT NOT NULL)"""
     insertSql = """INSERT INTO {table} ({columns}) VALUES ({values});"""
     indexSql = [
         """CREATE INDEX {table}_geneId on {table} (geneId)""",
@@ -527,8 +534,8 @@ class GencodeTranscriptSourceDbTable(HgLiteTable):
     GENCODE transcript source from UCSC databases.
     """
     createSql = """CREATE TABLE {table} (
-            transcriptId text not null,
-            source text not null)"""
+            transcriptId TEXT NOT NULL,
+            source TEXT NOT NULL)"""
     insertSql = """INSERT INTO {table} ({columns}) VALUES ({values});"""
     indexSql = [
         """CREATE INDEX {table}_transcriptId on {table} (transcriptId)""",
@@ -565,14 +572,15 @@ class GencodeTranscriptSourceDbTable(HgLiteTable):
     def __queryRows(self, sql, *queryargs):
         return self.queryRows(sql, self.columnNames, lambda cur, row: GencodeTranscriptSource(row[0], sys.intern(str(row[1]))), *queryargs)
 
+    def getAll(self):
+        sql = "select {columns} from {table}"
+        return self.__queryRows(sql)
+
     def getByTranscriptId(self, transcriptId):
         """get the GencodeTranscriptSource object for transcriptId, or None if not found."""
         sql = "select {columns} from {table} where transcriptId = ?"
         return next(self.__queryRows(sql, transcriptId), None)
 
-    def queryAll(self):
-        sql = "select {columns} from {table}"
-        return self.__queryRows(sql)
 
 
 class GencodeTranscriptionSupportLevel(namedtuple("GencodeTranscriptionSupportLevel",
@@ -586,7 +594,7 @@ class GencodeTranscriptionSupportLevelDbTable(HgLiteTable):
     GENCODE transcript support levels from UCSC databases.
     """
     createSql = """CREATE TABLE {table} (
-            transcriptId text not null,
+            transcriptId TEXT NOT NULL,
             level int not null)"""
     insertSql = """INSERT INTO {table} ({columns}) VALUES ({values});"""
     indexSql = [
@@ -623,14 +631,14 @@ class GencodeTranscriptionSupportLevelDbTable(HgLiteTable):
     def __queryRows(self, sql, *queryargs):
         return self.queryRows(sql, self.columnNames, lambda cur, row: GencodeTranscriptionSupportLevel(row[0], row[1]), *queryargs)
 
+    def getAll(self):
+        sql = "select {columns} from {table}"
+        return self.__queryRows(sql)
+
     def getByTranscriptId(self, transcriptId):
         """get the GencodeTranscriptionSupportLevel object for transcriptId, or None if not found."""
         sql = "select {columns} from {table} where transcriptId = ?"
         return next(self.__queryRows(sql, transcriptId), None)
-
-    def queryAll(self):
-        sql = "select {columns} from {table}"
-        return self.__queryRows(sql)
 
 
 class GencodeTag(namedtuple("GencodeTag",
@@ -644,12 +652,12 @@ class GencodeTagDbTable(HgLiteTable):
     GENCODE transcript tags from UCSC databases.
     """
     createSql = """CREATE TABLE {table} (
-            transcriptId text not null,
-            tag text not null)"""
+            transcriptId TEXT NOT NULL,
+            tag TEXT NOT NULL)"""
     insertSql = """INSERT INTO {table} ({columns}) VALUES ({values});"""
     indexSql = [
-        """CREATE INDEX {table}_transcriptId on {table} (transcriptId)""",
-        """CREATE INDEX {table}_tag on {table} (tag)""",
+        """CREATE INDEX {table}_transcriptId ON {table} (transcriptId)""",
+        """CREATE INDEX {table}_tag ON {table} (tag)""",
     ]
 
     columnNames = GencodeTag._fields
@@ -682,11 +690,11 @@ class GencodeTagDbTable(HgLiteTable):
     def __queryRows(self, sql, *queryargs):
         return self.queryRows(sql, self.columnNames, lambda cur, row: GencodeTag(row[0], row[1]), *queryargs)
 
+    def getAll(self):
+        sql = "SELECT {columns} FROM {table}"
+        return self.__queryRows(sql)
+
     def getByTranscriptId(self, transcriptId):
         """get the GencodeTag objects for transcriptId, or empty if not found."""
-        sql = "select {columns} from {table} where transcriptId = ?"
+        sql = "SELECT {columns} FROM {table} WHERE transcriptId = ?"
         return self.__queryRows(sql, transcriptId)
-
-    def queryAll(self):
-        sql = "select {columns} from {table}"
-        return self.__queryRows(sql)
