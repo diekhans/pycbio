@@ -246,9 +246,9 @@ class PslDbTable(HgLiteTable):
             tStart INT UNSIGNED NOT NULL,
             tEnd INT UNSIGNED NOT NULL,
             blockCount INT UNSIGNED NOT NULL,
-            blockSizes blob not null,
-            qStarts blob not null,
-            tStarts blob not null)"""
+            blockSizes TEXT not null,
+            qStarts TEXT not null,
+            tStarts TEXT not null)"""
     insertSql = """INSERT INTO {table} ({columns}) VALUES ({values});"""
     indexSql = [
         """CREATE INDEX {table}_tName_bin on {table} (tName, bin)""",
@@ -339,21 +339,21 @@ class GenePredDbTable(HgLiteTable):
     """
     createSql = """CREATE TABLE {table} (
             bin INT UNSIGNED NOT NULL,
-            name text not null,
-            chrom text not null,
-            strand char not null,
+            name TEXT NOT NULL,
+            chrom TEXT NOT NULL,
+            strand CHAR NOT NULL,
             txStart INT UNSIGNED NOT NULL,
             txEnd INT UNSIGNED NOT NULL,
             cdsStart INT UNSIGNED NOT NULL,
             cdsEnd INT UNSIGNED NOT NULL,
             exonCount INT UNSIGNED NOT NULL,
-            exonStarts BLOB NOT NULL,
-            exonEnds BLOB NOT NULL,
+            exonStarts TEXT NOT NULL,
+            exonEnds TEXT NOT NULL,
             score INT DEFAULT NULL,
             name2 TEXT NOT NULL,
             cdsStartStat TEXT NOT NULL,
             cdsEndStat TEXT NOT NULL,
-            exonFrames BLOB NOT NULL)"""
+            exonFrames TEXT NOT NULL)"""
     insertSql = """INSERT INTO {table} ({columns}) VALUES ({values});"""
     indexSql = [
         """CREATE INDEX {table}_chrom_bin ON {table} (chrom, bin)""",
@@ -450,26 +450,26 @@ class GencodeAttrsDbTable(HgLiteTable):
             geneId TEXT NOT NULL,
             geneName TEXT NOT NULL,
             geneType TEXT NOT NULL,
-            geneStatus text default null,
+            geneStatus TEXT DEFAULT NULL,
             transcriptId TEXT NOT NULL,
             transcriptName TEXT NOT NULL,
             transcriptType TEXT NOT NULL,
-            transcriptStatus text default null,
-            havanaGeneId text default null,
-            havanaTranscriptId text default null,
-            ccdsId text default null,
-            level int not null,
+            transcriptStatus TEXT DEFAULT NULL,
+            havanaGeneId TEXT DEFAULT NULL,
+            havanaTranscriptId TEXT DEFAULT NULL,
+            ccdsId TEXT DEFAULT NULL,
+            level INT NOT NULL,
             transcriptClass TEXT NOT NULL)"""
     insertSql = """INSERT INTO {table} ({columns}) VALUES ({values});"""
     indexSql = [
-        """CREATE INDEX {table}_geneId on {table} (geneId)""",
-        """CREATE INDEX {table}_geneName on {table} (geneName)""",
-        """CREATE INDEX {table}_geneType on {table} (geneType)""",
-        """CREATE INDEX {table}_transcriptId on {table} (transcriptId)""",
-        """CREATE INDEX {table}_transcriptType on {table} (transcriptType)""",
-        """CREATE INDEX {table}_havanaGeneId on {table} (havanaGeneId)""",
-        """CREATE INDEX {table}_havanaTranscriptId on {table} (havanaTranscriptId)""",
-        """CREATE INDEX {table}_ccdsId on {table} (ccdsId)""",
+        """CREATE INDEX {table}_geneId ON {table} (geneId)""",
+        """CREATE INDEX {table}_geneName ON {table} (geneName)""",
+        """CREATE INDEX {table}_geneType ON {table} (geneType)""",
+        """CREATE INDEX {table}_transcriptId ON {table} (transcriptId)""",
+        """CREATE INDEX {table}_transcriptType ON {table} (transcriptType)""",
+        """CREATE INDEX {table}_havanaGeneId ON {table} (havanaGeneId)""",
+        """CREATE INDEX {table}_havanaTranscriptId ON {table} (havanaTranscriptId)""",
+        """CREATE INDEX {table}_ccdsId ON {table} (ccdsId)""",
     ]
 
     columnNames = GencodeAttrs._fields
@@ -538,8 +538,8 @@ class GencodeTranscriptSourceDbTable(HgLiteTable):
             source TEXT NOT NULL)"""
     insertSql = """INSERT INTO {table} ({columns}) VALUES ({values});"""
     indexSql = [
-        """CREATE INDEX {table}_transcriptId on {table} (transcriptId)""",
-        """CREATE INDEX {table}_source on {table} (source)""",
+        """CREATE INDEX {table}_transcriptId ON {table} (transcriptId)""",
+        """CREATE INDEX {table}_source ON {table} (source)""",
     ]
 
     columnNames = GencodeTranscriptSource._fields
@@ -595,10 +595,10 @@ class GencodeTranscriptionSupportLevelDbTable(HgLiteTable):
     """
     createSql = """CREATE TABLE {table} (
             transcriptId TEXT NOT NULL,
-            level int not null)"""
+            level INT NOT NULL)"""
     insertSql = """INSERT INTO {table} ({columns}) VALUES ({values});"""
     indexSql = [
-        """CREATE INDEX {table}_transcriptId on {table} (transcriptId)""",
+        """CREATE INDEX {table}_transcriptId ON {table} (transcriptId)""",
     ]
 
     columnNames = GencodeTranscriptionSupportLevel._fields
