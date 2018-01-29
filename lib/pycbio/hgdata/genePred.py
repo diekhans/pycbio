@@ -6,6 +6,7 @@ from past.utils import old_div
 from builtins import object
 import copy
 from pycbio.sys import fileOps, dbOps
+from pycbio.hgdata import hgDb
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin
 from pycbio.sys.symEnum import SymEnum, SymEnumValue
 
@@ -629,31 +630,18 @@ class GenePredFhReader(object):
             if not ((len(line) == 1) or line.startswith('#')):
                 line = line[0:-1]  # drop newline
                 return GenePred(line.split("\t"))
-
+#FIXME: convert rest to generators
 
 class GenePredDbReader(object):
     """Read genePreds from a db query"""
     def __init__(self, conn, query, queryArgs=None):
-        self.cur = conn.cursor()
+        prevConv = hgDb.setAutoSqlConverter(conn)
+        cur = conn.cursor()
         try:
-            self.cur.execute(query, queryArgs)
+            cur.execute(query, queryArgs)
+            colIdxMap = dbOps.cursorColIdxMap(cur)
+            for row in cur:
+                yield GenePred(row, dbColIdxMap=colIdxMap)
         except Exception:
-            try:
-                self.cur.close()
-            except Exception:
-                pass
-            raise
-        self.colIdxMap = dbOps.cursorColIdxMap(self.cur)
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        "read the next record next"
-        while True:
-            row = self.cur.fetchone()
-            if row is None:
-                self.cur.close()
-                self.cur = None
-                raise StopIteration
-            return GenePred(row, dbColIdxMap=self.colIdxMap)
+            prevConv = hgDb.setAutoSqlConverter(conn, prevConv)
+            self.cur.close()

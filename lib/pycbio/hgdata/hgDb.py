@@ -4,25 +4,30 @@ from pycbio.hgdata.hgConf import HgConf
 from pycbio.sys import dbOps
 import MySQLdb
 import MySQLdb.cursors
+import MySQLdb.converters
+import copy
 
 dbOps.mySqlSetErrorOnWarn()
 
-
-def connect(db="", confFile=None, dictCursor=False, host=None, hgConf=None):
-    """connect to genome mysql server, using confFile or ~/.hg.conf"""
+def connect(db="", confFile=None, dictCursor=False, host=None, hgConf=None,
+            useAutoSqlConv=True):
+    """Connect to genome mysql server, using confFile( default is ~/.hg.conf),
+    or pre-parsed HgConf. If useAutoSqlConv is True, blob fields, as used to
+    arrays, are converted to str rather than stored as bytes. """
     if hgConf is None:
         hgConf = HgConf.obtain(confFile)
     cursorclass = MySQLdb.cursors.DictCursor if dictCursor else MySQLdb.cursors.Cursor
+    conv = getAutoSqlConverter() if useAutoSqlConv else MySQLdb.converters.conversions
     if host is None:
         host = hgConf["db.host"]
-    conn = MySQLdb.Connect(host=host, user=hgConf["db.user"], passwd=hgConf["db.password"], db=db, cursorclass=cursorclass)
-    # FIXME: these don't help
-    #  use_unicode=False, charset="ascii")
-    # other suggestions:
-    # init_command='SET NAMES UTF8'
-    #    SET NAMES UTF8;
-    #    SET character_set_client = utf8;
-    #    SET character_set_results = utf8;
-    #    SET character_set_connection = utf8;""")
-    #  also setting ascii doesn't
+    conn = MySQLdb.Connect(host=host, user=hgConf["db.user"], passwd=hgConf["db.password"], db=db, cursorclass=cursorclass, conv=conv)
     return conn
+
+
+def getAutoSqlConverter():
+    """get a MySQLdb that handles text in blobs"""
+    conv = copy.copy(MySQLdb.converters.conversions)
+    fts = MySQLdb.constants.FIELD_TYPE
+    for ft in (fts.TINY_BLOB, fts.MEDIUM_BLOB, fts.LONG_BLOB, fts.BLOB):
+        conv[ft] = [(MySQLdb.constants.FLAG.BINARY, lambda v: v.decode())]
+    return conv
