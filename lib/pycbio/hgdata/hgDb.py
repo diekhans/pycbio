@@ -9,6 +9,7 @@ import copy
 
 dbOps.mySqlSetErrorOnWarn()
 
+
 def connect(db="", confFile=None, dictCursor=False, host=None, hgConf=None,
             useAutoSqlConv=True):
     """Connect to genome mysql server, using confFile( default is ~/.hg.conf),

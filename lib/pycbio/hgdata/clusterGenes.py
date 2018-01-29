@@ -106,9 +106,9 @@ class ClusterGenes(list):
     """
     def __init__(self, clusterGenesOut):
         self.genes = MultiDict()
+        self.tableSet = set()
         tsv = TsvReader(clusterGenesOut, typeMap=typeMap)
         self.columns = tsv.columns
-        self.tableSet = set()
         for gene in tsv:
             self.__addGene(gene)
 
@@ -133,10 +133,6 @@ class ClusterGenes(list):
 
     def __iter__(self):
         "get generator over non-null clusters"
-        return self.generator()
-
-    def generator(self):
-        "generator over non-null clusters"
-        for cl in list.__iter__(self):
+        for cl in super(ClusterGenes, self).__iter__():
             if cl is not None:
                 yield cl

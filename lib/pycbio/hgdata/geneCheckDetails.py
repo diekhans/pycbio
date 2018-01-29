@@ -29,13 +29,12 @@ def cmpByLocation(gcd1, gcd2):
     return d
 
 
-class GeneCheckDetailsReader(TsvReader):
-    def __init__(self, fileName, isRdb=False):
-        TsvReader.__init__(self, fileName, typeMap=typeMap, isRdb=isRdb)
+def GeneCheckDetailsReader(fspec):
+    for gc in TsvReader(fspec, typeMap=typeMap):
+        yield gc
 
 
 class GeneCheckDetailsTbl(TsvTable):
     """Table of GeneCheckDetails objects loaded from a Tsv.    """
-
-    def __init__(self, fileName, isRdb=False):
-        TsvTable.__init__(self, fileName, typeMap=typeMap, isRdb=isRdb)
+    def __init__(self, fspec):
+        TsvTable.__init__(self, fspec, typeMap=typeMap)

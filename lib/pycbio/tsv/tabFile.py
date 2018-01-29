@@ -3,8 +3,6 @@
 # FIXME: needed for faster readings, but needs cleaned up, need reader/writer
 # classes
 # FIXME add try and error msg with file/line num, move to row reader class; see fileOps.iterRows
-from builtins import next
-from builtins import object
 import sys
 import csv
 from pycbio.sys import fileOps
@@ -13,8 +11,7 @@ csv.field_size_limit(sys.maxsize)
 
 
 class TabFile(list):
-    """Class for reading tab-separated files.  Can be used standalone
-       or read into rows of a specific type.
+    """Class for reading tab-separated files.
     """
 
     def __init__(self, fileName, rowClass=None, hashAreComments=False):
@@ -25,67 +22,21 @@ class TabFile(list):
         for row in TabFileReader(self.fileName, rowClass=rowClass, hashAreComments=hashAreComments):
             self.append(row)
 
-    @staticmethod
-    def write(fh, row):
-        """print a row (list or tuple) to a tab file."""
-        cnt = 0
-        for col in row:
-            if cnt > 0:
-                fh.write("\t")
-            fh.write(str(col))
-            cnt += 1
-        fh.write("\n")
 
-
-class TabFileReader(object):
-    def __init__(self, tabFile, rowClass=None, hashAreComments=False, skipBlankLines=False):
-        self.inFh = fileOps.opengz(tabFile)
-        self.csvRdr = csv.reader(self.inFh, dialect=csv.excel_tab)
-        self.rowClass = rowClass
-        self.hashAreComments = hashAreComments
-        self.skipBlankLines = skipBlankLines
-        self.lineNum = 0
-
-    def __readRow(self):
-        "read the next row, returning None on EOF"
-        if self.csvRdr is None:
+def TabFileReader(fspec, rowClass=None, hashAreComments=False, skipBlankLines=False):
+    """generator over non-empty tab file rows"""
+    def processLine(line):
+        if hashAreComments and line.startswith("#"):
             return None
-        try:
-            row = next(self.csvRdr)
-        except Exception as ex:
-            self.close()
-            if isinstance(ex, StopIteration):
-                return None
-            else:
-                raise
-        self.lineNum = self.csvRdr.line_num
-        return row
+        row = line[0:-1].split('\t')
+        if skipBlankLines and (len(row) == 0):
+            return None
+        return rowClass(row) if rowClass is not None else row
 
-    def __iter__(self):
-        return self
-
-    def __keepRow(self, row):
-        if self.hashAreComments and (len(row) > 0) and row[0].startswith("#"):
-            return False
-        elif self.skipBlankLines and (len(row) == 0):
-            return False
-        else:
-            return True
-
-    def __next__(self):
-        while True:
-            row = self.__readRow()
-            if row is None:
-                raise StopIteration
-            if self.__keepRow(row):
-                if self.rowClass is not None:
-                    return self.rowClass(row)
-                else:
-                    return row
-
-    def close(self):
-        "close file, called automatically on EOF"
-        if self.inFh is not None:
-            self.inFh.close()
-            self.inFh = None
-            self.csvRdr = None
+    lineNum = -1
+    with fileOps.FileAccessor(fspec) as fh:
+        for line in fh:
+            lineNum += 1
+            row = processLine(line)
+            if row is not None:
+                yield row

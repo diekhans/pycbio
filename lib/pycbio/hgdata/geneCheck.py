@@ -117,16 +117,16 @@ typeMap = {"chrStart": int,
            "causes": strListType}
 
 
-class GeneCheckReader(TsvReader):
-    def __init__(self, fileName, isRdb=False):
-        TsvReader.__init__(self, fileName, typeMap=typeMap, isRdb=isRdb)
+def GeneCheckReader(fspec):
+    for gc in TsvReader(fspec, typeMap=typeMap):
+        yield gc
 
 
 class GeneCheckTbl(TsvTable):
-    """Table of GeneCheck objects loaded from a Tsv or RDB.  acc index is build
+    """Table of GeneCheck objects loaded from a Tsv.  acc index is build
     """
 
-    def __init__(self, fileName, isRdb=False, idIsUniq=False):
+    def __init__(self, fileName, idIsUniq=False):
         self.idIsUniq = idIsUniq
         if idIsUniq:
             uniqKeyCols = "acc"
@@ -134,7 +134,7 @@ class GeneCheckTbl(TsvTable):
         else:
             uniqKeyCols = None
             multiKeyCols = "acc"
-        TsvTable.__init__(self, fileName, typeMap=typeMap, isRdb=isRdb, uniqKeyCols=uniqKeyCols, multiKeyCols=multiKeyCols)
+        TsvTable.__init__(self, fileName, typeMap=typeMap, uniqKeyCols=uniqKeyCols, multiKeyCols=multiKeyCols)
         self.idIndex = self.indices.acc
 
     def _sameLoc(self, chk, chrom, start, end):

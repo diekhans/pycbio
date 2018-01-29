@@ -6,7 +6,8 @@ from builtins import range
 from past.utils import old_div
 from builtins import object
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin, strArraySplit, strArrayJoin
-from pycbio.sys import fileOps, dbOps
+from pycbio.tsv.tabFile import TabFileReader
+from pycbio.sys import dbOps
 from pycbio.hgdata.rangeFinder import Binner
 from pycbio.hgdata import dnaOps
 from collections import defaultdict
@@ -446,30 +447,13 @@ class Psl(object):
 
 
 class PslReader(object):
-    """Read PSLs from a tab file"""
-
-    def __init__(self, fileName):
-        self.fh = None  # required for __del__ if open fails
-        self.fh = fileOps.opengz(fileName)
-
-    def __del__(self):
-        if self.fh is not None:
-            self.fh.close()
+    """Generator to read PSLs from a tab file or file-like object"""
+    def __init__(self, fspec):
+        self.fspec = fspec
 
     def __iter__(self):
-        return self
-
-    def __next__(self):
-        "read next PSL"
-        while True:
-            line = self.fh.readline()
-            if (line == ""):
-                self.fh.close()
-                self.fh = None
-                raise StopIteration
-            if not ((len(line) == 1) or line.startswith('#')):
-                line = line[0:-1]  # drop newline
-                return Psl(line.split("\t"))
+        for psl in TabFileReader(self.fspec, rowClass=Psl, hashAreComments=True, skipBlankLines=True):
+            yield psl
 
 
 class PslDbReader(object):
@@ -479,39 +463,20 @@ class PslDbReader(object):
     pslColumns = ("matches", "misMatches", "repMatches", "nCount", "qNumInsert", "qBaseInsert", "tNumInsert", "tBaseInsert", "strand", "qName", "qSize", "qStart", "qEnd", "tName", "tSize", "tStart", "tEnd", "blockCount", "blockSizes", "qStarts", "tStarts")
     pslSeqColumns = ("qSequence", "tSequence")
 
-    def __init__(self, conn, query):
-        self.cur = conn.cursor()
-        try:
-            self.cur.execute(query)
-        except Exception:
-            try:
-                self.close()
-            except Exception:
-                pass
-            raise  # continue original exception
-        # FIXME: could make this optional or require column names in query
-        self.colIdxMap = dbOps.cursorColIdxMap(self.cur)
-
-    def close(self):
-        if self.cur is not None:
-            self.cur.close()
-        self.cur = None
-
-    def __del__(self):
-        self.close()
+    def __init__(self, conn, query, queryArgs=()):
+        self.conn = conn
+        self.query = query
+        self.queryArgs = queryArgs
 
     def __iter__(self):
-        return self
-
-    def __next__(self):
-        "read next PSL"
-        while True:
-            row = self.cur.fetchone()
-            if row is None:
-                self.cur.close()
-                self.cur = None
-                raise StopIteration
-            return Psl(row, dbColIdxMap=self.colIdxMap)
+        cur = self.conn.cursor()
+        try:
+            cur.execute(self.query, self.queryArgs)
+            colIdxMap = dbOps.cursorColIdxMap(cur)
+            for row in cur:
+                yield Psl(row, dbColIdxMap=colIdxMap)
+        finally:
+            cur.close()
 
     @staticmethod
     def targetRangeQuery(conn, table, tName, tStart, tEnd, haveSeqs=False):

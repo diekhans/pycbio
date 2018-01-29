@@ -13,9 +13,6 @@ from pycbio.sys import PycbioException
 
 # FIXME: normalize file line read routines to all take fh or name, remove redundant code.
 
-# FIXME: ian has opengz check magic number
-# FIXME: ian has cool tmp file content manager, steal
-
 
 def ensureDir(dir):
     """Ensure that a directory exists, creating it (and parents) if needed."""

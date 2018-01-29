@@ -5,23 +5,19 @@
 """
 
 from builtins import object
-from pycbio.sys.MultiDict import MultiDict
 import sys
+from pycbio.sys.MultiDict import MultiDict
+from pycbio.sys import fileOps
 
 
-class dmpFileParser(object):
-    "parse one of the dmp files"
+class DmpFileParser(object):
+    "parse one of the taxon dmp files"
     def __init__(self, dmpFile):
-        self.fh = open(dmpFile)
+        self.dmpFile = dmpFile
 
     def __iter__(self):
-        "generator to read next rows"
-        while True:
-            line = self.fh.readline()
-            if len(line) == 0:
-                self.fh.close()
-                return
-            else:
+        with fileOps.FileAccessor(self.dmpFile) as fh:
+            for line in fh:
                 # this leaves a last word with 'scientific name\t|\n'
                 row = line.split("\t|\t")
                 last = len(row) - 1
@@ -62,8 +58,7 @@ class Tree(object):
         self.sciNames = dict()
         sciName = "scientific name"
 
-        fh = dmpFileParser(dmpDir + "/names.dmp")
-        for row in fh:
+        for row in DmpFileParser(dmpDir + "/names.dmp"):
             name = Name(row)
             self.names[name.taxId] = name
             if name.nameClass == sciName:
@@ -72,8 +67,7 @@ class Tree(object):
     def _loadNodes(self, dmpDir):
         self.nodes = dict()
         self.parentNodeRefs = MultiDict()
-        fh = dmpFileParser(dmpDir + "/nodes.dmp")
-        for row in fh:
+        for row in DmpFileParser(dmpDir + "/nodes.dmp"):
             node = Node(row)
             self.nodes[node.taxId] = node
             self.parentNodeRefs.add(node.parentTaxId, node)

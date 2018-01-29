@@ -236,23 +236,23 @@ class PslDbTable(HgLiteTable):
             qBaseInsert INT UNSIGNED NOT NULL,
             tNumInsert INT UNSIGNED NOT NULL,
             tBaseInsert INT UNSIGNED NOT NULL,
-            strand text not null,
-            qName text not null,
+            strand TEXT NOT NULL,
+            qName TEXT NOT NULL,
             qSize INT UNSIGNED NOT NULL,
             qStart INT UNSIGNED NOT NULL,
             qEnd INT UNSIGNED NOT NULL,
-            tName text not null,
+            tName TEXT NOT NULL,
             tSize INT UNSIGNED NOT NULL,
             tStart INT UNSIGNED NOT NULL,
             tEnd INT UNSIGNED NOT NULL,
             blockCount INT UNSIGNED NOT NULL,
-            blockSizes TEXT not null,
-            qStarts TEXT not null,
-            tStarts TEXT not null)"""
+            blockSizes TEXT NOT NULL,
+            qStarts TEXT NOT NULL,
+            tStarts TEXT NOT NULL)"""
     insertSql = """INSERT INTO {table} ({columns}) VALUES ({values});"""
     indexSql = [
-        """CREATE INDEX {table}_tName_bin on {table} (tName, bin)""",
-        """CREATE INDEX {table}_qname on {table} (qName)"""]
+        """CREATE INDEX {table}_tName_bin ON {table} (tName, bin)""",
+        """CREATE INDEX {table}_qname ON {table} (qName)"""]
 
     # doesn't include bin
     columnNames = ("matches", "misMatches", "repMatches", "nCount",
@@ -296,7 +296,7 @@ class PslDbTable(HgLiteTable):
         return row
 
     def loadPslFile(self, pslFile):
-        """load a PSL file, adding bin"""
+        """load a PSL file or file-like object, adding bin"""
         rows = []
         for row in TabFileReader(pslFile):
             rows.append(self.__binPslRow(row))
@@ -580,7 +580,6 @@ class GencodeTranscriptSourceDbTable(HgLiteTable):
         """get the GencodeTranscriptSource object for transcriptId, or None if not found."""
         sql = "select {columns} from {table} where transcriptId = ?"
         return next(self.__queryRows(sql, transcriptId), None)
-
 
 
 class GencodeTranscriptionSupportLevel(namedtuple("GencodeTranscriptionSupportLevel",

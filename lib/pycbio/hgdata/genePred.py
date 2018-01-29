@@ -5,8 +5,8 @@ from builtins import range
 from past.utils import old_div
 from builtins import object
 import copy
-from pycbio.sys import fileOps, dbOps
-from pycbio.hgdata import hgDb
+from pycbio.tsv.tabFile import TabFileReader
+from pycbio.sys import dbOps
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin
 from pycbio.sys.symEnum import SymEnum, SymEnumValue
 
@@ -593,55 +593,21 @@ class GenePredTbl(list):
             self.rangeMap.add(gene.chrom, gene.txStart, gene.txEnd, gene, gene.strand)
 
 
-class GenePredReader(object):
-    """Read genePreds from a tab file."""
-    def __init__(self, fileName):
-        self.fh = fileOps.opengz(fileName)
+def GenePredReader(fspec):
+    """Read genePreds from a tab file which maybe specified as
+    a file name or a file-like object"""
+    for gp in TabFileReader(fspec, rowClass=GenePred, hashAreComments=True, skipBlankLines=True):
+        yield gp
 
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        "GPR next"
-        while True:
-            line = self.fh.readline()
-            if (line == ""):
-                self.fh.close()
-                raise StopIteration
-            if not ((len(line) == 1) or line.startswith('#')):
-                line = line[0:-1]  # drop newline
-                return GenePred(line.split("\t"))
-
-
-class GenePredFhReader(object):
-    """Read genePreds from an open."""
-    def __init__(self, fh):
-        self.fh = fh
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        "GPR next"
-        while True:
-            line = self.fh.readline()
-            if (line == ""):
-                raise StopIteration
-            if not ((len(line) == 1) or line.startswith('#')):
-                line = line[0:-1]  # drop newline
-                return GenePred(line.split("\t"))
-#FIXME: convert rest to generators
 
 class GenePredDbReader(object):
     """Read genePreds from a db query"""
     def __init__(self, conn, query, queryArgs=None):
-        prevConv = hgDb.setAutoSqlConverter(conn)
         cur = conn.cursor()
         try:
             cur.execute(query, queryArgs)
             colIdxMap = dbOps.cursorColIdxMap(cur)
             for row in cur:
                 yield GenePred(row, dbColIdxMap=colIdxMap)
-        except Exception:
-            prevConv = hgDb.setAutoSqlConverter(conn, prevConv)
-            self.cur.close()
+        finally:
+            cur.close()

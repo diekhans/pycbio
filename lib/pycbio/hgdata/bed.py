@@ -129,11 +129,10 @@ class Bed(object):
         fh.write('\n')
 
 
-class BedReader(TabFileReader):
-    """Reader for BED objects loaded from a tab-file"""
-
-    def __init__(self, fileName):
-        TabFileReader.__init__(self, fileName, rowClass=Bed.parse, hashAreComments=True, skipBlankLines=True)
+def BedReader(fspec):
+    """Generator to read BED objects loaded from a tab-file or file-like object"""
+    for bed in TabFileReader(fspec, rowClass=Bed.parse, hashAreComments=True, skipBlankLines=True):
+        yield bed
 
 
 class BedTable(TabFile):
