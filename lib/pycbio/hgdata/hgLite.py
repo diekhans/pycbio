@@ -426,12 +426,16 @@ class GenePredDbTable(HgLiteTable):
         sql = "SELECT {columns} FROM {table} WHERE (oid >= ?) and (oid < ?)"
         return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw), startOid, endOid)
 
-    def getRangeOverlap(self, chrom, start, end, raw=False):
+    def getRangeOverlap(self, chrom, start, end, strand=None, raw=False):
         """Get alignments overlapping range  If raw is
         specified. Don't convert to GenePred objects if raw is True."""
         binWhere = Binner.getOverlappingSqlExpr("bin", "chrom", "txStart", "txEnd", chrom, start, end)
-        sql = "SELECT {{columns}} FROM {{table}} WHERE {};".format(binWhere)
-        return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw))
+        sql = "SELECT {{columns}} FROM {{table}} WHERE {}".format(binWhere)
+        sqlArgs = []
+        if strand is not None:
+            sql += " AND (strand = ?)"
+            sqlArgs.append(strand)
+        return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw), *sqlArgs)
 
 
 class GencodeAttrs(namedtuple("GencodeAttrs",
