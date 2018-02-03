@@ -309,25 +309,29 @@ class PslDbTable(HgLiteTable):
     def getAll(self, raw=False):
         """Generator for PSLs for all rows in a table. If raw is
         specified, don't convert to Psl objects if raw is True"""
-        sql = "select {columns} from {table}"
+        sql = "SELECT {columns} FROM {table}"
         return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw))
 
     def getByQName(self, qName, raw=False):
         """get list of Psl objects (or raw rows) for all alignments for qName """
-        sql = "select {columns} from {table} where qName = ?"
+        sql = "SELECT {columns} FROM {table} WHERE qName = ?"
         return list(self.queryRows(sql, self.columnNames, self.__getRowFactory(raw), qName))
 
     def getByOid(self, startOid, endOid, raw=False):
         """Generator for PSLs for a range of OIDs (1/2 open).  If raw is
         specified, don't convert to Psl objects if raw is True"""
-        sql = "select {columns} from {table} where (oid >= ?) and (oid < ?)"
+        sql = "SELECT {columns} FROM {table} WHERE (oid >= ?) AND (oid < ?)"
         return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw), startOid, endOid)
 
-    def getTRangeOverlap(self, tName, tStart, tEnd, raw=False):
-        """Get alignments overlapping tRange  If raw is
-        specified, don't convert to Psl objects if raw is True."""
+    def getTRangeOverlap(self, tName, tStart, tEnd, strand=None, raw=False):
+        """Get alignments overlapping tRange. Don't convert to Psl objects if raw is True.
+        Strand should match the strand value in the table (one or two) and maybe a list of multiple values """
         binWhere = Binner.getOverlappingSqlExpr("bin", "tName", "tStart", "tEnd", tName, tStart, tEnd)
-        sql = "select {{columns}} from {{table}} where {};".format(binWhere)
+        sql = "SELECT {{columns}} FROM {{table}} WHERE {}".format(binWhere)
+        if strand is not None:
+            if isinstance(strand, six.string_types):
+                strand = [strand]
+            sql += " AND (strand in ({}))".format(','.join(["'{}'".format(s) for s in strand]))
         return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw))
 
 
@@ -514,16 +518,16 @@ class GencodeAttrsDbTable(HgLiteTable):
 
     def getByTranscriptId(self, transcriptId):
         """get the GencodeAttrs object for transcriptId, or None if not found."""
-        sql = "select {columns} from {table} where transcriptId = ?"
+        sql = "SELECT {columns} FROM {table} WHERE transcriptId = ?"
         return next(self.__queryRows(sql, transcriptId), None)
 
     def getByGeneId(self, geneId):
         """get GencodeAttrs objects for geneId or empty list if not found"""
-        sql = "select {columns} from {table} where geneId = ?"
+        sql = "SELECT {columns} FROM {table} WHERE geneId = ?"
         return list(self.__queryRows(sql, geneId))
 
     def getAllGeneIds(self):
-        sql = "select distinct geneId from {table}"
+        sql = "SELECT DISTINCT geneId FROM {table}"
         return list(self.queryRows(sql, (), lambda cur, row: row[0]))
 
 
