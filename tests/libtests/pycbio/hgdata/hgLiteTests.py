@@ -82,31 +82,24 @@ class PslDbTableTests(TestCaseBase):
                 (0, 10, 111, 0, 1, 13, 3, 344548, "+", "NM_025031.1", 664, 21, 155, "chr22", 49554710, 48109515, 48454184, 4, "17,11,12,81", "21,38,49,74", "48109515,48109533,48453547,48454103,"))
 
     @classmethod
-    def setUpClass(cls):
-        # cache
-        cls.clsConn = cls.pslTestDb = None
-        cls.strandConn = cls.strandTestDb = None
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.pslTestdb = cls.strandTestDb = None
-        if cls.clsConn is not None:
-            cls.clsConn.close()
-            cls.strandConn.close()
-            cls.clsConn = cls.strandConn = None
-
-    def __buildTestDb(self, pslFile):
+    def __buildTestDb(cls, pslFile):
         conn = sqliteConnect(None)
         db = PslDbTable(conn, "aligns", True)
-        db.loadPslFile(self.getInputFile(pslFile))
+        db.loadPslFile(cls.getInputFile(pslFile))
         db.index()
         return conn, db
 
-    def setUp(self):
-        # FIXME: done in object rather than class setup due to getInputFile(); need a class-based getInputFile()
-        if self.clsConn is None:
-            self.clsConn, self.pslTestDb = self.__buildTestDb("pslTest.psl")
-            self.strandConn, self.strandTestDb = self.__buildTestDb("overlapingStrandCases.psl")
+    @classmethod
+    def setUpClass(cls):
+        cls.clsConn, cls.pslTestDb = cls.__buildTestDb("pslTest.psl")
+        cls.strandConn, cls.strandTestDb = cls.__buildTestDb("overlapingStrandCases.psl")
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.clsConn.close()
+        cls.clsConn = cls.pslTestdb = None
+        cls.strandConn.close()
+        cls.strandConn = cls.strandTestDb = None
 
     def __makeObjCoords(self, psls):
         "return lists of qName and target coordinates for easy assert checking"
@@ -186,24 +179,15 @@ class GenePredDbTableTests(TestCaseBase):
 
     @classmethod
     def setUpClass(cls):
-        # cache
-        cls.gpTestDb = None
-        cls.clsConn = None
+        cls.clsConn = sqliteConnect(None)
+        cls.gpTestDb = GenePredDbTable(cls.clsConn, "refGene", True)
+        cls.gpTestDb.loadGenePredFile(cls.getInputFile("fileFrameStatTest.gp"))
+        cls.gpTestDb.index()
 
     @classmethod
     def tearDownClass(cls):
-        cls.gpTestdb = None
-        if cls.clsConn is not None:
-            cls.clsConn.close()
-            cls.clsConn = None
-
-    def setUp(self):
-        if self.clsConn is None:
-            # don't load for each test
-            self.clsConn = sqliteConnect(None)
-            self.gpTestDb = GenePredDbTable(self.clsConn, "refGene", True)
-            self.gpTestDb.loadGenePredFile(self.getInputFile("fileFrameStatTest.gp"))
-            self.gpTestDb.index()
+        cls.clsConn.close()
+        cls.clsConn = cls.gpTestdb = None
 
     def __makeObjCoords(self, gps):
         "return lists of name and target coordinates for easy assert checking"
@@ -267,23 +251,15 @@ class GencodeAttrsDbTableTests(TestCaseBase):
 
     @classmethod
     def setUpClass(cls):
-        # cache
-        cls.attrsTestDb = None
-        cls.clsConn = None
+        cls.clsConn = sqliteConnect(None)
+        cls.attrsTestDb = GencodeAttrsDbTable(cls.clsConn, "gencodeAttrs", True)
+        cls.attrsTestDb.loadTsv(cls.getInputFile("gencodeAttrs.tsv"))
+        cls.attrsTestDb.index()
 
     @classmethod
     def tearDownClass(cls):
-        if cls.clsConn is not None:
-            cls.clsConn.close()
-            cls.clsConn = None
-
-    def setUp(self):
-        if self.clsConn is None:
-            # don't load for each test
-            self.clsConn = sqliteConnect(None)
-            self.attrsTestDb = GencodeAttrsDbTable(self.clsConn, "gencodeAttrs", True)
-            self.attrsTestDb.loadTsv(self.getInputFile("gencodeAttrs.tsv"))
-            self.attrsTestDb.index()
+        cls.clsConn.close()
+        cls.clsConn = cls.attrsTestDb = None
 
     def testGetTranscriptId(self):
         attrs = self.attrsTestDb.getByTranscriptId("ENST00000315357.9")
@@ -318,24 +294,15 @@ class GencodeTranscriptSourceDbTableTests(TestCaseBase):
 
     @classmethod
     def setUpClass(cls):
-        # cache
-        cls.transSrcTestDb = None
-        cls.clsConn = None
+        cls.clsConn = sqliteConnect(None)
+        cls.transSrcTestDb = GencodeTranscriptSourceDbTable(cls.clsConn, "gencodeTranscriptSource", True)
+        cls.transSrcTestDb.loadTsv(cls.getInputFile("gencodeTranscriptSource.tsv"))
+        cls.transSrcTestDb.index()
 
     @classmethod
     def tearDownClass(cls):
-        cls.gpTestdb = None
-        if cls.clsConn is not None:
-            cls.clsConn.close()
-            cls.clsConn = None
-
-    def setUp(self):
-        if self.clsConn is None:
-            # don't load for each test
-            self.clsConn = sqliteConnect(None)
-            self.transSrcTestDb = GencodeTranscriptSourceDbTable(self.clsConn, "gencodeTranscriptSource", True)
-            self.transSrcTestDb.loadTsv(self.getInputFile("gencodeTranscriptSource.tsv"))
-            self.transSrcTestDb.index()
+        cls.clsConn.close()
+        cls.clsConn = cls.gpTestdb = None
 
     def testGetTranscriptId(self):
         transSrc = self.transSrcTestDb.getByTranscriptId("ENST00000315357.9")
@@ -362,24 +329,15 @@ class GencodeTranscriptionSupportLevelDbTableTests(TestCaseBase):
 
     @classmethod
     def setUpClass(cls):
-        # cache
-        cls.transSrcTestDb = None
-        cls.clsConn = None
+        cls.clsConn = sqliteConnect(None)
+        cls.transSrcTestDb = GencodeTranscriptionSupportLevelDbTable(cls.clsConn, "gencodeTranscriptionSupportLevel", True)
+        cls.transSrcTestDb.loadTsv(cls.getInputFile("gencodeTranscriptionSupportLevel.tsv"))
+        cls.transSrcTestDb.index()
 
     @classmethod
     def tearDownClass(cls):
-        cls.gpTestdb = None
-        if cls.clsConn is not None:
-            cls.clsConn.close()
-            cls.clsConn = None
-
-    def setUp(self):
-        if self.clsConn is None:
-            # don't load for each test
-            self.clsConn = sqliteConnect(None)
-            self.transSrcTestDb = GencodeTranscriptionSupportLevelDbTable(self.clsConn, "gencodeTranscriptionSupportLevel", True)
-            self.transSrcTestDb.loadTsv(self.getInputFile("gencodeTranscriptionSupportLevel.tsv"))
-            self.transSrcTestDb.index()
+        cls.clsConn.close()
+        cls.clsConn = cls.gpTestdb = None
 
     def testGetTranscriptId(self):
         transSrc = self.transSrcTestDb.getByTranscriptId("ENST00000315357.9")

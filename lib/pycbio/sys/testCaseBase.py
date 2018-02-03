@@ -46,9 +46,11 @@ class TestCaseBase(unittest.TestCase):
         # last part of unittest id is method
         return self.getClassId() + "." + self.id().split(".")[-1]
 
-    def getTestDir(self):
-        """find test directory, where concrete class is defined."""
-        testDir = os.path.dirname(sys.modules[self.__class__.__module__].__file__)
+    @classmethod
+    def getTestDir(cls):
+        """Find test directory, where concrete class is defined, class method so can
+        be used in class setUpClass"""
+        testDir = os.path.dirname(sys.modules[cls.__module__].__file__)
         if testDir == "":
             testDir = "."
         testDir = os.path.realpath(testDir)
@@ -60,13 +62,15 @@ class TestCaseBase(unittest.TestCase):
                 testDir = "."
         return testDir
 
-    def getTestRelProg(self, progName):
+    @classmethod
+    def getTestRelProg(cls, progName):
         "get path to a program in directory above the test directory"
-        return os.path.join(self.getTestDir(), "..", progName)
+        return os.path.join(cls.getTestDir(), "..", progName)
 
-    def getInputFile(self, fname):
+    @classmethod
+    def getInputFile(cls, fname):
         """Get a path to a file in the test input directory"""
-        return self.getTestDir() + "/input/" + fname
+        return cls.getTestDir() + "/input/" + fname
 
     def getOutputDir(self):
         """get the path to the output directory to use for this test, create if it doesn't exist"""
