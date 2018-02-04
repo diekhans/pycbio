@@ -7,7 +7,7 @@ from builtins import range
 if __name__ == '__main__':
     sys.path.append("../../../../lib")
 
-from pycbio.sys.symEnum import SymEnum, SymEnumValue
+from pycbio.sys.symEnum import SymEnum, SymEnumValue, auto
 from pycbio.sys.testCaseBase import TestCaseBase
 
 
@@ -146,6 +146,13 @@ class SymEnumTests(TestCaseBase):
         self.assertTrue(FnColor.red != FnColor.blue)
         self.assertTrue(FnColor.red is not None)
         self.assertTrue(None != FnColor.red)
+
+    def testAutoDef(self):
+        class AutoDef(SymEnum):
+            first = auto()
+            second = auto()
+            third = auto()
+        self.assertEqual(['first', 'second', 'third'], list(sorted([str(v) for v in AutoDef])))
 
     def testWithSymEnumValue(self):
         class CdsStat(SymEnum):

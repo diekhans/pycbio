@@ -3,7 +3,7 @@
 
 from __future__ import print_function
 import six
-from enum import Enum, EnumMeta
+from enum import Enum, EnumMeta, auto
 from functools import total_ordering
 
 SymEnum = None  # class defined after use
@@ -126,7 +126,8 @@ class SymEnum(six.with_metaclass(SymEnumMeta, SymEnumMixin, Enum)):
         name = 1
         namealias = 1
 
-    The functional API works as with Enum.
+    The functional API works as with Enum, as well at the auto() method of
+    field initiation.
 
     To handle string values that are not valid Python member names, an external
     name maybe associated with a field using a SymEnumValue object
@@ -145,4 +146,4 @@ class SymEnum(six.with_metaclass(SymEnumMeta, SymEnumMixin, Enum)):
         return self.__externalNameMap__.toExternalName(self.name)
 
 
-__all__ = (SymEnumValue.__name__, SymEnum.__name__)
+__all__ = (SymEnumValue.__name__, SymEnum.__name__, auto.__name__)
