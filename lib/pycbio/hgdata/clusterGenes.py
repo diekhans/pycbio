@@ -4,9 +4,9 @@
 import six
 if six.PY3:
     from sys import intern
+from collections import defaultdict
 from pycbio.hgdata.autoSql import strArrayType
 from pycbio.tsv import TsvReader
-from pycbio.sys.multiDict import MultiDict
 
 
 def cgBoolParse(val):
@@ -105,7 +105,7 @@ class ClusterGenes(list):
     None, however generator doesn't return it or other Null clusters.
     """
     def __init__(self, clusterGenesOut):
-        self.genes = MultiDict()
+        self.genes = defaultdict(list)
         self.tableSet = set()
         tsv = TsvReader(clusterGenesOut, typeMap=typeMap)
         self.columns = tsv.columns
@@ -128,7 +128,7 @@ class ClusterGenes(list):
     def _addGene(self, row):
         cluster = self._getCluster(row.cluster)
         cluster.add(row)
-        self.genes.add(row.gene, row)
+        self.genes[row.gene].append(row)
         self.tableSet.add(row.table)
 
     def __iter__(self):

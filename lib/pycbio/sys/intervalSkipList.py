@@ -12,20 +12,12 @@ http://www-pub.cise.ufl.edu/~hanson/IS-lists/
 
 from builtins import range
 from builtins import object
-from pycbio.sys.immutable import Immutable
+from collections import namedtuple
 
 
-class Entry(Immutable):
+class Entry(namedtuple("Entry", ("start", "end", "val"))):
     "An entry for an interval and associated value. This is immutable"
-
-    __slots__ = ("start", "end", "val")
-
-    def __init__(self, start, end, val):
-        self(Entry, self).__init__()
-        self.start = start
-        self.end = end
-        self.val = val
-        self.mkImmutable()
+    __slots__ = ()
 
 
 class Node(object):

@@ -7,8 +7,9 @@ import os
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 import argparse
+from collections import defaultdict
 from pycbio.hgdata.genePred import GenePred
-from pycbio.sys import fileOps, multiDict
+from pycbio.sys import fileOps
 
 # methods of flattening
 methodUniqExons = "uniqExons"
@@ -42,9 +43,9 @@ class GeneSet(object):
             self._buildByGeneMap(allTrans)
 
     def _buildByGeneMap(self, allTrans):
-        self.byGene = multiDict.MultiDict()
+        self.byGene = defaultdict(list)
         for t in allTrans:
-            self.byGene.add(t.name2, t)
+            self.byGene.append(t.name2, t)
 
 
 class GenePredSelect(object):

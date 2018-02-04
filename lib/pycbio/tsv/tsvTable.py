@@ -4,9 +4,9 @@ from builtins import range
 from builtins import object
 from future.utils import raise_from
 import six
+from collections import defaultdict
 from pycbio.tsv.tsvReader import TsvReader
 from pycbio.tsv import TsvError
-from pycbio.sys.multiDict import MultiDict
 import csv
 
 # FIX: maybe make each index it's own class to handle uniq check, etc.
@@ -16,7 +16,8 @@ class TsvTable(list):
     """Class for reading and writing TSV files. Stores rows as a list of Row
     objects. Columns are indexed by name.
 
-    - idx - index objects dict or MultiDict attribute per keyed columns.
+    - idx - Index on columns, with each field a column name. Unique indexed columns are a dict
+      of value to row, multi-index columns are a dict of value to list of rows.
     """
     class Indices (object):
         """object with attribute for each key column"""
@@ -24,28 +25,32 @@ class TsvTable(list):
         def __getitem__(self, key):
             return getattr(self, key)
 
-    def _addIndex(self, keyCol, dictClass):
-        if keyCol not in self.colMap:
-            raise TsvError("key column \"{}\" is not defined".format(keyCol))
-        setattr(self.idx, keyCol, dictClass())
-
-    def _createIndices(self, keyCols, dictClass):
-        "keyCols maybe string or seq of strings"
+    def _checkNormalizeKeySpec(self, keyCols):
+        "keyCols and be string or a list"
         if isinstance(keyCols, six.string_types):
-            self._addIndex(keyCols, dictClass)
-        else:
-            for kc in keyCols:
-                self._addIndex(kc, dictClass)
+            keyCols = (keyCols,)
+        for keyCol in keyCols:
+            if keyCol not in self.colMap:
+                raise TsvError("key column \"{}\" is not defined".format(keyCol))
+        return keyCols
+
+    def _createUniqIndexs(self, keyCols):
+        for keyCol in self._checkNormalizeKeySpec(keyCols):
+            setattr(self.idx, keyCol, dict())
+
+    def _createMultiIndexs(self, keyCols):
+        for keyCol in self._checkNormalizeKeySpec(keyCols):
+            setattr(self.idx, keyCol, defaultdict(list))
 
     def _buildIndices(self, uniqKeyCols, multiKeyCols):
         self.idx = TsvTable.Indices()
         self.indices = self.idx  # FIXME: old name, delete
         if uniqKeyCols is not None:
-            self._createIndices(uniqKeyCols, dict)
+            self._createUniqIndexs(uniqKeyCols)
         if multiKeyCols is not None:
-            self._createIndices(multiKeyCols, MultiDict)
+            self._createMultiIndexs(multiKeyCols)
 
-    def _buildColDictTbl(self):
+    def _buildColumnIndexMap(self):
         """build an array, index by column number, of dict objects, or None if not
         indexed.  Used when loading rows. """
         if len(vars(self.idx)) == 0:
@@ -55,24 +60,26 @@ class TsvTable(list):
             tbl.append(getattr(self.idx, self.columns[iCol], None))
         return tbl
 
-    def _indexCol(self, iCol, colDict, col, row):
-        if (type(colDict) == dict) and colDict.get(col):
-            raise TsvError("column {} unique index value already entered: {} from {} ".format(self.columns[iCol], col, row))
-        else:
-            colDict[col] = row
+    def _indexColumn(self, iCol, colIndex, col, row):
+        if isinstance(colIndex, defaultdict):
+            colIndex[col].append(row)
+        else:  # unique index
+            if col in colIndex:
+                raise TsvError("column {} unique index value already entered: {} from {} ".format(self.columns[iCol], col, row))
+            colIndex[col] = row
 
-    def _indexRow(self, colDictTbl, row):
+    def _indexRow(self, colIndexMap, row):
         for i in range(len(row)):
-            if colDictTbl[i] is not None:
-                self._indexCol(i, colDictTbl[i], row[i], row)
+            if colIndexMap[i] is not None:
+                self._indexColumn(i, colIndexMap[i], row[i], row)
 
     # FIXME: need add row function, but colDict stuff conflicts, make member
     def _readBody(self, reader):
-        colDictTbl = self._buildColDictTbl()
+        colIndexMap = self._buildColumnIndexMap()
         for row in reader:
             self.append(row)
-            if colDictTbl is not None:
-                self._indexRow(colDictTbl, row)
+            if colIndexMap is not None:
+                self._indexRow(colIndexMap, row)
 
     def __init__(self, fileName, uniqKeyCols=None, multiKeyCols=None, rowClass=None, typeMap=None,
                  defaultColType=None, columns=None, columnNameMapper=None, ignoreExtraCols=False, isRdb=False, inFh=None, allowEmpty=False, dialect=csv.excel_tab):

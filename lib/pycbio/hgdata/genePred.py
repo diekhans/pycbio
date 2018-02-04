@@ -5,6 +5,7 @@ from builtins import range
 from past.utils import old_div
 from builtins import object
 import copy
+from collections import defaultdict
 from pycbio.tsv.tabFile import TabFileReader
 from pycbio.sys import dbOps
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin
@@ -581,10 +582,9 @@ class GenePredTbl(list):
             self.names[row.name] = row
 
     def _buildIdx(self):
-        from pycbio.sys.multiDict import MultiDict
-        self.names = MultiDict()
+        self.names = defaultdict(list)
         for row in self:
-            self.names.add(row.name, row)
+            self.names.append(row.name, row)
 
     def _buildRangeIdx(self):
         from pycbio.hgdata.RangeFinder import RangeFinder

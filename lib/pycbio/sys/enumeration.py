@@ -2,7 +2,6 @@
 from past.builtins import cmp
 from builtins import object
 import six
-from pycbio.sys.immutable import Immutable
 from pycbio.sys.typeOps import isListLike
 
 # FIXME:

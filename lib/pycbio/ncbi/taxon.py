@@ -6,7 +6,7 @@
 
 from builtins import object
 import sys
-from pycbio.sys.MultiDict import MultiDict
+from collections import defaultdict
 from pycbio.sys import fileOps
 
 
@@ -54,23 +54,23 @@ class Name(object):
 
 class Tree(object):
     def _loadNames(self, dmpDir):
-        self.names = MultiDict()
+        self.names = defaultdict(list)
         self.sciNames = dict()
         sciName = "scientific name"
 
         for row in DmpFileParser(dmpDir + "/names.dmp"):
             name = Name(row)
-            self.names[name.taxId] = name
+            self.names[name.taxId].append(name)
             if name.nameClass == sciName:
                 self.sciNames[name.nameTxt] = name.taxId
 
     def _loadNodes(self, dmpDir):
         self.nodes = dict()
-        self.parentNodeRefs = MultiDict()
+        self.parentNodeRefs = defaultdict(list)
         for row in DmpFileParser(dmpDir + "/nodes.dmp"):
             node = Node(row)
             self.nodes[node.taxId] = node
-            self.parentNodeRefs.add(node.parentTaxId, node)
+            self.parentNodeRefs.append(node.parentTaxId, node)
 
     def __init__(self, dmpDir):
         "parse *.dmp files in dmpDir"

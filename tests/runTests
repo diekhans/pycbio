@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2006-2012 Mark Diekhans
 
 import unittest, sys, os
@@ -71,7 +71,6 @@ dt.add("libtests.pycbio.tsv.tabFileTests")
 dt.add("libtests.pycbio.sys.enumerationTests")
 dt.add("libtests.pycbio.sys.configInPyTests")
 dt.add("libtests.pycbio.sys.symEnumTests")
-dt.add("libtests.pycbio.sys.immutableTests")
 dt.add("libtests.pycbio.sys.exceptTests")
 dt.add("libtests.pycbio.sys.colorTests")
 dt.add("libtests.pycbio.sys.loggingOpsTests")
