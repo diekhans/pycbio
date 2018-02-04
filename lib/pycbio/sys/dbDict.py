@@ -1,5 +1,8 @@
 # Copyright 2006-2012 Mark Diekhans
 # Copyright sebsauvage.net
+
+# FIXME cant this be replaced with https://pypi.python.org/pypi/sqlitedict/
+
 """
 Code from:
 http://sebsauvage.net/python/snyppets/index.html#dbdict

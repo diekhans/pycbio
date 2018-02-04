@@ -23,6 +23,7 @@ warnCnt = 0
 
 # FIXME: too many special cases in code, simplify.
 
+
 class GeneType(SymEnum):
     __slots__ = ()
     unknown = 0x01
@@ -30,6 +31,7 @@ class GeneType(SymEnum):
     rnaGene = 0x04
     immunoglobulin = 0x08
     other = 0x10
+
 
 class ActiveType(SymEnum):
     __slots__ = ()
