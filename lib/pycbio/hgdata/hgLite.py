@@ -323,15 +323,18 @@ class PslDbTable(HgLiteTable):
         sql = "SELECT {columns} FROM {table} WHERE (oid >= ?) AND (oid < ?)"
         return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw), startOid, endOid)
 
-    def getTRangeOverlap(self, tName, tStart, tEnd, strand=None, raw=False):
+    def getTRangeOverlap(self, tName, tStart, tEnd, strand=None, extraWhere=None, raw=False):
         """Get alignments overlapping tRange. Don't convert to Psl objects if raw is True.
-        Strand should match the strand value in the table (one or two) and maybe a list of multiple values """
+        Strand should match the strand value in the table (one or two) and maybe a list of multiple value.
+        The where is ANDed with the query if supplied."""
         binWhere = Binner.getOverlappingSqlExpr("bin", "tName", "tStart", "tEnd", tName, tStart, tEnd)
         sql = "SELECT {{columns}} FROM {{table}} WHERE {}".format(binWhere)
         if strand is not None:
             if isinstance(strand, six.string_types):
                 strand = [strand]
             sql += " AND (strand in ({}))".format(','.join(["'{}'".format(s) for s in strand]))
+        if extraWhere is not None:
+            sql += " AND ({})".format(extraWhere)
         return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw))
 
 
@@ -420,9 +423,9 @@ class GenePredDbTable(HgLiteTable):
         return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw))
 
     def getByName(self, name, raw=False):
-        """get list of GenePred objects (or raw rows) for all alignments for name """
+        """generator for list of GenePred objects (or raw rows) for all alignments for name """
         sql = "SELECT {columns} FROM {table} WHERE name = ?"
-        return list(self.queryRows(sql, self.columnNames, self.__getRowFactory(raw), name))
+        return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw), name)
 
     def getByOid(self, startOid, endOid, raw=False):
         """Generator for genePreds for a range of OIDs (1/2 open).  If raw is

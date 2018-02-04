@@ -201,7 +201,7 @@ class GenePredDbTableTests(TestCaseBase):
         gps = self.gpTestDb.getByName("NM_000017.1")
         coords = self.__makeObjCoords(gps)
         self.assertEqual(coords, [("NM_000017.1", "chr12", 119575618, 119589763, '+')])
-        gps = self.gpTestDb.getByName("fred")
+        gps = list(self.gpTestDb.getByName("fred"))
         self.assertEqual(gps, [])
 
     def testRangeOverlap(self):
