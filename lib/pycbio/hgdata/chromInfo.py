@@ -28,13 +28,13 @@ class ChromInfoTbl(dict):
         elif conn is not None:
             self.loadChromInfoDb(conn)
 
-    def __addRow(self, chrom, size):
+    def _addRow(self, chrom, size):
         self[chrom] = self.chromClass(chrom, size)
 
     def loadChromSizes(self, chromSizes):
         "Load from chrom.sizes file"
         for row in TabFile(chromSizes):
-            self.__addRow(row[0], int(row[1]))
+            self._addRow(row[0], int(row[1]))
 
     def loadChromInfoDb(self, conn):
         "Load from chromoInfo table"

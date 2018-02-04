@@ -9,7 +9,7 @@ class TsvError(PycbioException):
     def __init__(self, msg, reader=None, cause=None):
         if (reader is not None):
             msg = str(reader.fileName) + ":" + str(reader.lineNum) + ": " + msg
-        PycbioException.__init__(self, msg, cause)
+        super(TsvError, self).__init__(msg, cause)
 
 
 from pycbio.tsv.tsvRow import TsvRow

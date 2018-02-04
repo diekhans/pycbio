@@ -20,7 +20,7 @@ class PseudoGeneLink(TsvTable):
                 "adaBoost": float, "posConf": float, "negConf": float}
 
     def __init__(self, pglFile):
-        TsvTable.__init__(self, pglFile, multiKeyCols="name", typeMap=PseudoGeneLink._typeMap, defaultColType=int)
+        super(PseudoGeneLink, self).__init__(pglFile, multiKeyCols="name", typeMap=PseudoGeneLink._typeMap, defaultColType=int)
 
     def getNameIter(self, name):
         """get iter over rows for name"""

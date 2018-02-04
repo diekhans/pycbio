@@ -66,37 +66,37 @@ class AssemblyReport(object):
         self.byUcscStyleName = dict()
         mode = "r" if six.PY3 else "rU"
         with open(asmReport, mode) as fh:
-            self.__parseMetaData(fh)
-            self.__skipToSeqTable(fh)
-            self.__parseRecords(fh)
+            self._parseMetaData(fh)
+            self._skipToSeqTable(fh)
+            self._parseRecords(fh)
 
-    def __parseMetaData(self, fh):
+    def _parseMetaData(self, fh):
         "parse metaData records at start"
         # Assembly Name:  GRCh38.p2
         for line in fh:
             line = line[0:-1]
             if line == "#":
                 break
-            self.__parseMetaDataLine(line)
+            self._parseMetaDataLine(line)
 
-    def __parseMetaDataLine(self, line):
+    def _parseMetaDataLine(self, line):
         colon = line.find(":")
         if colon < 0:
             raise Exception("invalid metaData line:" + line)
         self.metaData[line[2:colon]] = line[colon + 1:].strip()
 
-    def __skipToSeqTable(self, fh):
+    def _skipToSeqTable(self, fh):
         "skip past header line before sequence records"
         for line in fh:
             if line[0:-1] == self.expectedHeader:
                 return
         raise PycbioException("expected assembly report header not found in " + fh.name)
 
-    def __parseRecords(self, fh):
+    def _parseRecords(self, fh):
         for line in fh:
-            self.__parseRecord(fh, line[0:-1])
+            self._parseRecord(fh, line[0:-1])
 
-    def __parseRecord(self, fh, line):
+    def _parseRecord(self, fh, line):
         row = line.split('\t')
         if len(row) != 10:
             raise PycbioException("expected 10 columns in assemble report record, found " + str(len(row)) + " in " + fh.name)

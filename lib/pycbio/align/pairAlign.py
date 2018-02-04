@@ -99,15 +99,15 @@ class Seq(Coord):
     __slots__ = ("cds")
 
     def __init__(self, seqId, start, end, size, strand, cds=None):
-        Coord.__init__(self, seqId, start, end, size, strand, True)
+        super(Seq, self).__init__(seqId, start, end, size, strand, True)
         self.cds = cds
 
     def __getstate__(self):
-        return (Coord.__getstate__(self), self.cds)
+        return (super(Seq, self).__getstate__(), self.cds)
 
     def __setstate__(self, st):
         assert(len(st) == 2)
-        Coord.__setstate__(self, st[0])
+        super(Seq, self).__setstate__(st[0])
         self.cds = st[1]
 
     def copy(self):
@@ -215,7 +215,7 @@ class SubSeqs(list):
     __slots__ = ("seq")
 
     def __init__(self, seq):
-        list.__init__(self)
+        super(SubSeqs, self).__init__()
         self.seq = seq
 
     def __getstate__(self):
@@ -312,7 +312,7 @@ class Block(object):
         return (self.q is None) and (self.t is not None)
 
     @staticmethod
-    def __subToRow(seq, sub):
+    def _subToRow(seq, sub):
         if sub is not None:
             return [seq.seqId, sub.start, sub.end]
         else:
@@ -320,7 +320,7 @@ class Block(object):
 
     def toRow(self):
         "convert to list of query and target coords"
-        return self.__subToRow(self.aln.qSeq, self.q) + self.__subToRow(self.aln.tSeq, self.t)
+        return self._subToRow(self.aln.qSeq, self.q) + self._subToRow(self.aln.tSeq, self.t)
 
     def dump(self, fh):
         "print content to file"
@@ -333,7 +333,7 @@ class PairAlign(list):
     __slots__ = ("qSeq", "tSeq", "qSubSeqs", "tSubSeqs")
 
     def __init__(self, qSeq, tSeq):
-        list.__init__(self)
+        super(PairAlign, self).__init__()
         self.qSeq = qSeq
         self.tSeq = tSeq
         self.qSubSeqs = SubSeqs(qSeq)
@@ -395,7 +395,7 @@ class PairAlign(list):
         return False
 
     @staticmethod
-    def __projectBlkCds(srcSs, destSs, contained):
+    def _projectBlkCds(srcSs, destSs, contained):
         "project CDS from one subseq to another"
         if destSs is not None:
             if (srcSs is not None) and (srcSs.cds is not None):
@@ -406,12 +406,12 @@ class PairAlign(list):
                 destSs.updateCds(destSs.start, destSs.end)
 
     @staticmethod
-    def __projectCds(srcSubSeqs, destSubSeqs, contained):
+    def _projectCds(srcSubSeqs, destSubSeqs, contained):
         "project CDS from one alignment side to the other"
         assert(srcSubSeqs.seq.cds is not None)
         destSubSeqs.clearCds()
         for i in range(srcSubSeqs.findFirstCdsIdx(), srcSubSeqs.findLastCdsIdx() + 1, 1):
-            PairAlign.__projectBlkCds(srcSubSeqs[i], destSubSeqs[i], contained)
+            PairAlign._projectBlkCds(srcSubSeqs[i], destSubSeqs[i], contained)
 
     def targetOverlap(self, o):
         "do the target ranges overlap"
@@ -423,12 +423,12 @@ class PairAlign(list):
     def projectCdsToTarget(self, contained=False):
         """project CDS from query to target. If contained is True, assign CDS
         to subseqs between beginning and end of projected CDS"""
-        PairAlign.__projectCds(self.qSubSeqs, self.tSubSeqs, contained)
+        PairAlign._projectCds(self.qSubSeqs, self.tSubSeqs, contained)
 
     def projectCdsToQuery(self, contained=False):
         """project CDS from target to query If contained is True, assign CDS
         to subseqs between beginning and end of projected CDS"""
-        PairAlign.__projectCds(self.tSubSeqs, self.qSubSeqs, contained)
+        PairAlign._projectCds(self.tSubSeqs, self.qSubSeqs, contained)
 
     def getSubseq(self, seq):
         "find the corresponding subSeq array"
@@ -440,7 +440,7 @@ class PairAlign(list):
             raise Exception("seq is not part of this alignment")
 
     @staticmethod
-    def __mapCdsToSubSeq(destSs, srcSubSeqs, si):
+    def _mapCdsToSubSeq(destSs, srcSubSeqs, si):
         "find overlapping src blks and assign cds, incrementing si as needed"
         sl = len(srcSubSeqs)
         lastSi = si
@@ -456,18 +456,18 @@ class PairAlign(list):
         return lastSi
 
     @staticmethod
-    def __mapCdsForOverlap(srcSubSeqs, destSubSeqs):
+    def _mapCdsForOverlap(srcSubSeqs, destSubSeqs):
         "map CDS only to block overlapping src in common sequence"
         si = di = 0
         sl = len(srcSubSeqs)
         dl = len(destSubSeqs)
         while (si < sl) and (di < dl):
             if destSubSeqs[di] is not None:
-                si = PairAlign.__mapCdsToSubSeq(destSubSeqs[di], srcSubSeqs, si)
+                si = PairAlign._mapCdsToSubSeq(destSubSeqs[di], srcSubSeqs, si)
             di += 1
 
     @staticmethod
-    def __mapCdsForContained(srcSubSeqs, destSubSeqs):
+    def _mapCdsForContained(srcSubSeqs, destSubSeqs):
         "assign CDS for all blks contained in srcSubSeq CDS range"
         cdsStart = srcSubSeqs[PairAlign.findFirstCdsIdx(srcSubSeqs)].cds.start
         cdsEnd = srcSubSeqs[PairAlign.findLastCdsIdx(srcSubSeqs)].cds.end
@@ -487,9 +487,9 @@ class PairAlign(list):
         destSubSeqs = self.getSubseq(destSeq)
         destSubSeqs.clearCds()
         if contained:
-            PairAlign.__mapCdsForOverlap(srcSubSeqs, destSubSeqs)
+            PairAlign._mapCdsForOverlap(srcSubSeqs, destSubSeqs)
         else:
-            PairAlign.__mapCdsForOverlap(srcSubSeqs, destSubSeqs)
+            PairAlign._mapCdsForOverlap(srcSubSeqs, destSubSeqs)
 
     def clearCds(self):
         "clear both query and target CDS, if any"
@@ -563,15 +563,15 @@ class CdsTable(dict):
     """
 
     def __init__(self, cdsFile):
-        dict.__init__(self)
+        super(CdsTable, self).__init__()
         for line in iterLines(cdsFile):
             if not line.startswith('#'):
-                self.__parseCds(line)
+                self._parseCds(line)
 
-    __parseRe = re.compile("^([^\t]+)\t([0-9]+)\\.\\.([0-9]+)$")
+    _parseRe = re.compile("^([^\t]+)\t([0-9]+)\\.\\.([0-9]+)$")
 
-    def __parseCds(self, line):
-        m = self.__parseRe.match(line)
+    def _parseCds(self, line):
+        m = self._parseRe.match(line)
         if m is None:
             raise Exception("can't parse CDS line: " + line)
         st = int(m.group(2)) - 1

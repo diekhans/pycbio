@@ -34,7 +34,7 @@ class SequenceDbTableTests(TestCaseBase):
         self.conn.close()
         self.conn = None
 
-    def __loadTestSeqs(self):
+    def _loadTestSeqs(self):
         # try both tuple and sequence
         seqDb = SequenceDbTable(self.conn, "seqs", True)
         seqDb.loads([self.testData[0], Sequence(*self.testData[1]), Sequence(*self.testData[2]), self.testData[3]])
@@ -43,14 +43,14 @@ class SequenceDbTableTests(TestCaseBase):
         return seqDb
 
     def testSeqLoad(self):
-        seqDb = self.__loadTestSeqs()
+        seqDb = self._loadTestSeqs()
         self.assertEqual(["name1", "name2", "name3", "name4"], sorted(seqDb.names()))
         self.assertEqual(Sequence(*self.testData[0]), seqDb.get("name1"))
         self.assertEqual(Sequence(*self.testData[1]), seqDb.get("name2"))
         self.assertEqual(None, seqDb.get("notthere"))
 
     def testRowRange(self):
-        seqDb = self.__loadTestSeqs()
+        seqDb = self._loadTestSeqs()
         self.assertEqual(seqDb.getOidRange(), (1, 5))
         self.assertEqual(list(seqDb.getRows(2, 4)), [Sequence(*self.testData[1]),
                                                      Sequence(*self.testData[2])])
@@ -82,7 +82,7 @@ class PslDbTableTests(TestCaseBase):
                 (0, 10, 111, 0, 1, 13, 3, 344548, "+", "NM_025031.1", 664, 21, 155, "chr22", 49554710, 48109515, 48454184, 4, "17,11,12,81", "21,38,49,74", "48109515,48109533,48453547,48454103,"))
 
     @classmethod
-    def __buildTestDb(cls, pslFile):
+    def _buildTestDb(cls, pslFile):
         conn = sqliteConnect(None)
         db = PslDbTable(conn, "aligns", True)
         db.loadPslFile(cls.getInputFile(pslFile))
@@ -91,8 +91,8 @@ class PslDbTableTests(TestCaseBase):
 
     @classmethod
     def setUpClass(cls):
-        cls.clsConn, cls.pslTestDb = cls.__buildTestDb("pslTest.psl")
-        cls.strandConn, cls.strandTestDb = cls.__buildTestDb("overlapingStrandCases.psl")
+        cls.clsConn, cls.pslTestDb = cls._buildTestDb("pslTest.psl")
+        cls.strandConn, cls.strandTestDb = cls._buildTestDb("overlapingStrandCases.psl")
 
     @classmethod
     def tearDownClass(cls):
@@ -101,17 +101,17 @@ class PslDbTableTests(TestCaseBase):
         cls.strandConn.close()
         cls.strandConn = cls.strandTestDb = None
 
-    def __makeObjCoords(self, psls):
+    def _makeObjCoords(self, psls):
         "return lists of qName and target coordinates for easy assert checking"
         return sorted([(psl.qName, psl.tName, psl.tStart, psl.tEnd, psl.strand) for psl in psls])
 
-    def __makeRawCoords(self, rows):
+    def _makeRawCoords(self, rows):
         "return lists of qName and target coordinates for easy assert checking"
         return sorted([(row[9], row[13], row[15], row[16], row[8]) for row in rows])
 
     def testGetQName(self):
         psls = self.pslTestDb.getByQName("NM_000014.3")
-        coords = self.__makeObjCoords(psls)
+        coords = self._makeObjCoords(psls)
         self.assertEqual(coords, [('NM_000014.3', 'chr1', 9111576, 9159754, '-'),
                                   ('NM_000014.3', 'chr12', 9111576, 9159754, '-')])
         psls = self.pslTestDb.getByQName("fred")
@@ -121,13 +121,13 @@ class PslDbTableTests(TestCaseBase):
         psls = self.pslTestDb.getTRangeOverlap("chr1", 4268, 14754)
         expect = [('NM_182905.1', 'chr1', 4558, 7173, '-'),
                   ('NM_198943.1', 'chr1', 4268, 14754, '-')]
-        coords = self.__makeObjCoords(psls)
+        coords = self._makeObjCoords(psls)
         self.assertEqual(coords, expect)
 
         rows = self.pslTestDb.getTRangeOverlap("chr1", 4268, 14754, raw=True)
         expect = [('NM_182905.1', 'chr1', 4558, 7173, '-'),
                   ('NM_198943.1', 'chr1', 4268, 14754, '-')]
-        coords = self.__makeRawCoords(rows)
+        coords = self._makeRawCoords(rows)
         self.assertEqual(coords, expect)
 
     def testTRangeOverlapStrand(self):
@@ -136,7 +136,7 @@ class PslDbTableTests(TestCaseBase):
         expect = [('NR_024540', 'chr1', 14361, 29370, '-'),
                   ('NR_106918', 'chr1', 17368, 17436, '-'),
                   ('NR_107062', 'chr1', 17368, 17436, '-')]
-        coords = self.__makeObjCoords(psls)
+        coords = self._makeObjCoords(psls)
         self.assertEqual(coords, expect)
 
         psls = self.strandTestDb.getTRangeOverlap("chr1", 0, 80000, ('+', '+-'))
@@ -146,7 +146,7 @@ class PslDbTableTests(TestCaseBase):
                   ('NM_001127390', 'chr1', 14695, 24892, '+-'),
                   ('NM_001244483', 'chr1', 14686, 24894, '+-'),
                   ('NR_046018', 'chr1', 11873, 14409, '+')]
-        coords = self.__makeObjCoords(psls)
+        coords = self._makeObjCoords(psls)
         self.assertEqual(coords, expect)
 
     def testMemLoadPsl(self):
@@ -155,7 +155,7 @@ class PslDbTableTests(TestCaseBase):
             pslDb = PslDbTable(conn, "pslRows", True)
             pslDb.loads([Psl(self.testData[0]), Psl(self.testData[1])])
             pslDb.index()
-            coords = self.__makeObjCoords(pslDb.getByQName("NM_025031.1"))
+            coords = self._makeObjCoords(pslDb.getByQName("NM_025031.1"))
             self.assertEqual(coords, [('NM_025031.1', 'chr22', 48109515, 48454184, '+')])
         finally:
             conn.close()
@@ -166,7 +166,7 @@ class PslDbTableTests(TestCaseBase):
             pslDb = PslDbTable(conn, "pslRows", True)
             pslDb.loads([self.testData[0], self.testData[1]])
             pslDb.index()
-            coords = self.__makeRawCoords(pslDb.getByQName("NM_025031.1", raw=True))
+            coords = self._makeRawCoords(pslDb.getByQName("NM_025031.1", raw=True))
             self.assertEqual(coords, [('NM_025031.1', 'chr22', 48109515, 48454184, '+')])
         finally:
             conn.close()
@@ -189,17 +189,17 @@ class GenePredDbTableTests(TestCaseBase):
         cls.clsConn.close()
         cls.clsConn = cls.gpTestdb = None
 
-    def __makeObjCoords(self, gps):
+    def _makeObjCoords(self, gps):
         "return lists of name and target coordinates for easy assert checking"
         return sorted([(gp.name, gp.chrom, gp.txStart, gp.txEnd, gp.strand) for gp in gps])
 
-    def __makeRawCoords(self, rows):
+    def _makeRawCoords(self, rows):
         "return lists of name and target coordinates for easy assert checking"
         return sorted([(row[0], row[1], row[3], row[4], row[2]) for row in rows])
 
     def testGetName(self):
         gps = self.gpTestDb.getByName("NM_000017.1")
-        coords = self.__makeObjCoords(gps)
+        coords = self._makeObjCoords(gps)
         self.assertEqual(coords, [("NM_000017.1", "chr12", 119575618, 119589763, '+')])
         gps = list(self.gpTestDb.getByName("fred"))
         self.assertEqual(gps, [])
@@ -208,17 +208,17 @@ class GenePredDbTableTests(TestCaseBase):
         gps = self.gpTestDb.getRangeOverlap("chr12", 100000000, 200000000)
         expect = [("NM_000017.1", "chr12", 119575618, 119589763, '+'),
                   ("NM_000277.1", "chr12", 101734570, 101813848, '-')]
-        coords = self.__makeObjCoords(gps)
+        coords = self._makeObjCoords(gps)
         self.assertEqual(coords, expect)
 
         rows = self.gpTestDb.getRangeOverlap("chr12", 100000000, 200000000, raw=True)
-        coords = self.__makeRawCoords(rows)
+        coords = self._makeRawCoords(rows)
         self.assertEqual(coords, expect)
 
     def testRangeOverlapStrand(self):
         gps = self.gpTestDb.getRangeOverlap("chr12", 100000000, 800000000, strand='-')
         expect = [('NM_000277.1', 'chr12', 101734570, 101813848, '-')]
-        coords = self.__makeObjCoords(gps)
+        coords = self._makeObjCoords(gps)
         self.assertEqual(coords, expect)
 
     def testMemLoadGenePred(self):
@@ -227,7 +227,7 @@ class GenePredDbTableTests(TestCaseBase):
             gpDb = GenePredDbTable(conn, "refGene", True)
             gpDb.loads([GenePred(self.testData[0]), GenePred(self.testData[1])])
             gpDb.index()
-            coords = self.__makeObjCoords(gpDb.getByName("NM_000017.1"))
+            coords = self._makeObjCoords(gpDb.getByName("NM_000017.1"))
             self.assertEqual(coords, [("NM_000017.1", "chr12", 119575618, 119589763, '+')])
         finally:
             conn.close()
@@ -238,7 +238,7 @@ class GenePredDbTableTests(TestCaseBase):
             gpDb = GenePredDbTable(conn, "refGene", True)
             gpDb.loads([self.testData[0], self.testData[1]])
             gpDb.index()
-            coords = self.__makeRawCoords(gpDb.getByName("NM_000017.1", raw=True))
+            coords = self._makeRawCoords(gpDb.getByName("NM_000017.1", raw=True))
             self.assertEqual(coords, [("NM_000017.1", "chr12", 119575618, 119589763, '+')])
         finally:
             conn.close()

@@ -25,28 +25,28 @@ class Color(namedtuple("Color", ("red", "green", "blue",
         return str((self.red, self.green, self.blue))
 
     @staticmethod
-    def __int8ToReal(v):
+    def _int8ToReal(v):
         assert 0 <= v <= 255
         return v / 255.0
 
     @staticmethod
-    def __realToInt8(v):
+    def _realToInt8(v):
         return int(round(v * 255))
 
     @property
     def red8(self):
         "red channel as an 8-bit int"
-        return self.__realToInt8(self.red)
+        return self._realToInt8(self.red)
 
     @property
     def green8(self):
         "green channel as an 8-bit int"
-        return self.__realToInt8(self.green)
+        return self._realToInt8(self.green)
 
     @property
     def blue8(self):
         "get blue channel as an 8-bit int"
-        return self.__realToInt8(self.blue)
+        return self._realToInt8(self.blue)
 
     @property
     def huei(self):
@@ -71,7 +71,7 @@ class Color(namedtuple("Color", ("red", "green", "blue",
     @property
     def rgb8(self):
         "RGB as tuple of 8-bit ints"
-        return (Color.__realToInt8(self.red), Color.__realToInt8(self.green), Color.__realToInt8(self.blue))
+        return (self._realToInt8(self.red), self._realToInt8(self.green), self._realToInt8(self.blue))
 
     @property
     def hsv(self):
@@ -92,7 +92,7 @@ class Color(namedtuple("Color", ("red", "green", "blue",
 
     def toRgb8Str(self, sep=","):
         "convert to a string of 8-bit RGB values, separated by sep"
-        return "{}{}{}{}{}".format(Color.__realToInt8(self.red), sep, Color.__realToInt8(self.green), sep, Color.__realToInt8(self.blue))
+        return "{}{}{}{}{}".format(self._realToInt8(self.red), sep, self._realToInt8(self.green), sep, self._realToInt8(self.blue))
 
     def toHsvStr(self, sep=",", pos=4):
         "convert to a string of real HSV values, separated by sep"
@@ -104,27 +104,27 @@ class Color(namedtuple("Color", ("red", "green", "blue",
 
     def setRed(self, red):
         "Create a new Color object with red set to the specified real number"
-        return Color.fromRgb(red, self.green, self.blue)
+        return self.fromRgb(red, self.green, self.blue)
 
     def setGreen(self, green):
         "Create a new Color object with green set to the specified real number"
-        return Color.fromRgb(self.red, green, self.blue)
+        return self.fromRgb(self.red, green, self.blue)
 
     def setBlue(self, blue):
         "Create a new Color object with blue set to the new real number"
-        return Color.fromRgb(self.red, self.green, blue)
+        return self.fromRgb(self.red, self.green, blue)
 
     def setHue(self, hue):
         "Create a new Color object with hue set to the specified real number"
-        return Color.fromHsv(hue, self.saturation, self.value)
+        return self.fromHsv(hue, self.saturation, self.value)
 
     def setSaturation(self, sat):
         "Create a new Color object with saturation set to the specified real number"
-        return Color.fromHsv(self.hue, sat, self.value)
+        return self.fromHsv(self.hue, sat, self.value)
 
     def setValue(self, val):
         "Create a new Color object with value set to the new real number"
-        return Color.fromHsv(self.hue, self.saturation, val)
+        return self.fromHsv(self.hue, self.saturation, val)
 
     @staticmethod
     def fromRgb(r, g, b):
@@ -138,7 +138,7 @@ class Color(namedtuple("Color", ("red", "green", "blue",
     @staticmethod
     def fromRgb8(r, g, b):
         "construct from 8-bit int RGB values"
-        return Color.fromRgb(Color.__int8ToReal(r), Color.__int8ToReal(g), Color.__int8ToReal(b))
+        return Color.fromRgb(Color._int8ToReal(r), Color._int8ToReal(g), Color._int8ToReal(b))
 
     @staticmethod
     def fromHsv(h, s, v):

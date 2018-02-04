@@ -24,28 +24,28 @@ class TsvTable(list):
         def __getitem__(self, key):
             return getattr(self, key)
 
-    def __addIndex(self, keyCol, dictClass):
+    def _addIndex(self, keyCol, dictClass):
         if keyCol not in self.colMap:
             raise TsvError("key column \"{}\" is not defined".format(keyCol))
         setattr(self.idx, keyCol, dictClass())
 
-    def __createIndices(self, keyCols, dictClass):
+    def _createIndices(self, keyCols, dictClass):
         "keyCols maybe string or seq of strings"
         if isinstance(keyCols, six.string_types):
-            self.__addIndex(keyCols, dictClass)
+            self._addIndex(keyCols, dictClass)
         else:
             for kc in keyCols:
-                self.__addIndex(kc, dictClass)
+                self._addIndex(kc, dictClass)
 
-    def __buildIndices(self, uniqKeyCols, multiKeyCols):
+    def _buildIndices(self, uniqKeyCols, multiKeyCols):
         self.idx = TsvTable.Indices()
         self.indices = self.idx  # FIXME: old name, delete
         if uniqKeyCols is not None:
-            self.__createIndices(uniqKeyCols, dict)
+            self._createIndices(uniqKeyCols, dict)
         if multiKeyCols is not None:
-            self.__createIndices(multiKeyCols, MultiDict)
+            self._createIndices(multiKeyCols, MultiDict)
 
-    def __buildColDictTbl(self):
+    def _buildColDictTbl(self):
         """build an array, index by column number, of dict objects, or None if not
         indexed.  Used when loading rows. """
         if len(vars(self.idx)) == 0:
@@ -55,24 +55,24 @@ class TsvTable(list):
             tbl.append(getattr(self.idx, self.columns[iCol], None))
         return tbl
 
-    def __indexCol(self, iCol, colDict, col, row):
+    def _indexCol(self, iCol, colDict, col, row):
         if (type(colDict) == dict) and colDict.get(col):
             raise TsvError("column {} unique index value already entered: {} from {} ".format(self.columns[iCol], col, row))
         else:
             colDict[col] = row
 
-    def __indexRow(self, colDictTbl, row):
+    def _indexRow(self, colDictTbl, row):
         for i in range(len(row)):
             if colDictTbl[i] is not None:
-                self.__indexCol(i, colDictTbl[i], row[i], row)
+                self._indexCol(i, colDictTbl[i], row[i], row)
 
     # FIXME: need add row function, but colDict stuff conflicts, make member
-    def __readBody(self, reader):
-        colDictTbl = self.__buildColDictTbl()
+    def _readBody(self, reader):
+        colDictTbl = self._buildColDictTbl()
         for row in reader:
             self.append(row)
             if colDictTbl is not None:
-                self.__indexRow(colDictTbl, row)
+                self._indexRow(colDictTbl, row)
 
     def __init__(self, fileName, uniqKeyCols=None, multiKeyCols=None, rowClass=None, typeMap=None,
                  defaultColType=None, columns=None, columnNameMapper=None, ignoreExtraCols=False, isRdb=False, inFh=None, allowEmpty=False, dialect=csv.excel_tab):
@@ -107,8 +107,8 @@ class TsvTable(list):
             self.extColumns = reader.extColumns
             self.colTypes = reader.colTypes
             self.colMap = reader.colMap
-            self.__buildIndices(uniqKeyCols, multiKeyCols)
-            self.__readBody(reader)
+            self._buildIndices(uniqKeyCols, multiKeyCols)
+            self._readBody(reader)
         except Exception as ex:
             raise_from(TsvError("load failed", reader=reader), ex)
 

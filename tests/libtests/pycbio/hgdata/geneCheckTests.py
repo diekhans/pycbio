@@ -8,7 +8,7 @@ from pycbio.hgdata.geneCheck import GeneCheckTbl
 
 
 class ReadTests(TestCaseBase):
-    def __checkDmp(self, checks):
+    def _checkDmp(self, checks):
         dmp = self.getOutputFile(".dmp")
         dmpfh = open(dmp, "w")
         for g in checks:
@@ -19,12 +19,12 @@ class ReadTests(TestCaseBase):
     def testTsvUniq(self):
         checks = GeneCheckTbl(self.getInputFile("geneCheck.tsv"), idIsUniq=True)
         self.assertEqual(len(checks), 53)
-        self.__checkDmp(checks)
+        self._checkDmp(checks)
 
     def testTsvMulti(self):
         checks = GeneCheckTbl(self.getInputFile("geneCheckMulti.tsv"))
         self.assertEqual(len(checks), 8)
-        self.__checkDmp(checks)
+        self._checkDmp(checks)
 
 
 def suite():

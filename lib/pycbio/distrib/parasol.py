@@ -94,9 +94,9 @@ class Para(object):
         self.jobFile = jobFile
         self.cpu = cpu
         self.mem = mem
-        fileOps.ensureDir(self.__mkAbs(self.runDir, self.paraDir))
+        fileOps.ensureDir(self._mkAbs(self.runDir, self.paraDir))
         if jobFile is not None:
-            absJobFile = self.__mkAbs(self.runDir, self.jobFile)
+            absJobFile = self._mkAbs(self.runDir, self.jobFile)
             if not os.path.exists(absJobFile):
                 raise Exception("job file not found: {}".format(absJobFile))
 

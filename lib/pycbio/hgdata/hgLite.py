@@ -99,7 +99,7 @@ class HgLiteTable(object):
         "generate `?' for insert values"
         return ",".join(len(columns) * ["?"])
 
-    def __formatSql(self, sql, columns):
+    def _formatSql(self, sql, columns):
         "format {table}, {columns}, and if in sql, {values}"
         return sql.format(table=self.table,
                           columns=self._joinColNames(columns),
@@ -108,12 +108,12 @@ class HgLiteTable(object):
     def _insert(self, insertSql, columns, row):
         """insert a row, formatting {table}, {columns}, {values} into sql"""
         with SqliteCursor(self.conn) as cur:
-            cur.execute(self.__formatSql(insertSql, columns), row)
+            cur.execute(self._formatSql(insertSql, columns), row)
 
     def _inserts(self, insertSql, columns, rows):
         """insert multiple rows, formatting {table}, {columns}, {values} into sql"""
         with SqliteCursor(self.conn) as cur:
-            cur.executemany(self.__formatSql(insertSql, columns), rows)
+            cur.executemany(self._formatSql(insertSql, columns), rows)
 
     def queryRows(self, querySql, columns, rowFactory, *queryargs):
         """run query, formatting {table}, {columns} into sql and generator over results and
@@ -290,7 +290,7 @@ class PslDbTable(HgLiteTable):
 
     # FIXME: dups code above
     @staticmethod
-    def __binPslRow(row):
+    def _binPslRow(row):
         "add bin; note modifies row"
         row.insert(0, Binner.calcBin(int(row[15]), int(row[16])))
         return row
@@ -299,29 +299,29 @@ class PslDbTable(HgLiteTable):
         """load a PSL file or file-like object, adding bin"""
         rows = []
         for row in TabFileReader(pslFile):
-            rows.append(self.__binPslRow(row))
+            rows.append(self._binPslRow(row))
         self.loadsWithBin(rows)
 
     @staticmethod
-    def __getRowFactory(raw):
+    def _getRowFactory(raw):
         return None if raw else lambda cur, row: Psl(row)
 
     def getAll(self, raw=False):
         """Generator for PSLs for all rows in a table. If raw is
         specified, don't convert to Psl objects if raw is True"""
         sql = "SELECT {columns} FROM {table}"
-        return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw))
+        return self.queryRows(sql, self.columnNames, self._getRowFactory(raw))
 
     def getByQName(self, qName, raw=False):
         """get list of Psl objects (or raw rows) for all alignments for qName """
         sql = "SELECT {columns} FROM {table} WHERE qName = ?"
-        return list(self.queryRows(sql, self.columnNames, self.__getRowFactory(raw), qName))
+        return list(self.queryRows(sql, self.columnNames, self._getRowFactory(raw), qName))
 
     def getByOid(self, startOid, endOid, raw=False):
         """Generator for PSLs for a range of OIDs (1/2 open).  If raw is
         specified, don't convert to Psl objects if raw is True"""
         sql = "SELECT {columns} FROM {table} WHERE (oid >= ?) AND (oid < ?)"
-        return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw), startOid, endOid)
+        return self.queryRows(sql, self.columnNames, self._getRowFactory(raw), startOid, endOid)
 
     def getTRangeOverlap(self, tName, tStart, tEnd, strand=None, extraWhere=None, raw=False):
         """Get alignments overlapping tRange. Don't convert to Psl objects if raw is True.
@@ -335,7 +335,7 @@ class PslDbTable(HgLiteTable):
             sql += " AND (strand in ({}))".format(','.join(["'{}'".format(s) for s in strand]))
         if extraWhere is not None:
             sql += " AND ({})".format(extraWhere)
-        return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw))
+        return self.queryRows(sql, self.columnNames, self._getRowFactory(raw))
 
 
 class GenePredDbTable(HgLiteTable):
@@ -400,7 +400,7 @@ class GenePredDbTable(HgLiteTable):
 
     # FIXME: dups code above
     @staticmethod
-    def __binGenePredRow(row):
+    def _binGenePredRow(row):
         "add bin; note modifies row"
         row.insert(0, Binner.calcBin(int(row[3]), int(row[4])))
         return row
@@ -409,29 +409,29 @@ class GenePredDbTable(HgLiteTable):
         """load a genePred file, adding bin"""
         rows = []
         for row in TabFileReader(genePredFile):
-            rows.append(self.__binGenePredRow(row))
+            rows.append(self._binGenePredRow(row))
         self.loadsWithBin(rows)
 
     @staticmethod
-    def __getRowFactory(raw):
+    def _getRowFactory(raw):
         return None if raw else lambda cur, row: GenePred(row)
 
     def getAll(self, raw=False):
         """Generator for all genePreds in a table.  If raw is
         specified, don't convert to GenePred objects if raw is True."""
         sql = "SELECT {columns} FROM {table}"
-        return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw))
+        return self.queryRows(sql, self.columnNames, self._getRowFactory(raw))
 
     def getByName(self, name, raw=False):
         """generator for list of GenePred objects (or raw rows) for all alignments for name """
         sql = "SELECT {columns} FROM {table} WHERE name = ?"
-        return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw), name)
+        return self.queryRows(sql, self.columnNames, self._getRowFactory(raw), name)
 
     def getByOid(self, startOid, endOid, raw=False):
         """Generator for genePreds for a range of OIDs (1/2 open).  If raw is
         specified, don't convert to GenePred objects if raw is True."""
         sql = "SELECT {columns} FROM {table} WHERE (oid >= ?) and (oid < ?)"
-        return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw), startOid, endOid)
+        return self.queryRows(sql, self.columnNames, self._getRowFactory(raw), startOid, endOid)
 
     def getRangeOverlap(self, chrom, start, end, strand=None, raw=False):
         """Get alignments overlapping range  If raw is
@@ -442,7 +442,7 @@ class GenePredDbTable(HgLiteTable):
         if strand is not None:
             sql += " AND (strand = ?)"
             sqlArgs.append(strand)
-        return self.queryRows(sql, self.columnNames, self.__getRowFactory(raw), *sqlArgs)
+        return self.queryRows(sql, self.columnNames, self._getRowFactory(raw), *sqlArgs)
 
 
 class GencodeAttrs(namedtuple("GencodeAttrs",
@@ -501,7 +501,7 @@ class GencodeAttrsDbTable(HgLiteTable):
         """load rows, which can be list-like or GencodeAttrs object"""
         self._inserts(self.insertSql, self.columnNames, rows)
 
-    def __loadTsvRow(self, tsvRow):
+    def _loadTsvRow(self, tsvRow):
         "convert to list in column order"
         return [getattr(tsvRow, cn) for cn in self.columnNames]
 
@@ -513,21 +513,21 @@ class GencodeAttrsDbTable(HgLiteTable):
                    "havanaTranscriptId": noneIfEmpty,
                    "ccdsId": noneIfEmpty,
                    "level": int}
-        rows = [self.__loadTsvRow(row) for row in TsvReader(attrsFile, typeMap=typeMap)]
+        rows = [self._loadTsvRow(row) for row in TsvReader(attrsFile, typeMap=typeMap)]
         self.loads(rows)
 
-    def __queryRows(self, sql, *queryargs):
+    def _queryRows(self, sql, *queryargs):
         return self.queryRows(sql, self.columnNames, lambda cur, row: GencodeAttrs(*row), *queryargs)
 
     def getByTranscriptId(self, transcriptId):
         """get the GencodeAttrs object for transcriptId, or None if not found."""
         sql = "SELECT {columns} FROM {table} WHERE transcriptId = ?"
-        return next(self.__queryRows(sql, transcriptId), None)
+        return next(self._queryRows(sql, transcriptId), None)
 
     def getByGeneId(self, geneId):
         """get GencodeAttrs objects for geneId or empty list if not found"""
         sql = "SELECT {columns} FROM {table} WHERE geneId = ?"
-        return list(self.__queryRows(sql, geneId))
+        return list(self._queryRows(sql, geneId))
 
     def getAllGeneIds(self):
         sql = "SELECT DISTINCT geneId FROM {table}"
@@ -571,26 +571,26 @@ class GencodeTranscriptSourceDbTable(HgLiteTable):
         """load rows, which can be list-like or GencodeTranscriptSource object"""
         self._inserts(self.insertSql, self.columnNames, rows)
 
-    def __loadTsvRow(self, tsvRow):
+    def _loadTsvRow(self, tsvRow):
         "convert to list in column order"
         return [getattr(tsvRow, cn) for cn in self.columnNames]
 
     def loadTsv(self, sourceFile):
         """load a GENCODE attributes file, adding bin"""
-        rows = [self.__loadTsvRow(row) for row in TsvReader(sourceFile)]
+        rows = [self._loadTsvRow(row) for row in TsvReader(sourceFile)]
         self.loads(rows)
 
-    def __queryRows(self, sql, *queryargs):
+    def _queryRows(self, sql, *queryargs):
         return self.queryRows(sql, self.columnNames, lambda cur, row: GencodeTranscriptSource(row[0], sys.intern(str(row[1]))), *queryargs)
 
     def getAll(self):
         sql = "select {columns} from {table}"
-        return self.__queryRows(sql)
+        return self._queryRows(sql)
 
     def getByTranscriptId(self, transcriptId):
         """get the GencodeTranscriptSource object for transcriptId, or None if not found."""
         sql = "select {columns} from {table} where transcriptId = ?"
-        return next(self.__queryRows(sql, transcriptId), None)
+        return next(self._queryRows(sql, transcriptId), None)
 
 
 class GencodeTranscriptionSupportLevel(namedtuple("GencodeTranscriptionSupportLevel",
@@ -629,26 +629,26 @@ class GencodeTranscriptionSupportLevelDbTable(HgLiteTable):
         """load rows, which can be list-like or GencodeTranscriptionSupportLevel object"""
         self._inserts(self.insertSql, self.columnNames, rows)
 
-    def __loadTsvRow(self, tsvRow):
+    def _loadTsvRow(self, tsvRow):
         "convert to list in column order"
         return [getattr(tsvRow, cn) for cn in self.columnNames]
 
     def loadTsv(self, sourceFile):
         """load a GENCODE attributes file, adding bin"""
-        rows = [self.__loadTsvRow(row) for row in TsvReader(sourceFile)]
+        rows = [self._loadTsvRow(row) for row in TsvReader(sourceFile)]
         self.loads(rows)
 
-    def __queryRows(self, sql, *queryargs):
+    def _queryRows(self, sql, *queryargs):
         return self.queryRows(sql, self.columnNames, lambda cur, row: GencodeTranscriptionSupportLevel(row[0], row[1]), *queryargs)
 
     def getAll(self):
         sql = "select {columns} from {table}"
-        return self.__queryRows(sql)
+        return self._queryRows(sql)
 
     def getByTranscriptId(self, transcriptId):
         """get the GencodeTranscriptionSupportLevel object for transcriptId, or None if not found."""
         sql = "select {columns} from {table} where transcriptId = ?"
-        return next(self.__queryRows(sql, transcriptId), None)
+        return next(self._queryRows(sql, transcriptId), None)
 
 
 class GencodeTag(namedtuple("GencodeTag",
@@ -688,23 +688,23 @@ class GencodeTagDbTable(HgLiteTable):
         """load rows, which can be list-like or GencodeTag object"""
         self._inserts(self.insertSql, self.columnNames, rows)
 
-    def __loadTsvRow(self, tsvRow):
+    def _loadTsvRow(self, tsvRow):
         "convert to list in column order"
         return [getattr(tsvRow, cn) for cn in self.columnNames]
 
     def loadTsv(self, sourceFile):
         """load a GENCODE attributes file, adding bin"""
-        rows = [self.__loadTsvRow(row) for row in TsvReader(sourceFile)]
+        rows = [self._loadTsvRow(row) for row in TsvReader(sourceFile)]
         self.loads(rows)
 
-    def __queryRows(self, sql, *queryargs):
+    def _queryRows(self, sql, *queryargs):
         return self.queryRows(sql, self.columnNames, lambda cur, row: GencodeTag(row[0], row[1]), *queryargs)
 
     def getAll(self):
         sql = "SELECT {columns} FROM {table}"
-        return self.__queryRows(sql)
+        return self._queryRows(sql)
 
     def getByTranscriptId(self, transcriptId):
         """get the GencodeTag objects for transcriptId, or empty if not found."""
         sql = "SELECT {columns} FROM {table} WHERE transcriptId = ?"
-        return self.__queryRows(sql, transcriptId)
+        return self._queryRows(sql, transcriptId)

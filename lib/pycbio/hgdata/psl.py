@@ -102,7 +102,7 @@ class Psl(object):
     """Object containing data from a PSL record."""
     __slots__ = ("match", "misMatch", "repMatch", "nCount", "qNumInsert", "qBaseInsert", "tNumInsert", "tBaseInsert", "strand", "qName", "qSize", "qStart", "qEnd", "tName", "tSize", "tStart", "tEnd", "blockCount", "blocks")
 
-    def __parseBlocks(self, blockSizesStr, qStartsStr, tStartsStr, qSeqsStr, tSeqsStr):
+    def _parseBlocks(self, blockSizesStr, qStartsStr, tStartsStr, qSeqsStr, tSeqsStr):
         "convert parallel arrays to PslBlock objects"
         self.blocks = []
         blockSizes = intArraySplit(blockSizesStr)
@@ -117,7 +117,7 @@ class Psl(object):
                                         (qSeqs[i] if haveSeqs else None),
                                         (tSeqs[i] if haveSeqs else None)))
 
-    def __parse(self, row):
+    def _parse(self, row):
         self.match = int(row[0])
         self.misMatch = int(row[1])
         self.repMatch = int(row[2])
@@ -137,11 +137,11 @@ class Psl(object):
         self.tEnd = int(row[16])
         self.blockCount = int(row[17])
         haveSeqs = len(row) > 21
-        self.__parseBlocks(row[18], row[19], row[20],
-                           (row[21] if haveSeqs else None),
-                           (row[22] if haveSeqs else None))
+        self._parseBlocks(row[18], row[19], row[20],
+                          (row[21] if haveSeqs else None),
+                          (row[22] if haveSeqs else None))
 
-    def __loadDb(self, row, dbColIdxMap):
+    def _loadDb(self, row, dbColIdxMap):
         # FIXME: change to use DictCursor
         self.match = row[dbColIdxMap["matches"]]
         self.misMatch = row[dbColIdxMap["misMatches"]]
@@ -162,11 +162,11 @@ class Psl(object):
         self.tEnd = row[dbColIdxMap["tEnd"]]
         self.blockCount = row[dbColIdxMap["blockCount"]]
         haveSeqs = "qSeqs" in dbColIdxMap
-        self.__parseBlocks(row[dbColIdxMap["blockSizes"]], row[dbColIdxMap["qStarts"]], row[dbColIdxMap["tStarts"]],
-                           (row[dbColIdxMap["qSeqs"]] if haveSeqs else None),
-                           (row[dbColIdxMap["tSeqs"]] if haveSeqs else None))
+        self._parseBlocks(row[dbColIdxMap["blockSizes"]], row[dbColIdxMap["qStarts"]], row[dbColIdxMap["tStarts"]],
+                          (row[dbColIdxMap["qSeqs"]] if haveSeqs else None),
+                          (row[dbColIdxMap["tSeqs"]] if haveSeqs else None))
 
-    def __empty(self):
+    def _empty(self):
         self.match = 0
         self.misMatch = 0
         self.repMatch = 0
@@ -192,11 +192,11 @@ class Psl(object):
         dbapi cursor (dbColIdxMap created by sys.dbOpts.cursorColIdxMap), or
         creating an empty one."""
         if dbColIdxMap is not None:
-            self.__loadDb(row, dbColIdxMap)
+            self._loadDb(row, dbColIdxMap)
         elif row is not None:
-            self.__parse(row)
+            self._parse(row)
         else:
-            self.__empty()
+            self._empty()
 
     def getQStrand(self):
         return self.strand[0]
@@ -394,7 +394,7 @@ class Psl(object):
             rc.blocks.append(self.blocks[i].reverseComplement(rc))
         return rc
 
-    def __swapStrand(self, rc, keepTStrandImplicit, doRc):
+    def _swapStrand(self, rc, keepTStrandImplicit, doRc):
         # don't make implicit if already explicit
         if keepTStrandImplicit and (len(self.strand) == 1):
             qs = reverseStrand(self.getTStrand()) if doRc else self.getTStrand()
@@ -425,7 +425,7 @@ class Psl(object):
         swap.qBaseInsert = self.tBaseInsert
         swap.tNumInsert = self.qNumInsert
         swap.tBaseInsert = self.qBaseInsert
-        swap.strand = self.__swapStrand(swap, keepTStrandImplicit, doRc)
+        swap.strand = self._swapStrand(swap, keepTStrandImplicit, doRc)
         swap.qName = self.tName
         swap.qSize = self.tSize
         swap.qStart = self.tStart
@@ -493,12 +493,12 @@ class PslTbl(list):
     """Table of PSL objects loaded from a tab-file
     """
 
-    def __mkQNameIdx(self):
+    def _mkQNameIdx(self):
         self.qNameMap = defaultdict(list)
         for psl in self:
             self.qNameMap[psl.qName].append(psl)
 
-    def __mkTNameIdx(self):
+    def _mkTNameIdx(self):
         self.tNameMap = defaultdict(list)
         for psl in self:
             self.tNameMap[psl.tName](psl)
@@ -508,9 +508,9 @@ class PslTbl(list):
             self.append(psl)
         self.qNameMap = self.tNameMap = None
         if qNameIdx:
-            self.__mkQNameIdx()
+            self._mkQNameIdx()
         if tNameIdx:
-            self.__mkTNameIdx()
+            self._mkTNameIdx()
 
     def getQNameIter(self):
         return iter(list(self.qNameMap.keys()))

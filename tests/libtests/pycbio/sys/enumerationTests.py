@@ -12,10 +12,10 @@ from pycbio.sys.testCaseBase import TestCaseBase
 
 class EnumerationTests(TestCaseBase):
 
-    def __getColors(self):
+    def _getColors(self):
         return Enumeration("Colors", ["red", "green", "blue"])
 
-    def __checkColors(self, Colors):
+    def _checkColors(self, Colors):
         self.assertEqual(Colors.red.name, "red")
         self.assertEqual(Colors.green.name, "green")
         self.assertEqual(Colors.blue.name, "blue")
@@ -26,11 +26,11 @@ class EnumerationTests(TestCaseBase):
         self.assertTrue(None != Colors.red)   # flake8: noqa
 
     def testBasics(self):
-        Colors = self.__getColors()
-        self.__checkColors(Colors)
+        Colors = self._getColors()
+        self._checkColors(Colors)
 
     def testLookup(self):
-        Colors = self.__getColors()
+        Colors = self._getColors()
         self.assertTrue(Colors.red == Colors.lookup("red"))
         self.assertTrue(Colors.green == Colors.lookup("green"))
         self.assertTrue(Colors.green != Colors.lookup("red"))
@@ -72,7 +72,7 @@ class EnumerationTests(TestCaseBase):
         self.assertTrue(vals[1] is Stat.bad_5_splice)
 
     def testSetOps(self):
-        Colors = self.__getColors()
+        Colors = self._getColors()
         colSet = set([Colors.blue, Colors.green])
         self.assertTrue(Colors.green in colSet)
         self.assertFalse(Colors.red in colSet)
@@ -88,15 +88,15 @@ class EnumerationTests(TestCaseBase):
         self.assertEqual(NumDef.getByNumValue(2), NumDef.pos)
 
     def FIXME_testErrors(self):
-        Colors = self.__getColors()
+        Colors = self._getColors()
         # check if immutable
         with self.assertRaises(TypeError) as cm:
             Colors.red.name = "purple"
         with self.assertRaises(TypeError):
             Colors.red = None
 
-    def __testPickleProt(self, prot):
-        Colors = self.__getColors()
+    def _testPickleProt(self, prot):
+        Colors = self._getColors()
         stuff = {}
         stuff[Colors.red] = "red one"
         stuff[Colors.green] = "green one"
@@ -105,18 +105,18 @@ class EnumerationTests(TestCaseBase):
 
         self.assertTrue(Color2.red in stuff2)
         self.assertTrue(Color2.green in stuff2)
-        self.__checkColors(Color2)
+        self._checkColors(Color2)
 
     def testPickle2(self):
         # FIXME: higher in py3, but enumeration is going to be replaced by symEnum, so this goes away
         # self.assertTrue(pickle.HIGHEST_PROTOCOL == 2)
-        self.__testPickleProt(2)
+        self._testPickleProt(2)
 
     def testPickle1(self):
-        self.__testPickleProt(1)
+        self._testPickleProt(1)
 
     def testPickle0(self):
-        self.__testPickleProt(0)
+        self._testPickleProt(0)
 
 
 def suite():

@@ -22,7 +22,7 @@ class WithSrcCds(object):
 
 
 class PairAlignPsl(TestCaseBase):
-    def __dumpNDiff(self, alns, suffix):
+    def _dumpNDiff(self, alns, suffix):
         fh = open(self.getOutputFile(suffix), "w")
         for pa in alns:
             pa.dump(fh)
@@ -32,7 +32,7 @@ class PairAlignPsl(TestCaseBase):
     def testLoad(self):
         alns = loadPslFile(self.getInputFile("hsRefSeq.psl"),
                            self.getInputFile("hsRefSeq.cds"))
-        self.__dumpNDiff(alns, ".out")
+        self._dumpNDiff(alns, ".out")
 
     def testRevCmpl(self):
         alns = loadPslFile(self.getInputFile("hsRefSeq.psl"),
@@ -43,14 +43,14 @@ class PairAlignPsl(TestCaseBase):
             rpa = pa.revCmpl()
             ralns.append(rpa)
             rralns.append(rpa.revCmpl())
-        self.__dumpNDiff(ralns, ".rout")
-        self.__dumpNDiff(rralns, ".rrout")
+        self._dumpNDiff(ralns, ".rout")
+        self._dumpNDiff(rralns, ".rrout")
 
     def testLoadUnaln(self):
         alns = loadPslFile(self.getInputFile("hsRefSeq.psl"),
                            self.getInputFile("hsRefSeq.cds"),
                            inclUnaln=True)
-        self.__dumpNDiff(alns, ".out")
+        self._dumpNDiff(alns, ".out")
 
     def doTestProjectCds(self, contained):
         alns = loadPslFile(self.getInputFile("refseqWeird.psl"),
@@ -64,8 +64,8 @@ class PairAlignPsl(TestCaseBase):
             qpa.qSubSeqs.clearCds()
             qpa.projectCdsToQuery(contained=contained)
             qalns.append(qpa)
-        self.__dumpNDiff(alns, ".tout")
-        self.__dumpNDiff(qalns, ".qout")
+        self._dumpNDiff(alns, ".tout")
+        self._dumpNDiff(qalns, ".qout")
 
     def testProjectCds(self):
         self.doTestProjectCds(False)
@@ -91,7 +91,7 @@ class PairAlignPsl(TestCaseBase):
                     ma = destAln.copy()
                     ma.mapCds(srcAln, srcAln.tSeq, ma.tSeq, contained=contained)
                     mappedAlns.append(WithSrcCds(srcAln, ma))
-        self.__dumpNDiff(mappedAlns, ".out")
+        self._dumpNDiff(mappedAlns, ".out")
 
     def testMapCds(self):
         self.doTestMapCds(contained=False)

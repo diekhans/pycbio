@@ -43,16 +43,16 @@ class GenePredSelect(object):
         self.singleCdsExon = opts.singleCdsExon
         self.multiCdsExon = opts.multiCdsExon
         if opts.geneIdFiles is not None:
-            self.geneIds = self.__loadIdFiles(opts.geneIdFiles)
+            self.geneIds = self._loadIdFiles(opts.geneIdFiles)
 
-    def __loadIdFiles(self, idFiles):
+    def _loadIdFiles(self, idFiles):
         ids = set()
         for f in idFiles:
             for line in fileOps.readFileLines(f):
                 ids.add(line.strip())
         return ids
 
-    def __selected(self, gp):
+    def _selected(self, gp):
         if (self.geneIds is not None) and (gp.name not in self.geneIds):
             return False
         if self.singleExon and (len(gp.exons) != 1):

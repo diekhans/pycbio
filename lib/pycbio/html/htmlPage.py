@@ -102,7 +102,7 @@ class HtmlPage(list):
         if caption is not None:
             self.append("<caption>{}</caption>".format(caption))
 
-    def __addTableRow(self, cell, row, hclasses=None):
+    def _addTableRow(self, cell, row, hclasses=None):
         """ add a table row
         - cell = th or td
         - row, substituting &nbsp; for empty of None.  If a cell is
@@ -133,10 +133,10 @@ class HtmlPage(list):
         self.add(hrow)
 
     def tableHeader(self, row, hclasses=None):
-        self.__addTableRow("th", row, hclasses)
+        self._addTableRow("th", row, hclasses)
 
     def tableRow(self, row, hclasses=None):
-        self.__addTableRow("td", row, hclasses)
+        self._addTableRow("td", row, hclasses)
 
     def tableEnd(self):
         self.append("</table>")
@@ -161,14 +161,14 @@ class HtmlPage(list):
                 self.tableRow(row)
         self.tableEnd()
 
-    def __pageClose(self):
+    def _pageClose(self):
         if self.frameSet:
             return "</frameset></html>"
         else:
             return "</body></html>"
 
     def __str__(self):
-        return "\n".join(self + self.__pageClose())
+        return "\n".join(self + self._pageClose())
 
     def writeFile(self, fname):
         fh = open(fname, "w")
@@ -176,7 +176,7 @@ class HtmlPage(list):
             for line in self:
                 fh.write(line)
                 fh.write("\n")
-            fh.write(self.__pageClose())
+            fh.write(self._pageClose())
             fh.write("\n")
         finally:
             fh.close()

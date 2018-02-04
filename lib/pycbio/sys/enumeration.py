@@ -142,7 +142,7 @@ class Enumeration(object):
         else:
             numValue = 0
         for valueDef in valueDefs:
-            self.__defValue(valueClass, valueDef, numValue)
+            self._defValue(valueClass, valueDef, numValue)
             if bitSetValues:
                 numValue = numValue << 1
             else:
@@ -153,7 +153,7 @@ class Enumeration(object):
         "return number of values"
         return len(self.values)
 
-    def __createValue(self, valueClass, name, numValue, strValue):
+    def _createValue(self, valueClass, name, numValue, strValue):
         val = valueClass(self, name, numValue, strValue)
         setattr(self, name, val)
         self.aliases[name] = val
@@ -164,17 +164,17 @@ class Enumeration(object):
         self.values.append(val)
         return val
 
-    def __defValue(self, valueClass, valueDef, numValue):
+    def _defValue(self, valueClass, valueDef, numValue):
         if isListLike(valueDef):
-            return self.__defListValue(valueClass, valueDef, numValue)
+            return self._defListValue(valueClass, valueDef, numValue)
         else:
-            return self.__createValue(valueClass, valueDef, numValue, valueDef)
+            return self._createValue(valueClass, valueDef, numValue, valueDef)
 
-    def __defListValue(self, valueClass, valueDef, numValue):
+    def _defListValue(self, valueClass, valueDef, numValue):
         if (len(valueDef) > 3) and (valueDef[3] is not None):
             numValue = valueDef[3]
             assert(isinstance(numValue, int))
-        val = self.__createValue(valueClass, valueDef[0], numValue, valueDef[1])
+        val = self._createValue(valueClass, valueDef[0], numValue, valueDef[1])
         if (len(valueDef) > 2) and (valueDef[2] is not None):
             if not isListLike(valueDef[2]):
                 raise TypeError("valueDef[2] must be None, a list or tuple, found: " + str(valueDef[2]))
@@ -185,7 +185,6 @@ class Enumeration(object):
         return (self.name, self.aliases, self.values, self.maxNumValue)
 
     def X__setstate__(self, st):
-        Immutable.__init__(self)
         (self.name, self.aliases, self.values, self.maxNumValue) = st
         for val in self.values:
             setattr(self, val.name, val)

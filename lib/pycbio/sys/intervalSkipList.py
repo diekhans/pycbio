@@ -21,7 +21,7 @@ class Entry(Immutable):
     __slots__ = ("start", "end", "val")
 
     def __init__(self, start, end, val):
-        Immutable.__init__(self)
+        self(Entry, self).__init__()
         self.start = start
         self.end = end
         self.val = val

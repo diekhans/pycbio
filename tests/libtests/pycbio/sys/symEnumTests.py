@@ -91,7 +91,7 @@ class SymEnumTests(TestCaseBase):
         self.assertEqual(values, [('neg', -2), ('zero', 0), ('pos', 2), ('big', 3)])
         self.assertEqual(NumDef(2), NumDef.pos)
 
-    def __testColorPickleProtocol(self, protocol):
+    def _testColorPickleProtocol(self, protocol):
         stuff = {Color.red: "red one",
                  Color.green: "green one"}
 
@@ -103,7 +103,7 @@ class SymEnumTests(TestCaseBase):
 
     def testColorPickle(self):
         for protocol in range(0, pickle.HIGHEST_PROTOCOL+1):
-            self.__testColorPickleProtocol(protocol)
+            self._testColorPickleProtocol(protocol)
 
     def testExtNameLookup(self):
         self.assertEqual(GeneFeature.promoter, GeneFeature("promoter"))
@@ -123,7 +123,7 @@ class SymEnumTests(TestCaseBase):
         self.assertEqual(str(GeneFeature.coding), "CDS")
         self.assertEqual(sorted([str(c) for c in GeneFeature]), ["3'UTR", "5'UTR", "CDS", "promoter"])
 
-    def __testGeneFeaturePickleProtocol(self, protocol):
+    def _testGeneFeaturePickleProtocol(self, protocol):
         stuff = {GeneFeature.utr3: "UTR'3 one",
                  GeneFeature.cds: "CDS one"}
         world = pickle.dumps((GeneFeature, stuff,), protocol)
@@ -134,7 +134,7 @@ class SymEnumTests(TestCaseBase):
 
     def testGeneFeaturePickle(self):
         for protocol in range(0, pickle.HIGHEST_PROTOCOL+1):
-            self.__testGeneFeaturePickleProtocol(protocol)
+            self._testGeneFeaturePickleProtocol(protocol)
 
     def testBasicsFn(self):
         FnColor = SymEnum("FnColor", ("red","green", "blue"))

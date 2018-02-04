@@ -46,7 +46,7 @@ class Bed(object):
             i = 11  # blocks take up three columns
         return i
 
-    def __getBlockColumns(self):
+    def _getBlockColumns(self):
         relStarts = []
         sizes = []
         for blk in self.blocks:
@@ -70,11 +70,11 @@ class Bed(object):
             row.append(str(self.itemRgb))
         if numCols > 10:
             row.append(str(len(self.blocks)))
-            row.extend(self.__getBlockColumns())
+            row.extend(self._getBlockColumns())
         return row
 
     @staticmethod
-    def __parseBlockColumns(chromStart, row):
+    def _parseBlockColumns(chromStart, row):
         sizes = intArraySplit(row[10])
         relStarts = intArraySplit(row[11])
         blocks = []
@@ -113,7 +113,7 @@ class Bed(object):
         else:
             itemRgb = None
         if numCols > 11:
-            blocks = Bed.__parseBlockColumns(chromStart, row)
+            blocks = Bed._parseBlockColumns(chromStart, row)
         else:
             blocks = None
         return Bed(chrom, chromStart, chromEnd, name, score, strand,
@@ -139,16 +139,16 @@ class BedTable(TabFile):
     """Table of BED objects loaded from a tab-file
     """
 
-    def __mkNameIdx(self):
+    def _mkNameIdx(self):
         self.nameMap = defaultdict(list)
         for bed in self:
             self.nameMap[bed.name].append(bed)
 
     def __init__(self, fileName, nameIdx=False):
-        TabFile.__init__(self, fileName, rowClass=lambda r: Bed.parse(r), hashAreComments=True)
+        super(BedTable, self).__init__(fileName, rowClass=lambda r: Bed.parse(r), hashAreComments=True)
         self.nameMap = None
         if nameIdx:
-            self.__mkNameIdx()
+            self._mkNameIdx()
 
     def getByName(self, name):
         "get *tuple* of BEDs by name"

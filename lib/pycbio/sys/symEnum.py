@@ -47,7 +47,7 @@ class SymEnumMeta(EnumMeta):
     by string name."""
 
     @staticmethod
-    def __symEnumValueUpdate(classdict, name, externalNameMap):
+    def _symEnumValueUpdate(classdict, name, externalNameMap):
         """record info about a member specified with SymEnum and update value in classdict
         to be actual value rather than SymEnumValue"""
         symValue = classdict[name]
@@ -60,20 +60,20 @@ class SymEnumMeta(EnumMeta):
         externalNameMap.add(name, symValue.externalName)
 
     @staticmethod
-    def __buildExternalNameMap(classdict):
+    def _buildExternalNameMap(classdict):
         externalNameMap = classdict["__externalNameMap__"] = _SysEnumExternalNameMap()
         for name in list(classdict.keys()):
             if isinstance(classdict[name], SymEnumValue):
-                SymEnumMeta.__symEnumValueUpdate(classdict, name, externalNameMap)
+                SymEnumMeta._symEnumValueUpdate(classdict, name, externalNameMap)
 
     def __new__(metacls, cls, bases, classdict):
         "updates class fields defined as SymEnumValue to register external names"
         if SymEnum in bases:
-            SymEnumMeta.__buildExternalNameMap(classdict)
+            SymEnumMeta._buildExternalNameMap(classdict)
         return EnumMeta.__new__(metacls, cls, bases, classdict)
 
     @staticmethod
-    def __lookUpByStr(cls, value):
+    def _lookUpByStr(cls, value):
         if six.PY2 and isinstance(value, six.text_type):
             value = value.decode()  # force unicode to str for field names
 
@@ -89,7 +89,7 @@ class SymEnumMeta(EnumMeta):
     def __call__(cls, value, names=None, module=None, typ=None):
         "look up a value object, either by name of value,"
         if (names is None) and isinstance(value, six.string_types):
-            return SymEnumMeta.__lookUpByStr(cls, value)
+            return SymEnumMeta._lookUpByStr(cls, value)
         else:
             return EnumMeta.__call__(cls, value, names, module=module, type=typ)
 

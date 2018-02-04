@@ -21,7 +21,7 @@ class Cigar(list):
     OpType = namedtuple("OpType", ("count", "code"))
 
     def __init__(self, cigarStr, validOps):
-        self.extend(self.__parseCigar(cigarStr, validOps))
+        self.extend(self._parseCigar(cigarStr, validOps))
 
     def __str__(self):
         opStrs = []
@@ -31,9 +31,8 @@ class Cigar(list):
             opStrs.append(str(op.code))
         return "".join(opStrs)
 
-    def __parseOp(self, cigarStr, validOps, opParts):
+    def _parseOp(self, cigarStr, validOps, opParts):
         if opParts[0] != "":
-            self.__invalidCigar
             raise TypeError("Invalid cigar string at '{}' : {}".format("".join(opParts), cigarStr))
         try:
             cnt = 1 if opParts[1] == "" else int(opParts[1])
@@ -44,7 +43,7 @@ class Cigar(list):
             raise TypeError("Invalid cigar string, unknown operation '{}' : {}".format("".join(opParts), cigarStr))
         return Cigar.OpType(cnt, op)
 
-    def __parseCigar(self, cigarStr, validOps):
+    def _parseCigar(self, cigarStr, validOps):
         # remove white space first, then convert to (count, op).  Re split will
         # result in triples of ("", count, op), where count might be empty.
         # Also as a trailing space.
@@ -52,7 +51,7 @@ class Cigar(list):
                          re.sub("\\s+", "", cigarStr))
         if ((len(parts) - 1) % 3) != 0:
             raise TypeError("Invalid cigar string, doesn't parse into a valid cigar: {}".format(cigarStr))
-        return tuple([self.__parseOp(cigarStr, validOps, parts[i:i + 3])
+        return tuple([self._parseOp(cigarStr, validOps, parts[i:i + 3])
                       for i in range(0, len(parts) - 1, 3)])
 
 

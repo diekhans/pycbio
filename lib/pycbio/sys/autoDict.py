@@ -16,7 +16,7 @@ class AutoDict(dict):
         """get the value for key, creating an empty entry if key is not in
         object"""
         if key in self:
-            val = dict.__getitem__(self, key)
+            val = self(AutoDict, self).__getitem__(key)
         else:
             val = self[key] = self.entryFactory()
         return val

@@ -40,15 +40,15 @@ class Profile(object):
         self.logFile = None
         self.signum = None
 
-    def __sigHandler(self, signum, frame):
+    def _sigHandler(self, signum, frame):
         "signal handler to stop logging and terminate process"
         self.finishUp()
         sys.stderr("Warning: profiler exiting on signal\n")
         sys.exit(1)
 
-    def __setupSignalHandler(self, signum):
+    def _setupSignalHandler(self, signum):
         self.signum = signum
-        signal.signal(self.signum, self.__sigHandler)
+        signal.signal(self.signum, self._sigHandler)
 
     def setup(self, opts):
         """initializing profiling, if requested"""
@@ -57,12 +57,12 @@ class Profile(object):
                 raise Exception("can't specify --profile-signal without --profile")
         else:
             if opts.signal is not None:
-                self.__setupSignalHandler(opts.signal)
+                self._setupSignalHandler(opts.signal)
             self.logFile = opts.profile
             self.profiler = cProfile.Profile()
             self.profiler.enable()
 
-    def __finishupSignal(self):
+    def _finishupSignal(self):
         signal.signal(self.signum, signal.SIG_IGN)
         self.signum = None
 
@@ -71,5 +71,5 @@ class Profile(object):
         if self.profiler is not None:
             self.profiler.disable()
             if self.signum is not None:
-                self.__finishupSignal()
+                self._finishupSignal()
             self.profiler.dump_stats(self.logFile)

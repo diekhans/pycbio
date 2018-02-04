@@ -14,7 +14,7 @@ class MultiDict(dict):
             vals = self[key]
         else:
             vals = []
-            dict.__setitem__(self, key, vals)
+            super(MultiDict, self).__setitem__(key, vals)
         return vals
 
     def add(self, key, val):

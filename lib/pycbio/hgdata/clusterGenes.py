@@ -110,7 +110,7 @@ class ClusterGenes(list):
         tsv = TsvReader(clusterGenesOut, typeMap=typeMap)
         self.columns = tsv.columns
         for gene in tsv:
-            self.__addGene(gene)
+            self._addGene(gene)
 
     def haveCluster(self, clusterId):
         " determine if the specified cluster exists"
@@ -118,15 +118,15 @@ class ClusterGenes(list):
             return False
         return self[clusterId] is not None
 
-    def __getCluster(self, clusterId):
+    def _getCluster(self, clusterId):
         while len(self) <= clusterId:
             self.append(None)
         if self[clusterId] is None:
             self[clusterId] = Cluster(clusterId)
         return self[clusterId]
 
-    def __addGene(self, row):
-        cluster = self.__getCluster(row.cluster)
+    def _addGene(self, row):
+        cluster = self._getCluster(row.cluster)
         cluster.add(row)
         self.genes.add(row.gene, row)
         self.tableSet.add(row.table)

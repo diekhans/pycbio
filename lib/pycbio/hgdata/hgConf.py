@@ -16,9 +16,9 @@ class HgConf(dict):
         confFile = os.path.expanduser(confFile)
         with open(confFile) as fh:
             for line in fh:
-                self.__parseLine(line)
+                self._parseLine(line)
 
-    def __parseLine(self, line):
+    def _parseLine(self, line):
         line = line.strip()
         if (len(line) > 0) and not line.startswith("#"):
             i = line.find("=")
@@ -28,10 +28,10 @@ class HgConf(dict):
 
     __cache = {}
 
-    @staticmethod
-    def obtain(confFile=None):
+    @classmethod
+    def obtain(cls, confFile=None):
         """factory for parsed hgconf files, caching results"""
-        conf = HgConf.__cache.get(confFile)
+        conf = cls._cache.get(confFile)
         if conf is None:
-            conf = HgConf.__cache[confFile] = HgConf(confFile)
+            conf = cls._cache[confFile] = HgConf(confFile)
         return conf

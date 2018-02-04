@@ -48,7 +48,7 @@ class CountChks(object):
             self.probGeneCnts[v] = 0
             self.probInstCnts[v] = 0
 
-    def __cnt(self, type, num):
+    def _cnt(self, type, num):
         if num > 0:
             self.probGeneCnts[type] += 1
             self.probInstCnts[type] += num
@@ -56,36 +56,36 @@ class CountChks(object):
     def countGene(self, gene):  # noqa: C901
         self.cnt += 1
         if not gene.stat:
-            self.__cnt(ProbType.any, 1)
+            self._cnt(ProbType.any, 1)
         else:
-            self.__cnt(ProbType.ok, 1)
+            self._cnt(ProbType.ok, 1)
         if not gene.start:
-            self.__cnt(ProbType.start, 1)
+            self._cnt(ProbType.start, 1)
         if not gene.stop:
-            self.__cnt(ProbType.stop, 1)
+            self._cnt(ProbType.stop, 1)
         if gene.orfStop > 0:
-            self.__cnt(ProbType.orfStop, gene.orfStop)
+            self._cnt(ProbType.orfStop, gene.orfStop)
         cdsGap = gene.cdsGap - gene.cdsMult3Gap
         if cdsGap > 0:
-            self.__cnt(ProbType.cdsGap, cdsGap)
+            self._cnt(ProbType.cdsGap, cdsGap)
         if gene.cdsMult3Gap > 0:
-            self.__cnt(ProbType.cdsMult3Gap, gene.cdsMult3Gap)
+            self._cnt(ProbType.cdsMult3Gap, gene.cdsMult3Gap)
         if gene.utrGap > 0:
-            self.__cnt(ProbType.utrGap, gene.utrGap)
+            self._cnt(ProbType.utrGap, gene.utrGap)
         if gene.cdsUnknownSplice > 0:
-            self.__cnt(ProbType.cdsUnknownSplice, gene.cdsUnknownSplice)
+            self._cnt(ProbType.cdsUnknownSplice, gene.cdsUnknownSplice)
         if gene.utrUnknownSplice > 0:
-            self.__cnt(ProbType.utrUnknownSplice, gene.utrUnknownSplice)
+            self._cnt(ProbType.utrUnknownSplice, gene.utrUnknownSplice)
         if gene.cdsNonCanonSplice > 0:
-            self.__cnt(ProbType.cdsNonCanonSplice, gene.cdsNonCanonSplice)
+            self._cnt(ProbType.cdsNonCanonSplice, gene.cdsNonCanonSplice)
         if gene.utrNonCanonSplice > 0:
-            self.__cnt(ProbType.utrNonCanonSplice, gene.utrNonCanonSplice)
+            self._cnt(ProbType.utrNonCanonSplice, gene.utrNonCanonSplice)
         if gene.frame == geneCheck.FrameStat.bad:
-            self.__cnt(ProbType.frameBad, 1)
+            self._cnt(ProbType.frameBad, 1)
         elif gene.frame == geneCheck.FrameStat.mismatch:
-            self.__cnt(ProbType.frameMismatch, 1)
+            self._cnt(ProbType.frameMismatch, 1)
         elif gene.frame == geneCheck.FrameStat.noCDS:
-            self.__cnt(ProbType.noCDS, 1)
+            self._cnt(ProbType.noCDS, 1)
 
     def count(self, statsOut):
         for gene in self.chks:

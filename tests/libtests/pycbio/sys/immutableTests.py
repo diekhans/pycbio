@@ -11,7 +11,7 @@ class ImmutableTests(TestCaseBase):
     def testDictClass(self):
         class DictClass(Immutable):
             def __init__(self, val):
-                Immutable.__init__(self)
+                super(DictClass, self).__init__()
                 self.val = val
                 self.mkImmutable()
 
@@ -25,7 +25,7 @@ class ImmutableTests(TestCaseBase):
             __slots__ = ("val", )
 
             def __init__(self, val):
-                Immutable.__init__(self)
+                super(SlotsClass, self).__init__()
                 self.val = val
                 self.mkImmutable()
         obj = SlotsClass(10)

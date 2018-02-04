@@ -135,18 +135,18 @@ class RnaCdsMap(object):
         self.protRnaMap = dict()
         if rnaqFile is not None:
             self.src = rnaqFile
-            self.__loadRnaq(rnaqFile)
+            self._loadRnaq(rnaqFile)
         else:
             self.src = mrnaProtFile
-            self.__loadMrnaProtFile(mrnaProtFile)
+            self._loadMrnaProtFile(mrnaProtFile)
 
-    def __loadRnaq(self, rnaqFile):
+    def _loadRnaq(self, rnaqFile):
         # rna_accession	rna_gi	prot_accession	prot_gi	gene_id	unigene_id	bases	strain	source_db	defline
         for row in TsvReader(rnaqFile):
             self.rnaProtMap[row.rna_accession] = row.prot_accession
             self.protRnaMap[row.prot_accession] = row.rna_accession
 
-    def __loadMrnaProtFile(self, mrnaProtFile):
+    def _loadMrnaProtFile(self, mrnaProtFile):
         for row in TabFileReader(mrnaProtFile):
             self.rnaProtMap[row[0]] = row[1]
             self.protRnaMap[row[1]] = row[0]
@@ -293,7 +293,7 @@ class GeneFeatures(object):
         self.miscRnaTrans = []  # list of misc_rna transcripts
         self.geneType = GeneType.unknown
         self.activeType = ActiveType.live
-        self.__flagIfPseudoFt(geneFt)
+        self._flagIfPseudoFt(geneFt)
 
     def __str__(self):
         return self.geneSym + " (" + self.geneId + ")"
@@ -322,67 +322,67 @@ class GeneFeatures(object):
                 self.geneType = GeneType.other
         # other tasks
         if len(self.cdsFts) > 0:
-            self.__assocCds(verbose, rnaCdsMap)
+            self._assocCds(verbose, rnaCdsMap)
 
-    def __assocCds(self, verbose, rnaCdsMap):
+    def _assocCds(self, verbose, rnaCdsMap):
         """associate CDS features with mRNA features This maps from CDS to
         mRNA, as there is no way of knowing if a mRNA should have a CDS"""
         for cdsFt in self.cdsFts:
             # FIXME: None checkl is immunoglobulins
             if gbff.featGetCdsId(cdsFt) is not None:
                 if rnaCdsMap is not None:
-                    self.__tblAssocCds(cdsFt, rnaCdsMap)
+                    self._tblAssocCds(cdsFt, rnaCdsMap)
                 else:
-                    self.__matchAssocCds(cdsFt)
+                    self._matchAssocCds(cdsFt)
 
-    def __tblAssocCds(self, cdsFt, rnaCdsMap):
+    def _tblAssocCds(self, cdsFt, rnaCdsMap):
         "associated cds with a transcript using the in map"
         transId = rnaCdsMap.protRnaMap.get(gbff.featGetCdsId(cdsFt))
         if transId is None:
             prWarn("can't find entry for CDS", gbff.featGetCdsId(cdsFt), "in", rnaCdsMap.src)
         else:
-            trans = self.__transById(transId)
+            trans = self._transById(transId)
             if trans is not None:
                 trans.addCds(cdsFt)
             else:
                 prWarn("can't find mRNA", transId, "for CDS", gbff.featGetCdsId(cdsFt))
 
-    def __transById(self, tranId):
+    def _transById(self, tranId):
         for trans in self.mrnaTrans:
             if trans.getTransId() == tranId:
                 return trans
         return None
 
-    def __matchAssocCds(self, cdsFt):
+    def _matchAssocCds(self, cdsFt):
         """associate CDS with transcripts via longest matched"""
-        trans = self.__findLongestCdsMatch(cdsFt)
+        trans = self._findLongestCdsMatch(cdsFt)
         if trans is not None:
             trans.addCds(cdsFt)
         else:
             prWarn("can't find matching mRNA for CDS", gbff.featGetCdsId(cdsFt), "gene:", self)
 
-    def __findLongestCdsMatch(self, cdsFt):
+    def _findLongestCdsMatch(self, cdsFt):
         """find longest transcript matching a CDS and not already having a CDS
         defined, or None if no match"""
         bestSize = 0
         bestTrans = None
         for trans in self.mrnaTrans:
-            sz = self.__checkCdsTransMatch(cdsFt, trans)
+            sz = self._checkCdsTransMatch(cdsFt, trans)
             if (sz is not None) and (sz > bestSize):
                 bestSize = sz
                 bestTrans = trans
         return bestTrans
 
-    def __checkCdsTransMatch(self, cdsFt, trans):
+    def _checkCdsTransMatch(self, cdsFt, trans):
         """return size, or None is no match, or transcript already has a CDS,
         also skip NR/XRs"""
-        if trans.getTransId().startswith("NR_") or trans.getTransId().startswith("XR_") or (trans.cdsFt is not None) or not GeneFeatures.__cdsMatches(trans, cdsFt):
+        if trans.getTransId().startswith("NR_") or trans.getTransId().startswith("XR_") or (trans.cdsFt is not None) or not self._cdsMatches(trans, cdsFt):
             return None
         else:
             return gbff.Coords.fromSeqFeature(cdsFt).size()
 
     @staticmethod
-    def __cdsMatches(trans, cdsFt):
+    def _cdsMatches(trans, cdsFt):
         return trans.getMRnaCoords().isContained(gbff.Coords.fromSeqFeature(cdsFt))
 
     def getCoords(self):
@@ -408,53 +408,53 @@ class GeneFeatures(object):
         transIds.sort()
         return transIds
 
-    def __flagIfPseudoFt(self, feat):
+    def _flagIfPseudoFt(self, feat):
         if gbff.featHaveQual(feat, "pseudo"):
             self.activeType = ActiveType.pseudo
 
-    def __getFtTrans(self, feat, required=True):
+    def _getFtTrans(self, feat, required=True):
         if required:
             return self.getTrans(gbff.featMustGetQual1(feat, "transcript_id"))
         else:
             return self.getTrans(gbff.featGetQual1(feat, "transcript_id"))
 
     def addMRna(self, mrnaFt):
-        trans = self.__getFtTrans(mrnaFt)
+        trans = self._getFtTrans(mrnaFt)
         trans.addMRna(mrnaFt)
-        self.__flagIfPseudoFt(mrnaFt)
+        self._flagIfPseudoFt(mrnaFt)
 
         # keep ordered list for CDS additions
         self.mrnaTrans.append(trans)
 
-    def __getFtIg(self, feat, required=True):
+    def _getFtIg(self, feat, required=True):
         if required:
             return gbff.featMustGetQual1ByKeys(feat, ("gene", "standard_name"))
         else:
             return gbff.featGetQual1ByKeys(feat, ("gene", "standard_name"))
 
     def addIg(self, igFt):
-        trans = self.getTrans(self.__getFtIg(igFt))
+        trans = self.getTrans(self._getFtIg(igFt))
         trans.addMRna(igFt)
-        self.__flagIfPseudoFt(igFt)
+        self._flagIfPseudoFt(igFt)
 
         # keep ordered list for CDS additions
         self.mrnaTrans.append(trans)
 
     def addCds(self, cdsFt):
         self.cdsFts.append(cdsFt)
-        self.__flagIfPseudoFt(cdsFt)
+        self._flagIfPseudoFt(cdsFt)
 
     def addExon(self, exonFt):
         # should always get the default transcript
-        trans = self.__getFtTrans(exonFt, required=False)
+        trans = self._getFtTrans(exonFt, required=False)
         assert(trans.transId is None)
         trans.addExon(exonFt)
-        self.__flagIfPseudoFt(exonFt)
+        self._flagIfPseudoFt(exonFt)
 
     def addMiscRna(self, rnaFt):
-        trans = self.__getFtTrans(rnaFt)
+        trans = self._getFtTrans(rnaFt)
         trans.addMiscRna(rnaFt)
-        self.__flagIfPseudoFt(rnaFt)
+        self._flagIfPseudoFt(rnaFt)
         self.miscRnaTrans.append(trans)
 
     def flagImmunoglobulin(self):
@@ -484,42 +484,42 @@ class RecProcessor(object):
         self.genes = []
         self.genesById = dict()
         self.genesBySym = dict()
-        self.__findGenes(rec)
-        self.__findFeats(rec)
+        self._findGenes(rec)
+        self._findFeats(rec)
         for gene in self.genes:
-            self.__finishGene(gene, rnaCdsMap)
+            self._finishGene(gene, rnaCdsMap)
 
-    def __finishGene(self, gene, rnaCdsMap):
+    def _finishGene(self, gene, rnaCdsMap):
         gene.finish(self.opts.verbose, rnaCdsMap)
 
-    def __findGenes(self, rec):
+    def _findGenes(self, rec):
         for feat in rec.features:
             if feat.type == "gene":
-                self.__procGeneFt(feat)
+                self._procGeneFt(feat)
 
-    def __procFeat(self, feat):
+    def _procFeat(self, feat):
         if feat.type == "exon":
-            self.__procExonFt(feat)
+            self._procExonFt(feat)
         elif feat.type == "CDS":
-            self.__procCdsFt(feat)
+            self._procCdsFt(feat)
         elif feat.type == "mRNA":
-            self.__procMRnaFt(feat)
+            self._procMRnaFt(feat)
         elif feat.type == "misc_RNA":
-            self.__procMiscRnaFt(feat)
+            self._procMiscRnaFt(feat)
         elif feat.type.endswith("_segment") or (feat.type == "C_region"):
-            self.__procIGFeat(feat)
+            self._procIGFeat(feat)
 
-    def __findFeats(self, rec):
+    def _findFeats(self, rec):
         for feat in rec.features:
             try:
-                self.__procFeat(feat)
+                self._procFeat(feat)
             except gbff.GbffExcept as ex:
                 prWarn(ex)
                 if self.opts.verbose >= 2:
                     traceback.print_exc(None, sys.stderr)
                     prLine(sys.stderr)
 
-    def __procGeneFt(self, geneFt):
+    def _procGeneFt(self, geneFt):
         geneId = gbff.featMustGetGeneId(geneFt)
         if geneId in self.genesById:
             raise gbff.GbffExcept("duplicate gene: {}".format(geneId))
@@ -531,7 +531,7 @@ class RecProcessor(object):
         if self.opts.verbose >= 3:
             prLine(sys.stderr, "parsing gene: ", str(gene))
 
-    def __getGeneObjById(self, feat, required=True):
+    def _getGeneObjById(self, feat, required=True):
         if required:
             geneId = gbff.featMustGetGeneId(feat)
         else:
@@ -543,7 +543,7 @@ class RecProcessor(object):
             raise gbff.GbffExcept("no gene for {} {}, referenced by {}".format(geneId, feat.type, feat.location))
         return gene
 
-    def __getGeneObjBySym(self, feat, required=True, qualName="gene"):
+    def _getGeneObjBySym(self, feat, required=True, qualName="gene"):
         if required:
             self.genesBySym[gbff.featMustGetQual1(feat, qualName)]
         else:
@@ -553,36 +553,36 @@ class RecProcessor(object):
             else:
                 return None
 
-    def __procExonFt(self, exonFt):
-        gene = self.__getGeneObjBySym(exonFt, required=False)
+    def _procExonFt(self, exonFt):
+        gene = self._getGeneObjBySym(exonFt, required=False)
         if gene is not None:
             gene.addExon(exonFt)
 
-    def __procCdsFt(self, cdsFt):
-        gene = self.__getGeneObjById(cdsFt)
+    def _procCdsFt(self, cdsFt):
+        gene = self._getGeneObjById(cdsFt)
         gene.addCds(cdsFt)
 
-    def __getRnaGene(self, rnaFt):
+    def _getRnaGene(self, rnaFt):
         # generally by transcript id, but also try gene
-        gene = self.__getGeneObjById(rnaFt, required=False)
+        gene = self._getGeneObjById(rnaFt, required=False)
         if (gene is None):
-            gene = self.__getGeneObjBySym(rnaFt, qualName="gene", required=False)
+            gene = self._getGeneObjBySym(rnaFt, qualName="gene", required=False)
         if (gene is None):
             gbff.featRaiseNeedAQual(rnaFt, ("transcript_id", "gene"))
         return gene
 
-    def __procMRnaFt(self, mrnaFt):
-        self.__getRnaGene(mrnaFt).addMRna(mrnaFt)
+    def _procMRnaFt(self, mrnaFt):
+        self._getRnaGene(mrnaFt).addMRna(mrnaFt)
 
-    def __procMiscRnaFt(self, rnaFt):
-        self.__getRnaGene(rnaFt).addMiscRna(rnaFt)
+    def _procMiscRnaFt(self, rnaFt):
+        self._getRnaGene(rnaFt).addMiscRna(rnaFt)
 
-    def __procIGFeat(self, igFt):
+    def _procIGFeat(self, igFt):
         # some V_segment have /standard_name= to reference gene sym
         # instead of /gene=, try both
-        gene = self.__getGeneObjBySym(igFt, qualName="gene", required=False)
+        gene = self._getGeneObjBySym(igFt, qualName="gene", required=False)
         if gene is None:
-            gene = self.__getGeneObjBySym(igFt, qualName="standard_name", required=False)
+            gene = self._getGeneObjBySym(igFt, qualName="standard_name", required=False)
         if gene is None:
             gbff.featRaiseNeedAQual(igFt, ("gene", "standard_name"))
         gene.addIg(igFt)
@@ -623,7 +623,7 @@ class GenePredBuilder(object):
             self.gp.cdsStart = coord.start
             self.gp.cdsEnd = coord.end
 
-    def __addExon(self, coord, prevStart, prevEnd):
+    def _addExon(self, coord, prevStart, prevEnd):
         assert(coord.start < coord.end)
         # adjust tx range to contain exon
         if self.gp.txStart is None:
@@ -650,7 +650,7 @@ class GenePredBuilder(object):
         prevStart = None
         prevEnd = None
         for coord in coords:
-            prevStart, prevEnd = self.__addExon(coord, prevStart, prevEnd)
+            prevStart, prevEnd = self._addExon(coord, prevStart, prevEnd)
         # last exon
         if prevStart is not None:
             self.gp.addExon(prevStart, prevEnd)
@@ -667,7 +667,7 @@ class GeneConverter(object):
         self.dropLocusVer = dropLocusVer
         self.outFh = None
 
-    def __convertTrans(self, trans):
+    def _convertTrans(self, trans):
         "convert a transcript to a genePred"
 
         gpb = GenePredBuilder(self.gene.geneSym, trans.getTransId(), (self.gene.rec.name if self.dropLocusVer else self.gene.rec.id), self.mkExt)
@@ -706,7 +706,7 @@ class GeneConverter(object):
         self.outFh = outFh
         # if no transcript info, there is a default transcript
         for transId in self.gene.getTransIds():
-            self.__convertTrans(self.gene.transTbl[transId])
+            self._convertTrans(self.gene.transTbl[transId])
 
 
 class GbffToGenes(object):
@@ -715,11 +715,11 @@ class GbffToGenes(object):
         self.opts = opts
         self.rnaCdsMap = rnaCdsMap
 
-    def __shouldConvert(self, gene):
+    def _shouldConvert(self, gene):
         return ((gene.geneType in self.opts.selected) and (gene.activeType in self.opts.active)
                 and ((not self.opts.refSeqOnly) or gene.isRefSeq()))
 
-    def __trace(self, gene, keep):
+    def _trace(self, gene, keep):
         prLine(sys.stderr, ("converting" if keep else "skipping"),
                " gene: ", str(gene), " [", gene.geneType, ", ", gene.activeType, "]")
         for transId in gene.getTransIds():
@@ -731,28 +731,28 @@ class GbffToGenes(object):
             else:
                 prLine(sys.stderr, "    trans: ", trans.getTransId(), " CDS: ", trans.getCdsId())
 
-    def __procGene(self, gene):
-        keep = self.__shouldConvert(gene)
+    def _procGene(self, gene):
+        keep = self._shouldConvert(gene)
         if self.opts.verbose >= 1:
-            self.__trace(gene, keep)
+            self._trace(gene, keep)
         if keep:
             cnv = GeneConverter(gene, self.opts.ext, self.opts.dropLocusVer)
             cnv.convert(self.outFh)
 
-    def __procRec(self, rec):
+    def _procRec(self, rec):
         if self.opts.verbose >= 3:
             prLine(sys.stderr, "parsing rec: ", rec.locus)
         recProc = RecProcessor(rec, self.opts, self.rnaCdsMap)
         geneSyms = list(recProc.genesBySym.keys())
         geneSyms.sort()
         for geneSym in geneSyms:
-            self.__procGene(recProc.genesBySym[geneSym])
+            self._procGene(recProc.genesBySym[geneSym])
 
     def convert(self, genePredFile):
         gbsFh = fileOps.opengz(self.opts.gbff)
         self.outFh = open(genePredFile, "w")
         for rec in SeqIO.parse(gbsFh, "genbank"):
-            self.__procRec(rec)
+            self._procRec(rec)
         self.outFh.close()
         gbsFh.close()
 

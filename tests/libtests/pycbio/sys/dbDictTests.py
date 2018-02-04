@@ -9,7 +9,7 @@ from pycbio.sys.testCaseBase import TestCaseBase
 
 class DbDictTests(TestCaseBase):
 
-    def __assertKeyValues(self, dbd, expect):
+    def _assertKeyValues(self, dbd, expect):
         "gets sort tuple of (key values) and compare"
         keyValues = [(k, dbd[k]) for k in list(dbd.keys())]
         keyValues.sort(key=lambda kv: kv[0])
@@ -24,13 +24,13 @@ class DbDictTests(TestCaseBase):
         dbd["three"] = "value 3"
         keys = list(dbd.keys())
         keys.sort()
-        self.__assertKeyValues(dbd, (('one', 'value 1'), ('three', 'value 3'), ('two', 'value 2')))
+        self._assertKeyValues(dbd, (('one', 'value 1'), ('three', 'value 3'), ('two', 'value 2')))
 
         dbd["two"] = "value 2.1"
-        self.__assertKeyValues(dbd, (('one', 'value 1'), ('three', 'value 3'), ('two', 'value 2.1')))
+        self._assertKeyValues(dbd, (('one', 'value 1'), ('three', 'value 3'), ('two', 'value 2.1')))
 
         del dbd["two"]
-        self.__assertKeyValues(dbd, (('one', 'value 1'), ('three', 'value 3')))
+        self._assertKeyValues(dbd, (('one', 'value 1'), ('three', 'value 3')))
 
 
 def suite():

@@ -13,13 +13,13 @@ class OverlapSelectStatsReader(TsvReader):
     "reader for output from overlapSelect -statsOutput"
 
     def __init__(self, fileName):
-        TsvReader.__init__(self, fileName, typeMap=typeMap)
+        super(OverlapSelectStatsReader, self).__init__(fileName, typeMap=typeMap)
 
 
 class OverlapSelectStatsTbl(TsvTable):
     "table of overlapSelect -statsOutput results"
     def __init__(self, fileName):
-        TsvTable.__init__(self, fileName, typeMap=typeMap, multiKeyCols=("inId", "selectId"))
+        super(OverlapSelectStatsTbl, self).__init__(fileName, typeMap=typeMap, multiKeyCols=("inId", "selectId"))
 
 
 __all__ = [OverlapSelectStatsReader.__name__, OverlapSelectStatsTbl.__name__]

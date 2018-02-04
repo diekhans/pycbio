@@ -118,7 +118,7 @@ class Histogram(object):
         for row in iterRows(fname):
             self.data.append((type(row[valCol]), int(row[cntCol])))
 
-    def __calcParams(self):
+    def _calcParams(self):
         "Calculate binning paramters"
         self.data.compute()
         self.binMinUse = self.binMin
@@ -150,7 +150,7 @@ class Histogram(object):
             self.binFloorUse = self.binMinUse
             self.binCeilUse = self.binMaxUse
 
-    def __getBinIdx(self, val):
+    def _getBinIdx(self, val):
         "Get the integer bin number for a value, or None to ignore"
         if self.binSizeUse == 0.0:
             return 0
@@ -161,24 +161,24 @@ class Histogram(object):
         else:
             return int(old_div((val - self.binFloorUse), float(self.binSizeUse)))
 
-    def __mkBins(self):
+    def _mkBins(self):
         self.bins = []
         for i in range(self.numBinsUse):
             self.bins.append(Bin(self, i, self.binFloorUse + (i * self.binSizeUse), self.binSizeUse))
 
-    def __binTupleData(self):
+    def _binTupleData(self):
         for item in self.data:
-            iBin = self.__getBinIdx(item[0])
+            iBin = self._getBinIdx(item[0])
             if iBin is not None:
                 self.bins[iBin].cnt += item[1]
 
-    def __binScalarData(self):
+    def _binScalarData(self):
         for item in self.data:
-            iBin = self.__getBinIdx(item)
+            iBin = self._getBinIdx(item)
             if iBin is not None:
                 self.bins[iBin].cnt += 1
 
-    def __computeFreqs(self):
+    def _computeFreqs(self):
         ndata = float(len(self.data))
         for bin in self.bins:
             if ndata != 0.0:
@@ -188,21 +188,21 @@ class Histogram(object):
 
     def build(self):
         "construct histogram from data, return list of bins (also in bins field)"
-        self.__calcParams()
-        self.__mkBins()
+        self._calcParams()
+        self._mkBins()
         if self.isTupleData:
-            self.__binTupleData()
+            self._binTupleData()
         else:
-            self.__binScalarData()
+            self._binScalarData()
 
         # compute frequencies
         if self.data.total != 0.0:
-            self.__computeFreqs()
+            self._computeFreqs()
 
         return self.bins
 
     def dump(self, fh, desc=None):
-        self.__calcParams()
+        self._calcParams()
         if desc is not None:
             prLine(fh, desc)
         prLine(fh, "  data: len: {}  min: {} max: {}".format(len(self.data), self.data.min, self.data.max))

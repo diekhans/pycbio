@@ -52,7 +52,7 @@ class TsvReader(object):
     # should have separate class for dbapi reading, build on a core
     # class.
 
-    def __readRow(self):
+    def _readRow(self):
         "read the next row, returning None on EOF"
         if self.reader is None:
             return None
@@ -67,19 +67,19 @@ class TsvReader(object):
         self.lineNum = self.reader.line_num
         return row
 
-    def __readHeader(self, allowEmpty):
-        row = self.__readRow()
+    def _readHeader(self, allowEmpty):
+        row = self._readRow()
         if row is None:
             if not allowEmpty:
                 raise TsvError("empty TSV file", reader=self)
         else:
             if self.isRdb:
-                self.__readRow()  # skip format line
+                self._readRow()  # skip format line
             if (len(row) > 0) and row[0].startswith('#'):
                 row[0] = row[0][1:]
-            self.__setupColumns(row)
+            self._setupColumns(row)
 
-    def __setupColumns(self, columns):
+    def _setupColumns(self, columns):
         # n.b. columns could be passed in from client, must copy
         i = 0
         for col in columns:
@@ -92,7 +92,7 @@ class TsvReader(object):
             self.colMap[col] = i
             i += 1
 
-    def __initColTypes(self, typeMap, defaultColType):
+    def _initColTypes(self, typeMap, defaultColType):
         "save col types as column indexed list"
         if typeMap is not None:
             # build from type map
@@ -153,10 +153,10 @@ class TsvReader(object):
         try:
             self.reader = csv.reader(self.inFh, dialect=dialect)
             if columns:
-                self.__setupColumns(columns)
+                self._setupColumns(columns)
             else:
-                self.__readHeader(allowEmpty)
-            self.__initColTypes(typeMap, defaultColType)
+                self._readHeader(allowEmpty)
+            self._initColTypes(typeMap, defaultColType)
         except Exception:
             self.close()
             raise
@@ -174,7 +174,7 @@ class TsvReader(object):
 
     def __next__(self):
         try:
-            row = self.__readRow()
+            row = self._readRow()
         except Exception as ex:
             raise TsvError("Error reading TSV row", self, ex)
         if row is None:

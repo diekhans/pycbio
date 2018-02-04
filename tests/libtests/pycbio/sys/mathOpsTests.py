@@ -8,43 +8,43 @@ from pycbio.sys.testCaseBase import TestCaseBase
 
 
 class RoundToOrderOfMagnitudeTests(TestCaseBase):
-    def __assertRound(self, expect, value):
+    def _assertRound(self, expect, value):
         "asserted that value is same as expect when rounded to it's order of magnitude"
         # FIXME: could this be done another way.
         self.assertEqual(expect, mathOps.roundToOrderOfMagnitude(value))
 
     def testMagnitudeFifty(self):
-        self.__assertRound(100, 50)
+        self._assertRound(100, 50)
 
     def testMagnitudeFive(self):
-        self.__assertRound(10, 5)
+        self._assertRound(10, 5)
 
     def testMagnitudeZeroPointFive(self):
-        self.__assertRound(1, 0.5)
+        self._assertRound(1, 0.5)
 
     def testMagnitudeZeroPointZeroFive(self):
-        self.__assertRound(0.1, 0.05)
+        self._assertRound(0.1, 0.05)
 
     def testMagnitudeZeroPointZeroZeroFive(self):
-        self.__assertRound(0.01, 0.005)
+        self._assertRound(0.01, 0.005)
 
     def testMagnitudeNegativeFifty(self):
-        self.__assertRound(-100, -50)
+        self._assertRound(-100, -50)
 
     def testMagnitudeNegativeFive(self):
-        self.__assertRound(-10, -5)
+        self._assertRound(-10, -5)
 
     def testMagnitudeNegativeZeroPointFive(self):
-        self.__assertRound(-1, -0.5)
+        self._assertRound(-1, -0.5)
 
     def testMagnitudeNegativeZeroPointZeroFive(self):
-        self.__assertRound(-0.1, -0.05)
+        self._assertRound(-0.1, -0.05)
 
     def testMagnitudeNegativeZeroPointZeroZeroFive(self):
-        self.__assertRound(-0.01, -0.005)
+        self._assertRound(-0.01, -0.005)
 
     def testMagnitudeZero(self):
-        self.__assertRound(1, 0)
+        self._assertRound(1, 0)
 
 
 def suite():

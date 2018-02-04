@@ -10,16 +10,16 @@ from pycbio.sys.testCaseBase import TestCaseBase
 
 
 class HistoTests(TestCaseBase):
-    def __getBinInfo(self, b):
+    def _getBinInfo(self, b):
         return (b.idx, b.binMin, b.binMin + b.binSize, b.binSize, b.cnt, b.freq)
 
-    def __getBinsInfo(self, bins):
-        return [self.__getBinInfo(b) for b in bins]
+    def _getBinsInfo(self, bins):
+        return [self._getBinInfo(b) for b in bins]
 
     def testNumBins(self):
         h = Histogram([-1.0, 1.0], numBins=2)
         bins = h.build()
-        self.assertEqual(self.__getBinsInfo(bins),
+        self.assertEqual(self._getBinsInfo(bins),
                          [(0, -2.0, 0.0, 2.0, 1, 0.0),
                           (1, 0.0, 2.0, 2.0, 1, 0.0)])
 
@@ -28,7 +28,7 @@ class HistoTests(TestCaseBase):
         h = Histogram([-1.0, 1.0], binSize=1)
         h.dump(sys.stdout)
         bins = h.build()
-        self.assertEqual(self.__getBinsInfo(bins),
+        self.assertEqual(self._getBinsInfo(bins),
                          [(0, -2.0, 0.0, 2.0, 1, 0.0),
                           (1, 0.0, 2.0, 2.0, 1, 0.0)])
 

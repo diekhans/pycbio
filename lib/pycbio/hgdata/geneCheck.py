@@ -134,7 +134,7 @@ class GeneCheckTbl(TsvTable):
         else:
             uniqKeyCols = None
             multiKeyCols = "acc"
-        TsvTable.__init__(self, fileName, typeMap=typeMap, uniqKeyCols=uniqKeyCols, multiKeyCols=multiKeyCols)
+        super(GeneCheckTbl, self).__init__(fileName, typeMap=typeMap, uniqKeyCols=uniqKeyCols, multiKeyCols=multiKeyCols)
         self.idIndex = self.indices.acc
 
     def _sameLoc(self, chk, chrom, start, end):

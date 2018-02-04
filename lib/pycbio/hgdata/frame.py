@@ -9,13 +9,13 @@ class Frame(int):
     __slots__ = ()
 
     @staticmethod
-    def __checkFrameValue(val):
+    def _checkFrameValue(val):
         if not ((val >= 0) and (val <= 2)):
             raise TypeError("frame must be an integer in the range 0..2, got {}".format(val))
 
     def __new__(cls, val):
         obj = super(Frame, cls).__new__(cls, val)
-        cls.__checkFrameValue(obj)
+        cls._checkFrameValue(obj)
         return obj
 
     @staticmethod

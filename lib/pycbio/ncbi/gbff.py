@@ -145,11 +145,10 @@ class Coords(list):
     "List of Coord objects"
 
     def __init__(self, init=None):
+        super(Coords, self).__init__()
         if init is not None:
-            list.__init__(self, init)
-            assert((len(self) == 0) or isinstance(self[0], Coord))
-        else:
-            list.__init__(self)
+            self.extend(init)
+        assert((len(self) == 0) or isinstance(self[0], Coord))
 
     def __str__(self):
         strs = []
@@ -194,7 +193,7 @@ class Coords(list):
             oi += 1
         return True
 
-    def __cnvSeqFeature(self, location, strand):
+    def _cnvSeqFeature(self, location, strand):
         self.append(Coord.fromFeatureLocation(location, strand))
 
     @staticmethod
@@ -204,8 +203,8 @@ class Coords(list):
         coords = Coords()
         if isinstance(feat.location, SeqFeature.CompoundLocation):
             for location in feat.location.parts:
-                coords.__cnvSeqFeature(location, feat.strand)
+                coords._cnvSeqFeature(location, feat.strand)
         else:
-            coords.__cnvSeqFeature(feat.location, feat.strand)
+            coords._cnvSeqFeature(feat.location, feat.strand)
         coords.sort()
         return coords

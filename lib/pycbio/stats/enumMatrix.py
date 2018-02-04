@@ -12,11 +12,11 @@ class EnumArray(list):
         for i in range(enum.maxNumValue + 1):
             self.append(initVal)
 
-    def __getitem__(self, eval):
-        return list.__getitem__(self, eval.numValue)
+    def __getitem__(self, eVal):
+        return super(EnumArray, self).__getitem__(eVal.numValue)
 
-    def __setitem__(self, eval, val):
-        return list.__setitem__(self, eval.numValue, val)
+    def __setitem__(self, eVal, val):
+        return super(EnumArray, self).__setitem__(eVal.numValue, val)
 
 
 class EnumMatrix(EnumArray):
@@ -25,7 +25,7 @@ class EnumMatrix(EnumArray):
     def __init__(self, rowEnum, colEnum, initVal=None):
         assert(isinstance(rowEnum, Enumeration))
         assert(isinstance(colEnum, Enumeration))
-        EnumArray.__init__(self, rowEnum)
+        super(EnumMatrix, self).__init__(rowEnum)
         self.rowEnum = rowEnum
         self.colEnum = colEnum
         for val in self.rowEnum.values:

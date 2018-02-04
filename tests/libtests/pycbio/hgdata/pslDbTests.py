@@ -26,13 +26,13 @@ class DbReadTests(TestCaseBase):
 
     hgConf = None  # load on first use
 
-    def __connect(self):
+    def _connect(self):
         if self.hgConf is None:
             self.hgConf = HgConf()
         return hgDb.connect(db=testDb, hgConf=self.hgConf)
 
     def testDbQueryLoad(self):
-        conn = self.__connect()
+        conn = self._connect()
         try:
             # just read 10 PSLs
             pslCnt = 0
@@ -43,7 +43,7 @@ class DbReadTests(TestCaseBase):
             conn.close()
 
     def testDbRangeLoad(self):
-        conn = self.__connect()
+        conn = self._connect()
         qNames = set()
         try:
             for psl in PslDbReader.targetRangeQuery(conn, testTbl, "chr22", 16650000, 20470000):

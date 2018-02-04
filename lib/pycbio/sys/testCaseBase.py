@@ -25,7 +25,7 @@ class TestCaseBase(unittest.TestCase):
 
     def __init__(self, methodName='runTest'):
         """initialize, removing old output files associated with the class"""
-        unittest.TestCase.__init__(self, methodName)
+        super(TestCaseBase, self).__init__(methodName)
         self.maxDiff = None
         clId = self.getClassId()
         od = self.getOutputDir()
@@ -92,7 +92,7 @@ class TestCaseBase(unittest.TestCase):
         return os.path.join(self.getTestDir(), "expected/{}{}".format(basename if basename is not None else self.getId(),
                                                                       ext))
 
-    def __getLines(self, file):
+    def _getLines(self, file):
         with open(file) as fh:
             return fh.readlines()
 
@@ -103,8 +103,8 @@ class TestCaseBase(unittest.TestCase):
     def diffFiles(self, expFile, outFile):
         """diff expected and output files."""
 
-        expLines = self.__getLines(expFile)
-        outLines = self.__getLines(outFile)
+        expLines = self._getLines(expFile)
+        outLines = self._getLines(outFile)
 
         diff = difflib.unified_diff(expLines, outLines, expFile, outFile)
         cnt = 0
@@ -193,18 +193,18 @@ class TestCaseBase(unittest.TestCase):
         if not re.match(expectRe, str(obj), re.DOTALL):
             raise self.failureException(msg or "'%s' does not match '%s'" % (str(obj), expectRe))
 
-    def __logCmd(self, cmd):
+    def _logCmd(self, cmd):
         cmdStrs = [quote(a) for a in cmd]
         sys.stderr.write("run: " + " ".join(cmdStrs) + "\n")
 
     def runProg(self, cmd, stdin=None, stdout=None, stderr=None):
         "run a program, print the command being executed"
-        self.__logCmd(cmd)
+        self._logCmd(cmd)
         subprocess.check_call(cmd, stdin=stdin, stdout=stdout, stderr=stderr)
 
     def runProgOut(self, cmd, stdin=None, stderr=None):
         "run a program and return stdout, print the command being executed"
-        self.__logCmd(cmd)
+        self._logCmd(cmd)
         p = subprocess.Popen(cmd, stdin=stdin, stdout=subprocess.PIPE, stderr=stderr)
         (stdoutText, junk) = p.communicate()
         exitCode = p.wait()

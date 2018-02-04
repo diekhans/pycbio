@@ -49,72 +49,72 @@ class ClusterSelect(object):
     def __init__(self, opts):
         self.clusters = ClusterGenes(opts.clusterFile)
 
-        self.trackSets = self.__parseTrackSetList(opts.trackSet) if (opts.trackSet is not None) else None
-        self.notTrackSets = self.__parseTrackSetList(opts.notTrackSet) if (opts.notTrackSet is not None) else None
-        self.onlyTrackSets = self.__parseTrackSetList(opts.onlyTrackSet) if (opts.onlyTrackSet is not None) else None
-        self.notOnlyTrackSets = self.__parseTrackSetList(opts.notOnlyTrackSet) if (opts.notOnlyTrackSet is not None) else None
-        self.geneIds = self.__loadIdFiles(opts.geneIdFiles) if (opts.geneIdFiles is not None) else None
-        self.trackFilterSet = self.__parseTrackSet(opts.trackFilterSet) if (opts.trackFilterSet is not None) else None
+        self.trackSets = self._parseTrackSetList(opts.trackSet) if (opts.trackSet is not None) else None
+        self.notTrackSets = self._parseTrackSetList(opts.notTrackSet) if (opts.notTrackSet is not None) else None
+        self.onlyTrackSets = self._parseTrackSetList(opts.onlyTrackSet) if (opts.onlyTrackSet is not None) else None
+        self.notOnlyTrackSets = self._parseTrackSetList(opts.notOnlyTrackSet) if (opts.notOnlyTrackSet is not None) else None
+        self.geneIds = self._loadIdFiles(opts.geneIdFiles) if (opts.geneIdFiles is not None) else None
+        self.trackFilterSet = self._parseTrackSet(opts.trackFilterSet) if (opts.trackFilterSet is not None) else None
 
-    def __parseTrackSet(self, spec):
+    def _parseTrackSet(self, spec):
         selSet = set()
         for tr in spec.split(","):
             selSet.add(tr)
         return selSet
 
-    def __parseTrackSetList(self, specs):
+    def _parseTrackSetList(self, specs):
         trackSetList = []
         for spec in specs:
-            trackSetList.append(self.__parseTrackSet(spec))
+            trackSetList.append(self._parseTrackSet(spec))
         return trackSetList
 
-    def __loadIdFiles(self, idFiles):
+    def _loadIdFiles(self, idFiles):
         ids = set()
         for f in idFiles:
             for line in readFileLines(f):
                 ids.add(line.strip())
         return ids
 
-    def __selectedByTrackSets(self, cl):
+    def _selectedByTrackSets(self, cl):
         for ts in self.trackSets:
             if ts & cl.tableSet:
                 return True
         return False
 
-    def __rejectedByNotTrackSets(self, cl):
+    def _rejectedByNotTrackSets(self, cl):
         for ts in self.notTrackSets:
             if ts & cl.tableSet:
                 return True
         return False
 
-    def __selectedByOnlyTrackSets(self, cl):
+    def _selectedByOnlyTrackSets(self, cl):
         for ts in self.onlyTrackSets:
             if ts == cl.tableSet:
                 return True
         return False
 
-    def __rejectedByNotOnlyTrackSets(self, cl):
+    def _rejectedByNotOnlyTrackSets(self, cl):
         for ts in self.notOnlyTrackSets:
             if ts == cl.tableSet:
                 return True
         return False
 
-    def __selectedByGeneId(self, cl):
+    def _selectedByGeneId(self, cl):
         for gene in cl:
             if gene.gene in self.geneIds:
                 return True
         return False
 
-    def __selected(self, cl):
-        if (self.trackSets is not None) and not self.__selectedByTrackSets(cl):
+    def _selected(self, cl):
+        if (self.trackSets is not None) and not self._selectedByTrackSets(cl):
             return False
-        if (self.notTrackSets is not None) and self.__rejectedByNotTrackSets(cl):
+        if (self.notTrackSets is not None) and self._rejectedByNotTrackSets(cl):
             return False
-        if (self.onlyTrackSets is not None) and not self.__selectedByOnlyTrackSets(cl):
+        if (self.onlyTrackSets is not None) and not self._selectedByOnlyTrackSets(cl):
             return False
-        if (self.notOnlyTrackSets is not None) and self.__rejectedByNotOnlyTrackSets(cl):
+        if (self.notOnlyTrackSets is not None) and self._rejectedByNotOnlyTrackSets(cl):
             return False
-        if (self.geneIds is not None) and not self.__selectedByGeneId(cl):
+        if (self.geneIds is not None) and not self._selectedByGeneId(cl):
             return False
         if (self.trackFilterSet is not None) and not (self.trackFilterSet & cl.tableSet):
             return False
@@ -125,18 +125,18 @@ class ClusterSelect(object):
         outFh.write('#')
         prRow(outFh, self.clusters.columns)
         for cl in self.clusters:
-            if self.__selected(cl):
+            if self._selected(cl):
                 cl.write(outFh, self.trackFilterSet)
         outFh.close()
 
-    def __writeClusterBed(self, outFh, cl):
+    def _writeClusterBed(self, outFh, cl):
         prRowv(outFh, cl.chrom, cl.start, cl.end, cl.clusterId, 0, cl.strand)
 
     def outClusterBed(self, outFile):
         outFh = open(outFile, "w")
         for cl in self.clusters:
-            if self.__selected(cl):
-                self.__writeClusterBed(outFh, cl)
+            if self._selected(cl):
+                self._writeClusterBed(outFh, cl)
         outFh.close()
 
 

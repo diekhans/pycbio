@@ -99,10 +99,10 @@ class Feature(object):
         self.seqname, self.source, self.type, self.start, self.end, self.score, self.strand, self.frame, self.attrs, self.gff3Set, self.lineNumber, self.parents, self.children = state
 
     @staticmethod
-    def __dotIfNone(val):
+    def _dotIfNone(val):
         return val if val is not None else '.'
 
-    def __attrStr(self, name):
+    def _attrStr(self, name):
         """
         Return name=value for a single attribute
         """
@@ -110,12 +110,12 @@ class Feature(object):
             _encodeAttr(name),
             ",".join([_encodeAttr(v) for v in self.attrs[name]]))
 
-    def __attrStrs(self):
+    def _attrStrs(self):
         """
         Return name=value, semi-colon-separated string for attributes, including
         url-style quoting
         """
-        return ";".join([self.__attrStr(name)
+        return ";".join([self._attrStr(name)
                          for name in sorted(self.attrs.keys())])
 
     def __str__(self):
@@ -123,9 +123,9 @@ class Feature(object):
         Return the object as a valid GFF3 record line.
         """
         return "\t".join([self.seqname, self.source, self.type,
-                          str(self.start + 1), str(self.end), self.__dotIfNone(self.score),
-                          self.__dotIfNone(self.strand), self.__dotIfNone(self.frame),
-                          self.__attrStrs()])
+                          str(self.start + 1), str(self.end), self._dotIfNone(self.score),
+                          self._dotIfNone(self.strand), self._dotIfNone(self.frame),
+                          self._attrStrs()])
 
     @property
     def featureId(self):
@@ -182,7 +182,7 @@ class Gff3Set(object):
         # None featureId allowed
         self.byFeatureId[feature.featureId].append(feature)
 
-    def __linkFeature(self, feature):
+    def _linkFeature(self, feature):
         """
         Link a feature with it's parents.
         """
@@ -191,9 +191,9 @@ class Gff3Set(object):
             self.roots.add(feature)
         else:
             for parentId in parentIds:
-                self.__linkToParent(feature, parentId)
+                self._linkToParent(feature, parentId)
 
-    def __linkToParent(self, feature, parentId):
+    def _linkToParent(self, feature, parentId):
         """
         Link a feature with it's children
         """
@@ -213,24 +213,24 @@ class Gff3Set(object):
         # features maybe disjoint
         for featureParts in list(self.byFeatureId.values()):
             for feature in featureParts:
-                self.__linkFeature(feature)
+                self._linkFeature(feature)
 
     @staticmethod
-    def __recSortKey(r):
+    def _recSortKey(r):
         return (r.seqname, r.start, -r.end, r.type)
 
-    def __writeRec(self, fh, rec):
+    def _writeRec(self, fh, rec):
         fh.write(str(rec) + "\n")
-        for child in sorted(rec.children, key=self.__recSortKey):
-            self.__writeRec(fh, child)
+        for child in sorted(rec.children, key=self._recSortKey):
+            self._writeRec(fh, child)
 
     def write(self, fh):
         """
         Write set to a GFF3 format file.
         """
         fh.write(GFF3_HEADER + "\n")
-        for root in sorted(self.roots, key=self.__recSortKey):
-            self.__writeRec(fh, root)
+        for root in sorted(self.roots, key=self._recSortKey):
+            self._writeRec(fh, root)
 
 
 class Gff3Parser(object):
@@ -245,7 +245,7 @@ class Gff3Parser(object):
     # parses `attr=val'; GFF3 spec is not very specific on the allowed values.
     SPLIT_ATTR_RE = re.compile("^([a-zA-Z][^=]*)=(.*)$")
 
-    def __parseAttrVal(self, attrStr):
+    def _parseAttrVal(self, attrStr):
         """
         Returns tuple of tuple of (attr, value), multiple are returned to
         handle multi-value attributes.
@@ -262,13 +262,13 @@ class Gff3Parser(object):
 
     SPLIT_ATTR_COL_RE = re.compile("; *")
 
-    def __parseAttrs(self, attrsStr):
+    def _parseAttrs(self, attrsStr):
         """
         Parse the attrs and values
         """
         attrs = dict()
         for attrStr in self.SPLIT_ATTR_COL_RE.split(attrsStr):
-            name, vals = self.__parseAttrVal(attrStr)
+            name, vals = self._parseAttrVal(attrStr)
             if name in attrs:
                 raise GFF3Exception("duplicated attribute name: {}".format(name),
                                     self.fileName, self.lineNumber)
@@ -277,7 +277,7 @@ class Gff3Parser(object):
 
     GFF3_NUM_COLS = 9
 
-    def __parseRecord(self, gff3Set, line):
+    def _parseRecord(self, gff3Set, line):
         """
         Parse one record.
         """
@@ -290,28 +290,28 @@ class Gff3Parser(object):
         feature = Feature(urllib.parse.unquote(row[0]), urllib.parse.unquote(row[1]),
                           urllib.parse.unquote(row[2]),
                           int(row[3]), int(row[4]), row[5], row[6], row[7],
-                          self.__parseAttrs(row[8]), gff3Set, self.lineNumber)
+                          self._parseAttrs(row[8]), gff3Set, self.lineNumber)
         gff3Set.add(feature)
 
     # spaces or comment line
     IGNORED_LINE_RE = re.compile("(^[ ]*$)|(^[ ]*#.*$)")
 
     @staticmethod
-    def __isIgnoredLine(line):
+    def _isIgnoredLine(line):
         return Gff3Parser.IGNORED_LINE_RE.search(line) is not None
 
-    def __checkHeader(self, line):
+    def _checkHeader(self, line):
         # split to allow multiple spaces and tabs
         if line.split() != GFF3_HEADER.split():
             raise GFF3Exception(
                 "First line is not GFF3 header ({}), got: {}".format(
                     GFF3_HEADER, line), self.fileName, self.lineNumber)
 
-    def __parseLine(self, gff3Set, line):
+    def _parseLine(self, gff3Set, line):
         if self.lineNumber == 1:
-            self.__checkHeader(line)
-        elif not self.__isIgnoredLine(line):
-            self.__parseRecord(gff3Set, line)
+            self._checkHeader(line)
+        elif not self._isIgnoredLine(line):
+            self._parseRecord(gff3Set, line)
 
     def parse(self, gff3File, gff3Fh=None):
         """
@@ -327,7 +327,7 @@ class Gff3Parser(object):
             gff3Set = Gff3Set(self.fileName)
             for line in fh:
                 self.lineNumber += 1
-                self.__parseLine(gff3Set, line[0:-1])
+                self._parseLine(gff3Set, line[0:-1])
         finally:
             self.fileName = self.lineNumber = None
             if gff3Fh is None:

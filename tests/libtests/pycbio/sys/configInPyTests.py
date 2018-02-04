@@ -37,7 +37,7 @@ class ConfigInPyTests(TestCaseBase):
         self.assertEqual(c.f3, "F3")
         self.assertRegex(c.configPyFile, ".*/input/funcArgs.config.py")
 
-    def __checkFields(self, conf, expect):
+    def _checkFields(self, conf, expect):
         "ensure all expected fields are in configuration"
         for e in expect:
             self.assertTrue(hasattr(conf, e), msg="field not found: {}".format(e))
@@ -49,7 +49,7 @@ class ConfigInPyTests(TestCaseBase):
         self.assertEqual(getattr(c, "_hidden", None), None)
         self.assertRegex(c.configPyFile, ".*/input/objBasic.config.py")
         self.assertEqual(getattr(c, "passedInModule", None), None)
-        self.__checkFields(c, ['configPyFile', 'value1', 'value2'])
+        self._checkFields(c, ['configPyFile', 'value1', 'value2'])
 
     def testConfigFilePassModule(self):
         extraEnv = {"passedInModule": "stuck in a global"}
@@ -59,7 +59,7 @@ class ConfigInPyTests(TestCaseBase):
         self.assertEqual(getattr(c, "_hidden", None), None)
         self.assertRegex(c.configPyFile, ".*/input/objBasic.config.py")
         self.assertEqual(c.passedInModule, "stuck in a global")
-        self.__checkFields(c, ['configPyFile', "passedInModule", 'value1', 'value2'])
+        self._checkFields(c, ['configPyFile', "passedInModule", 'value1', 'value2'])
 
 
 def suite():

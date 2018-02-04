@@ -44,7 +44,7 @@ class Binner(object):
     binOffsetToExtended = 4681
 
     @staticmethod
-    def __calcBinForOffsets(start, end, baseOffset, offsets):
+    def _calcBinForOffsets(start, end, baseOffset, offsets):
         "get the bin for a range"
         startBin = start >> Binner.binFirstShift
         endBin = (end - 1) >> Binner.binFirstShift
@@ -59,12 +59,12 @@ class Binner(object):
     def calcBin(start, end):
         "get the bin for a range"
         if end <= Binner.binBasicMaxEnd:
-            return Binner.__calcBinForOffsets(start, end, 0, Binner.binOffsetsBasic)
+            return Binner._calcBinForOffsets(start, end, 0, Binner.binOffsetsBasic)
         else:
-            return Binner.__calcBinForOffsets(start, end, Binner.binOffsetToExtended, Binner.binOffsetsExtended)
+            return Binner._calcBinForOffsets(start, end, Binner.binOffsetToExtended, Binner.binOffsetsExtended)
 
     @staticmethod
-    def __getOverlappingBinsForOffsets(start, end, baseOffset, offsets):
+    def _getOverlappingBinsForOffsets(start, end, baseOffset, offsets):
         "generate bins for a range given a list of offsets"
         startBin = start >> Binner.binFirstShift
         endBin = (end - 1) >> Binner.binFirstShift
@@ -78,15 +78,15 @@ class Binner(object):
         """Generate bins for the range.  Each value is closed range of (startBin, endBin)"""
         if end <= Binner.binBasicMaxEnd:
             # contained in basic range
-            for bins in Binner.__getOverlappingBinsForOffsets(start, end, 0, Binner.binOffsetsBasic):
+            for bins in Binner._getOverlappingBinsForOffsets(start, end, 0, Binner.binOffsetsBasic):
                 yield bins
             yield (Binner.binOffsetToExtended, Binner.binOffsetToExtended)
         else:
             if start < Binner.binBasicMaxEnd:
                 # overlapping both basic and extended
-                for bins in Binner.__getOverlappingBinsForOffsets(start, Binner.binBasicMaxEnd, 0, Binner.binOffsetsBasic):
+                for bins in Binner._getOverlappingBinsForOffsets(start, Binner.binBasicMaxEnd, 0, Binner.binOffsetsBasic):
                     yield bins
-            for bins in Binner.__getOverlappingBinsForOffsets(start, end, Binner.binOffsetToExtended, Binner.binOffsetsExtended):
+            for bins in Binner._getOverlappingBinsForOffsets(start, end, Binner.binOffsetToExtended, Binner.binOffsetsExtended):
                 yield bins
 
     @staticmethod
@@ -181,13 +181,13 @@ class RangeFinder(object):
         self.haveStrand = None
         self.seqBins = {}
 
-    def __checkStrand(self, strand):
+    def _checkStrand(self, strand):
         if strand not in (None, "+", "-"):
             raise Exception("invalid strand: {}".format(strand))
 
     def add(self, seqId, start, end, value, strand=None):
         "add an entry for a sequence and range, and optional strand"
-        self.__checkStrand(strand)
+        self._checkStrand(strand)
         if self.haveStrand is None:
             self.haveStrand = (strand is not None)
         elif self.haveStrand != (strand is not None):
@@ -198,63 +198,63 @@ class RangeFinder(object):
             self.seqBins[key] = bins = RangeBins(seqId, strand)
         bins.add(start, end, value)
 
-    def __overlappingSpecificStrand(self, seqId, start, end, strand):
+    def _overlappingSpecificStrand(self, seqId, start, end, strand):
         "check overlap on specific strand, which might be None"
         bins = self.seqBins.get((seqId, strand))
         if bins is not None:
             for value in bins.overlapping(start, end):
                 yield value
 
-    def __overlappingBothStrands(self, seqId, start, end):
+    def _overlappingBothStrands(self, seqId, start, end):
         "return range overlaps, checking both strands"
-        for value in self.__overlappingSpecificStrand(seqId, start, end, '+'):
+        for value in self._overlappingSpecificStrand(seqId, start, end, '+'):
             yield value
-        for value in self.__overlappingSpecificStrand(seqId, start, end, '-'):
+        for value in self._overlappingSpecificStrand(seqId, start, end, '-'):
             yield value
 
     def overlapping(self, seqId, start, end, strand=None):
         "generator over values overlaping the specified range on seqId, optional strand"
-        self.__checkStrand(strand)
+        self._checkStrand(strand)
         if self.haveStrand and (strand is None):
             # must check on both strands
-            return self.__overlappingBothStrands(seqId, start, end)
+            return self._overlappingBothStrands(seqId, start, end)
         else:
             # must only check a specifc strand, or no strand to check
             if not self.haveStrand:
                 strand = None  # no strand to check
-            return self.__overlappingSpecificStrand(seqId, start, end, strand)
+            return self._overlappingSpecificStrand(seqId, start, end, strand)
 
-    def __removeIfExists(self, seqId, start, end, value, strand):
+    def _removeIfExists(self, seqId, start, end, value, strand):
         removed = False
         bins = self.seqBins.get((seqId, strand))
         if bins is not None:
             removed = bins.removeIfExists(start, end, value)
         return removed
 
-    def __removeSpecificStrand(self, seqId, start, end, value, strand):
+    def _removeSpecificStrand(self, seqId, start, end, value, strand):
         "remove an entry on specific strand, which might be None"
-        if not self.__removeIfExists(seqId, start, end, value, strand):
+        if not self._removeIfExists(seqId, start, end, value, strand):
             raise RemoveValueError(start, end)
 
-    def __removeBothStrands(self, seqId, start, end, value):
+    def _removeBothStrands(self, seqId, start, end, value):
         "remove an entry, checking both strands"
-        removed = self.__removeIfExists(seqId, start, end, value, '+')
+        removed = self._removeIfExists(seqId, start, end, value, '+')
         if not removed:
-            removed = self.__removeIfExists(seqId, start, end, value, '-')
+            removed = self._removeIfExists(seqId, start, end, value, '-')
         if not removed:
             raise RemoveValueError(start, end)
 
     def remove(self, seqId, start, end, value, strand=None):
         """remove an entry with the particular range and value, value error if not found"""
-        self.__checkStrand(strand)
+        self._checkStrand(strand)
         if self.haveStrand and (strand is None):
             # must check on both strands
-            self.__removeBothStrands(seqId, start, end, value)
+            self._removeBothStrands(seqId, start, end, value)
         else:
             # must only check a specifc strand, or no strand to check
             if not self.haveStrand:
                 strand = None  # no strand to check
-            self.__removeSpecificStrand(seqId, start, end, value, strand)
+            self._removeSpecificStrand(seqId, start, end, value, strand)
 
     def values(self):
         "generator over all values"

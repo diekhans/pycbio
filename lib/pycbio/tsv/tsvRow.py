@@ -20,12 +20,12 @@ class TsvRow(object):
         self._colTypes_ = reader.colTypes
         self._colMap_ = reader.colMap
         if self._colTypes_:
-            self.__parse(row)
+            self._parse(row)
         else:
             for i in range(len(self._columns_)):
                 setattr(self, self._columns_[i], row[i])
 
-    def __parseCol(self, row, i):
+    def _parseCol(self, row, i):
         try:
             col = row[i]
             ct = self._colTypes_[i]
@@ -37,9 +37,9 @@ class TsvRow(object):
         except Exception as ex:
             raise_from(TsvError("Error converting TSV column {} ({}) to object, value \"{}\"".format(i, self._columns_[i], row[i])), ex)
 
-    def __parse(self, row):
+    def _parse(self, row):
         for i in range(len(self._columns_)):
-            self.__parseCol(row, i)
+            self._parseCol(row, i)
 
     def __getitem__(self, key):
         "access a column by string key or numeric index"
@@ -65,7 +65,7 @@ class TsvRow(object):
     def __contains__(self, key):
         return key in self._colMap_
 
-    def __fmtWithTypes(self):
+    def _fmtWithTypes(self):
         row = []
         for i in range(len(self._columns_)):
             col = getattr(self, self._columns_[i])
@@ -79,7 +79,7 @@ class TsvRow(object):
             row.append(col)
         return row
 
-    def __fmtNoTypes(self):
+    def _fmtNoTypes(self):
         row = []
         for cn in self._columns_:
             col = getattr(self, cn)
@@ -91,9 +91,9 @@ class TsvRow(object):
 
     def getRow(self):
         if self._colTypes_:
-            return self.__fmtWithTypes()
+            return self._fmtWithTypes()
         else:
-            return self.__fmtNoTypes()
+            return self._fmtNoTypes()
 
     def __str__(self):
         return "\t".join(self.getRow())

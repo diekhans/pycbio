@@ -63,14 +63,14 @@ class _LinuxFifo(_Fifo):
     """Linus FIFO, that used /proc to get file paths"""
 
     def __init__(self):
-        _Fifo.__init__(self)
+        super(_LinuxFifo, self).__init__()
         self.rfd, self.wfd = os.pipe()
         # must do before forking, since path contains pid!
-        self.rpath = _LinuxFifo.__mkFdPath(self.rfd)
-        self.wpath = _LinuxFifo.__mkFdPath(self.wfd)
+        self.rpath = _LinuxFifo._mkFdPath(self.rfd)
+        self.wpath = _LinuxFifo._mkFdPath(self.wfd)
 
     @staticmethod
-    def __mkFdPath(fd):
+    def _mkFdPath(fd):
         "get linux /proc path for an fd"
         assert(fd is not None)
         p = "/proc/" + str(os.getpid()) + "/fd/" + str(fd)
@@ -83,13 +83,13 @@ class _NamedFifo(_Fifo):
     """FIFO, that used named pipes to get file paths"""
 
     def __init__(self):
-        _Fifo.__init__(self)
-        self.rpath = self.wpath = _NamedFifo.__fifoMk()
-        self.rfd = _NamedFifo.__fifoOpen(self.rpath, "r")
-        self.wfd = _NamedFifo.__fifoOpen(self.wpath, "w")
+        super(_NamedFifo, self).__init__()
+        self.rpath = self.wpath = _NamedFifo._fifoMk()
+        self.rfd = _NamedFifo._fifoOpen(self.rpath, "r")
+        self.wfd = _NamedFifo._fifoOpen(self.wpath, "w")
 
     @staticmethod
-    def __fifoOpen(path, mode):
+    def _fifoOpen(path, mode):
         "open a FIFO file descriptor without blocking during open"
         # FIXME: O_NONBLOCK not right for write, maybe just drop this
         omode = os.O_RDONLY if (mode.startswith("r")) else os.O_WRONLY
@@ -105,7 +105,7 @@ class _NamedFifo(_Fifo):
         return fd
 
     @staticmethod
-    def __fifoMk(suffix="tmp", tmpDir=None):
+    def _fifoMk(suffix="tmp", tmpDir=None):
         "create a FIFO with a unique name in tmp directory"
         # FIXME: don't need suffix/tmpDir, unless this made of part the Fifo API
         if tmpDir is None:
@@ -115,20 +115,20 @@ class _NamedFifo(_Fifo):
         unum = 0
         while unum < maxTries:
             path = "{}.{}.{}".format(prefix, unum, suffix)
-            if _NamedFifo.__fifoMkAtomic(path):
+            if _NamedFifo._fifoMkAtomic(path):
                 return path
             unum += 1
         raise Exception("unable to create a unique FIFO name in the form \"{}.*.{} after {} tries".format(
             prefix, suffix, maxTries))
 
     @staticmethod
-    def __checkFifo(path):
+    def _checkFifo(path):
         """check that fifo matches expected types and perms, catch security hold
         were it could be replace with another file"""
         pass  # FIXME implement
 
     @staticmethod
-    def __fifoMkAtomic(path):
+    def _fifoMkAtomic(path):
         "atomic create of a fifo, return false some file exists (might not be fifo)"
         if os.path.exists(path):
             return False
@@ -139,7 +139,7 @@ class _NamedFifo(_Fifo):
             if ex.errno == errno.EEXIST:
                 return False
             raise
-        _NamedFifo.__checkFifo(path)
+        _NamedFifo._checkFifo(path)
         return True
 
     def close(self):

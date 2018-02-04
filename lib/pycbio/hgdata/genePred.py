@@ -169,7 +169,7 @@ class Exon(object):
 class GenePred(object):
     """Object wrapper for a genePred"""
 
-    def __buildExons(self, exonStarts, exonEnds, exonFrames):
+    def _buildExons(self, exonStarts, exonEnds, exonFrames):
         "build array of exon objects"
         self.exons = []
         frame = None
@@ -180,7 +180,7 @@ class GenePred(object):
                 frame = exonFrames[i]
             self.addExon(exonStarts[i], exonEnds[i], frame)
 
-    def __initParse(self, row):
+    def _initParse(self, row):
         self.name = row[0]
         self.chrom = row[1]
         self.strand = row[2]
@@ -213,14 +213,14 @@ class GenePred(object):
             exonFrames = intArraySplit(row[iCol])
             iCol = iCol + 1
             self.hasExonFrames = True
-        self.__buildExons(exonStarts, exonEnds, exonFrames)
+        self._buildExons(exonStarts, exonEnds, exonFrames)
 
     @staticmethod
-    def __colOrNone(row, dbColIdxMap, colName, typeCnv):
+    def _colOrNone(row, dbColIdxMap, colName, typeCnv):
         idx = dbColIdxMap.get(colName)
         return None if (idx is None) else typeCnv(row[idx])
 
-    def __initDb(self, row, dbColIdxMap):
+    def _initDb(self, row, dbColIdxMap):
         self.name = row[dbColIdxMap["name"]]
         self.chrom = row[dbColIdxMap["chrom"]]
         self.strand = row[dbColIdxMap["strand"]]
@@ -231,15 +231,15 @@ class GenePred(object):
         self.cdsEnd = int(row[dbColIdxMap["cdsEnd"]])
         exonStarts = intArraySplit(row[dbColIdxMap["exonStarts"]])
         exonEnds = intArraySplit(row[dbColIdxMap["exonEnds"]])
-        self.score = self.__colOrNone(row, dbColIdxMap, "score", int)
-        self.name2 = self.__colOrNone(row, dbColIdxMap, "name2", str)
-        self.cdsStartStat = self.__colOrNone(row, dbColIdxMap, "cdsStartStat", CdsStat)
-        self.cdsEndStat = self.__colOrNone(row, dbColIdxMap, "cdsEndStat", CdsStat)
-        exonFrames = self.__colOrNone(row, dbColIdxMap, "exonFrames", intArraySplit)
+        self.score = self._colOrNone(row, dbColIdxMap, "score", int)
+        self.name2 = self._colOrNone(row, dbColIdxMap, "name2", str)
+        self.cdsStartStat = self._colOrNone(row, dbColIdxMap, "cdsStartStat", CdsStat)
+        self.cdsEndStat = self._colOrNone(row, dbColIdxMap, "cdsEndStat", CdsStat)
+        exonFrames = self._colOrNone(row, dbColIdxMap, "exonFrames", intArraySplit)
         self.hasExonFrames = (exonFrames is not None)
-        self.__buildExons(exonStarts, exonEnds, exonFrames)
+        self._buildExons(exonStarts, exonEnds, exonFrames)
 
-    def __initEmpty(self):
+    def _initEmpty(self):
         self.name = None
         self.chrom = None
         self.strand = None
@@ -257,7 +257,7 @@ class GenePred(object):
         self.cdsStartIExon = None
         self.cdsEndIExon = None
 
-    def __initClone(self, gp):
+    def _initClone(self, gp):
         self.name = gp.name
         self.chrom = gp.chrom
         self.strand = gp.strand
@@ -275,7 +275,7 @@ class GenePred(object):
         self.cdsStartIExon = gp.cdsStartIExon
         self.cdsEndIExon = gp.cdsEndIExon
 
-    def __initSwapToOtherStrand(self, gp, chromSize):
+    def _initSwapToOtherStrand(self, gp, chromSize):
         "swap coordinates to other strand"
         self.name = gp.name
         self.chrom = gp.chrom
@@ -299,35 +299,35 @@ class GenePred(object):
     def __init__(self, row=None, dbColIdxMap=None, noInitialize=False):
         "If row is not None, parse a row, otherwise initialize to empty state"
         if dbColIdxMap is not None:
-            self.__initDb(row, dbColIdxMap)
+            self._initDb(row, dbColIdxMap)
         elif row is not None:
-            self.__initParse(row)
+            self._initParse(row)
         elif not noInitialize:
-            self.__initEmpty()
+            self._initEmpty()
 
     def getStrandRelative(self, chromSize):
         """create a copy of this GenePred object that has strand relative
         coordinates."""
         gp = GenePred(noInitialize=True)
         if self.inDirectionOfTranscription():
-            gp.__initClone(self)
+            gp._initClone(self)
             gp.strandRel = True
         else:
-            gp.__initSwapToOtherStrand(self, chromSize)
+            gp._initSwapToOtherStrand(self, chromSize)
         return gp
 
     def inDirectionOfTranscription(self):
         "are exons in the direction of transcriptions"
         return (self.strand == "+") or self.strandRel
 
-    def __overlapsCds(self, exonStart, exonEnd):
+    def _overlapsCds(self, exonStart, exonEnd):
         return (self.cdsStart is not None) and (self.cdsStart < self.cdsEnd) and (exonStart < self.cdsEnd) and (exonEnd > self.cdsStart)
 
     def addExon(self, exonStart, exonEnd, frame=None):
         "add an exon; which must be done in assending order"
         i = len(self.exons)
         self.exons.append(Exon(self, i, exonStart, exonEnd, frame))
-        if self.__overlapsCds(exonStart, exonEnd):
+        if self._overlapsCds(exonStart, exonEnd):
             if self.cdsStartIExon is None:
                 self.cdsStartIExon = i
             self.cdsEndIExon = i
@@ -567,26 +567,26 @@ class GenePredTbl(list):
         self.names = None
         self.rangeMap = None
         if buildUniqIdx:
-            self.__buildUniqIdx()
+            self._buildUniqIdx()
         if buildIdx:
-            self.__buildIdx()
+            self._buildIdx()
         if buildRangeIdx:
-            self.__buildRangeIdx()
+            self._buildRangeIdx()
 
-    def __buildUniqIdx(self):
+    def _buildUniqIdx(self):
         self.names = dict()
         for row in self:
             if row.name in self.names:
                 raise Exception("gene with this name already in index: " + row.name)
             self.names[row.name] = row
 
-    def __buildIdx(self):
+    def _buildIdx(self):
         from pycbio.sys.multiDict import MultiDict
         self.names = MultiDict()
         for row in self:
             self.names.add(row.name, row)
 
-    def __buildRangeIdx(self):
+    def _buildRangeIdx(self):
         from pycbio.hgdata.RangeFinder import RangeFinder
         self.rangeMap = RangeFinder()
         for gene in self:

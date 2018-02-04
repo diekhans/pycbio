@@ -74,14 +74,14 @@ class Entry(object):
         assert((self.tdStyles is None) or (len(self.tdStyles) == len(row)))
         assert((self.tdStyles is None) or (self.subRowGroups is None))  # can't have both yet
 
-    def __numSubRowGroupCols(self):
+    def _numSubRowGroupCols(self):
         n = 0
         if self.subRowGroups is not None:
             for subRows in self.subRowGroups:
                 n += subRows.numCols
         return n
 
-    def __numSubRowGroupRows(self):
+    def _numSubRowGroupRows(self):
         n = 0
         if self.subRowGroups is not None:
             for subRows in self.subRowGroups:
@@ -90,10 +90,10 @@ class Entry(object):
 
     def numColumns(self):
         "compute number of columns that will be generated"
-        return len(self.row) + self.__numSubRowGroupCols()
+        return len(self.row) + self._numSubRowGroupCols()
 
-    def __toHtmlRowWithSubRows(self):
-        numSubRowRows = self.__numSubRowGroupRows()
+    def _toHtmlRowWithSubRows(self):
+        numSubRowRows = self._numSubRowGroupRows()
         hrow = ["<tr>"]
         td = "<td rowspan=\"{}\">".format(numSubRowRows)
         for c in self.row:
@@ -111,7 +111,7 @@ class Entry(object):
             hrow.append("</tr>\n")
         return "".join(hrow)
 
-    def __toHtmlRowWithStyle(self):
+    def _toHtmlRowWithStyle(self):
         hrow = ["<tr>"]
         for i in range(len(self.row)):
             if self.tdStyles[i] is not None:
@@ -122,7 +122,7 @@ class Entry(object):
         hrow.append("</tr>\n")
         return "".join(hrow)
 
-    def __toHtmlRowSimple(self):
+    def _toHtmlRowSimple(self):
         hrow = ["<tr>"]
         for c in self.row:
             hrow.append("<td>" + str(c))
@@ -131,11 +131,11 @@ class Entry(object):
 
     def toHtmlRow(self):
         if self.subRowGroups is not None:
-            return self.__toHtmlRowWithSubRows()
+            return self._toHtmlRowWithSubRows()
         if self.tdStyles is not None:
-            return self.__toHtmlRowWithStyle()
+            return self._toHtmlRowWithStyle()
         else:
-            return self.__toHtmlRowSimple()
+            return self._toHtmlRowSimple()
 
 
 class BrowserDir(object):
@@ -167,12 +167,12 @@ class BrowserDir(object):
         self.entries = []
         self.style = style
         self.customTrackUrl = customTrackUrl
-        self.trackArgs = self.__mkTracksArgs(tracks)
-        self.initTrackArgs = self.__mkTracksArgs(initTracks)
+        self.trackArgs = self._mkTracksArgs(tracks)
+        self.initTrackArgs = self._mkTracksArgs(initTracks)
         if customTrackUrl is not None:
             self.trackArgs["hgt.customText"] = self.customTrackUrl
 
-    def __mkTracksArgs(self, tracks):
+    def _mkTracksArgs(self, tracks):
         args = {}
         if tracks is not None:
             args.join(tracks)
@@ -215,7 +215,7 @@ class BrowserDir(object):
                 return r.key
         self.entries.sort(key=keyFunc, reverse=reverse)
 
-    def __mkFrame(self, title=None, dirPercent=15, below=False):
+    def _mkFrame(self, title=None, dirPercent=15, below=False):
         """create frameset as a HtmlPage object"""
 
         if below:
@@ -234,7 +234,7 @@ class BrowserDir(object):
             pg.add(fbr)
         return pg
 
-    def __getPageLinks(self, pageNum, numPages, inclPageLinks):
+    def _getPageLinks(self, pageNum, numPages, inclPageLinks):
         html = []
         # prev link
         if pageNum > 1:
@@ -257,7 +257,7 @@ class BrowserDir(object):
             html.append("next")
         return ", ".join(html)
 
-    def __padRows(self, pg, numPadRows, numColumns):
+    def _padRows(self, pg, numPadRows, numColumns):
         if numColumns > 1:
             pr = "<tr colspan=\"{}\"></tr>".format(numColumns)
         else:
@@ -265,7 +265,7 @@ class BrowserDir(object):
         for i in range(numPadRows):
             pg.add(pr)
 
-    def __addPageRows(self, pg, pgEntries, numPadRows):
+    def _addPageRows(self, pg, pgEntries, numPadRows):
         """add one set of rows to the page.  In multi-column mode, this
         will be contained in a higher-level table"""
         pg.tableStart()
@@ -276,10 +276,10 @@ class BrowserDir(object):
             numColumns = ent.numColumns()  # better all be the same
             pg.add(ent.toHtmlRow())
         if numPadRows > 0:
-            self.__padRows(pg, numPadRows, numColumns)
+            self._padRows(pg, numPadRows, numColumns)
         pg.tableEnd()
 
-    def __addMultiColEntryTbl(self, pg, pgEntries):
+    def _addMultiColEntryTbl(self, pg, pgEntries):
         pg.tableStart()
         nEnts = len(pgEntries)
         rowsPerCol = old_div(nEnts, self.numColumns)
@@ -293,18 +293,18 @@ class BrowserDir(object):
             else:
                 n = nEnts - iEnt
                 np = rowsPerCol - n
-            self.__addPageRows(pg, pgEntries[iEnt:iEnt + n], np)
+            self._addPageRows(pg, pgEntries[iEnt:iEnt + n], np)
             pg.add("</td>")
         pg.add("</tr>")
         pg.tableEnd()
 
-    def __addEntryTbl(self, pg, pgEntries):
+    def _addEntryTbl(self, pg, pgEntries):
         if self.numColumns > 1:
-            self.__addMultiColEntryTbl(pg, pgEntries)
+            self._addMultiColEntryTbl(pg, pgEntries)
         else:
-            self.__addPageRows(pg, pgEntries, 0)
+            self._addPageRows(pg, pgEntries, 0)
 
-    def __writeDirPage(self, outDir, pgEntries, pageNum, numPages):
+    def _writeDirPage(self, outDir, pgEntries, pageNum, numPages):
         title = "page {}".format(pageNum)
         if self.title:
             title += ": {}".format(self.title)
@@ -313,20 +313,20 @@ class BrowserDir(object):
         if self.pageDesc is not None:
             pg.add(self.pageDesc)
             pg.add("<br><br>")
-        pg.add(self.__getPageLinks(pageNum, numPages, False))
-        self.__addEntryTbl(pg, pgEntries)
-        pg.add(self.__getPageLinks(pageNum, numPages, True))
+        pg.add(self._getPageLinks(pageNum, numPages, False))
+        self._addEntryTbl(pg, pgEntries)
+        pg.add(self._getPageLinks(pageNum, numPages, True))
 
         dirFile = outDir + "/dir{}.html".format(pageNum)
         pg.writeFile(dirFile)
 
-    def __writeDirPages(self, outDir):
+    def _writeDirPages(self, outDir):
         if len(self.entries) == 0:
             # at least write an empty page
-            self.__writeDirPage(outDir, [], 1, 0)
+            self._writeDirPage(outDir, [], 1, 0)
         elif self.pageSize is None:
             # single page
-            self.__writeDirPage(outDir, self.entries, 1, 1)
+            self._writeDirPage(outDir, self.entries, 1, 1)
         else:
             # split
             numPages = old_div((len(self.entries) + self.pageSize - 1), self.pageSize)
@@ -334,10 +334,10 @@ class BrowserDir(object):
                 first = (pageNum - 1) * self.pageSize
                 last = first + (self.pageSize - 1)
                 pgEntries = self.entries[first:last]
-                self.__writeDirPage(outDir, pgEntries, pageNum, numPages)
+                self._writeDirPage(outDir, pgEntries, pageNum, numPages)
 
     def write(self, outDir):
         fileOps.ensureDir(outDir)
-        frame = self.__mkFrame(self.title, self.dirPercent, self.below)
+        frame = self._mkFrame(self.title, self.dirPercent, self.below)
         frame.writeFile(outDir + "/index.html")
-        self.__writeDirPages(outDir)
+        self._writeDirPages(outDir)
