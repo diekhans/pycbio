@@ -6,12 +6,6 @@ import os.path
 from pycbio.sys import fileOps
 import pipettor
 
-# FIXME: shell has multiple quoting hell issues; maybe something like
-# fsh (http://www.lysator.liu.se/fsh/) would fix this, and make it faster.
-# or maybe netpipes, or libssh
-
-# FIXME: need to figure out verbose stuff with indentation
-
 
 class BatchStats(object):
     "statistics on jobs in the current batch"
@@ -106,11 +100,6 @@ class Para(object):
             return child
         else:
             return os.path.join(parent, child)
-
-    def close(self):
-        "close up para connection"
-        # might do something one data if we keep ssh open
-        pass
 
     def _para(self, *paraArgs):
         """ssh to the remote machine and run the para command.  paraArgs are

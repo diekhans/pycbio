@@ -13,7 +13,7 @@ import warnings
 from Bio import SeqIO
 import argparse
 from pycbio.sys import fileOps, setOps
-from pycbio.sys.enumeration import Enumeration
+from pycbio.sys.symEnum import SymEnum
 from pycbio.sys.fileOps import prLine
 from pycbio.tsv import TsvReader, TabFileReader
 from pycbio.hgdata.genePred import GenePred, CdsStat
@@ -23,12 +23,19 @@ warnCnt = 0
 
 # FIXME: too many special cases in code, simplify.
 
-GeneType = Enumeration("GeneType",
-                       ("unknown", "protGene", "rnaGene", "immunoglobulin", "other"),
-                       bitSetValues=True)
-ActiveType = Enumeration("ActiveType",
-                         ("unknown", "live", "pseudo"),
-                         bitSetValues=True)
+class GeneType(SymEnum):
+    __slots__ = ()
+    unknown = 0x01
+    protGene = 0x02
+    rnaGene = 0x04
+    immunoglobulin = 0x08
+    other = 0x10
+
+class ActiveType(SymEnum):
+    __slots__ = ()
+    unknown = 0x01
+    live = 0x02
+    pseudo = 0x04
 
 
 def parseArgs():

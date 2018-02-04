@@ -124,7 +124,9 @@ class SymEnum(six.with_metaclass(SymEnumMeta, SymEnumMixin, Enum)):
     values and str() returns value without class name.  Aliases can be
     added using the Enum approach of:
         name = 1
-        namealias = val
+        namealias = 1
+
+    The functional API works as with Enum.
 
     To handle string values that are not valid Python member names, an external
     name maybe associated with a field using a SymEnumValue object

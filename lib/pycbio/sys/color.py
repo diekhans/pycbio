@@ -18,7 +18,6 @@ class Color(namedtuple("Color", ("red", "green", "blue",
     :ivar saturation: saturation component in the range 0.0..1.0
     :ivar value: value component, in the range 0.0..1.0
     """
-    # FIXME: could HSV or RGB be properties?
     __slots__ = ()
 
     def __str__(self):
@@ -84,6 +83,7 @@ class Color(namedtuple("Color", ("red", "green", "blue",
         return (self.huei, self.saturationi, self.valuei)
 
     def toHtmlColor(self):
+        "as an html color"
         return "#%02x%02x%02x" % self.rgb8
 
     def toRgbStr(self, sep=",", pos=4):

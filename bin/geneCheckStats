@@ -10,15 +10,15 @@ myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 import argparse
 from pycbio.sys.fileOps import prRowv
-from pycbio.sys.enumeration import Enumeration
+from pycbio.sys.symEnum import SymEnum
 from pycbio.hgdata import geneCheck
 
-ProbType = Enumeration("ProbType",
-                       ("ok", "any", "start", "stop", "orfStop",
-                        "cdsGap", "cdsMult3Gap", "utrGap",
-                        "cdsUnknownSplice", "utrUnknownSplice",
-                        "cdsNonCanonSplice", "utrNonCanonSplice",
-                        "frameBad", "frameMismatch", "noCDS"))
+ProbType = SymEnum("ProbType",
+                   ("ok", "any", "start", "stop", "orfStop",
+                    "cdsGap", "cdsMult3Gap", "utrGap",
+                    "cdsUnknownSplice", "utrUnknownSplice",
+                    "cdsNonCanonSplice", "utrNonCanonSplice",
+                    "frameBad", "frameMismatch", "noCDS"))
 
 
 def fmtRate(cnt, tot):
@@ -44,7 +44,7 @@ class CountChks(object):
         self.cnt = 0
         self.probGeneCnts = {}
         self.probInstCnts = {}
-        for v in ProbType.values:
+        for v in ProbType:
             self.probGeneCnts[v] = 0
             self.probInstCnts[v] = 0
 
@@ -93,7 +93,7 @@ class CountChks(object):
         outFh = open(statsOut, "w")
         prRowv(outFh, "probCat", "gene", "rate", "numProbs")
         prRowv(outFh, "total", self.cnt, "1.0", self.cnt)
-        for v in ProbType.values:
+        for v in ProbType:
             prRowv(outFh, v, self.probGeneCnts[v], fmtRate(self.probGeneCnts[v], self.cnt),
                    self.probInstCnts[v])
         outFh.close()

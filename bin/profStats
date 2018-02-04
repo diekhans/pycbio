@@ -8,12 +8,12 @@ myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 import argparse
 import pstats
-from pycbio.sys.enumeration import Enumeration
+from pycbio.sys.symEnum import SymEnum
 
 validSortKeys = ('calls', 'cumulative', 'file', 'module', 'pcalls', 'line',
                  'name', 'nfl', 'stdname', 'time')
 
-ReportType = Enumeration("ReportType", ("basic", "callers", "callees"))
+ReportType = SymEnum("ReportType", ("basic", "callers", "callees"))
 
 
 def parseArgs():
