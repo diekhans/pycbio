@@ -15,7 +15,8 @@ libcomp:
 	PYTHONPATH=lib ${PYTHON} -m compileall -l $(subst .,/,${PKGS})
 
 test:
-	(cd tests && ${MAKE} test)
+	(cd tests && ${MAKE} test PYTHON=python3)
+	(cd tests && ${MAKE} test PYTHON=python2)
 
 lint:
 	${FLAKE8} lib/pycbio tests/libtests ${PROGS:%=bin/%}
