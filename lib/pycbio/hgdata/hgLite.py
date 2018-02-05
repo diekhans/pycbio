@@ -524,14 +524,32 @@ class GencodeAttrsDbTable(HgLiteTable):
         sql = "SELECT {columns} FROM {table} WHERE transcriptId = ?"
         return next(self._queryRows(sql, transcriptId), None)
 
+    def getrByTranscriptId(self, transcriptId):
+        """get the required GencodeAttrs object for transcriptId, or error if not found."""
+        attrs = self.getByTranscriptId(transcriptId)
+        if attrs is None:
+            PycbioException("transcriptId {} not found in {}".format(transcriptId, self.table))
+            return attrs
+
     def getByGeneId(self, geneId):
         """get GencodeAttrs objects for geneId or empty list if not found"""
         sql = "SELECT {columns} FROM {table} WHERE geneId = ?"
         return list(self._queryRows(sql, geneId))
 
-    def getAllGeneIds(self):
+    def getrByGeneId(self, geneId):
+        """get required GencodeAttrs objects for geneId or error if not found"""
+        attrses = self.getByTranscriptId(transcriptId)
+        if len(attrses) == 0:
+            PycbioException("geneId {} not found in {}".format(geneId, self.table))
+        return attrses
+
+    def getGeneIds(self):
         sql = "SELECT DISTINCT geneId FROM {table}"
         return list(self.queryRows(sql, (), lambda cur, row: row[0]))
+
+    def getGeneTranscriptIds(self, geneId):
+        sql = "SELECT transcriptId FROM {table} WHERE geneId = ?"
+        return list(self.queryRows(sql, (geneId,), lambda cur, row: row[0]))
 
 
 class GencodeTranscriptSource(namedtuple("GencodeTranscriptSource",
