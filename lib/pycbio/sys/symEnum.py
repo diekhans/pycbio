@@ -3,8 +3,23 @@
 
 from __future__ import print_function
 import six
-from enum import Enum, EnumMeta, auto
+from enum import Enum, EnumMeta
 from functools import total_ordering
+
+# FIXME: should really be built like other IntEnum, etc
+# FIXME: auto for PY2  is a hack, maybe get a enum36 ported
+
+if six.PY3:
+    from enum import auto
+else:
+    # enum34 doesn't have auto
+    _auto_null = object()
+    class auto(object):
+        """
+        Instances are replaced with an appropriate value in Enum class suites.
+        """
+        value = _auto_null
+
 
 SymEnum = None  # class defined after use
 
@@ -46,8 +61,8 @@ class SymEnumMeta(EnumMeta):
     """metaclass for SysEnumMeta that implements looking up of singleton members
     by string name."""
 
-    @staticmethod
-    def _symEnumValueUpdate(classdict, name, externalNameMap):
+    @classmethod
+    def _symEnumValueUpdate(cls, classdict, name, externalNameMap):
         """record info about a member specified with SymEnum and update value in classdict
         to be actual value rather than SymEnumValue"""
         symValue = classdict[name]
@@ -59,18 +74,37 @@ class SymEnumMeta(EnumMeta):
         classdict[name] = symValue.value
         externalNameMap.add(name, symValue.externalName)
 
-    @staticmethod
-    def _buildExternalNameMap(classdict):
+    @classmethod
+    def _buildExternalNameMap(cls, classdict):
+        "fill in external name map"
         externalNameMap = classdict["__externalNameMap__"] = _SysEnumExternalNameMap()
-        for name in list(classdict.keys()):
+        for name in classdict.keys():
             if isinstance(classdict[name], SymEnumValue):
-                SymEnumMeta._symEnumValueUpdate(classdict, name, externalNameMap)
+                cls._symEnumValueUpdate(classdict, name, externalNameMap)
 
-    def __new__(metacls, cls, bases, classdict):
+    @classmethod
+    def _updateAutoValues(cls, classdict):
+        """hack to update auto values for PY2"""
+        # find maximum
+        lastValue = None
+        for name in classdict.keys():
+            if (not name.startswith('__')) and (not isinstance(classdict[name], auto)):
+                lastValue = classdict[name] if lastValue is None else max(classdict[name], lastValue)
+        if lastValue is None:
+            lastValue = 0
+        # assign values great than last
+        for name in classdict.keys():
+            if isinstance(classdict[name], auto):
+                lastValue += 1
+                classdict[name] = lastValue
+
+    def __new__(metacls, clsname, bases, classdict):
         "updates class fields defined as SymEnumValue to register external names"
         if SymEnum in bases:
-            SymEnumMeta._buildExternalNameMap(classdict)
-        return EnumMeta.__new__(metacls, cls, bases, classdict)
+            metacls._buildExternalNameMap(classdict)
+            if six.PY2:
+                metacls._updateAutoValues(classdict)
+        return super(SymEnumMeta, metacls).__new__(metacls, clsname, bases, classdict)
 
     @staticmethod
     def _lookUpByStr(cls, value):
@@ -91,7 +125,7 @@ class SymEnumMeta(EnumMeta):
         if (names is None) and isinstance(value, six.string_types):
             return SymEnumMeta._lookUpByStr(cls, value)
         else:
-            return EnumMeta.__call__(cls, value, names, module=module, type=typ)
+            return super(SymEnumMeta, cls).__call__(value, names, module=module, type=typ)
 
 
 @total_ordering
@@ -126,8 +160,8 @@ class SymEnum(six.with_metaclass(SymEnumMeta, SymEnumMixin, Enum)):
         name = 1
         namealias = 1
 
-    The functional API works as with Enum, as well at the auto() method of
-    field initiation.
+    The functional API works as with Enum. The auto() method of
+    field initialization works with limited functionality on Python2.
 
     To handle string values that are not valid Python member names, an external
     name maybe associated with a field using a SymEnumValue object

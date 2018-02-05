@@ -529,7 +529,7 @@ class GencodeAttrsDbTable(HgLiteTable):
         attrs = self.getByTranscriptId(transcriptId)
         if attrs is None:
             PycbioException("transcriptId {} not found in {}".format(transcriptId, self.table))
-            return attrs
+        return attrs
 
     def getByGeneId(self, geneId):
         """get GencodeAttrs objects for geneId or empty list if not found"""

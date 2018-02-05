@@ -1,5 +1,6 @@
 # Copyright 2006-2014 Mark Diekhans
 from __future__ import print_function
+import six
 import unittest
 import sys
 import pickle
@@ -152,7 +153,11 @@ class SymEnumTests(TestCaseBase):
             first = auto()
             second = auto()
             third = auto()
-        self.assertEqual(['first', 'second', 'third'], list(sorted([str(v) for v in AutoDef])))
+        if six.PY3:
+            self.assertEqual([('first', 1), ('second', 2), ('third', 3)], list(sorted([(str(v), v.value) for v in AutoDef])))
+        else:  # PY2 auto() hack doesn't order keys
+            self.assertEqual(['first', 'second', 'third'], list(sorted([str(v) for v in AutoDef])))
+            self.assertEqual([1, 2, 3], list(sorted([v.value for v in AutoDef])))
 
     def testWithSymEnumValue(self):
         class CdsStat(SymEnum):
