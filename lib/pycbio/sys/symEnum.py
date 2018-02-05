@@ -14,6 +14,7 @@ if six.PY3:
 else:
     # enum34 doesn't have auto
     _auto_null = object()
+
     class auto(object):
         """
         Instances are replaced with an appropriate value in Enum class suites.
@@ -78,7 +79,7 @@ class SymEnumMeta(EnumMeta):
     def _buildExternalNameMap(cls, classdict):
         "fill in external name map"
         externalNameMap = classdict["__externalNameMap__"] = _SysEnumExternalNameMap()
-        for name in classdict.keys():
+        for name in list(classdict.keys()):  # MUST COPY, as modifying classdict
             if isinstance(classdict[name], SymEnumValue):
                 cls._symEnumValueUpdate(classdict, name, externalNameMap)
 
@@ -93,7 +94,7 @@ class SymEnumMeta(EnumMeta):
         if lastValue is None:
             lastValue = 0
         # assign values great than last
-        for name in classdict.keys():
+        for name in list(classdict.keys()):  # MUST COPY, as modifying classdict
             if isinstance(classdict[name], auto):
                 lastValue += 1
                 classdict[name] = lastValue
@@ -125,7 +126,7 @@ class SymEnumMeta(EnumMeta):
         if (names is None) and isinstance(value, six.string_types):
             return SymEnumMeta._lookUpByStr(cls, value)
         else:
-            return super(SymEnumMeta, cls).__call__(value, names, module=module, type=typ)
+            return EnumMeta.__call__(cls, value, names, module=module, type=typ)
 
 
 @total_ordering
