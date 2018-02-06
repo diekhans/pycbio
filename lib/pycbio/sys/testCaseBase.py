@@ -87,7 +87,7 @@ class TestCaseBase(unittest.TestCase):
 
     def getExpectedFile(self, ext, basename=None):
         """Get path to the expected file, using the current test id and append
-        ext. If basename is used, it is inset of the test id, allowing share
+        ext. If basename is used, it is instead of the test id, allowing share
         an expected file between multiple tests."""
         return os.path.join(self.getTestDir(), "expected/{}{}".format(basename if basename is not None else self.getId(),
                                                                       ext))

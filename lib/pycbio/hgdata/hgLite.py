@@ -549,7 +549,7 @@ class GencodeAttrsDbTable(HgLiteTable):
 
     def getGeneTranscriptIds(self, geneId):
         sql = "SELECT transcriptId FROM {table} WHERE geneId = ?"
-        return list(self.queryRows(sql, (geneId,), lambda cur, row: row[0]))
+        return list(self.queryRows(sql, (), lambda cur, row: row[0], geneId))
 
 
 class GencodeTranscriptSource(namedtuple("GencodeTranscriptSource",
