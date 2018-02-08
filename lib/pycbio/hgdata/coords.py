@@ -62,6 +62,19 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         else:
             return "{}:{}-{}".format(self.name, self.start, self.end)
 
+    def eqLoc(self, other):
+        "is the strand location the same?"
+        return ((self.name == other.name)
+                and (self.start == other.start)
+                and (self.end == other.end)
+                and (self.strand == other.strand))
+
+    def eqAbsLoc(self, other):
+        "is the absolute location the same?"
+        return ((self.name == other.name)
+                and (self.start == other.start)
+                and (self.end == other.end))
+
     def __hash__(self):
         return super(Coords, self).__hash__()
 
