@@ -26,7 +26,7 @@ class HgConf(dict):
                 raise Exception("expected name=value, got: " + line)
             self[line[0:i].strip()] = line[i + 1:].strip()
 
-    __cache = {}
+    _cache = {}
 
     @classmethod
     def obtain(cls, confFile=None):

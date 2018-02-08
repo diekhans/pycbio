@@ -16,63 +16,19 @@ from pycbio.tsv import TsvReader
 from pycbio.hgdata.rangeFinder import Binner
 from Bio import SeqIO
 import sys
-import apsw
+from pycbio.db.sqliteOps import sqliteConnect, SqliteCursor  # noqa: F401
 
 # FIXME: HgLiteTable could become wrapper around a connection,
 # and make table operations functions.???  probably not
 # FIXME: removed duplicated functions and move to base class or mix-in especially gencode
 # FIXME: move generic sqlite to another module.
-
-
-def sqliteConnect(sqliteDb, create=False, readOnly=True):
-    """Connect to an sqlite3 database.  If create is specified, then database
-    is created if it doesn't exist.  If sqliteDb is None, and in-memory data
-    is created with create and readOnly flags being ignored. If create is True,
-    readOnly is set to False."""
-    if create:
-        readOnly = False
-    if sqliteDb is None:
-        sqliteDb = ":memory:"
-        create = True
-        readOnly = False
-
-    flags = apsw.SQLITE_OPEN_READONLY if readOnly else apsw.SQLITE_OPEN_READWRITE
-    if create:
-        flags |= apsw.SQLITE_OPEN_CREATE
-    return apsw.Connection(sqliteDb, flags)
-
-
-class SqliteCursor(object):
-    """context manager creating an sqlite cursor in a single transaction"""
-    def __init__(self, conn, rowFactory=None):
-        self.conn = conn
-        self.rowFactory = rowFactory
-        self.trans = None
-        self.cur = None
-
-    def __enter__(self):
-        self.trans = self.conn.__enter__()
-        self.cur = self.conn.cursor()
-        if self.rowFactory is not None:
-            self.cur.setrowtrace(self.rowFactory)
-        return self.cur
-
-    def __exit__(self, *args):
-        self.cur.close()
-        return self.trans.__exit__(*args)
+# FIXME: often hides sql too much (gencode_icedb/general/gencodeDb.py: getGeneIdsStartingInBounds)
+# FIXME: maaybe a series of functions to build queryes would be the ticket (binning, in querys, ihserts)
+# FIXME" prefix generators with gen**********
 
 
 def noneIfEmpty(s):
     return s if s != "" else None
-
-
-def sqliteHaveTable(conn, table):
-    "check if a table exists"
-    sql = """SELECT count(*) FROM sqlite_master WHERE (type = "table") AND (name = ?);"""
-    with SqliteCursor(conn) as cur:
-        cur.execute(sql, (table, ))
-        row = next(cur)
-        return row[0] > 0
 
 
 class HgLiteTable(object):
@@ -324,11 +280,16 @@ class PslDbTable(HgLiteTable):
         return self.queryRows(sql, self.columnNames, self._getRowFactory(raw), startOid, endOid)
 
     def getTRangeOverlap(self, tName, tStart, tEnd, strand=None, extraWhere=None, raw=False):
-        """Get alignments overlapping tRange. Don't convert to Psl objects if raw is True.
-        Strand should match the strand value in the table (one or two) and maybe a list of multiple value.
-        The where is ANDed with the query if supplied."""
-        binWhere = Binner.getOverlappingSqlExpr("bin", "tName", "tStart", "tEnd", tName, tStart, tEnd)
-        sql = "SELECT {{columns}} FROM {{table}} WHERE {}".format(binWhere)
+        """Get alignments overlapping target range. To query the whole
+        sequence, set tStart and tEnd to None.  Don't convert to Psl objects
+        if raw is True.  Strand should match the strand value in the table
+        (one or two) and maybe a list of multiple value.  The where is ANDed
+        with the query if supplied."""
+        if tStart is None:
+            rangeWhere = "(tName = '{}')".format(tName)
+        else:
+            rangeWhere = Binner.getOverlappingSqlExpr("bin", "tName", "tStart", "tEnd", tName, tStart, tEnd)
+        sql = "SELECT {{columns}} FROM {{table}} WHERE {}".format(rangeWhere)
         if strand is not None:
             if isinstance(strand, six.string_types):
                 strand = [strand]
@@ -434,10 +395,14 @@ class GenePredDbTable(HgLiteTable):
         return self.queryRows(sql, self.columnNames, self._getRowFactory(raw), startOid, endOid)
 
     def getRangeOverlap(self, chrom, start, end, strand=None, raw=False):
-        """Get alignments overlapping range  If raw is
-        specified. Don't convert to GenePred objects if raw is True."""
-        binWhere = Binner.getOverlappingSqlExpr("bin", "chrom", "txStart", "txEnd", chrom, start, end)
-        sql = "SELECT {{columns}} FROM {{table}} WHERE {}".format(binWhere)
+        """Get annotations overlapping range To query the whole sequence, set
+        start and end to None.  If raw is specified. Don't convert to GenePred
+        objects if raw is True."""
+        if start is None:
+            rangeWhere = "(chrom = '{}')".format(chrom)
+        else:
+            rangeWhere = Binner.getOverlappingSqlExpr("bin", "chrom", "txStart", "txEnd", chrom, start, end)
+        sql = "SELECT {{columns}} FROM {{table}} WHERE {}".format(rangeWhere)
         sqlArgs = []
         if strand is not None:
             sql += " AND (strand = ?)"
