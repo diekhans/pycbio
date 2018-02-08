@@ -9,6 +9,7 @@ import re
 import socket
 import tempfile
 import pipettor
+from threading import Lock
 from pycbio.sys import PycbioException
 
 # FIXME: normalize file line read routines to all take fh or name, remove redundant code.
@@ -318,25 +319,41 @@ def tmpDirGet(prefix=None, suffix=".tmp", tmpDir=None):
     return tempfile.mkdtemp(prefix=prefix, suffix=suffix, dir=findTmpDir(tmpDir))
 
 
-_hostName = None  # don't get multiple times
+_hostName = None  # get first time when needed
 _atomicNextNum = 0  # number to include in atomicTmpFile, just in case same process tries creates multiple
+_atomicTmpFileMutex = Lock()
+
+def _tryForNewAtomicTmpFile(finalDir, finalBasename, finalExt):
+    "Attempt to get a tmp file name, return None in the rare change that it exists"
+    global _atomicNextNum
+    baseName = "{}.{}.{}.{}.tmp{}".format(finalBasename, _hostName, os.getpid(), _atomicNextNum, finalExt)
+    _atomicNextNum += 1
+    tmpPath = os.path.join(finalDir, baseName)
+    if os.path.exists(tmpPath):
+        return None
+    else:
+        return tmpPath
 
 
 def atomicTmpFile(finalPath):
     """Return a tmp file name to use with atomicInstall.  This will be in the
     same directory as finalPath. The temporary file will have the same extension
-    as finalPath."""
+    as finalPath.  Thread-safe."""
+    # FIXME: this would make a good object and maybe contact manager
     # note: this can't use tmpFileGet, since file should not be created or be private
-    finalPathDir = os.path.dirname(finalPath)
-    if finalPathDir == "":
-        finalPathDir = '.'
-    global _hostName, _atomicNextNum
+    finalDir = os.path.dirname(finalPath)
+    if finalDir == "":
+        finalDir = '.'
+    finalBasename = os.path.basename(finalPath)
+    finalExt  = os.path.splitext(finalPath)[1]
+    global _hostName
     if _hostName is None:
         _hostName = socket.gethostname()
-    baseName = "{}.{}.{}.{}.tmp.{}".format(os.path.basename(finalPath), _hostName, os.getpid(),
-                                           _atomicNextNum, os.path.splitext(finalPath)[1])
-    _atomicNextNum += 1
-    return os.path.join(finalPathDir, baseName)
+    with _atomicTmpFileMutex:
+        tmpPath = None
+        while tmpPath is None:
+            tmpPath = _tryForNewAtomicTmpFile(finalDir, finalBasename, finalExt)
+    return tmpPath
 
 
 def atomicInstall(tmpPath, finalPath):
