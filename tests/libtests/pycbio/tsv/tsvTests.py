@@ -4,9 +4,7 @@ import unittest
 import sys
 if __name__ == '__main__':
     sys.path.append("../../../../lib")
-from pycbio.tsv import TsvTable
-from pycbio.tsv import TsvError
-from pycbio.tsv import TsvReader
+from pycbio.tsv import TsvTable, TsvReader, TsvError, tsvRowToDict
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.hgdata.autoSql import intArrayType
 import pipettor
@@ -22,6 +20,8 @@ class ReadTests(TestCaseBase):
         self.assertEqual(r["qName"], "BC032353")
         self.assertEqual(r[10], "BC032353")
         self.assertEqual(r.qName, "BC032353")
+        d = tsvRowToDict(r)
+        self.assertEqual(d["qName"], "BC032353")
 
     def testMultiIdx(self):
         tsv = TsvTable(self.getInputFile("mrna1.tsv"), multiKeyCols=("tName", "tStart"))

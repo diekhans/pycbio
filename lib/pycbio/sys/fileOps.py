@@ -323,6 +323,7 @@ _hostName = None  # get first time when needed
 _atomicNextNum = 0  # number to include in atomicTmpFile, just in case same process tries creates multiple
 _atomicTmpFileMutex = Lock()
 
+
 def _tryForNewAtomicTmpFile(finalDir, finalBasename, finalExt):
     "Attempt to get a tmp file name, return None in the rare change that it exists"
     global _atomicNextNum
@@ -345,7 +346,7 @@ def atomicTmpFile(finalPath):
     if finalDir == "":
         finalDir = '.'
     finalBasename = os.path.basename(finalPath)
-    finalExt  = os.path.splitext(finalPath)[1]
+    finalExt = os.path.splitext(finalPath)[1]
     global _hostName
     if _hostName is None:
         _hostName = socket.gethostname()

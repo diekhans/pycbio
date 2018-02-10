@@ -9,6 +9,11 @@ from future.utils import raise_from
 from pycbio.tsv import TsvError
 
 
+def tsvRowToDict(row):
+    """convert a TSV row to a dict"""
+    return {col: getattr(row, col) for col in row._columns_}
+
+
 class TsvRow(object):
     "Row of a TSV where columns are fields."
     # n.b.: doesn't inherit from list, as this results in columns in two
