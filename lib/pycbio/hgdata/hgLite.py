@@ -16,7 +16,9 @@ from pycbio.tsv import TsvReader
 from pycbio.hgdata.rangeFinder import Binner
 from Bio import SeqIO
 import sys
-from pycbio.db.sqliteOps import sqliteConnect, SqliteCursor  # noqa: F401
+from pycbio.db.sqliteOps import SqliteCursor
+# allow sqliteConnect to be imported from this module, as it is so common
+from pycbio.db.sqliteOps import sqliteConnect   # noqa: F401
 
 # FIXME: HgLiteTable could become wrapper around a connection,
 # and make table operations functions.???  probably not

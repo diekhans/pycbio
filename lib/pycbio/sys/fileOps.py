@@ -96,18 +96,20 @@ def decompressCmd(path, default="cat"):
         return default
 
 
-def opengz(fileName, mode="r"):
+def opengz(fileName, mode="r", buffering=-1, encoding=None, errors=None):
     """open a file, if it ends in an extension indicating compression, open
     with a compression or decompression pipe."""
     if isCompressed(fileName):
         if mode == "r":
             cmd = decompressCmd(fileName)
-            return pipettor.Popen([cmd, fileName], mode="r")
+            return pipettor.Popen([cmd, fileName], mode="r", buffering=buffering, encoding=encoding, errors=errors)
         elif mode == "w":
             cmd = compressCmd(fileName)
-            return pipettor.Popen([cmd], mode="w", stdout=fileName)
+            return pipettor.Popen([cmd], mode="w", stdout=fileName, buffering=buffering, encoding=encoding, errors=errors)
         else:
             raise PycbioException("mode {} not support with compression for {}".format(mode, fileName))
+    elif six.PY3:
+        return open(fileName, mode, buffering=buffering, encoding=encoding, errors=errors)
     else:
         return open(fileName, mode)
 
