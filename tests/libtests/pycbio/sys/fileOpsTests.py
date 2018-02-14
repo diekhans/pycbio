@@ -70,6 +70,12 @@ class FileOpsTests(TestCaseBase):
         fileOps.atomicInstall(outfTmp, outf)
         self.diffFiles(inf, outf)
 
+    def testAtomicInstallDev(self):
+        devn = '/dev/null'
+        tmp = fileOps.atomicTmpFile(devn)
+        self.assertEqual(tmp, devn)
+        fileOps.atomicInstall(tmp, devn)
+
     simple1Lines = ['one', 'two', 'three', 'four', 'five', 'six']
 
     def testReadFileLines(self):

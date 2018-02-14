@@ -341,10 +341,13 @@ def _tryForNewAtomicTmpFile(finalDir, finalBasename, finalExt):
 def atomicTmpFile(finalPath):
     """Return a tmp file name to use with atomicInstall.  This will be in the
     same directory as finalPath. The temporary file will have the same extension
-    as finalPath.  Thread-safe."""
+    as finalPath.  In final path is in /dev (/dev/null, /dev/stdout), it is
+    returned unchanged and atomicTmpInstall will do nothing..  Thread-safe."""
     # FIXME: this would make a good object and maybe contact manager
     # note: this can't use tmpFileGet, since file should not be created or be private
-    finalDir = os.path.dirname(finalPath)
+    finalDir = os.path.dirname(os.path.normpath(finalPath))
+    if finalDir == '/dev':
+        return finalPath
     if finalDir == "":
         finalDir = '.'
     finalBasename = os.path.basename(finalPath)
@@ -361,7 +364,8 @@ def atomicTmpFile(finalPath):
 
 def atomicInstall(tmpPath, finalPath):
     "atomic install of tmpPath as finalPath"
-    os.rename(tmpPath, finalPath)
+    if os.path.dirname(os.path.normpath(finalPath)) != '/dev':
+        os.rename(tmpPath, finalPath)
 
 
 def uncompressedBase(path):
