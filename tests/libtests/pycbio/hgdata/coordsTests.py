@@ -58,6 +58,13 @@ class CoordsTests(TestCaseBase):
         ca = Coords("chr22", 10000, 20000, strand='+', size=50818468)
         self.assertEqual(c.abs(), ca)
 
+    def testIntersect(self):
+        c1 = Coords("chr22", 50000000, 60000000, strand='-', size=50818468)
+        c2 = Coords("chr22", 45000000, 55000000, strand='-', size=50818468)
+        ci = c1.intersect(c2)
+        self.assertEqual(ci, Coords("chr22", 50000000, 55000000, strand='-', size=50818468))
+
+
 
 def suite():
     ts = unittest.TestSuite()

@@ -62,8 +62,13 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         else:
             return "{}:{}-{}".format(self.name, self.start, self.end)
 
+    def _checkCmpType(self,  other):
+        if not isinstance(other, Coords):
+            raise TypeError("can't compare Coord objects with {} objects".format(type(other).__name__))
+
     def eqLoc(self, other):
         "is the strand location the same?"
+        self._checkCmpType(other)
         return ((self.name == other.name)
                 and (self.start == other.start)
                 and (self.end == other.end)
@@ -71,6 +76,7 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
 
     def eqAbsLoc(self, other):
         "is the absolute location the same?"
+        self._checkCmpType(other)
         return ((self.name == other.name)
                 and (self.start == other.start)
                 and (self.end == other.end))
@@ -79,6 +85,7 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         return super(Coords, self).__hash__()
 
     def __eq__(self, other):
+        self._checkCmpType(other)
         return ((self.name == other.name)
                 and (self.start == other.start)
                 and (self.end == other.end)
@@ -86,6 +93,7 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
                 and (self.size == other.size))
 
     def __lt__(self, other):
+        self._checkCmpType(other)
         if self.name < other.name:
             return True
         elif self.start < other.start:
@@ -101,9 +109,11 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         return self.end - self.start
 
     def overlaps(self, other):
+        self._checkCmpType(other)
         return ((self.name == other.name) and (self.start < other.end) and (self.end > other.start))
 
     def overlapsStrand(self, other):
+        self._checkCmpType(other)
         return self.overlaps(other) and (self.strand == other.strand)
 
     def reverse(self):
@@ -131,3 +141,15 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
             return self
         else:
             return Coords(self.name, self.start, self.end)
+
+    def intersect(self, other):
+        if not isinstance(other, Coords):
+            raise ValueError("can't intersect Coords with type: {}".format(type(other)))
+        if self.name != other.name:
+            return Coords(None, 0, 0)
+        else:
+            start = max(self.start, other.start)
+            end = min(self.end, other.end)
+            if start > end:
+                start = end
+            return Coords(self.name, start, end, self.strand, self.size)
