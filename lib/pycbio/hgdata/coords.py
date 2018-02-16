@@ -109,6 +109,7 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         return self.end - self.start
 
     def overlaps(self, other):
+        "overlap regardless of strand"
         self._checkCmpType(other)
         return ((self.name == other.name) and (self.start < other.end) and (self.end > other.start))
 
