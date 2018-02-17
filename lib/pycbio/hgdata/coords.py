@@ -10,12 +10,21 @@ class CoordsError(Exception):
     pass
 
 
+def reverseRange(start, end, size):
+    return (size - end), (size - start)
+
+
+def reverseStrand(strand):
+    "None is assumed as +"
+    return '+' if strand == '-' else '-'
+
+
 class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
     """Immutable sequence coordinates
     Fields:
        name, start, end - start/end maybe None to indicate a full sequence
        size - optional size of sequence
-       strand - optional strand.
+       strand - optional strand.  Strand of None is assumed to be '+' but tracked as None
     """
     __slots__ = ()
 
@@ -50,6 +59,11 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         except Exception as ex:
             raise CoordsError("invalid coordinates: \"{}\": {}".format(coordsStr, ex))
 
+    @property
+    def apparentStrand(self):
+        """strand if specified, or '+' if None"""
+        return self.strand if self.strand is not None else '+'
+
     def subrange(self, start, end):
         """Construct a Coords object that is a subrange of this one."""
         if (start > end) or (start < self.start) or (end > self.end):
@@ -62,7 +76,7 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         else:
             return "{}:{}-{}".format(self.name, self.start, self.end)
 
-    def _checkCmpType(self,  other):
+    def _checkCmpType(self, other):
         if not isinstance(other, Coords):
             raise TypeError("can't compare Coord objects with {} objects".format(type(other).__name__))
 
@@ -72,14 +86,21 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         return ((self.name == other.name)
                 and (self.start == other.start)
                 and (self.end == other.end)
-                and (self.strand == other.strand))
+                and (self.apparentStrand == other.apparentStrand))
 
     def eqAbsLoc(self, other):
         "is the absolute location the same?"
         self._checkCmpType(other)
-        return ((self.name == other.name)
-                and (self.start == other.start)
-                and (self.end == other.end))
+        if (self.name != other.name):
+            return False
+        elif self.apparentStrand == other.apparentStrand:
+            return (self.start == other.start) and (self.end == other.end)
+        elif self.size is not None:
+            return ((self.size - self.end) == other.start) and ((self.size - self.start) == other.end)
+        elif other.size is not None:
+            return (self.start == (other.size - other.size)) and (self.end == (other.size - other.start))
+        else:
+            return False
 
     def __hash__(self):
         return super(Coords, self).__hash__()
@@ -89,7 +110,7 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         return ((self.name == other.name)
                 and (self.start == other.start)
                 and (self.end == other.end)
-                and (self.strand == other.strand)
+                and (self.apparentStrand == other.apparentStrand)
                 and (self.size == other.size))
 
     def __lt__(self, other):
@@ -100,7 +121,7 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
             return True
         elif self.end < other.end:
             return True
-        elif self.strand < other.strand:
+        elif self.apparentStrand < other.apparentStrand:
             return True
         else:
             return False
@@ -111,30 +132,44 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
     def overlaps(self, other):
         "overlap regardless of strand"
         self._checkCmpType(other)
-        return ((self.name == other.name) and (self.start < other.end) and (self.end > other.start))
+        if self.name != other.name:
+            return False
+        elif self.apparentStrand == other.apparentStrand:
+            return (self.start < other.end) and (self.end > other.start)
+        elif (self.strand is None) and (other.strand == '-'):
+            return (self.start < (other.size - other.start)) and (self.end > (other.size - other.end))
+        elif (self.strand == '-') and (other.strand is None):
+            return ((self.size - self.end) < other.end) and ((self.size - self.start) > other.start)
+        else:
+            assert self.apparentStrand != other.apparentStrand
+            return False
 
     def overlapsStrand(self, other):
         self._checkCmpType(other)
-        return self.overlaps(other) and (self.strand == other.strand)
+        return (self.apparentStrand == other.apparentStrand) and self.overlaps(other)
 
     def reverse(self):
-        """move coordinates to other strand"""
+        """move coordinates to other strand. None strand is assumed +"""
         if self.size is None:
             raise ValueError("reverse() requires size")
-        elif self.strand is None:
-            raise ValueError("reverse() requires strand")
-        strand = '-' if self.strand == '+' else '+'
         return Coords(self.name,
                       self.size - self.end,
                       self.size - self.start,
-                      strand=strand, size=self.size)
+                      strand=reverseStrand(self.strand),
+                      size=self.size)
 
     def abs(self):
         "force to positive strand"
-        if self.strand == '+':
+        if self.apparentStrand == '+':
             return self
         else:
             return self.reverse()
+
+    def adjust(self, **kwargs):
+        "return version with any field update via keyword arguments"
+        fields = {k: getattr(self, k) for k in self._fields}
+        fields.update(kwargs)
+        return Coords(**fields)
 
     def base(self):
         "return Coords with only name, start, and end set"
@@ -144,8 +179,7 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
             return Coords(self.name, self.start, self.end)
 
     def intersect(self, other):
-        if not isinstance(other, Coords):
-            raise ValueError("can't intersect Coords with type: {}".format(type(other)))
+        self._checkCmpType(other)
         if self.name != other.name:
             return Coords(None, 0, 0)
         else:

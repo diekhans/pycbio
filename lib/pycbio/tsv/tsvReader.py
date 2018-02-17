@@ -181,7 +181,7 @@ class TsvReader(object):
             raise StopIteration
         if ((self.ignoreExtraCols and (len(row) < len(self.columns))) or ((not self.ignoreExtraCols) and (len(row) != len(self.columns)))):
             # FIXME: will hang: self.close()
-            raise TsvError("row has {} columns, expected {}".format((len(row), len(self.columns))), reader=self)
+            raise TsvError("row has {} columns, expected {}".format(len(row), len(self.columns)), reader=self)
         try:
             return self.rowClass(self, row)
         except Exception as ex:
