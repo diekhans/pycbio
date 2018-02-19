@@ -3,7 +3,7 @@ from __future__ import print_function
 import sys
 import traceback
 
-# FIXME: wanted to move this up a level, see doc/notes.txt as why this didn't work
+# FIXME: wanted to move this up a level, see doc/issues.org as why this didn't work
 
 
 class PycbioException(Exception):

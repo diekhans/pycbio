@@ -1,0 +1,13 @@
+* NASTY BUG:  calling pipeline in a loop agaisnt an open file truncates it each exec
+    ouch, this happens with subprocess.call_check too
+    does this happen in pipettor?
+
+* document generators:
+  http://codespeak.net/~mwh/pydoctor/ - discussion of others
+
+* rename pycbio.sys, it prevent moving PycbioException up one level, since PycbioException imports
+  standard sys. Specifying absolute import still breaks pipeline because pickle of exceptions doesn't
+  work.
+
+
+* reverse asserts so order is expect, got (corresponds to diff outout, see pslMapTests)

@@ -28,6 +28,7 @@ from pycbio.db.sqliteOps import sqliteConnect   # noqa: F401
 # FIXME: maaybe a series of functions to build queryes would be the ticket (binning, in querys, ihserts)
 # FIXME" prefix generators with gen**********
 
+# FIXME: term load is confusing, use read, write, or insert
 
 def noneIfEmpty(s):
     return s if s != "" else None
