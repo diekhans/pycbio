@@ -11,9 +11,15 @@ from pycbio.sys import dbOps
 from pycbio.hgdata.rangeFinder import Binner
 from pycbio.hgdata import dnaOps
 from collections import defaultdict
+from deprecation import deprecated
 
 # FIXME: Should have factory rather than __init__ multiplexing nonsense **
 # FIXME: should have builder functions
+# FIXME: drop sequence support, it is almost never used
+
+# Notes:
+#  - terms plus and minus are used because `positive' is long and `pos' abbreviation is
+#    often used for position.
 
 
 def reverseCoords(start, end, size):
@@ -47,33 +53,53 @@ class PslBlock(object):
     def __str__(self):
         return "{}..{} <=> {}..{}".format(self.qStart, self.qEnd, self.tStart, self.tEnd)
 
-    def getQStartPos(self):
+    @property
+    def qStartPlus(self):
         "get qStart for the block on positive strand"
-        if self.psl.getQStrand() == '+':
+        if self.psl.qStrand == '+':
             return self.qStart
         else:
             return self.psl.qSize - self.qEnd
 
-    def getQEndPos(self):
+    @property
+    def qEndPlus(self):
         "get qEnd for the block on positive strand"
-        if self.psl.getQStrand() == '+':
+        if self.psl.qStrand == '+':
             return self.qEnd
         else:
             return self.psl.qSize - self.qStart
 
-    def getTStartPos(self):
+    @property
+    def tStartPlus(self):
         "get tStart for the block on positive strand"
         if self.psl.getTStrand() == '+':
             return self.tStart
         else:
             return self.psl.tSize - self.tEnd
 
-    def getTEndPos(self):
+    @property
+    def tEndPlus(self):
         "get tEnd for the block on positive strand"
         if self.psl.getTStrand() == '+':
             return self.tEnd
         else:
             return self.psl.tSize - self.tStart
+
+    @deprecated()
+    def getQStartPos(self):
+        return self.qStartPlus
+
+    @deprecated()
+    def getQEndPos(self):
+        return self.qEndPlus
+
+    @deprecated()
+    def getTStartPos(self):
+        return self.tStartPlus
+
+    @deprecated()
+    def getTEndPos(self):
+        return self.tEndPlus
 
     def sameAlign(self, other):
         "compare for equality of alignment."
@@ -143,6 +169,7 @@ class Psl(object):
 
     def _loadDb(self, row, dbColIdxMap):
         # FIXME: change to use DictCursor
+        # FIXME: move out of here, rename to no use confusing `load' (read)
         self.match = row[dbColIdxMap["matches"]]
         self.misMatch = row[dbColIdxMap["misMatches"]]
         self.repMatch = row[dbColIdxMap["repMatches"]]
@@ -191,6 +218,7 @@ class Psl(object):
         """construct a new PSL, either parsing a row, loading a row from a
         dbapi cursor (dbColIdxMap created by sys.dbOpts.cursorColIdxMap), or
         creating an empty one."""
+        # FIXME: use factory rather than overload
         if dbColIdxMap is not None:
             self._loadDb(row, dbColIdxMap)
         elif row is not None:
@@ -198,27 +226,41 @@ class Psl(object):
         else:
             self._empty()
 
-    def getQStrand(self):
+    @property
+    def qStrand(self):
         return self.strand[0]
 
-    def getTStrand(self):
+    @property
+    def tStrand(self):
         return (self.strand[1] if len(self.strand) > 1 else "+")
 
+    @deprecated()
+    def getQStrand(self):
+        return self.qStrand
+
+    @deprecated()
+    def getTStrand(self):
+        return self.tStrand
+
+    @deprecated()
     def qRevRange(self, start, end):
-        "reverse a query range to the other strand"
+        "reverse a query range to the other strand (dropping, this is dumb)"
         return (self.qSize - end, self.qSize - start)
 
+    @deprecated()
     def tRevRange(self, start, end):
-        "reverse a query range to the other strand"
+        "reverse a query range to the other strand (dropping, this is dumb)"
         return (self.tSize - end, self.tSize - start)
 
+    @deprecated()
     def qRangeToPos(self, start, end):
         "convert a query range in alignment coordinates to positive strand coordinates"
-        if self.getQStrand() == "+":
+        if self.qStrand == "+":
             return (start, end)
         else:
             return (self.qSize - end, self.qSize - start)
 
+    @deprecated()
     def tRangeToPos(self, start, end):
         "convert a target range in alignment coordinates to positive strand coordinates"
         if self.getTStrand() == "+":
@@ -356,6 +398,7 @@ class Psl(object):
         return hash(self.tName) + hash(self.tStart)
 
     def identity(self):
+        # FIXME: make property
         aligned = float(self.match + self.misMatch + self.repMatch)
         if aligned == 0.0:
             return 0.0  # just matches Ns
@@ -363,9 +406,11 @@ class Psl(object):
             return old_div(float(self.match + self.repMatch), aligned)
 
     def basesAligned(self):
+        # FIXME: make property
         return self.match + self.misMatch + self.repMatch
 
     def queryAligned(self):
+        # FIXME: make property
         return old_div(float(self.match + self.misMatch + self.repMatch), float(self.qSize))
 
     def reverseComplement(self):
@@ -379,7 +424,7 @@ class Psl(object):
         rc.qBaseInsert = self.qBaseInsert
         rc.tNumInsert = self.tNumInsert
         rc.tBaseInsert = self.tBaseInsert
-        rc.strand = reverseStrand(self.getQStrand()) + reverseStrand(self.getTStrand())
+        rc.strand = reverseStrand(self.qStrand) + reverseStrand(self.tStrand)
         rc.qName = self.qName
         rc.qSize = self.qSize
         rc.qStart = self.qStart
@@ -397,12 +442,12 @@ class Psl(object):
     def _swapStrand(self, rc, keepTStrandImplicit, doRc):
         # don't make implicit if already explicit
         if keepTStrandImplicit and (len(self.strand) == 1):
-            qs = reverseStrand(self.getTStrand()) if doRc else self.getTStrand()
+            qs = reverseStrand(self.tStrand) if doRc else self.tStrand
             ts = ""
         else:
             # swap and make|keep explicit
-            qs = self.getTStrand()
-            ts = self.getQStrand()
+            qs = self.tStrand
+            ts = self.qStrand
         return qs + ts
 
     def swapSides(self, keepTStrandImplicit=False):
@@ -414,7 +459,7 @@ class Psl(object):
         If keepTStrandImplicit is False, don't reverse complement untranslated
         alignments to keep target positive strand.  This will make the target
         strand explicit."""
-        doRc = (keepTStrandImplicit and (len(self.strand) == 1) and (self.getQStrand() == "-"))
+        doRc = (keepTStrandImplicit and (len(self.strand) == 1) and (self.qStrand == "-"))
 
         swap = Psl(None)
         swap.match = self.match

@@ -1,5 +1,6 @@
 # Copyright 2006-2016 Mark Diekhans
 from __future__ import print_function
+from collections import namedtuple
 from pycbio.hgdata.psl import Psl, PslBlock, reverseCoords
 
 
@@ -9,33 +10,24 @@ def _reverseRange(start, end, size):
             size - start if start is not None else None)
 
 
-class PslMapRange(object):
+class PslMapRange(namedtuple("PslMapRange",
+                             ("qPrevEnd", "qStart", "qEnd", "qNextStart", "qStrand",
+                              "tPrevEnd", "tStart", "tEnd", "tNextStart", "tStrand"))):
     """A subrange of requested mapping, which is either aligned on unaligned.
     If aligned both query and target ranges are set, if unaligned only one.
     prev/next coordinates are only set when corresponding range is not set (unaligned).
     """
-    __slots__ = ("qPrevEnd", "qStart", "qEnd", "qNextStart", "qStrand",
-                 "tPrevEnd", "tStart", "tEnd", "tNextStart", "tStrand")
+    __slots__ = ()
 
-    def __init__(self, qPrevEnd, qStart, qEnd, qNextStart, qStrand,
-                 tPrevEnd, tStart, tEnd, tNextStart, tStrand):
-        self.qPrevEnd = qPrevEnd
-        self.qStart = qStart
-        self.qEnd = qEnd
-        self.qStrand = qStrand
-        self.qNextStart = qNextStart
-        self.tPrevEnd = tPrevEnd
-        self.tStart = tStart
-        self.tEnd = tEnd
-        self.tStrand = tStrand
-        self.tNextStart = tNextStart
-
+    @property
     def isAligned(self):
         return (self.qStart is not None) and (self.tStart is not None)
 
+    @property
     def isQInsert(self):
         return (self.qStart is not None) and (self.tStart is None)
 
+    @property
     def isTInsert(self):
         return (self.qStart is None) and (self.tStart is not None)
 
@@ -63,10 +55,10 @@ class PslMapRange(object):
     def factory(mapPsl, qPrevEnd, qStart, qEnd, qNextStart, qStrand,
                 tPrevEnd, tStart, tEnd, tNextStart, tStrand):
         """construct a new PslMapRange object"""
-        if qStrand != mapPsl.getQStrand():
+        if qStrand != mapPsl.qStrand:
             qPrevEnd, qNextStart = _reverseRange(qPrevEnd, qNextStart, mapPsl.qSize)
             qStart, qEnd = _reverseRange(qStart, qEnd, mapPsl.qSize)
-        if tStrand != mapPsl.getTStrand():
+        if tStrand != mapPsl.tStrand:
             tPrevEnd, tNextStart = _reverseRange(tPrevEnd, tNextStart, mapPsl.tSize)
             tStart, tEnd = _reverseRange(tStart, tEnd, mapPsl.tSize)
         return PslMapRange(qPrevEnd, qStart, qEnd, qNextStart, qStrand,
@@ -121,11 +113,11 @@ class PslMap(object):
     def targetToQueryMap(self, tRngStart, tRngEnd, tStrand=None, handler=PslMapRange.factory):
         """Generator map a target range to query ranges using a PSL.  If tStrand is not
         specified, target range must be match mapping PSL"""
-        qStrand = self.mapPsl.getQStrand()
-        if (tStrand is not None) and (tStrand != self.mapPsl.getTStrand()):
+        qStrand = self.mapPsl.qStrand
+        if (tStrand is not None) and (tStrand != self.mapPsl.tStrand):
             tRngStart, tRngEnd = _reverseRange(tRngStart, tRngEnd, self.mapPsl.tSize)
         else:
-            tStrand = self.mapPsl.getTStrand()
+            tStrand = self.mapPsl.tStrand
 
         # deal with gap at beginning
         tRngNext = tRngStart
@@ -191,11 +183,11 @@ class PslMap(object):
     def queryToTargetMap(self, qRngStart, qRngEnd, qStrand=None, handler=PslMapRange.factory):
         """Map a query range to target ranges using a PSL.  If qStrand is not
         specified, query range must be match mapping PSL"""
-        if (qStrand is not None) and (qStrand != self.mapPsl.getQStrand()):
+        if (qStrand is not None) and (qStrand != self.mapPsl.qStrand):
             qRngStart, qRngEnd = _reverseRange(qRngStart, qRngEnd, self.mapPsl.qSize)
         else:
-            qStrand = self.mapPsl.getQStrand()
-        tStrand = self.mapPsl.getTStrand()
+            qStrand = self.mapPsl.qStrand
+        tStrand = self.mapPsl.tStrand
 
         # deal with gap at beginning
         qRngNext = qRngStart
@@ -240,7 +232,7 @@ class PslMap(object):
 
     def _rangesToPsl(self, rangeGen):
         # FIXME: psl building should go a function in Psl
-        rngs = [rng for rng in rangeGen if rng.isAligned()]
+        rngs = [rng for rng in rangeGen if rng.isAligned]
         if len(rngs) == 0:
             return None
         psl = Psl()

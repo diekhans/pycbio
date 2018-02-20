@@ -30,6 +30,7 @@ from pycbio.db.sqliteOps import sqliteConnect   # noqa: F401
 
 # FIXME: term load is confusing, use read, write, or insert
 
+
 def noneIfEmpty(s):
     return s if s != "" else None
 

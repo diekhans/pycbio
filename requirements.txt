@@ -5,3 +5,4 @@ future
 enum-compat
 mysqlclient
 apsw
+deprecation

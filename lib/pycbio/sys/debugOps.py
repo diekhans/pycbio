@@ -5,17 +5,11 @@ import os.path
 import sys
 import posix
 
-def _prLine(fh, *objs):
-    "write each str(obj) followed by a newline"
-    for o in objs:
-        fh.write(str(o))
-    fh.write("\n")
-
 
 def lsOpen(msg=None, file=sys.stderr, pid=None):
     """list open files, mostly for debugging"""
     if msg is not None:
-        _prLine(fh, msg)
+        print(msg, file=file)
     if pid is None:
         pid = os.getpid()
     fddir = "/proc/" + str(pid) + "/fd/"
@@ -25,7 +19,7 @@ def lsOpen(msg=None, file=sys.stderr, pid=None):
         # entry will be gone for fd dir when it was opened
         fdp = fddir + fd
         if os.path.exists(fdp):
-            print(fd, " -> ", os.readlink(fdp), file=fh)
+            print("   ", fd, " -> ", os.readlink(fdp), file=file)
 
 
 __all__ = [lsOpen.__name__]
