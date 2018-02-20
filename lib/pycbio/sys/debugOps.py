@@ -1,11 +1,10 @@
 # Copyright 2006-2012 Mark Diekhans
 """Functions useful for debugging"""
+from __future__ import print_function
 import os.path
 import sys
 import posix
 
-
-# N.B. doesn't use fileOps so it can be use in Pipeline
 def _prLine(fh, *objs):
     "write each str(obj) followed by a newline"
     for o in objs:
@@ -13,7 +12,7 @@ def _prLine(fh, *objs):
     fh.write("\n")
 
 
-def lsOpen(msg=None, fh=sys.stderr, pid=None):
+def lsOpen(msg=None, file=sys.stderr, pid=None):
     """list open files, mostly for debugging"""
     if msg is not None:
         _prLine(fh, msg)
@@ -26,7 +25,7 @@ def lsOpen(msg=None, fh=sys.stderr, pid=None):
         # entry will be gone for fd dir when it was opened
         fdp = fddir + fd
         if os.path.exists(fdp):
-            _prLine(fh, "    ", fd, " -> ", os.readlink(fdp))
+            print(fd, " -> ", os.readlink(fdp), file=fh)
 
 
 __all__ = [lsOpen.__name__]

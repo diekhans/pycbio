@@ -11,6 +11,8 @@ class CoordsError(Exception):
 
 
 def reverseRange(start, end, size):
+    if size is None:
+        raise ValueError("reversing strand requires size")
     return (size - end), (size - start)
 
 
@@ -23,12 +25,14 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
     """Immutable sequence coordinates
     Fields:
        name, start, end - start/end maybe None to indicate a full sequence
+       strand - Strand, if it is None, it is set '+'.
        size - optional size of sequence
-       strand - optional strand.  Strand of None is assumed to be '+' but tracked as None
     """
     __slots__ = ()
 
     def __new__(cls, name, start, end, strand=None, size=None):
+        if strand is None:
+            strand = '+'
         return super(Coords, cls).__new__(cls, name, start, end, strand, size)
 
     @classmethod
@@ -59,13 +63,12 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         except Exception as ex:
             raise CoordsError("invalid coordinates: \"{}\": {}".format(coordsStr, ex))
 
-    @property
-    def apparentStrand(self):
-        """strand if specified, or '+' if None"""
-        return self.strand if self.strand is not None else '+'
-
-    def subrange(self, start, end):
-        """Construct a Coords object that is a subrange of this one."""
+    def subrange(self, start, end, strand=None):
+        """Construct a Coords object that is a subrange of this one.  If strand is provided,
+        then the coordinates will be reversed if to match current strand, otherwise strand
+        is assumed to be the same as self.strand"""
+        if (strand is not None) and (strand != self.strand):
+            start, end = reverseRange(start, end, self.size)
         if (start > end) or (start < self.start) or (end > self.end):
             raise CoordsError("invalid subrange: {}-{} of {}".format(start, end, self))
         return Coords(self.name, start, end, self.strand, self.size)
@@ -86,14 +89,14 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         return ((self.name == other.name)
                 and (self.start == other.start)
                 and (self.end == other.end)
-                and (self.apparentStrand == other.apparentStrand))
+                and (self.strand == other.strand))
 
     def eqAbsLoc(self, other):
         "is the absolute location the same?"
         self._checkCmpType(other)
         if (self.name != other.name):
             return False
-        elif self.apparentStrand == other.apparentStrand:
+        elif self.strand == other.strand:
             return (self.start == other.start) and (self.end == other.end)
         elif self.size is not None:
             return ((self.size - self.end) == other.start) and ((self.size - self.start) == other.end)
@@ -110,7 +113,7 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         return ((self.name == other.name)
                 and (self.start == other.start)
                 and (self.end == other.end)
-                and (self.apparentStrand == other.apparentStrand)
+                and (self.strand == other.strand)
                 and (self.size == other.size))
 
     def __lt__(self, other):
@@ -121,7 +124,7 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
             return True
         elif self.end < other.end:
             return True
-        elif self.apparentStrand < other.apparentStrand:
+        elif self.strand < other.strand:
             return True
         else:
             return False
@@ -134,19 +137,19 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         self._checkCmpType(other)
         if self.name != other.name:
             return False
-        elif self.apparentStrand == other.apparentStrand:
+        elif self.strand == other.strand:
             return (self.start < other.end) and (self.end > other.start)
         elif (self.strand is None) and (other.strand == '-'):
             return (self.start < (other.size - other.start)) and (self.end > (other.size - other.end))
         elif (self.strand == '-') and (other.strand is None):
             return ((self.size - self.end) < other.end) and ((self.size - self.start) > other.start)
         else:
-            assert self.apparentStrand != other.apparentStrand
+            assert self.strand != other.strand
             return False
 
     def overlapsStrand(self, other):
         self._checkCmpType(other)
-        return (self.apparentStrand == other.apparentStrand) and self.overlaps(other)
+        return (self.strand == other.strand) and self.overlaps(other)
 
     def reverse(self):
         """move coordinates to other strand. None strand is assumed +"""
@@ -160,7 +163,7 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
 
     def abs(self):
         "force to positive strand"
-        if self.apparentStrand == '+':
+        if self.strand == '+':
             return self
         else:
             return self.reverse()

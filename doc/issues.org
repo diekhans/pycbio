@@ -9,5 +9,7 @@
   standard sys. Specifying absolute import still breaks pipeline because pickle of exceptions doesn't
   work.
 
-
 * reverse asserts so order is expect, got (corresponds to diff outout, see pslMapTests)
+
+* add function to init from __init__ args
+  http://code.activestate.com/recipes/286185-automatically-initializing-instance-variables-from/
