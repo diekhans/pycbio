@@ -8,6 +8,7 @@ myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 import argparse
 from pycbio.ncbi.assembly import AssemblyReport
+from pycbio.sys import PycbioException
 from pycbio.sys import fileOps
 
 ID_TYPE_SEQUENCE_NAME = "sequenceName"
@@ -130,7 +131,7 @@ class IncludeFilter(object):
                                    "unlocalized-scaffold",
                                    "unplaced-scaffold"])
         else:
-            raise Exception("logic error, invalid include: %s " % include)
+            raise PycbioException("logic error, invalid include: {}".format(include))
 
     def __call__(self, seq):
         if self.keep is None:

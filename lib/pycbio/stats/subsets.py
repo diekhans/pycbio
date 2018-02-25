@@ -1,6 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 from __future__ import print_function
 from builtins import range
+from pycbio.sys import PycbioException
 
 
 class Subsets(object):
@@ -71,7 +72,7 @@ class Subsets(object):
         for ss in self.subsets:
             if ss == wantSet:
                 return ss
-        raise Exception("not a valid subset: " + str(wantSet))
+        raise PycbioException("not a valid subset: " + str(wantSet))
 
     def _makeInclusiveSubset(self, subset):
         "make an inclusive subset list for a subset"

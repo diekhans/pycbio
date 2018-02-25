@@ -10,6 +10,8 @@ from pycbio.tsv.tabFile import TabFileReader
 from pycbio.sys import dbOps
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin
 from pycbio.sys.symEnum import SymEnum, SymEnumValue
+from pycbio.sys import PycbioException
+
 
 # FIXME range and exon overlap functions are inconsistent.  exon should inherit from range.
 # FIXME needs many more tests
@@ -562,7 +564,7 @@ class GenePredTbl(list):
     """Table of GenePred objects loaded from a tab-file"""
     def __init__(self, fileName, buildIdx=False, buildUniqIdx=False, buildRangeIdx=False):
         if buildIdx and buildUniqIdx:
-            raise Exception("can't specify both buildIdx and buildUniqIdx")
+            raise PycbioException("can't specify both buildIdx and buildUniqIdx")
         for row in GenePredReader(fileName):
             self.append(row)
         self.names = None
@@ -578,7 +580,7 @@ class GenePredTbl(list):
         self.names = dict()
         for row in self:
             if row.name in self.names:
-                raise Exception("gene with this name already in index: " + row.name)
+                raise PycbioException("gene with this name already in index: " + row.name)
             self.names[row.name] = row
 
     def _buildIdx(self):

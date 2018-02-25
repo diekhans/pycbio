@@ -10,6 +10,7 @@ import os
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 import argparse
+from pycbio.sys import PycbioException
 from pycbio.hgdata.clusterGenes import ClusterGenes
 from pycbio.stats.venn import Venn
 from pycbio.sys.fileOps import prRowv
@@ -41,7 +42,7 @@ def readLociCats(self, catsFile):
     cats = {}
     for row in TabFile(catsFile):
         if len(row) < 2:
-            raise Exception("rows must have at least two columns: {}".format(catsFile))
+            raise PycbioException("rows must have at least two columns: {}".format(catsFile))
         cats[int(row[0])] = row[1]
     return cats
 

@@ -3,9 +3,10 @@
 
 from __future__ import print_function
 from collections import namedtuple
+from pycbio.sys import PycbioException
 
 
-class CoordsError(Exception):
+class CoordsError(PycbioException):
     "Coordinate error"
     pass
 

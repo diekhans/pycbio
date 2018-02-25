@@ -2,6 +2,7 @@
 """Miscellaneous type operations"""
 # FIXME: move to other modules or move set in here.
 from builtins import range
+from pycbio.sys import PycbioException
 
 
 def isListLike(v):
@@ -79,7 +80,7 @@ def noneOrZero(v):
 def addUniq(d, k, v):
     "add to a dict, generating an error if the item already exists"
     if k in d:
-        raise Exception("item \"" + str(k) + "\" already in dict")
+        raise PycbioException("item \"{}\" already in dict".format(str(k)))
     d[k] = v
 
 

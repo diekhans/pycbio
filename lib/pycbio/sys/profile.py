@@ -4,6 +4,7 @@ import cProfile
 import signal
 import argparse
 import sys
+from pycbio.sys import PycbioException
 
 
 class Profile(object):
@@ -54,7 +55,7 @@ class Profile(object):
         """initializing profiling, if requested"""
         if opts.profile is None:
             if opts.signal is not None:
-                raise Exception("can't specify --profile-signal without --profile")
+                raise PycbioException("can't specify --profile-signal without --profile")
         else:
             if opts.signal is not None:
                 self._setupSignalHandler(opts.signal)

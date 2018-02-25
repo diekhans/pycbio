@@ -1,5 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
 import os
+from pycbio.sys import PycbioException
 
 
 class HgConf(dict):
@@ -23,7 +24,7 @@ class HgConf(dict):
         if (len(line) > 0) and not line.startswith("#"):
             i = line.find("=")
             if i < 0:
-                raise Exception("expected name=value, got: " + line)
+                raise PycbioException("expected name=value, got: " + line)
             self[line[0:i].strip()] = line[i + 1:].strip()
 
     _cache = {}

@@ -82,7 +82,7 @@ class AssemblyReport(object):
     def _parseMetaDataLine(self, line):
         colon = line.find(":")
         if colon < 0:
-            raise Exception("invalid metaData line:" + line)
+            raise PycbioException("invalid metaData line: " + line)
         self.metaData[line[2:colon]] = line[colon + 1:].strip()
 
     def _skipToSeqTable(self, fh):

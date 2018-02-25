@@ -3,6 +3,7 @@ import os
 import errno
 import socket
 import fcntl
+from pycbio.sys import PycbioException
 
 
 class _Fifo(object):
@@ -118,8 +119,7 @@ class _NamedFifo(_Fifo):
             if _NamedFifo._fifoMkAtomic(path):
                 return path
             unum += 1
-        raise Exception("unable to create a unique FIFO name in the form \"{}.*.{} after {} tries".format(
-            prefix, suffix, maxTries))
+        raise PycbioException("unable to create a unique FIFO name in the form \"{}.*.{} after {} tries".format(prefix, suffix, maxTries))
 
     @staticmethod
     def _checkFifo(path):

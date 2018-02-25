@@ -9,6 +9,7 @@ import copy
 import re
 from pycbio.hgdata.psl import PslReader
 from pycbio.sys.fileOps import prLine, iterLines
+from pycbio.sys import PycbioException
 
 # FIXME: need range/overlap operators
 
@@ -437,7 +438,7 @@ class PairAlign(list):
         elif seq == self.tSeq:
             return self.tSubSeqs
         else:
-            raise Exception("seq is not part of this alignment")
+            raise PycbioException("seq is not part of this alignment")
 
     @staticmethod
     def _mapCdsToSubSeq(destSs, srcSubSeqs, si):
@@ -573,7 +574,7 @@ class CdsTable(dict):
     def _parseCds(self, line):
         m = self._parseRe.match(line)
         if m is None:
-            raise Exception("can't parse CDS line: " + line)
+            raise PycbioException("can't parse CDS line: " + line)
         st = int(m.group(2)) - 1
         en = int(m.group(3)) - 1
         self[m.group(1)] = (st, en)

@@ -4,6 +4,7 @@ from builtins import range
 from builtins import object
 from past.utils import old_div
 from pycbio.sys.fileOps import prLine, iterRows
+from pycbio.sys import PycbioException
 
 # FIXME: computed histo should be an object, not just a list
 # FIXME: binnins doesn't work for values in the range [-1.0, 1.0]
@@ -145,7 +146,7 @@ class Histogram(object):
             self.binCeilUse = self.binFloorUse + (self.numBinsUse * self.binSizeUse)
         else:
             # compute num bins from bin size
-            raise Exception("doesn't work")
+            raise PycbioException("doesn't work")
             self.numBinsUse = int(old_div(float(self.binMaxUse - self.binMinUse), float(self.binSizeUse)))
             self.binFloorUse = self.binMinUse
             self.binCeilUse = self.binMaxUse

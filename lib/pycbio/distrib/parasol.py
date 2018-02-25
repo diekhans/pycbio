@@ -3,6 +3,7 @@
 from builtins import object
 from six.moves import shlex_quote
 import os.path
+from pycbio.sys import PycbioException
 from pycbio.sys import fileOps
 import pipettor
 
@@ -65,7 +66,7 @@ class BatchStats(object):
             if len(line) > 0:
                 words = line.split(":")
                 if (len(words) < 2) or not self._parseLine(words):
-                    raise Exception("don't know how to parse para check output line: {}".format(line))
+                    raise PycbioException("don't know how to parse para check output line: {}".format(line))
 
     def hasParasolErrs(self):
         return self.subErrors or self.queueErrors or self.trackingErrors or self.paraResultsErrors
@@ -92,7 +93,7 @@ class Para(object):
         if jobFile is not None:
             absJobFile = self._mkAbs(self.runDir, self.jobFile)
             if not os.path.exists(absJobFile):
-                raise Exception("job file not found: {}".format(absJobFile))
+                raise PycbioException("job file not found: {}".format(absJobFile))
 
     @staticmethod
     def __mkAbs(parent, child):

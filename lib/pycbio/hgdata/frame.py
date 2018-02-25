@@ -1,5 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
 import six
+from pycbio.sys import PycbioException
 
 
 class Frame(int):
@@ -30,7 +31,7 @@ class Frame(int):
         elif phase == 2:
             return Frame(1)
         else:
-            raise Exception("invalid phase: {}".format(phase))
+            raise PycbioException("invalid phase: {}".format(phase))
 
     def toPhase(self):
         """frame expressed as a GFF/GTF like phase, which is the number of bases

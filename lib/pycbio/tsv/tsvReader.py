@@ -10,6 +10,7 @@ import csv
 from pycbio.sys import fileOps
 from pycbio.tsv.tsvRow import TsvRow
 from pycbio.tsv import TsvError
+from pycbio.sys import pycbioRaiseFrom
 
 csv.field_size_limit(sys.maxsize)
 
@@ -176,7 +177,7 @@ class TsvReader(object):
         try:
             row = self._readRow()
         except Exception as ex:
-            raise TsvError("Error reading TSV row", self, ex)
+            pycbioRaiseFrom(TsvError("Error reading TSV row", self), ex)
         if row is None:
             raise StopIteration
         if ((self.ignoreExtraCols and (len(row) < len(self.columns))) or ((not self.ignoreExtraCols) and (len(row) != len(self.columns)))):
@@ -185,4 +186,4 @@ class TsvReader(object):
         try:
             return self.rowClass(self, row)
         except Exception as ex:
-            raise TsvError("Error converting TSV row to object", self, ex)
+            pycbioRaiseFrom(TsvError("Error converting TSV row to object", self), ex)

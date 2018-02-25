@@ -296,7 +296,7 @@ def findTmpDir(tmpDir=None):
     for tmpDir in ("/data/tmp", "/scratch/tmp", "/var/tmp", "/tmp"):
         if os.path.exists(tmpDir):
             return tmpDir
-    raise Exception("can't find a tmp directory")
+    raise PycbioException("can't find a tmp directory")
 
 
 def setTmpEnv(tmpDir=None):

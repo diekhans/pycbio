@@ -17,6 +17,7 @@ generating SQL where clauses to restrict by bin."""
 from __future__ import print_function
 from builtins import range
 from collections import namedtuple
+from pycbio.sys import PycbioException
 
 
 def RemoveValueError(ValueError):
@@ -183,7 +184,7 @@ class RangeFinder(object):
 
     def _checkStrand(self, strand):
         if strand not in (None, "+", "-"):
-            raise Exception("invalid strand: {}".format(strand))
+            raise PycbioException("invalid strand: {}".format(strand))
 
     def add(self, seqId, start, end, value, strand=None):
         "add an entry for a sequence and range, and optional strand"
@@ -191,7 +192,7 @@ class RangeFinder(object):
         if self.haveStrand is None:
             self.haveStrand = (strand is not None)
         elif self.haveStrand != (strand is not None):
-            raise Exception("all RangeFinder entries must either have strand or not have strand")
+            raise PycbioException("all RangeFinder entries must either have strand or not have strand")
         key = (seqId, strand)
         bins = self.seqBins.get(key)
         if bins is None:

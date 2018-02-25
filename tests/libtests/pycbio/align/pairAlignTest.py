@@ -7,6 +7,7 @@ if __name__ == '__main__':
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.sys.fileOps import prRowv
 from pycbio.align.pairAlign import loadPslFile
+from pycbio.sys import PycbioException
 
 
 class WithSrcCds(object):
@@ -84,9 +85,9 @@ class PairAlignPsl(TestCaseBase):
         for destAln in destAlns:
             for srcAln in srcAlns:
                 if srcAln.qSeq.cds is None:
-                    raise Exception("no qCDS: " + srcAln.qSeq.id + " <=> " + srcAln.tSeq.id)
+                    raise PycbioException("no qCDS: " + srcAln.qSeq.id + " <=> " + srcAln.tSeq.id)
                 if srcAln.tSeq.cds is None:
-                    raise Exception("no tCDS: " + srcAln.qSeq.id + " <=> " + srcAln.tSeq.id)
+                    raise PycbioException("no tCDS: " + srcAln.qSeq.id + " <=> " + srcAln.tSeq.id)
                 if srcAln.targetOverlap(destAln):
                     ma = destAln.copy()
                     ma.mapCds(srcAln, srcAln.tSeq, ma.tSeq, contained=contained)

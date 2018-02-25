@@ -6,6 +6,7 @@ import os
 myBinDir = os.path.dirname(os.path.realpath(sys.argv[0]))
 sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 import argparse
+from pycbio.sys import PycbioException
 from pycbio.tsv import TsvReader, TsvTable
 
 
@@ -31,7 +32,7 @@ def openTsv(col, tsv):
     "create a TsvReader, ensuring that it contains col"
     rd = TsvReader(tsv)
     if col not in rd.colMap:
-        raise Exception("column \"{}\" not found in {}".format(col, tsv))
+        raise PycbioException("column \"{}\" not found in {}".format(col, tsv))
 
 
 def loadSelect(selectCol, selectTsv):

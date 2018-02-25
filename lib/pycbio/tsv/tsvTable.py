@@ -7,6 +7,7 @@ import six
 from collections import defaultdict
 from pycbio.tsv.tsvReader import TsvReader
 from pycbio.tsv import TsvError
+from pycbio.sys import pycbioRaiseFrom
 import csv
 
 # FIX: maybe make each index it's own class to handle uniq check, etc.
@@ -117,7 +118,7 @@ class TsvTable(list):
             self._buildIndices(uniqKeyCols, multiKeyCols)
             self._readBody(reader)
         except Exception as ex:
-            raise_from(TsvError("load failed", reader=reader), ex)
+            pycbioRaiseFrom(TsvError("load failed", reader=reader), ex)
 
     def addColumn(self, colName, initValue=None, colType=None):
         "add a column to all rows in the table"

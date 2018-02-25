@@ -1,6 +1,5 @@
 # Copyright 2006-2012 Mark Diekhans
 from __future__ import print_function
-from builtins import range
 import six
 import sys
 import inspect
@@ -18,31 +17,24 @@ class PycbioException(Exception):
        try:
           ...
        except Exception as ex:
-          pycbioRaise("more stuff", ex)
+          pycbioRaiseFrom("more stuff", ex)
 
     Optionally, traceback tb (sys.exc_info()[2] can be used to save get the stack
     trace.  Otherwise the current stack is used.
-
 
     Exceptions can be formatted using pycbioExFormat or
     pycbioExPrint.
     """
 
-    def __init__(self, msg, tb=None):
+    def __init__(self, msg):
         super(PycbioException, self).__init__(msg)
         if six.PY2:
             self.__cause__ = None
-            # Stack is set in raise function.  It is saved as tuples to avoid
-            # traceback cycles
-            if tb is not None:
-                frame = tb.tb_frame
-            else:
-                frame = None
-            self.__traceback_stack__ = None
+            # Stack is saved as tuples to avoid traceback cycles
+            self.__traceback_stack__ = _currentStack2(skip=0)
 
 
-
-if six.PY2:
+if six.PY2:  # noqa: C901
     def _frameToTuple2(frame):
         "convert a frame the traceback tuple format"
         finfo = inspect.getframeinfo(frame)
@@ -95,29 +87,23 @@ if six.PY2:
     def _dfsFormatStack2(ex, higherTbEntries=frozenset()):
         results = []
         cause = getattr(ex, "__cause__", None)
-        if (cause is not None) and (_getTbStack2(ex) is not None):
+        if (cause is not None) and (_getTbStack2(cause) is not None):
             results += _dfsFormatStack2(cause, higherTbEntries | _getTbStackSet2(ex))
             results.append('\nThe above exception was the direct cause of the following exception:\n\n')
         results += _formatOneEx2(ex, cause, higherTbEntries)
         return results
 
     def _formatExceptChain2(ex):
-        if isinstance(ex, PycbioException):
-            return _dfsFormatStack2(ex, frozenset())
+        if _getTbStack2(ex) is not None:
+            return _dfsFormatStack2(ex)
         else:
-            # need some kind of stack, so use the current, get our own,
-            # as extract_stack() chops one frame we want.
-            # try:
-            #     raise ZeroDivisionError
-            # except ZeroDivisionError:
-            #    frame = sys.exc_info()[2].tb_frame
-            import inspect
-            frame = inspect.currentframe()
-            return traceback.extract_stack(frame) + [_formatExInfo2(ex)]
+            # need some kind of stack, so use the current
+            return _currentStack2(skip=0) + [_formatExInfo2(ex)]
 
-def pycbioRaise(ex, cause=None):
+
+def pycbioRaiseFrom(ex, cause=None):
     if six.PY2:
-        # save our stack infomation
+        # save our stack information
         if isinstance(ex, PycbioException):
             ex.__cause__ = cause
             ex.__traceback_stack__ = _currentStack2(skip=0)
@@ -137,6 +123,7 @@ def pycbioExFormat(ex):
         return _formatExceptChain2(ex)
     else:
         return traceback.format_exception(type(ex), ex, ex.__traceback__)
+
 
 def pycbioExPrint(ex, file=None):
     """Format any type of exception into to a file, handling
