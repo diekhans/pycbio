@@ -14,3 +14,5 @@
 * add function to init from __init__ args
   http://code.activestate.com/recipes/286185-automatically-initializing-instance-variables-from/
 * switch all function to use coords
+* exceptTests has to hack around unit test _AssertRaisesContext not saving traceback
+see unittest/case.py: # store exception, without traceback, for later retrieval

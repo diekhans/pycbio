@@ -191,7 +191,7 @@ class TestCaseBase(unittest.TestCase):
     def assertRegexDotAll(self, obj, expectRe, msg=None):
         """Fail if the str(obj) does not match expectRe operator, including `.' matching newlines"""
         if not re.match(expectRe, str(obj), re.DOTALL):
-            raise self.failureException(msg or "'%s' does not match '%s'" % (str(obj), expectRe))
+            raise self.failureException(msg or "regexp '{}' does not match '{}'".format(expectRe, str(obj)))
 
     def _logCmd(self, cmd):
         cmdStrs = [quote(a) for a in cmd]
@@ -216,7 +216,7 @@ class TestCaseBase(unittest.TestCase):
         "If this is OS/X, output message to indicate this test is broken and return True "
         # FIXME: this is temporary, not needed any more
         if sys.platform == "darwin":
-            sys.stderr.write("WARNING: test %s broken on OS/X\n" % self.id())
+            sys.stderr.write("WARNING: test {} doe not run on OS/X\n".format(self.id()))
             return True
         else:
             return False

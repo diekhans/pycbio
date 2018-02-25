@@ -1,26 +1,39 @@
 """
 Configuration files written as python programs.
 """
-from past.builtins import execfile
-from builtins import object
+import os
 from future.utils import raise_from
 from types import FunctionType, ModuleType
 from pycbio.sys import PycbioException
 
+# FIXME: getFuncArgs could be handled by functools.partial much more elegantly
+
+configPyFileVar = "configPyFile"
+
 
 def _evalConfigFile(configPyFile, extraEnv=None):
     "evaluate file and return environment"
-    configEnv = {"configPyFile": configPyFile}
+    configEnv = {configPyFileVar: os.path.abspath(configPyFile),
+                 include_config.__name__: include_config}
     if extraEnv is not None:
         configEnv.update(extraEnv)
     try:
-        execfile(configPyFile, configEnv, configEnv)
+        with open(configPyFile) as fh:
+            exec(fh.read(), configEnv, configEnv)
     except Exception as ex:
         raise_from(PycbioException("Error evaluating configuration file: {}".format(configPyFile)), ex)
     return configEnv
 
-# FIXME: now that configEnv has locals, we could get by varname.
-# getFuncArgs could be handled by functools.partial much more elegently
+
+def include_config(inclPyFile, conflocals):
+    callingPyFile = conflocals[configPyFileVar]
+    if not os.path.isabs(inclPyFile):
+        inclPyFile = os.path.normpath(os.path.join(os.path.dirname(callingPyFile), inclPyFile))
+    try:
+        conflocals.pop(configPyFileVar)
+        _evalConfigFile(inclPyFile, conflocals)
+    finally:
+        conflocals[configPyFileVar] = callingPyFile
 
 
 def evalConfigFunc(configPyFile, getFuncName="getConfig", getFuncArgs=[], getFuncKwargs={}, extraEnv=None):
@@ -65,6 +78,12 @@ def evalConfigFile(configPyFile, extraEnv=None):
     evaluation. If specified, the dict extraEnv contents will be passed as a
     module globals and we be in the returned object.  This can be a way to specify
     defaults.
+
+    A function `include_config(inclPyFile, conflocals)' will be defined in the
+    environment.  The conflocals argument should be specified as locals().
+    If inclPyFile is not absolute, it will found relative to configPyFile.
+    The configPyFile variable is set to the absolute path to the included
+    file while it is being evaluated.
     """
     configEnv = _evalConfigFile(configPyFile, extraEnv)
     # construct object excluding some

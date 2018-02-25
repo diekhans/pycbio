@@ -1,10 +1,13 @@
 # Copyright 2006-2012 Mark Diekhans
+import six
 import unittest
 import sys
+import copy
 if __name__ == '__main__':
     sys.path.append("../../../../lib")
-from pycbio.sys import PycbioException
+from pycbio.sys import PycbioException, pycbioRaise, pycbioExFormat, pycbioExPrint
 from pycbio.sys.testCaseBase import TestCaseBase
+import traceback
 
 
 class TestExcept(PycbioException):
@@ -20,19 +23,25 @@ class ExceptTests(TestCaseBase):
             fn3()
 
         def fn3():
-            raise TestExcept("testing 1 2 3")
+            pycbioRaise(TestExcept("testing 1 2 3"))
 
-        with self.assertRaises(TestExcept) as cm:
+        # assetRaises doesn't save traceback in exception
+        save_ex = None
+        try:
             fn1()
-        self.assertEqual(str(cm.exception), "testing 1 2 3")
-        self.assertRegexDotAll(cm.exception.format(), """^testing 1 2 3.+in testBasicExcept.+fn1\(\).+fn2\(\).+fn3\(\).+raise TestExcept\("testing 1 2 3"\)\n$""")
+        except Exception as ex:
+            save_ex = ex
+        self.assertIsInstance(save_ex, TestExcept)
+        self.assertEqual(str(save_ex), "testing 1 2 3")
+        ere = "^Traceback.+testBasicExcept.+fn1\\(\\).+fn2.+TestExcept: testing 1 2 3"
+        self.assertRegexDotAll("".join(pycbioExFormat(save_ex)), ere)
 
-    def FIXME_testChainedExcept(self):
+    def testChainedExcept(self):
         def fn1():
             try:
                 fn2()
             except Exception as e:
-                raise TestExcept("in-fn1", e)
+                pycbioRaise(TestExcept("in-fn1"), e)
 
         def fn2():
             fn3()
@@ -41,7 +50,7 @@ class ExceptTests(TestCaseBase):
             try:
                 fn4()
             except Exception as e:
-                raise TestExcept("in-fn3", e)
+                pycbioRaise(TestExcept("in-fn3"), e)
 
         def fn4():
             fn5()
@@ -53,15 +62,67 @@ class ExceptTests(TestCaseBase):
             try:
                 fn7()
             except Exception as e:
-                raise TestExcept("in-fn6", e)
+                pycbioRaise(TestExcept("in-fn6"), e)
 
         def fn7():
-            raise OSError("OS meltdown")
+            pycbioRaise(OSError("OS meltdown"))
 
-        with self.assertRaises(TestExcept) as cm:
+        # assetRaises doesn't save traceback in exception
+        save_ex = None
+        try:
             fn1()
-        self.assertEqual(str(cm.exception), "in-fn1,\n    caused by: TestExcept: in-fn3,\n    caused by: TestExcept: in-fn6,\n    caused by: OSError: OS meltdown")
-        self.assertRegexDotAll(cm.exception.format(), """^in-fn1.+fn1\(\).+raise TestExcept\("in-fn1", e\).+caused by: TestExcept: in-fn3.+fn3\(\).+caused by: TestExcept: in-fn6.+fn4\(\).+fn5\(\).+fn6\(\).+caused by: OSError: OS meltdown.+fn7\(\).+raise OSError\("OS meltdown"\)$""")
+        except Exception as ex:
+            save_ex = ex
+        self.assertIsInstance(save_ex, TestExcept)
+        self.assertEqual(str(save_ex), "in-fn1")
+        ere =("^Traceback .+fn6.+fn7\\(\\).+OSError: OS meltdown"
+              ".+Traceback.+fn3.+fn4\\(\\).+fn5\\(\\).+in fn6.+TestExcept: in-fn3")
+        self.assertRegexDotAll("".join(pycbioExFormat(save_ex)), ere)
+
+
+    def testChainedWrap(self):
+        # what happens if we wrap a non-pycbio exception
+        def fn1():
+            try:
+                fn2()
+            except Exception as e:
+                pycbioRaise(TestExcept("in-fn1"), e)
+
+        def fn2():
+            fn3()
+
+        def fn3():
+            try:
+                fn4()
+            except Exception as e:
+                pycbioRaise(TestExcept("in-fn3"), e)
+
+        def fn4():
+            fn5()
+
+        def fn5():
+            fn6()
+
+        def fn6():
+            try:
+                fn7()
+            except Exception as e:
+                pycbioRaise(TestExcept("in-fn6"), e)
+
+        def fn7():
+            pycbioRaise(OSError("OS meltdown"))
+
+        # assetRaises doesn't save traceback in exception
+        save_ex = None
+        try:
+            fn1()
+        except Exception as ex:
+            save_ex = ex
+        self.assertIsInstance(save_ex, TestExcept)
+        self.assertEqual(str(save_ex), "in-fn1")
+        ere =("^Traceback .+fn6.+fn7\\(\\).+OSError: OS meltdown"
+              ".+Traceback.+fn3.+fn4\\(\\).+fn5\\(\\).+in fn6.+TestExcept: in-fn3")
+        self.assertRegexDotAll("".join(pycbioExFormat(save_ex)), ere)
 
 
 def suite():
