@@ -102,6 +102,8 @@ if six.PY2:  # noqa: C901
 
 
 def pycbioRaiseFrom(ex, cause=None):
+    """Use this to raise with an cause or in cases where an exception maybe
+    caught and added as a causes.  This will ensure capturing the stack."""
     if six.PY2:
         # save our stack information
         if isinstance(ex, PycbioException):
