@@ -1,5 +1,6 @@
 # Copyright 2006-2014 Mark Diekhans
 import unittest
+import os
 import sys
 if __name__ == '__main__':
     sys.path.append("../../../../lib")
@@ -49,6 +50,19 @@ class ConfigInPyTests(TestCaseBase):
         self.assertEqual(getattr(c, "_hidden", None), None)
         self.assertRegex(c.configPyFile, ".*/input/objBasic.config.py")
         self.assertEqual(getattr(c, "passedInModule", None), None)
+        self.assertEqual(os.path.basename(c.objBasicConfFile), "objBasic.config.py")
+        self._checkFields(c, ['configPyFile', 'value1', 'value2'])
+
+    def testConfigFileInclude(self):
+        c = evalConfigFile(self.getInputFile("configSub/incl.config.py"))
+        self.assertEqual(c.value1, 10)
+        self.assertEqual(c.value2, 22)
+        self.assertEqual(c.value44, 44)
+        self.assertEqual(getattr(c, "_hidden", None), None)
+        self.assertRegex(c.configPyFile, ".*/input/configSub/incl.config.py")
+        self.assertEqual(getattr(c, "passedInModule", None), None)
+        self.assertEqual(os.path.basename(c.objBasicConfFile), "objBasic.config.py")
+        self.assertEqual(os.path.basename(c.inclConfFile), "incl.config.py")
         self._checkFields(c, ['configPyFile', 'value1', 'value2'])
 
     def testConfigFilePassModule(self):

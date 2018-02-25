@@ -1,6 +1,7 @@
 """
 Configuration files written as python programs.
 """
+from __future__ import print_function
 import os
 from types import FunctionType, ModuleType
 from pycbio.sys import PycbioException, pycbioRaiseFrom
@@ -10,10 +11,10 @@ from pycbio.sys import PycbioException, pycbioRaiseFrom
 configPyFileVar = "configPyFile"
 
 
-def _evalConfigFile(configPyFile, extraEnv=None):
+def _evalConfigFile(configPyFile, configEnv, extraEnv=None):
     "evaluate file and return environment"
-    configEnv = {configPyFileVar: os.path.abspath(configPyFile),
-                 include_config.__name__: include_config}
+    configEnv[configPyFileVar] = os.path.abspath(configPyFile)
+    configEnv[include_config.__name__] = include_config
     if extraEnv is not None:
         configEnv.update(extraEnv)
     try:
@@ -40,12 +41,12 @@ def evalConfigFunc(configPyFile, getFuncName="getConfig", getFuncArgs=[], getFun
     function (defaulting to getConfig()) define in the file.  The value of the
     call of this function is returned. This is useful for config files that
     need to construct complex objects.  Arguments and keyword arguments can be
-    passed to this functions getFuncArgs, and getFuncKwargs.  The first argument is
-    configPyFile, containing the configuration file name, which is also is set
-    in the module globals before evaluation.  If specified, the dict extraEnv
-    contents will be passed as a module globals.
+    passed to this functions getFuncArgs, and getFuncKwargs.  The first
+    argument is configPyFile, containing the configuration file name, which is
+    also is set in the module globals before evaluation.  If specified, the
+    dict extraEnv contents will be passed as a module globals.
     """
-    configEnv = _evalConfigFile(configPyFile, extraEnv)
+    configEnv = _evalConfigFile(configPyFile, configEnv=dict(), extraEnv=extraEnv)
     configFunc = configEnv.get(getFuncName)
     if configFunc is None:
         raise PycbioException("configuration script does not define function {}(): {} ".format(getFuncName, configPyFile))
@@ -84,7 +85,7 @@ def evalConfigFile(configPyFile, extraEnv=None):
     The configPyFile variable is set to the absolute path to the included
     file while it is being evaluated.
     """
-    configEnv = _evalConfigFile(configPyFile, extraEnv)
+    configEnv = _evalConfigFile(configPyFile, configEnv=dict(), extraEnv=extraEnv)
     # construct object excluding some
     configObj = Config()
     for key in list(configEnv.keys()):
