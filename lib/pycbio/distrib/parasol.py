@@ -96,7 +96,7 @@ class Para(object):
                 raise PycbioException("job file not found: {}".format(absJobFile))
 
     @staticmethod
-    def __mkAbs(parent, child):
+    def _mkAbs(parent, child):
         if os.path.isabs(child):
             return child
         else:
