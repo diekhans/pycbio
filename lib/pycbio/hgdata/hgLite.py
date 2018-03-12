@@ -25,10 +25,13 @@ from pycbio.db.sqliteOps import sqliteConnect   # noqa: F401
 # FIXME: removed duplicated functions and move to base class or mix-in especially gencode
 # FIXME: move generic sqlite to another module.
 # FIXME: often hides sql too much (gencode_icedb/general/gencodeDb.py: getGeneIdsStartingInBounds)
-# FIXME: maaybe a series of functions to build queryes would be the ticket (binning, in querys, ihserts)
+# FIXME: maaybe a series of functions to build queryes would be the ticket (binning, in querys, ihserts); this is not that composable.
 # FIXME" prefix generators with gen**********
-
 # FIXME: term load is confusing, use read, write, or insert
+# FIXME: could this move to peewee, since we can assign primary keys on load;
+#        although the table per class is problematic; could dynamically create classes with
+#        type(name, bases, dict)
+# FIXME: maybe separate table definitions from query construction
 
 
 def noneIfEmpty(s):

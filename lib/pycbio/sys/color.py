@@ -141,6 +141,14 @@ class Color(namedtuple("Color", ("red", "green", "blue",
         return Color.fromRgb(Color._int8ToReal(r), Color._int8ToReal(g), Color._int8ToReal(b))
 
     @staticmethod
+    def fromPackRgb8(c):
+        "construct from packed 8-bit int RGB values (e.g.#008000)"
+        r = (c >> 16) & 0xff
+        g = (c >> 8) & 0xff
+        b = c & 0xff
+        return Color.fromRgb(Color._int8ToReal(r), Color._int8ToReal(g), Color._int8ToReal(b))
+
+    @staticmethod
     def fromHsv(h, s, v):
         "construct from real HSV values"
         assert (0.0 <= h <= 1.0)

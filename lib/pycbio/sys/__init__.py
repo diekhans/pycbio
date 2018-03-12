@@ -17,7 +17,7 @@ class PycbioException(Exception):
        try:
           ...
        except Exception as ex:
-          pycbioRaiseFrom("more stuff", ex)
+          pycbioRaiseFrom(PycbioException("more stuff"(, ex)
 
     Optionally, traceback tb (sys.exc_info()[2] can be used to save get the stack
     trace.  Otherwise the current stack is used.
