@@ -77,7 +77,7 @@ class BatchStats(object):
 
 class Para(object):
     "interface to the parasol para command"
-    def __init__(self, paraHost, runDir, paraDir, jobFile=None, cpu=None, mem=None):
+    def __init__(self, paraHost, runDir, paraDir, jobFile=None, cpu=None, mem=None, maxJobs=None, retries=None):
         """"will chdir to run dir.. paraDir should be relative
         to runDir or absolute, jobFile should be relative to runDir
         or absolute.
@@ -89,6 +89,8 @@ class Para(object):
         self.jobFile = jobFile
         self.cpu = cpu
         self.mem = mem
+        self.maxJobs = maxJobs
+        self.retries = retries
         fileOps.ensureDir(self._mkAbs(self.runDir, self.paraDir))
         if jobFile is not None:
             absJobFile = self._mkAbs(self.runDir, self.jobFile)
@@ -114,8 +116,12 @@ class Para(object):
             paraCmd.append("-cpu={}".format(self.cpu))
         if self.mem is not None:
             paraCmd.append("-ram={}".format(self.mem))
+        if self.maxJobs is not None:
+            paraCmd.append("-maxJob={}".format(self.maxJobs))
+        if self.retries is not None:
+            paraCmd.append("-retries={}".format(self.retries))
         remCmd = "cd {} && {}".format(shlex_quote(self.runDir), " ".join(paraCmd))
-        return pipettor.runout(["ssh", "-no", "ClearAllForwardings=yes", self.paraHost, remCmd]).split('\n')
+        return pipettor.runout(["ssh", "-nx", "-o", "ClearAllForwardings=yes", self.paraHost, remCmd]).split('\n')
 
     def wasStarted(self):
         """check to see if it appears that the batch was started; this doens't mean
