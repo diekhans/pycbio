@@ -1,4 +1,4 @@
-geneId	geneName	geneType	geneStatus	transcriptId	transcriptName	transcriptType	transcriptStatus	havanaGeneId	havanaTranscriptId	ccdsId	level	transcriptClass
-ENSG00000187191.14	DAZ3	protein_coding		ENST00000315357.9	DAZ3-201	protein_coding		OTTHUMG00000045099.2			3	coding
-ENSG00000187191.14	DAZ3	protein_coding		ENST00000382365.6	DAZ3-001	protein_coding		OTTHUMG00000045099.2	OTTHUMT00000104777.2	CCDS35489.1	2	coding
-ENSG00000187191.14	DAZ3	protein_coding		ENST00000446723.4	DAZ3-202	protein_coding		OTTHUMG00000045099.2			3	coding
+geneId	geneName	geneType	geneStatus	transcriptId	transcriptName	transcriptType	transcriptStatus	havanaGeneId	havanaTranscriptId	ccdsId	level	transcriptClass	proteinId
+ENSG00000187191.14	DAZ3	protein_coding		ENST00000315357.9	DAZ3-201	protein_coding		OTTHUMG00000045099.2			3	coding	ENSP00000324965.7
+ENSG00000187191.14	DAZ3	protein_coding		ENST00000382365.6	DAZ3-001	protein_coding		OTTHUMG00000045099.2	OTTHUMT00000104777.2	CCDS35489.1	2	coding	ENSP00000371802.2
+ENSG00000187191.14	DAZ3	protein_coding		ENST00000446723.4	DAZ3-202	protein_coding		OTTHUMG00000045099.2			3	coding	ENSP00000401049.1

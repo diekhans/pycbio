@@ -246,9 +246,13 @@ class GenePredDbTableTests(TestCaseBase):
 
 
 class GencodeAttrsDbTableTests(TestCaseBase):
-    testData = (("ENSG00000187191.14", "DAZ3", "protein_coding", None, "ENST00000315357.9", "DAZ3-201", "protein_coding", None, "OTTHUMG00000045099.2", None, None, 3, "coding"),
-                ("ENSG00000187191.14", "DAZ3", "protein_coding", None, "ENST00000382365.6", "DAZ3-001", "protein_coding", None, "OTTHUMG00000045099.2", "OTTHUMT00000104777.2", "CCDS35489.1", 2, "coding"),
-                ("ENSG00000187191.14", "DAZ3", "protein_coding", None, "ENST00000446723.4", "DAZ3-202", "protein_coding", None, "OTTHUMG00000045099.2", None, None, 3, "coding"))
+    # test have optional protein ids
+    testData = (("ENSG00000187191.14", "DAZ3", "protein_coding", None, "ENST00000315357.9", "DAZ3-201", "protein_coding", None, "OTTHUMG00000045099.2", None, None, 3, "coding", "ENSP00000324965.7"),
+                ("ENSG00000187191.14", "DAZ3", "protein_coding", None, "ENST00000382365.6", "DAZ3-001", "protein_coding", None, "OTTHUMG00000045099.2", "OTTHUMT00000104777.2", "CCDS35489.1", 2, "coding", "ENSP00000371802.2"),
+                ("ENSG00000187191.14", "DAZ3", "protein_coding", None, "ENST00000446723.4", "DAZ3-202", "protein_coding", None, "OTTHUMG00000045099.2", None, None, 3, "coding", "ENSP00000401049.1"))
+
+    # same with protein ids dropped
+    testDataPrev = tuple((r[0:-1] for r in testData))
 
     @classmethod
     def setUpClass(cls):
@@ -267,6 +271,16 @@ class GencodeAttrsDbTableTests(TestCaseBase):
         self.assertEqual(attrs, GencodeAttrs(*self.testData[0]))
         attrs = self.attrsTestDb.getByTranscriptId("fred")
         self.assertEqual(attrs, None)
+
+    def testGetNoProtId(self):
+        conn = sqliteConnect(None)
+        testDb = GencodeAttrsDbTable(conn, "gencodeAttrs", True)
+        testDb.loadTsv(self.getInputFile("gencodeAttrsPrev.tsv"))
+        testDb.index()
+        attrs = testDb.getByTranscriptId("ENST00000315357.9")
+        self.assertEqual(attrs, GencodeAttrs(*self.testDataPrev[0]))
+        attrs = testDb.getByTranscriptId("ENST00000382365.6")
+        self.assertEqual(attrs, GencodeAttrs(*self.testDataPrev[1]))
 
     def testGetGeneId(self):
         attrs = self.attrsTestDb.getByGeneId("ENSG00000187191.14")

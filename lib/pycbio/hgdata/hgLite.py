@@ -420,9 +420,17 @@ class GenePredDbTable(HgLiteTable):
 class GencodeAttrs(namedtuple("GencodeAttrs",
                               ("geneId", "geneName", "geneType", "geneStatus", "transcriptId",
                                "transcriptName", "transcriptType", "transcriptStatus", "havanaGeneId",
-                               "havanaTranscriptId", "ccdsId", "level", "transcriptClass"))):
-    """Attributes of a GENCODE transcript"""
-    pass
+                               "havanaTranscriptId", "ccdsId", "level", "transcriptClass", "proteinId"))):
+    """Attributes of a GENCODE transcript. New attribute added to table become optional"""
+    def __new__(cls, geneId, geneName, geneType, geneStatus, transcriptId,
+                transcriptName, transcriptType, transcriptStatus, havanaGeneId,
+                havanaTranscriptId, ccdsId, level, transcriptClass, proteinId=None):
+        return super(GencodeAttrs, cls).__new__(cls, geneId, geneName, geneType,
+                                                geneStatus, transcriptId,
+                                                transcriptName, transcriptType,
+                                                transcriptStatus, havanaGeneId,
+                                                havanaTranscriptId, ccdsId, level,
+                                                transcriptClass, proteinId)
 
 
 class GencodeAttrsDbTable(HgLiteTable):
@@ -442,7 +450,8 @@ class GencodeAttrsDbTable(HgLiteTable):
             havanaTranscriptId TEXT DEFAULT NULL,
             ccdsId TEXT DEFAULT NULL,
             level INT NOT NULL,
-            transcriptClass TEXT NOT NULL)"""
+            transcriptClass TEXT NOT NULL,
+            proteinId TEXT DEFAULT NULL)"""
     insertSql = """INSERT INTO {table} ({columns}) VALUES ({values});"""
     indexSql = [
         """CREATE INDEX {table}_geneId ON {table} (geneId)""",
@@ -453,6 +462,7 @@ class GencodeAttrsDbTable(HgLiteTable):
         """CREATE INDEX {table}_havanaGeneId ON {table} (havanaGeneId)""",
         """CREATE INDEX {table}_havanaTranscriptId ON {table} (havanaTranscriptId)""",
         """CREATE INDEX {table}_ccdsId ON {table} (ccdsId)""",
+        """CREATE INDEX {table}_proteinId ON {table} (proteinId)""",
     ]
 
     columnNames = GencodeAttrs._fields
@@ -475,7 +485,8 @@ class GencodeAttrsDbTable(HgLiteTable):
 
     def _loadTsvRow(self, tsvRow):
         "convert to list in column order"
-        return [getattr(tsvRow, cn) for cn in self.columnNames]
+        # None allows for newly added columns at end
+        return [getattr(tsvRow, cn, None) for cn in self.columnNames]
 
     def loadTsv(self, attrsFile):
         """load a GENCODE attributes file, adding bin"""
@@ -484,6 +495,7 @@ class GencodeAttrsDbTable(HgLiteTable):
                    "havanaGeneId": noneIfEmpty,
                    "havanaTranscriptId": noneIfEmpty,
                    "ccdsId": noneIfEmpty,
+                   "proteinId": noneIfEmpty,
                    "level": int}
         rows = [self._loadTsvRow(row) for row in TsvReader(attrsFile, typeMap=typeMap)]
         self.loads(rows)

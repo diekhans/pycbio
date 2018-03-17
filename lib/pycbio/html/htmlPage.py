@@ -5,8 +5,14 @@ from __future__ import print_function
 from builtins import range
 
 # FIXME: frameset kind of a hack
+# FIXME: should build a tree, not a list of lines, but avoid a DOM.
 # FIXME; probably some module to do all of this
-# maybe: http://starship.python.net/crew/friedrich/HTMLgen/html/main.html
+# maybe: https://pypi.python.org/pypi/HtmlNode/0.1.8 (2013-10-27)
+#        https://pypi.python.org/pypi/PyHTML/1.3.1 (2017-05-30, one release)
+#        https://pypi.python.org/pypi/easyhtml/1.2.0 - no release info
+#        https://pypi.python.org/pypi/htmlgen/1.0.0 (2018-02-21, MIT, little doc, looks cumbersome)
+#        https://pypi.python.org/pypi/html/1.16 (no dev info
+#         https://pypi.python.org/pypi/PyHTML/1.3.1 (2017-05-30)
 # FIXME: add class TableCell
 
 
