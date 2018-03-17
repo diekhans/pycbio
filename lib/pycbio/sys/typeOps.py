@@ -109,11 +109,11 @@ def annon(**kwargs):
 
 def attrdict(obj):
     """Create a dictionary of all attributes in an object. This will work for
-    classes with __slots__.  The returned object may or may not be the
-    __dict__, and so should not be modified"""
+    classes with __slots__ or __dict__.    The returned object may or may not be the
+    object and so should *not be modified*"""
     try:
-        return obj.__dict__
-    except AttributeError:
+        return vars(obj)
+    except TypeError:
         return {a: getattr(obj, a) for a in dir(obj)}
 
 
