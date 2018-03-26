@@ -6,22 +6,42 @@ from builtins import range
 import re
 from collections import namedtuple
 
-# FIXME: make immutable
 
+class CigarRun(namedtuple("CigarRun", ("code", "count"))):
+    __slots__ = ()
 
-OP_ALIGNED = 'M'  # match or mismatch
-OP_TINSERT = 'I'  # target insert
-OP_TDELETE = 'D'  # target deletion
+    # operation codes
+    ALIGNED = 'M'  # match or mismatch
+    TINSERT = 'I'  # target insert
+    TDELETE = 'D'  # target deletion
 
+    @property
+    def aligned(self):
+        "is this an aligned block?"
+        return self.code == self.ALIGNED
 
-class Cigar(list):
-    """cigar parser and representation.  Derived class implement specific
+    def tinsert(self):
+        "is this a target insert block?"
+        return self.code == self.TINSERT
+
+    def tdelete(self):
+        "is this a target deletion block?"
+        return self.code == self.TDELETE
+
+    def qinsert(self):
+        "is this a query insert block?"
+        return self.code == self.TDELETE
+
+    def qdelete(self):
+        "is this a query query block?"
+        return self.code == self.TINSERT
+
+class Cigar(tuple):
+    """Cigar parser and representation.  Derived class implement specific
     cigar encodings"""
 
-    OpType = namedtuple("OpType", ("count", "code"))
-
-    def __init__(self, cigarStr, validOps):
-        self.extend(self._parseCigar(cigarStr, validOps))
+    def __new__(cls, cigarStr, validOps):
+        return super(Cigar, cls).__new__(cls, cls._parseCigar(cigarStr, validOps))
 
     def __str__(self):
         opStrs = []
@@ -31,7 +51,19 @@ class Cigar(list):
             opStrs.append(str(op.code))
         return "".join(opStrs)
 
-    def _parseOp(self, cigarStr, validOps, opParts):
+    @classmethod
+    def _parseCigar(cls, cigarStr, validOps):
+        # remove white space first, then convert to (count, op).  Re split will
+        # result in triples of ("", count, op), where count might be empty.
+        # Also as a trailing space.
+        parts = re.split("([0-9]*)([A-Za-z])", re.sub("\\s+", "", cigarStr))
+        if ((len(parts) - 1) % 3) != 0:
+            raise TypeError("Invalid cigar string, doesn't parse into a valid cigar: {}".format(cigarStr))
+        return (cls._parseOp(cigarStr, validOps, parts[i:i + 3])
+                for i in range(0, len(parts) - 1, 3))
+
+    @classmethod
+    def _parseOp(cls, cigarStr, validOps, opParts):
         if opParts[0] != "":
             raise TypeError("Invalid cigar string at '{}' : {}".format("".join(opParts), cigarStr))
         try:
@@ -41,25 +73,13 @@ class Cigar(list):
         op = opParts[2].upper()
         if op not in validOps:
             raise TypeError("Invalid cigar string, unknown operation '{}' : {}".format("".join(opParts), cigarStr))
-        return Cigar.OpType(cnt, op)
+        return CigarRun(op, cnt)
 
-    def _parseCigar(self, cigarStr, validOps):
-        # remove white space first, then convert to (count, op).  Re split will
-        # result in triples of ("", count, op), where count might be empty.
-        # Also as a trailing space.
-        parts = re.split("([0-9]*)([A-Za-z])",
-                         re.sub("\\s+", "", cigarStr))
-        if ((len(parts) - 1) % 3) != 0:
-            raise TypeError("Invalid cigar string, doesn't parse into a valid cigar: {}".format(cigarStr))
-        return tuple([self._parseOp(cigarStr, validOps, parts[i:i + 3])
-                      for i in range(0, len(parts) - 1, 3)])
 
 
 class ExonerateCigar(Cigar):
     "exonerate cigar string"
-    validOps = frozenset([OP_ALIGNED, OP_TINSERT, OP_TDELETE])
+    validOps = frozenset([CigarRun.ALIGNED, CigarRun.TINSERT, CigarRun.TDELETE])
 
-    def __init__(self, cigarStr):
-        super(ExonerateCigar, self).__init__(cigarStr, ExonerateCigar.validOps)
-
-# FIXME: gencode-icedb/bin/cdnaEnsemblAligns2 has pslFromCigar, might move to here
+    def __new__(cls, cigarStr):
+        return super(ExonerateCigar, cls).__new__(cls, cigarStr, ExonerateCigar.validOps)

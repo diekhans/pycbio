@@ -585,3 +585,5 @@ class PslTbl(list):
                     yield psl
             else:
                 yield ent
+
+# FIXME: gencode-icedb/bin/tslGetEnsemblRnaAligns? has pslFromCigar, might move to here
