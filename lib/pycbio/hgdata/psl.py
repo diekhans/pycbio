@@ -514,6 +514,8 @@ class PslDbReader(object):
         self.queryArgs = queryArgs
 
     def __iter__(self):
+        # FIXME: this cursorColIdxMap stuff is too complex, just use dict cursor or maybe assume order
+        # since we constructed select.
         cur = self.conn.cursor()
         try:
             cur.execute(self.query, self.queryArgs)
