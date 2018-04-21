@@ -107,7 +107,8 @@ class TsvReader(object):
                 self.colTypes.append(defaultColType)
 
     def __init__(self, fileName, rowClass=None, typeMap=None, defaultColType=None, columns=None, columnNameMapper=None,
-                 ignoreExtraCols=False, isRdb=False, inFh=None, allowEmpty=False, dialect=csv.excel_tab):
+                 ignoreExtraCols=False, isRdb=False, inFh=None, allowEmpty=False, dialect=csv.excel_tab,
+                 encoding=None, errors=None):
         """Open TSV file and read header into object.  Removes leading # from
         UCSC header.
 
@@ -150,7 +151,7 @@ class TsvReader(object):
         if inFh is not None:
             self.inFh = inFh
         else:
-            self.inFh = fileOps.opengz(fileName, "r")
+            self.inFh = fileOps.opengz(fileName, "r", encoding=encoding, errors=errors)
         try:
             self.reader = csv.reader(self.inFh, dialect=dialect)
             if columns:
