@@ -31,6 +31,9 @@ csv.field_size_limit(sys.maxsize)
 # FIXME: document how colName mapping and type mappings works together
 # FIXME: check if column is a valid python field name
 # FIXME: switch to row derived from namedtuple
+# FIXME: rowClass interface is hacky.  It could be a keyword/value and not have to do column lookup.
+# FIXME: maybe build on csv.Reader class and keep less of our own crap (although column stuff is nice)
+
 
 # typeMap converter for str types were empty represents None
 strOrNoneType = (lambda v: None if (v == "") else v,
