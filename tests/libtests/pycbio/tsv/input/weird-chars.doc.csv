@@ -1,0 +1,5 @@
+num_col,text_col,another
+0,"ab""cd",doublequote
+1,zaf'doh,singlequote
+2,"tab	here",tab_in_string
+3,£©½,utf8
