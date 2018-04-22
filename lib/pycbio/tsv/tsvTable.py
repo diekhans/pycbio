@@ -118,6 +118,7 @@ class TsvTable(list):
             self._buildIndices(uniqKeyCols, multiKeyCols)
             self._readBody(reader)
         except Exception as ex:
+            reader.close()
             pycbioRaiseFrom(TsvError("load failed", reader=reader), ex)
 
     def addColumn(self, colName, initValue=None, colType=None):

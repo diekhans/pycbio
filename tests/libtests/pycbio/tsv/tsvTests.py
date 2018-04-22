@@ -4,11 +4,11 @@ import unittest
 import sys
 if __name__ == '__main__':
     sys.path.append("../../../../lib")
-from pycbio.tsv import TsvTable, TsvReader, TsvError, tsvRowToDict
+from pycbio.tsv import TsvTable, TsvReader, TsvError, tsvRowToDict, printf_basic_dialect
+from csv import excel_tab, excel
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.hgdata.autoSql import intArrayType
 import pipettor
-
 
 class ReadTests(TestCaseBase):
     def testLoad(self):
@@ -176,6 +176,32 @@ class ReadTests(TestCaseBase):
         tbl = TsvTable("/dev/null", allowEmpty=True)
         self.assertEqual(len(tbl), 0)
 
+    def testPrintfed(self):
+        # created with, escaped quotes in data
+        rows = [r for r in TsvReader(self.getInputFile("printfed-with-quotes.tsv"), dialect=printf_basic_dialect)]
+        self.assertEqual(len(rows), 5)
+        self.assertEqual(rows[1].Mentions, '"GP I')
+
+    def _weirdCaseTester(self, infile, dialect):
+        rows = [r for r in TsvReader(self.getInputFile(infile), dialect=dialect, encoding="utf-8")]
+
+    def testWeirdCharsDosCsv(self):
+        self._weirdCaseTester("weird-chars.dos.csv", excel)
+
+    def testWeirdCharsDosTab(self):
+        self._weirdCaseTester("weird-chars.dos.tab", excel_tab)
+
+    def testWeirdCharsMacCsv(self):
+        self._weirdCaseTester("weird-chars.mac.csv", excel)
+
+    def testWeirdCharsMacTab(self):
+        self._weirdCaseTester("weird-chars.mac.tab", excel_tab)
+
+    def testWeirdCharsUnixCsv(self):
+        self._weirdCaseTester("weird-chars.unix.csv", excel)
+
+    def testWeirdCharsUnixTab(self):
+        self._weirdCaseTester("weird-chars.unix.tab", excel_tab)
 
 def suite():
     ts = unittest.TestSuite()

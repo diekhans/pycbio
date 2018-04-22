@@ -100,12 +100,12 @@ def opengz(fileName, mode="r", buffering=-1, encoding=None, errors=None):
     """open a file, if it ends in an extension indicating compression, open
     with a compression or decompression pipe."""
     if isCompressed(fileName):
-        if mode == "r":
+        if mode.startswith("r"):
             cmd = decompressCmd(fileName)
-            return pipettor.Popen([cmd, fileName], mode="r", buffering=buffering, encoding=encoding, errors=errors)
-        elif mode == "w":
+            return pipettor.Popen([cmd, fileName], mode=mode, buffering=buffering, encoding=encoding, errors=errors)
+        elif mode.startswith("w"):
             cmd = compressCmd(fileName)
-            return pipettor.Popen([cmd], mode="w", stdout=fileName, buffering=buffering, encoding=encoding, errors=errors)
+            return pipettor.Popen([cmd], mode=modem, stdout=fileName, buffering=buffering, encoding=encoding, errors=errors)
         else:
             raise PycbioException("mode {} not support with compression for {}".format(mode, fileName))
     elif six.PY3:

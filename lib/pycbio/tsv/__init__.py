@@ -13,7 +13,7 @@ class TsvError(PycbioException):
 
 
 from pycbio.tsv.tsvRow import TsvRow, tsvRowToDict
-from pycbio.tsv.tsvReader import TsvReader, strOrNoneType, intOrNoneType
+from pycbio.tsv.tsvReader import TsvReader, strOrNoneType, intOrNoneType, printf_basic_dialect
 from pycbio.tsv.tsvTable import TsvTable
 from pycbio.tsv.tabFile import TabFile
 from pycbio.tsv.tabFile import TabFileReader
@@ -21,4 +21,5 @@ from pycbio.tsv.tabFile import TabFileReader
 __all__ = (TsvError.__name__, TsvRow.__name__, TsvReader.__name__,
            "strOrNoneType", "intOrNoneType",
            TsvTable.__name__, TabFile.__name__, TabFileReader.__name__,
-           tsvRowToDict.__name__)
+           tsvRowToDict.__name__,
+           printf_basic_dialect.__name__)

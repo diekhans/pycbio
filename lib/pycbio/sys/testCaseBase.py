@@ -12,6 +12,8 @@ import errno
 import re
 import glob
 import subprocess
+import traceback
+import warnings
 from pipes import quote
 
 try:
@@ -19,6 +21,15 @@ try:
 except ValueError:
     MAXFD = 256
 
+
+def _warn_with_traceback(message, category, filename, lineno, file=None, line=None):
+    log = file if hasattr(file, 'write') else sys.stderr
+    traceback.print_stack(file=log)
+    log.write(warnings.formatwarning(message, category, filename, lineno, line))
+
+def enable_warning_traceback():
+    """Enable trace-back warnings to debug test issues"""
+    warnings.showwarning = _warn_with_traceback
 
 class TestCaseBase(unittest.TestCase):
     """Base class for test case with various test support functions"""
