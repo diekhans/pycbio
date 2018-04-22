@@ -1,0 +1,9 @@
+
+This is Mark Diekhans's <markd@ucsc.edu> personal collection of Python
+libraries and tools for computational biology related work.
+
+
+
+
+Additional, if you fork this package with the intent of redistributing it,
+please rename the top-level package from `pycbio', to avoid import conflicts.
