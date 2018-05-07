@@ -36,6 +36,7 @@ class CigarRun(namedtuple("CigarRun", ("code", "count"))):
         "is this a query query block?"
         return self.code == self.TINSERT
 
+
 class Cigar(tuple):
     """Cigar parser and representation.  Derived class implement specific
     cigar encodings"""
@@ -74,7 +75,6 @@ class Cigar(tuple):
         if op not in validOps:
             raise TypeError("Invalid cigar string, unknown operation '{}' : {}".format("".join(opParts), cigarStr))
         return CigarRun(op, cnt)
-
 
 
 class ExonerateCigar(Cigar):

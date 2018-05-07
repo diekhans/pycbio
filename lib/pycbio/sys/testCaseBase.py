@@ -27,9 +27,11 @@ def _warn_with_traceback(message, category, filename, lineno, file=None, line=No
     traceback.print_stack(file=log)
     log.write(warnings.formatwarning(message, category, filename, lineno, line))
 
+
 def enable_warning_traceback():
     """Enable trace-back warnings to debug test issues"""
     warnings.showwarning = _warn_with_traceback
+
 
 class TestCaseBase(unittest.TestCase):
     """Base class for test case with various test support functions"""

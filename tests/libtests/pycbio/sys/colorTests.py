@@ -4,6 +4,7 @@ import sys
 if __name__ == '__main__':
     sys.path.append("../../../../lib")
 from pycbio.sys.color import Color
+from pycbio.sys.svgcolors import SvgColors
 from pycbio.sys.testCaseBase import TestCaseBase
 
 
@@ -59,11 +60,20 @@ class ColorTests(TestCaseBase):
             c.red = 0
 
 
+class SvgColorsTests(TestCaseBase):
+    def testAliceBlue(self):
+        self.assertEqual(SvgColors.aliceblue, Color.fromRgb8(0xf0, 0xf8, 0xff))
+
+    def testBlack(self):
+        self.assertEqual(SvgColors.black, Color.fromRgb(0.0, 0.0, 0.0))
+
+
 # FIXME: many more tests needed
 
 def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(ColorTests))
+    ts.addTest(unittest.makeSuite(SvgColorsTests))
     return ts
 
 

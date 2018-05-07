@@ -105,7 +105,7 @@ def opengz(fileName, mode="r", buffering=-1, encoding=None, errors=None):
             return pipettor.Popen([cmd, fileName], mode=mode, buffering=buffering, encoding=encoding, errors=errors)
         elif mode.startswith("w"):
             cmd = compressCmd(fileName)
-            return pipettor.Popen([cmd], mode=modem, stdout=fileName, buffering=buffering, encoding=encoding, errors=errors)
+            return pipettor.Popen([cmd], mode=mode, stdout=fileName, buffering=buffering, encoding=encoding, errors=errors)
         else:
             raise PycbioException("mode {} not support with compression for {}".format(mode, fileName))
     elif six.PY3:

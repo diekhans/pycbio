@@ -1,14 +1,17 @@
 # Copyright 2006-2012 Mark Diekhans
+# -*- coding: utf-8 -*-
 from builtins import range
 import unittest
 import sys
 if __name__ == '__main__':
     sys.path.append("../../../../lib")
+from collections import namedtuple
 from pycbio.tsv import TsvTable, TsvReader, TsvError, tsvRowToDict, printf_basic_dialect
 from csv import excel_tab, excel
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.hgdata.autoSql import intArrayType
 import pipettor
+
 
 class ReadTests(TestCaseBase):
     def testLoad(self):
@@ -182,8 +185,26 @@ class ReadTests(TestCaseBase):
         self.assertEqual(len(rows), 5)
         self.assertEqual(rows[1].Mentions, '"GP I')
 
+    class WeirdCaseExpect(namedtuple("WeirdCaseExpect",
+                                     ("num_col", "text_col", "another"))):
+        __slots__ = ()
+
+    # N.B. printf_basic_dialect will not work on this as they contain embedded tables
+    _weirdExpectExcel = (
+        WeirdCaseExpect(0, 'ab"cd', 'doublequote'),
+        WeirdCaseExpect(1, "zaf'doh", 'singlequote'),
+        WeirdCaseExpect(2, 'tab\there', 'tab_in_string'),
+        WeirdCaseExpect(3, '£©½', 'utf8'),
+    )
+
     def _weirdCaseTester(self, infile, dialect):
-        rows = [r for r in TsvReader(self.getInputFile(infile), dialect=dialect, encoding="utf-8")]
+        rows = [r for r in TsvReader(self.getInputFile(infile), dialect=dialect,
+                                     encoding="utf-8", typeMap={"num_col": int})]
+        self.assertEqual(len(self._weirdExpectExcel), len(rows))
+        for exp, row in zip(self._weirdExpectExcel, rows):
+            self.assertEqual(exp.num_col, row.num_col)
+            self.assertEqual(exp.text_col, row.text_col)
+            self.assertEqual(exp.another, row.another)
 
     def testWeirdCharsDosCsv(self):
         self._weirdCaseTester("weird-chars.dos.csv", excel)
@@ -202,6 +223,7 @@ class ReadTests(TestCaseBase):
 
     def testWeirdCharsUnixTab(self):
         self._weirdCaseTester("weird-chars.unix.tab", excel_tab)
+
 
 def suite():
     ts = unittest.TestSuite()
