@@ -12,7 +12,8 @@ def _mkcolor(rgb8):
 
 class SvgColors(object):
     """Definitions of SVG/CCS3 colors by name
-    good table here: http://www.december.com/html/spec/colorsvg.html
+    good table here: http://www.december.com/html/spec/colorsvg.html.
+    Some have duplicate names.
     """
 
     aliceblue = _mkcolor(0xf0f8ff)
