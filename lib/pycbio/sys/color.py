@@ -5,6 +5,8 @@ from builtins import round
 import colorsys
 from collections import namedtuple
 
+# FIXME: add optional alpha.
+# FIXME: do we really need to store both RGB and HSV?
 
 class Color(namedtuple("Color", ("red", "green", "blue",
                                  "hue", "saturation", "value"))):
