@@ -52,7 +52,7 @@ def loadIdFile(idFile):
     for line in fh:
         line = line.strip()
         if (len(line) > 0) and (line[0] != '#'):
-            ids.add(line)
+            ids.append(line)
     fh.close()
     return ids
 
