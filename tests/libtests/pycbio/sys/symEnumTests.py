@@ -193,6 +193,12 @@ class SymEnumTests(TestCaseBase):
     def testSelfConvert(self):
         self.assertEqual(Color(Color.red), Color.red)
 
+    def testFormat(self):
+        self.assertEqual("{}".format(Color.red), "red")
+
+    def testFormatPad(self):
+        self.assertEqual("{:5}x".format(Color.red), "red  x")
+
 def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(SymEnumTests))

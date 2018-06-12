@@ -131,7 +131,7 @@ class SymEnumMeta(EnumMeta):
 
 @total_ordering
 class SymEnumMixin(object):
-    """Mixin that adds comparisons for SymEnum"""
+    """Mixin that adds comparisons and other functions for SymEnum"""
 
     def __hash__(self):
         return hash(self.value)
@@ -179,6 +179,9 @@ class SymEnum(six.with_metaclass(SymEnumMeta, SymEnumMixin, Enum)):
 
     def __str__(self):
         return self.__externalNameMap__.toExternalName(self.name)
+
+    def __format__(self, fmtspec):
+        return format(str(self), fmtspec)
 
 
 __all__ = (SymEnumValue.__name__, SymEnum.__name__, auto.__name__)
