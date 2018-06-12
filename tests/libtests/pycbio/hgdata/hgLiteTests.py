@@ -53,8 +53,8 @@ class SequenceDbTableTests(TestCaseBase):
     def testRowRange(self):
         seqDb = self._loadTestSeqs()
         self.assertEqual(seqDb.getOidRange(), (1, 5))
-        self.assertEqual(list(seqDb.getRows(2, 4)), [Sequence(*self.testData[1]),
-                                                     Sequence(*self.testData[2])])
+        self.assertEqual(list(seqDb.getByOid(2, 4)), [Sequence(*self.testData[1]),
+                                                      Sequence(*self.testData[2])])
 
     def testLoadFasta(self):
         seqDb = SequenceDbTable(self.conn, "seqs", True)

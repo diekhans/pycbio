@@ -175,7 +175,7 @@ class SequenceDbTable(HgLiteTable):
             raise PycbioException("can't find sequence {} in table {}".format(name, self.table))
         return seq
 
-    def getRows(self, startOid, endOid):
+    def getByOid(self, startOid, endOid):
         "generator for sequence for a range of OIDs (1/2 open)"
         sql = "SELECT {columns} FROM {table} WHERE (oid >= ?) AND (oid < ?)"
         return self.queryRows(sql, self.columnNames,
