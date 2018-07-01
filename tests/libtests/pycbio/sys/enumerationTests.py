@@ -5,7 +5,7 @@ import unittest
 import sys
 import pickle
 if __name__ == '__main__':
-    sys.path.append("../../../../lib")
+    sys.path.insert(0, "../../../../lib")
 from pycbio.sys.enumeration import Enumeration
 from pycbio.sys.testCaseBase import TestCaseBase
 

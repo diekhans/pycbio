@@ -4,7 +4,7 @@ from builtins import range
 import unittest
 import sys
 if __name__ == '__main__':
-    sys.path.append("../../../../lib")
+    sys.path.insert(0, "../../../../lib")
 from collections import namedtuple
 from pycbio.tsv import TsvTable, TsvReader, TsvError, tsvRowToDict, printf_basic_dialect
 from csv import excel_tab, excel

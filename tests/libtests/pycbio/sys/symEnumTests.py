@@ -6,7 +6,7 @@ import sys
 import pickle
 from builtins import range
 if __name__ == '__main__':
-    sys.path.append("../../../../lib")
+    sys.path.insert(0, "../../../../lib")
 
 from pycbio.sys.symEnum import SymEnum, SymEnumValue, auto
 from pycbio.sys.testCaseBase import TestCaseBase

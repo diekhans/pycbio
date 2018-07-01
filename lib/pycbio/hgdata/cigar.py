@@ -8,6 +8,7 @@ from collections import namedtuple
 
 
 class CigarRun(namedtuple("CigarRun", ("code", "count"))):
+    "CIGAR run-length encoding"
     __slots__ = ()
 
     # operation codes

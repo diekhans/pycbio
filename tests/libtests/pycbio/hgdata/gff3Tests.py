@@ -4,7 +4,7 @@ import sys
 import pickle
 import pipettor
 if __name__ == '__main__':
-    sys.path.append("../../../../lib")
+    sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.hgdata.gff3 import Gff3Parser
 from pycbio.sys import fileOps

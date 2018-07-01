@@ -2,7 +2,7 @@
 import unittest
 import sys
 if __name__ == '__main__':
-    sys.path.append("../../../../lib")
+    sys.path.insert(0, "../../../../lib")
 from pycbio.stats.venn import Venn
 from pycbio.sys.testCaseBase import TestCaseBase
 

@@ -2,6 +2,7 @@
     ouch, this happens with subprocess.call_check too
     does this happen in pipettor?
 
+* drop RDB support in TSV
 * document generators:
   http://codespeak.net/~mwh/pydoctor/ - discussion of others
 

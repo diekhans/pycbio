@@ -4,7 +4,7 @@ import os
 import sys
 import shutil
 if __name__ == '__main__':
-    sys.path.append("../../../../lib")
+    sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.sys import fileOps
 import pipettor

@@ -3,7 +3,7 @@ import unittest
 import os
 import sys
 if __name__ == '__main__':
-    sys.path.append("../../../../lib")
+    sys.path.insert(0, "../../../../lib")
 from pycbio.sys.configInPy import evalConfigFunc, evalConfigFile
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.sys import PycbioException
