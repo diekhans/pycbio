@@ -21,18 +21,22 @@ class CigarRun(namedtuple("CigarRun", ("code", "count"))):
         "is this an aligned block?"
         return self.code == self.ALIGNED
 
+    @property
     def tinsert(self):
         "is this a target insert block?"
         return self.code == self.TINSERT
 
+    @property
     def tdelete(self):
         "is this a target deletion block?"
         return self.code == self.TDELETE
 
+    @property
     def qinsert(self):
         "is this a query insert block?"
         return self.code == self.TDELETE
 
+    @property
     def qdelete(self):
         "is this a query query block?"
         return self.code == self.TINSERT
