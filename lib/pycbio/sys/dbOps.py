@@ -1,11 +1,9 @@
 # Copyright 2006-2012 Mark Diekhans
-"""Operations on dbapi objects"""
+"""Operations for accessing mysql"""
 from builtins import range
 import MySQLdb   # mysqlclient is required for python 3
 import warnings
 import MySQLdb.cursors
-
-# FIXME: this is really mysqlOps
 
 _mySqlErrorOnWarnDone = False
 

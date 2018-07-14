@@ -17,3 +17,4 @@
 * switch all function to use coords
 * exceptTests has to hack around unit test _AssertRaisesContext not saving traceback
 see unittest/case.py: # store exception, without traceback, for later retrieval
+* split mysql data structure readers into their own  modules to avoid bring in mysql when not needed.
