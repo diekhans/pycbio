@@ -7,8 +7,6 @@ from past.utils import old_div
 from builtins import object
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin, strArraySplit, strArrayJoin
 from pycbio.tsv.tabFile import TabFileReader
-from pycbio.sys import dbOps
-from pycbio.hgdata.rangeFinder import Binner
 from pycbio.hgdata import dnaOps
 from collections import defaultdict
 from deprecation import deprecated
@@ -499,41 +497,6 @@ class PslReader(object):
     def __iter__(self):
         for psl in TabFileReader(self.fspec, rowClass=Psl, hashAreComments=True, skipBlankLines=True):
             yield psl
-
-
-class PslDbReader(object):
-    """Read PSLs from db query.  Factory methods are provide
-    to generate instances for range queries."""
-
-    pslColumns = ("matches", "misMatches", "repMatches", "nCount", "qNumInsert", "qBaseInsert", "tNumInsert", "tBaseInsert", "strand", "qName", "qSize", "qStart", "qEnd", "tName", "tSize", "tStart", "tEnd", "blockCount", "blockSizes", "qStarts", "tStarts")
-    pslSeqColumns = ("qSequence", "tSequence")
-
-    def __init__(self, conn, query, queryArgs=()):
-        self.conn = conn
-        self.query = query
-        self.queryArgs = queryArgs
-
-    def __iter__(self):
-        # FIXME: this cursorColIdxMap stuff is too complex, just use dict cursor or maybe assume order
-        # since we constructed select.
-        cur = self.conn.cursor()
-        try:
-            cur.execute(self.query, self.queryArgs)
-            colIdxMap = dbOps.cursorColIdxMap(cur)
-            for row in cur:
-                yield Psl(row, dbColIdxMap=colIdxMap)
-        finally:
-            cur.close()
-
-    @staticmethod
-    def targetRangeQuery(conn, table, tName, tStart, tEnd, haveSeqs=False):
-        """ factor to generate PslDbReader for querying a target range.  Must have a bin column"""
-        query = "select " + ",".join(PslDbReader.pslColumns)
-        if haveSeqs:
-            query += "," + ",".join(PslDbReader.pslSeqColumns)
-        query += " from " + table + " where " \
-            + Binner.getOverlappingSqlExpr("bin", "tName", "tStart", "tEnd", tName, tStart, tEnd)
-        return PslDbReader(conn, query)
 
 
 class PslTbl(list):

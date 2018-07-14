@@ -7,7 +7,6 @@ from builtins import object
 import copy
 from collections import defaultdict
 from pycbio.tsv.tabFile import TabFileReader
-from pycbio.sys import dbOps
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin
 from pycbio.sys.symEnum import SymEnum, SymEnumValue
 from pycbio.sys import PycbioException
@@ -600,16 +599,3 @@ def GenePredReader(fspec):
     a file name or a file-like object"""
     for gp in TabFileReader(fspec, rowClass=GenePred, hashAreComments=True, skipBlankLines=True):
         yield gp
-
-
-class GenePredDbReader(object):
-    """Read genePreds from a db query"""
-    def __init__(self, conn, query, queryArgs=None):
-        cur = conn.cursor()
-        try:
-            cur.execute(query, queryArgs)
-            colIdxMap = dbOps.cursorColIdxMap(cur)
-            for row in cur:
-                yield GenePred(row, dbColIdxMap=colIdxMap)
-        finally:
-            cur.close()

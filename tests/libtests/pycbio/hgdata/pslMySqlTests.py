@@ -6,7 +6,7 @@ import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.hgdata.psl import PslDbReader
+from pycbio.hgdata.pslMySqlReader import PslMySqlReader
 from pycbio.hgdata.hgConf import HgConf
 from pycbio.hgdata import hgDb
 from socket import gethostname
@@ -18,7 +18,7 @@ testTbl = "refSeqAli"
 
 onTestHost = gethostname() in testHosts
 if not onTestHost:
-    sys.stderr.write("Note: not running on test host, skipping PslDbTest\n")
+    sys.stderr.write("Note: not running on test host, skipping PslMySqlTest\n")
 
 
 class DbReadTests(TestCaseBase):
@@ -36,7 +36,7 @@ class DbReadTests(TestCaseBase):
         try:
             # just read 10 PSLs
             pslCnt = 0
-            for psl in PslDbReader(conn, "select * from %s limit 10" % testTbl):
+            for psl in PslMySqlReader(conn, "select * from %s limit 10" % testTbl):
                 pslCnt += 1
             self.assertEqual(pslCnt, 10)
         finally:
@@ -46,7 +46,7 @@ class DbReadTests(TestCaseBase):
         conn = self._connect()
         qNames = set()
         try:
-            for psl in PslDbReader.targetRangeQuery(conn, testTbl, "chr22", 16650000, 20470000):
+            for psl in PslMySqlReader.targetRangeQuery(conn, testTbl, "chr22", 16650000, 20470000):
                 self.assertEqual(psl.tName, "chr22")
                 qNames.add(psl.qName)
         finally:
@@ -61,7 +61,7 @@ def suite():
     ts = unittest.TestSuite()
     if onTestHost:
         if six.PY3:
-            print("WARNING: mysql pslDbTests tests don't work on python3")
+            print("WARNING: mysql pslMySqlTests tests don't work on python3")
         else:
             ts.addTest(unittest.makeSuite(DbReadTests))
     return ts
