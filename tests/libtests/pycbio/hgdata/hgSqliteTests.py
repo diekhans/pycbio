@@ -8,12 +8,12 @@ import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.hgdata.hgSqlLite import sqliteConnect
+from pycbio.hgdata.hgSqlite import sqliteConnect
 from pycbio.db.sqliteOps import sqliteHaveTable
-from pycbio.hgdata.sequenceSqlLite import SequenceDbTable, Sequence
-from pycbio.hgdata.pslSqllite import PslDbTable
-from pycbio.hgdata.genePredSqllite import GenePredDbTable
-from pycbio.hgdata.gencodeSqlLite import GencodeAttrs, GencodeAttrsDbTable, GencodeTranscriptSource, GencodeTranscriptSourceDbTable, GencodeTranscriptionSupportLevel, GencodeTranscriptionSupportLevelDbTable
+from pycbio.hgdata.sequenceSqlite import SequenceSqliteTable, Sequence
+from pycbio.hgdata.pslSqlite import PslSqliteTable
+from pycbio.hgdata.genePredSqlite import GenePredSqliteTable
+from pycbio.hgdata.gencodeSqlite import GencodeAttrs, GencodeAttrsSqliteTable, GencodeTranscriptSource, GencodeTranscriptSourceSqliteTable, GencodeTranscriptionSupportLevel, GencodeTranscriptionSupportLevelSqliteTable
 from pycbio.hgdata.psl import Psl
 from pycbio.hgdata.genePred import GenePred
 
@@ -24,7 +24,7 @@ class SequenceTests(TestCaseBase):
         self.assertEqual(">name1\ntagtcaaacccgtcgcctgcgcgaaa\n", seq.toFasta())
 
 
-class SequenceDbTableTests(TestCaseBase):
+class SequenceSqliteTableTests(TestCaseBase):
     testData = (("name1", "gcctgcgcgaaacctccgctagtcaaacccgtccttagagcagtcgaaggg"),
                 ("name2", "tagtcaaacccgtcgcctgcgcgaaacctccgccttagagcagtcgaaggg"),
                 ("name3", "tagtcaaacccgtcgcctgcgcgaaa"),
@@ -39,7 +39,7 @@ class SequenceDbTableTests(TestCaseBase):
 
     def _loadTestSeqs(self):
         # try both tuple and sequence
-        seqDb = SequenceDbTable(self.conn, "seqs", True)
+        seqDb = SequenceSqliteTable(self.conn, "seqs", True)
         seqDb.loads([self.testData[0], Sequence(*self.testData[1]), Sequence(*self.testData[2]), self.testData[3]])
         seqDb.index()
         self.assertTrue(sqliteHaveTable(seqDb.conn, "seqs"))
@@ -59,7 +59,7 @@ class SequenceDbTableTests(TestCaseBase):
                                                       Sequence(*self.testData[2])])
 
     def testLoadFasta(self):
-        seqDb = SequenceDbTable(self.conn, "seqs", True)
+        seqDb = SequenceSqliteTable(self.conn, "seqs", True)
         seqDb.loadFastaFile(self.getInputFile("ncbi.fa"))
         seqDb.index()
         self.assertEqual(sorted(seqDb.names()), ['AK289756.1', 'BG187649.1', 'NM_013266.2', 'U14680.1'])
@@ -80,14 +80,14 @@ class SequenceDbTableTests(TestCaseBase):
                          "TAATCCTTACTTGAATTAAN")
 
 
-class PslDbTableTests(TestCaseBase):
+class PslSqliteTableTests(TestCaseBase):
     testData = ((24, 14, 224, 0, 5, 18, 7, 1109641, "-", "NM_144706.2", 1430, 1126, 1406, "chr22", 49554710, 16248348, 17358251, 9, "24,23,11,14,12,20,12,17,129", "24,48,72,85,111,123,145,157,175", "16248348,16612125,16776474,16911622,17054523,17062699,17291413,17358105,17358122,"),
                 (0, 10, 111, 0, 1, 13, 3, 344548, "+", "NM_025031.1", 664, 21, 155, "chr22", 49554710, 48109515, 48454184, 4, "17,11,12,81", "21,38,49,74", "48109515,48109533,48453547,48454103,"))
 
     @classmethod
     def _buildTestDb(cls, pslFile):
         conn = sqliteConnect(None)
-        db = PslDbTable(conn, "aligns", True)
+        db = PslSqliteTable(conn, "aligns", True)
         db.loadPslFile(cls.getInputFile(pslFile))
         db.index()
         return conn, db
@@ -155,7 +155,7 @@ class PslDbTableTests(TestCaseBase):
     def testMemLoadPsl(self):
         conn = sqliteConnect(None)
         try:
-            pslDb = PslDbTable(conn, "pslRows", True)
+            pslDb = PslSqliteTable(conn, "pslRows", True)
             pslDb.loads([Psl(self.testData[0]), Psl(self.testData[1])])
             pslDb.index()
             coords = self._makeObjCoords(pslDb.getByQName("NM_025031.1"))
@@ -166,7 +166,7 @@ class PslDbTableTests(TestCaseBase):
     def testMemLoadRow(self):
         conn = sqliteConnect(None)
         try:
-            pslDb = PslDbTable(conn, "pslRows", True)
+            pslDb = PslSqliteTable(conn, "pslRows", True)
             pslDb.loads([self.testData[0], self.testData[1]])
             pslDb.index()
             coords = self._makeRawCoords(pslDb.getByQName("NM_025031.1", raw=True))
@@ -175,7 +175,7 @@ class PslDbTableTests(TestCaseBase):
             conn.close()
 
 
-class GenePredDbTableTests(TestCaseBase):
+class GenePredSqliteTableTests(TestCaseBase):
     testData = (("NM_000017.1", "chr12", "+", 119575618, 119589763, 119575641, 119589204, 10, "119575618,119576781,119586741,119587111,119587592,119588035,119588288,119588575,119588895,119589051,", "119575687,119576945,119586891,119587223,119587744,119588206,119588426,119588671,119588952,119589763,", 0, "one", "none", "none", "0,0,2,2,0,2,2,2,2,2,"),
                 ("NM_000066.1", "chr1", "-", 56764802, 56801567, 56764994, 56801540, 12, "56764802,56767400,56768925,56776439,56779286,56781411,56785145,56787638,56790276,56792359,56795610,56801447,", "56765149,56767469,56769079,56776603,56779415,56781652,56785343,56787771,56790418,56792501,56795767,56801567,", 0, "two", "unk", "unk", "1,1,0,1,1,0,0,2,1,0,2,1,"),
                 ("NM_000277.1", "chr12", "-", 101734570, 101813848, 101735419, 101813375, 13, "101734570,101736644,101739890,101740580,101743139,101747931,101749059,101751380,101762840,101773706,101790979,101809035,101813315,", "101735463,101736760,101740024,101740676,101743196,101748001,101749195,101751577,101762908,101773795,101791163,101809143,101813848,", 0, "five", "incmpl", "incmpl", "2,0,1,1,1,0,2,0,1,2,1,1,1,"))
@@ -183,7 +183,7 @@ class GenePredDbTableTests(TestCaseBase):
     @classmethod
     def setUpClass(cls):
         cls.clsConn = sqliteConnect(None)
-        cls.gpTestDb = GenePredDbTable(cls.clsConn, "refGene", True)
+        cls.gpTestDb = GenePredSqliteTable(cls.clsConn, "refGene", True)
         cls.gpTestDb.loadGenePredFile(cls.getInputFile("fileFrameStatTest.gp"))
         cls.gpTestDb.index()
 
@@ -227,7 +227,7 @@ class GenePredDbTableTests(TestCaseBase):
     def testMemLoadGenePred(self):
         conn = sqliteConnect(None)
         try:
-            gpDb = GenePredDbTable(conn, "refGene", True)
+            gpDb = GenePredSqliteTable(conn, "refGene", True)
             gpDb.loads([GenePred(self.testData[0]), GenePred(self.testData[1])])
             gpDb.index()
             coords = self._makeObjCoords(gpDb.getByName("NM_000017.1"))
@@ -238,7 +238,7 @@ class GenePredDbTableTests(TestCaseBase):
     def testMemLoadRow(self):
         conn = sqliteConnect(None)
         try:
-            gpDb = GenePredDbTable(conn, "refGene", True)
+            gpDb = GenePredSqliteTable(conn, "refGene", True)
             gpDb.loads([self.testData[0], self.testData[1]])
             gpDb.index()
             coords = self._makeRawCoords(gpDb.getByName("NM_000017.1", raw=True))
@@ -247,7 +247,7 @@ class GenePredDbTableTests(TestCaseBase):
             conn.close()
 
 
-class GencodeAttrsDbTableTests(TestCaseBase):
+class GencodeAttrsSqliteTableTests(TestCaseBase):
     # test have optional protein ids
     testData = (("ENSG00000187191.14", "DAZ3", "protein_coding", None, "ENST00000315357.9", "DAZ3-201", "protein_coding", None, "OTTHUMG00000045099.2", None, None, 3, "coding", "ENSP00000324965.7"),
                 ("ENSG00000187191.14", "DAZ3", "protein_coding", None, "ENST00000382365.6", "DAZ3-001", "protein_coding", None, "OTTHUMG00000045099.2", "OTTHUMT00000104777.2", "CCDS35489.1", 2, "coding", "ENSP00000371802.2"),
@@ -259,7 +259,7 @@ class GencodeAttrsDbTableTests(TestCaseBase):
     @classmethod
     def setUpClass(cls):
         cls.clsConn = sqliteConnect(None)
-        cls.attrsTestDb = GencodeAttrsDbTable(cls.clsConn, "gencodeAttrs", True)
+        cls.attrsTestDb = GencodeAttrsSqliteTable(cls.clsConn, "gencodeAttrs", True)
         cls.attrsTestDb.loadTsv(cls.getInputFile("gencodeAttrs.tsv"))
         cls.attrsTestDb.index()
 
@@ -276,7 +276,7 @@ class GencodeAttrsDbTableTests(TestCaseBase):
 
     def testGetNoProtId(self):
         conn = sqliteConnect(None)
-        testDb = GencodeAttrsDbTable(conn, "gencodeAttrs", True)
+        testDb = GencodeAttrsSqliteTable(conn, "gencodeAttrs", True)
         testDb.loadTsv(self.getInputFile("gencodeAttrsPrev.tsv"))
         testDb.index()
         attrs = testDb.getByTranscriptId("ENST00000315357.9")
@@ -295,7 +295,7 @@ class GencodeAttrsDbTableTests(TestCaseBase):
     def testMemLoadGencodeAttrs(self):
         conn = sqliteConnect(None)
         try:
-            db = GencodeAttrsDbTable(conn, "gencodeAttrs", True)
+            db = GencodeAttrsSqliteTable(conn, "gencodeAttrs", True)
             db.loads([GencodeAttrs(*self.testData[0]), GencodeAttrs(*self.testData[1])])
             db.index()
             attrs = db.getByTranscriptId("ENST00000382365.6")
@@ -304,7 +304,7 @@ class GencodeAttrsDbTableTests(TestCaseBase):
             conn.close()
 
 
-class GencodeTranscriptSourceDbTableTests(TestCaseBase):
+class GencodeTranscriptSourceSqliteTableTests(TestCaseBase):
     testData = (("ENST00000382365.6", "ensembl_havana_transcript"),
                 ("ENST00000446723.4", "ensembl"),
                 ("ENST00000315357.9", "ensembl"))
@@ -312,7 +312,7 @@ class GencodeTranscriptSourceDbTableTests(TestCaseBase):
     @classmethod
     def setUpClass(cls):
         cls.clsConn = sqliteConnect(None)
-        cls.transSrcTestDb = GencodeTranscriptSourceDbTable(cls.clsConn, "gencodeTranscriptSource", True)
+        cls.transSrcTestDb = GencodeTranscriptSourceSqliteTable(cls.clsConn, "gencodeTranscriptSource", True)
         cls.transSrcTestDb.loadTsv(cls.getInputFile("gencodeTranscriptSource.tsv"))
         cls.transSrcTestDb.index()
 
@@ -330,7 +330,7 @@ class GencodeTranscriptSourceDbTableTests(TestCaseBase):
     def testMemLoadGencodeTranscriptSource(self):
         conn = sqliteConnect(None)
         try:
-            db = GencodeTranscriptSourceDbTable(conn, "gencodeTransSource", True)
+            db = GencodeTranscriptSourceSqliteTable(conn, "gencodeTransSource", True)
             db.loads([GencodeTranscriptSource(*self.testData[0]), GencodeTranscriptSource(*self.testData[1])])
             db.index()
             transSrc = db.getByTranscriptId("ENST00000382365.6")
@@ -339,7 +339,7 @@ class GencodeTranscriptSourceDbTableTests(TestCaseBase):
             conn.close()
 
 
-class GencodeTranscriptionSupportLevelDbTableTests(TestCaseBase):
+class GencodeTranscriptionSupportLevelSqliteTableTests(TestCaseBase):
     testData = (("ENST00000382365.6", 1),
                 ("ENST00000446723.4", 1),
                 ("ENST00000315357.9", 1))
@@ -347,7 +347,7 @@ class GencodeTranscriptionSupportLevelDbTableTests(TestCaseBase):
     @classmethod
     def setUpClass(cls):
         cls.clsConn = sqliteConnect(None)
-        cls.transSrcTestDb = GencodeTranscriptionSupportLevelDbTable(cls.clsConn, "gencodeTranscriptionSupportLevel", True)
+        cls.transSrcTestDb = GencodeTranscriptionSupportLevelSqliteTable(cls.clsConn, "gencodeTranscriptionSupportLevel", True)
         cls.transSrcTestDb.loadTsv(cls.getInputFile("gencodeTranscriptionSupportLevel.tsv"))
         cls.transSrcTestDb.index()
 
@@ -365,7 +365,7 @@ class GencodeTranscriptionSupportLevelDbTableTests(TestCaseBase):
     def testMemLoadGencodeTranscriptionSupportLevel(self):
         conn = sqliteConnect(None)
         try:
-            db = GencodeTranscriptionSupportLevelDbTable(conn, "gencodeTransSource", True)
+            db = GencodeTranscriptionSupportLevelSqliteTable(conn, "gencodeTransSource", True)
             db.loads([GencodeTranscriptionSupportLevel(*self.testData[0]), GencodeTranscriptionSupportLevel(*self.testData[1])])
             db.index()
             transSrc = db.getByTranscriptId("ENST00000382365.6")
@@ -377,12 +377,12 @@ class GencodeTranscriptionSupportLevelDbTableTests(TestCaseBase):
 def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(SequenceTests))
-    ts.addTest(unittest.makeSuite(SequenceDbTableTests))
-    ts.addTest(unittest.makeSuite(PslDbTableTests))
-    ts.addTest(unittest.makeSuite(GenePredDbTableTests))
-    ts.addTest(unittest.makeSuite(GencodeAttrsDbTableTests))
-    ts.addTest(unittest.makeSuite(GencodeTranscriptSourceDbTableTests))
-    ts.addTest(unittest.makeSuite(GencodeTranscriptionSupportLevelDbTableTests))
+    ts.addTest(unittest.makeSuite(SequenceSqliteTableTests))
+    ts.addTest(unittest.makeSuite(PslSqliteTableTests))
+    ts.addTest(unittest.makeSuite(GenePredSqliteTableTests))
+    ts.addTest(unittest.makeSuite(GencodeAttrsSqliteTableTests))
+    ts.addTest(unittest.makeSuite(GencodeTranscriptSourceSqliteTableTests))
+    ts.addTest(unittest.makeSuite(GencodeTranscriptionSupportLevelSqliteTableTests))
     return ts
 
 

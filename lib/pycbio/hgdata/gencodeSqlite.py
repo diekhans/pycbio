@@ -9,7 +9,7 @@ from future.standard_library import install_aliases
 install_aliases()
 from collections import namedtuple
 from pycbio.sys import PycbioException
-from pycbio.hgdata.hgSqlLite import HgLiteTable, noneIfEmpty
+from pycbio.hgdata.hgSqlite import HgSqliteTable, noneIfEmpty
 from pycbio.tsv import TsvReader
 
 
@@ -29,7 +29,7 @@ class GencodeAttrs(namedtuple("GencodeAttrs",
                                                 transcriptClass, proteinId)
 
 
-class GencodeAttrsDbTable(HgLiteTable):
+class GencodeAttrsSqliteTable(HgSqliteTable):
     """
     GENCODE attributes table from UCSC databases.
     """
@@ -64,7 +64,7 @@ class GencodeAttrsDbTable(HgLiteTable):
     columnNames = GencodeAttrs._fields
 
     def __init__(self, conn, table, create=False):
-        super(GencodeAttrsDbTable, self).__init__(conn, table)
+        super(GencodeAttrsSqliteTable, self).__init__(conn, table)
         if create:
             self.create()
 
@@ -138,7 +138,7 @@ class GencodeTranscriptSource(namedtuple("GencodeTranscriptSource",
     pass
 
 
-class GencodeTranscriptSourceDbTable(HgLiteTable):
+class GencodeTranscriptSourceSqliteTable(HgSqliteTable):
     """
     GENCODE transcript source from UCSC databases.
     """
@@ -154,7 +154,7 @@ class GencodeTranscriptSourceDbTable(HgLiteTable):
     columnNames = GencodeTranscriptSource._fields
 
     def __init__(self, conn, table, create=False):
-        super(GencodeTranscriptSourceDbTable, self).__init__(conn, table)
+        super(GencodeTranscriptSourceSqliteTable, self).__init__(conn, table)
         if create:
             self.create()
 
@@ -197,7 +197,7 @@ class GencodeTranscriptionSupportLevel(namedtuple("GencodeTranscriptionSupportLe
     pass
 
 
-class GencodeTranscriptionSupportLevelDbTable(HgLiteTable):
+class GencodeTranscriptionSupportLevelSqliteTable(HgSqliteTable):
     """
     GENCODE transcript support levels from UCSC databases.
     """
@@ -212,7 +212,7 @@ class GencodeTranscriptionSupportLevelDbTable(HgLiteTable):
     columnNames = GencodeTranscriptionSupportLevel._fields
 
     def __init__(self, conn, table, create=False):
-        super(GencodeTranscriptionSupportLevelDbTable, self).__init__(conn, table)
+        super(GencodeTranscriptionSupportLevelSqliteTable, self).__init__(conn, table)
         if create:
             self.create()
 
@@ -255,7 +255,7 @@ class GencodeTag(namedtuple("GencodeTag",
     pass
 
 
-class GencodeTagDbTable(HgLiteTable):
+class GencodeTagSqliteTable(HgSqliteTable):
     """
     GENCODE transcript tags from UCSC databases.
     """
@@ -271,7 +271,7 @@ class GencodeTagDbTable(HgLiteTable):
     columnNames = GencodeTag._fields
 
     def __init__(self, conn, table, create=False):
-        super(GencodeTagDbTable, self).__init__(conn, table)
+        super(GencodeTagSqliteTable, self).__init__(conn, table)
         if create:
             self.create()
 

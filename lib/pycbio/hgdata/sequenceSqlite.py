@@ -6,7 +6,7 @@ random access uses.
 from __future__ import print_function
 from future.standard_library import install_aliases
 install_aliases()
-from pycbio.hgdata.hgSqlLite import HgLiteTable
+from pycbio.hgdata.hgSqlite import HgSqliteTable
 from collections import namedtuple
 from pycbio.sys import PycbioException
 from Bio import SeqIO
@@ -22,7 +22,7 @@ class Sequence(namedtuple("Sequence",
         return ">{}\n{}\n".format(self.name, self.seq)
 
 
-class SequenceDbTable(HgLiteTable):
+class SequenceSqliteTable(HgSqliteTable):
     """
     Storage for short sequences (RNA or protein).
     """
@@ -35,7 +35,7 @@ class SequenceDbTable(HgLiteTable):
     columnNames = Sequence._fields
 
     def __init__(self, conn, table, create=False):
-        super(SequenceDbTable, self).__init__(conn, table)
+        super(SequenceSqliteTable, self).__init__(conn, table)
         if create:
             self.create()
 

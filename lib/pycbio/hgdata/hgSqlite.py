@@ -11,17 +11,12 @@ from pycbio.db.sqliteOps import SqliteCursor
 # allow sqliteConnect to be imported from this module, as it is so common
 from pycbio.db.sqliteOps import sqliteConnect   # noqa: F401
 
-# FIXME: HgLiteTable could become wrapper around a connection,
-# and make table operations functions.???  probably not
 # FIXME: removed duplicated functions and move to base class or mix-in especially gencode
 # FIXME: move generic sqlite to another module.
 # FIXME: often hides sql too much (gencode_icedb/general/gencodeDb.py: getGeneIdsStartingInBounds)
 # FIXME: maaybe a series of functions to build queryes would be the ticket (binning, in querys, ihserts); this is not that composable.
 # FIXME" prefix generators with gen**********
-# FIXME: term load is confusing, use read, write, or insert
-# FIXME: could this move to peewee, since we can assign primary keys on load;
-#        although the table per class is problematic; could dynamically create classes with
-#        type(name, bases, dict)
+# FIXME: term load is confusing, use read/get, write, or insert
 # FIXME: maybe separate table definitions from query construction
 
 
@@ -29,7 +24,7 @@ def noneIfEmpty(s):
     return s if s != "" else None
 
 
-class HgLiteTable(object):
+class HgSqliteTable(object):
     """Base class for SQL list table interface object."""
     def __init__(self, conn, table):
         self.conn = conn
