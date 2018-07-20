@@ -8,7 +8,7 @@ import argparse
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 from Bio import Entrez
-from pycbio.sys import PycbioException
+from pycbio.sys import PycbioException, pycbioRaiseFrom
 
 host = "eutils.ncbi.nlm.nih.gov"
 
@@ -58,7 +58,10 @@ def loadIdFile(idFile):
 
 
 def getEmail():
-    return os.getenv("USER") + "@" + socket.gethostbyaddr(socket.gethostname())[0]
+    try:
+        return os.getenv("USER") + "@" + socket.gethostbyaddr(socket.gethostname())[0]
+    except Exception as ex:
+        raise pycbioRaiseFrom(PycbioException("unable to obtain email address, specify on command line"), ex)
 
 
 def efetch(opts, gbid, outFh):

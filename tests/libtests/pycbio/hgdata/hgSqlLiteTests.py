@@ -8,10 +8,12 @@ import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.hgdata.hgLite import sqliteConnect
+from pycbio.hgdata.hgSqlLite import sqliteConnect
 from pycbio.db.sqliteOps import sqliteHaveTable
-from pycbio.hgdata.hgLite import SequenceDbTable, Sequence, PslDbTable, GenePredDbTable
-from pycbio.hgdata.hgLite import GencodeAttrs, GencodeAttrsDbTable, GencodeTranscriptSource, GencodeTranscriptSourceDbTable, GencodeTranscriptionSupportLevel, GencodeTranscriptionSupportLevelDbTable
+from pycbio.hgdata.sequenceSqlLite import SequenceDbTable, Sequence
+from pycbio.hgdata.pslSqllite import PslDbTable
+from pycbio.hgdata.genePredSqllite import GenePredDbTable
+from pycbio.hgdata.gencodeSqlLite import GencodeAttrs, GencodeAttrsDbTable, GencodeTranscriptSource, GencodeTranscriptSourceDbTable, GencodeTranscriptionSupportLevel, GencodeTranscriptionSupportLevelDbTable
 from pycbio.hgdata.psl import Psl
 from pycbio.hgdata.genePred import GenePred
 
