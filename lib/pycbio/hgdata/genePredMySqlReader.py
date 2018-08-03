@@ -3,10 +3,10 @@
 Read genePreds from mysql queries.
 """
 from pycbio.db import mysqlOps
-from pycbio.genePred import GenePred
+from pycbio.hgdata.genePred import GenePred
 
 
-class GenePredDbReader(object):
+class GenePredMySqlReader(object):
     """Read genePreds from a mysql query"""
     def __init__(self, conn, query, queryArgs=None):
         cur = conn.cursor()
