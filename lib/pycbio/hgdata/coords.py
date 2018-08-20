@@ -32,8 +32,6 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
     __slots__ = ()
 
     def __new__(cls, name, start, end, strand=None, size=None):
-        if strand is None:
-            strand = '+'
         return super(Coords, cls).__new__(cls, name, start, end, strand, size)
 
     @classmethod
@@ -138,7 +136,7 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         self._checkCmpType(other)
         if self.name != other.name:
             return False
-        elif self.strand == other.strand:
+        elif (self.strand == other.strand) or (self.strand is None) or (other.strand is None):
             return (self.start < other.end) and (self.end > other.start)
         elif (self.strand is None) and (other.strand == '-'):
             return (self.start < (other.size - other.start)) and (self.end > (other.size - other.end))

@@ -79,12 +79,12 @@ class CoordsTests(TestCaseBase):
         # overlap coords, different strand
         c3 = Coords("chr22", 45000000, 55000000, strand='+', size=50818468)
         self.assertFalse(c1.overlaps(c3))
-        # overlap with default strand
+        # overlap with None strand (overlaps either strand)
         c4 = Coords("chr22", 50000000, 60000000, strand=None, size=50818468)
         self.assertTrue(c3.overlaps(c4))
         self.assertTrue(c4.overlaps(c3))
-        self.assertFalse(c1.overlaps(c4))
-        self.assertFalse(c4.overlaps(c1))
+        self.assertTrue(c1.overlaps(c4))
+        self.assertTrue(c4.overlaps(c1))
 
     def testIntersect(self):
         # strand-specific
