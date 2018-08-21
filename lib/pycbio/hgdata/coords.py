@@ -22,6 +22,10 @@ def reverseStrand(strand):
     return '+' if strand == '-' else '-'
 
 
+def _intOrNone(v):
+    return v if v is None else int(v)
+
+
 class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
     """Immutable sequence coordinates
     Fields:
@@ -32,7 +36,7 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
     __slots__ = ()
 
     def __new__(cls, name, start, end, strand=None, size=None):
-        return super(Coords, cls).__new__(cls, name, start, end, strand, size)
+        return super(Coords, cls).__new__(cls, name, _intOrNone(start), _intOrNone(end), strand, _intOrNone(size))
 
     @classmethod
     def __parse_parts(cls, coordsStr, size):
