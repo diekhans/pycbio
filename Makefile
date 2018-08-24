@@ -2,24 +2,19 @@ root = .
 include ${root}/defs.mk
 
 
-PKGS =  pycbio.align pycbio.distrib pycbio.exrun pycbio.hgbrowser pycbio.hgdata \
-	pycbio.html pycbio.ncbi pycbio.stats pycbio.sys pycbio.tsv
-
-PROGS = clusterGenesSelect genePredFlatten ncbiGbFetch clusterGenesStats \
-	genePredSelect profStats gbffGenesToGenePred jsonDumpKeyStructure tsvSelectById \
-	geneCheckStats ncbiAssemblyReportConvert vennChart csvToTsv
+pyprogs = $(shell file -F $$'\t' bin/* tests/*/bin/* | awk '/Python script/{print $$1}')
 
 all: libcomp
 
 libcomp:
-	PYTHONPATH=lib ${PYTHON} -m compileall -l $(subst .,/,${PKGS})
+	PYTHONPATH=lib ${PYTHON} -m compileall -l lib/pycbio lib/pycbio/*
 
 test:
 	(cd tests && ${MAKE} test PYTHON=python3)
 	(cd tests && ${MAKE} test PYTHON=python2)
 
 lint:
-	${FLAKE8} lib/pycbio tests/libtests ${PROGS:%=bin/%}
+	${FLAKE8} lib/pycbio tests/libtests ${pyprogs}
 
 clean:
 	(cd tests && ${MAKE} clean)

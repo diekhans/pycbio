@@ -2,7 +2,7 @@
 #   root=../..
 #   include ${root}/defs.mk
 
-PYTHON = python2
+PYTHON = python3
 FLAKE8 = flake8
 
 binDir = ${root}/bin
