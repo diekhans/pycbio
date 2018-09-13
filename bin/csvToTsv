@@ -11,7 +11,7 @@ from pycbio.sys import fileOps
 
 
 def parseArgs():
-    desc = """convert a CSV to a TSV"""
+    desc = """Convert a CSV to a TSV. Empty lines are dropped."""
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument("inCsv",
                         help="input CSV, maybe compressed")
@@ -22,7 +22,8 @@ def parseArgs():
 
 def copyCsvToTsv(csvReader, tsvWriter):
     for row in csvReader:
-        tsvWriter.writerow(row)
+        if len(row) > 0:
+            tsvWriter.writerow(row)
 
 
 def main(opts):
