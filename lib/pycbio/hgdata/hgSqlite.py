@@ -8,8 +8,6 @@ import six
 from future.standard_library import install_aliases
 install_aliases()
 from pycbio.db.sqliteOps import SqliteCursor
-# allow sqliteConnect to be imported from this module, as it is so common
-from pycbio.db.sqliteOps import sqliteConnect   # noqa: F401
 
 # FIXME: removed duplicated functions and move to base class or mix-in especially gencode
 # FIXME: move generic sqlite to another module.

@@ -30,6 +30,7 @@ genePredExtColumns = ("name", "chrom", "strand", "txStart", "txEnd", "cdsStart",
 class Range(object):
     "start and end coordinates"
     __slots__ = ("start", "end")
+    # FIXME: maybe base class for coords?
 
     def __init__(self, start, end):
         self.start = start

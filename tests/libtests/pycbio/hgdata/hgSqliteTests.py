@@ -8,8 +8,7 @@ import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.hgdata.hgSqlite import sqliteConnect
-from pycbio.db.sqliteOps import sqliteHaveTable
+from pycbio.db import sqliteOps
 from pycbio.hgdata.sequenceSqlite import SequenceSqliteTable, Sequence
 from pycbio.hgdata.pslSqlite import PslSqliteTable
 from pycbio.hgdata.genePredSqlite import GenePredSqliteTable
@@ -31,7 +30,7 @@ class SequenceSqliteTableTests(TestCaseBase):
                 ("name4", "tagtcctccgccttagagcagtcgaaggg"))
 
     def setUp(self):
-        self.conn = sqliteConnect(None)
+        self.conn = sqliteOps.connect(None)
 
     def tearDown(self):
         self.conn.close()
@@ -42,7 +41,7 @@ class SequenceSqliteTableTests(TestCaseBase):
         seqDb = SequenceSqliteTable(self.conn, "seqs", True)
         seqDb.loads([self.testData[0], Sequence(*self.testData[1]), Sequence(*self.testData[2]), self.testData[3]])
         seqDb.index()
-        self.assertTrue(sqliteHaveTable(seqDb.conn, "seqs"))
+        self.assertTrue(sqliteOps.haveTable(seqDb.conn, "seqs"))
         return seqDb
 
     def testSeqLoad(self):
@@ -86,7 +85,7 @@ class PslSqliteTableTests(TestCaseBase):
 
     @classmethod
     def _buildTestDb(cls, pslFile):
-        conn = sqliteConnect(None)
+        conn = sqliteOps.connect(None)
         db = PslSqliteTable(conn, "aligns", True)
         db.loadPslFile(cls.getInputFile(pslFile))
         db.index()
@@ -153,7 +152,7 @@ class PslSqliteTableTests(TestCaseBase):
         self.assertEqual(coords, expect)
 
     def testMemLoadPsl(self):
-        conn = sqliteConnect(None)
+        conn = sqliteOps.connect(None)
         try:
             pslDb = PslSqliteTable(conn, "pslRows", True)
             pslDb.loads([Psl(self.testData[0]), Psl(self.testData[1])])
@@ -164,7 +163,7 @@ class PslSqliteTableTests(TestCaseBase):
             conn.close()
 
     def testMemLoadRow(self):
-        conn = sqliteConnect(None)
+        conn = sqliteOps.connect(None)
         try:
             pslDb = PslSqliteTable(conn, "pslRows", True)
             pslDb.loads([self.testData[0], self.testData[1]])
@@ -182,7 +181,7 @@ class GenePredSqliteTableTests(TestCaseBase):
 
     @classmethod
     def setUpClass(cls):
-        cls.clsConn = sqliteConnect(None)
+        cls.clsConn = sqliteOps.connect(None)
         cls.gpTestDb = GenePredSqliteTable(cls.clsConn, "refGene", True)
         cls.gpTestDb.loadGenePredFile(cls.getInputFile("fileFrameStatTest.gp"))
         cls.gpTestDb.index()
@@ -225,7 +224,7 @@ class GenePredSqliteTableTests(TestCaseBase):
         self.assertEqual(coords, expect)
 
     def testMemLoadGenePred(self):
-        conn = sqliteConnect(None)
+        conn = sqliteOps.connect(None)
         try:
             gpDb = GenePredSqliteTable(conn, "refGene", True)
             gpDb.loads([GenePred(self.testData[0]), GenePred(self.testData[1])])
@@ -236,7 +235,7 @@ class GenePredSqliteTableTests(TestCaseBase):
             conn.close()
 
     def testMemLoadRow(self):
-        conn = sqliteConnect(None)
+        conn = sqliteOps.connect(None)
         try:
             gpDb = GenePredSqliteTable(conn, "refGene", True)
             gpDb.loads([self.testData[0], self.testData[1]])
@@ -258,7 +257,7 @@ class GencodeAttrsSqliteTableTests(TestCaseBase):
 
     @classmethod
     def setUpClass(cls):
-        cls.clsConn = sqliteConnect(None)
+        cls.clsConn = sqliteOps.connect(None)
         cls.attrsTestDb = GencodeAttrsSqliteTable(cls.clsConn, "gencodeAttrs", True)
         cls.attrsTestDb.loadTsv(cls.getInputFile("gencodeAttrs.tsv"))
         cls.attrsTestDb.index()
@@ -275,7 +274,7 @@ class GencodeAttrsSqliteTableTests(TestCaseBase):
         self.assertEqual(attrs, None)
 
     def testGetNoProtId(self):
-        conn = sqliteConnect(None)
+        conn = sqliteOps.connect(None)
         testDb = GencodeAttrsSqliteTable(conn, "gencodeAttrs", True)
         testDb.loadTsv(self.getInputFile("gencodeAttrsPrev.tsv"))
         testDb.index()
@@ -293,7 +292,7 @@ class GencodeAttrsSqliteTableTests(TestCaseBase):
         self.assertEqual(attrs, [])
 
     def testMemLoadGencodeAttrs(self):
-        conn = sqliteConnect(None)
+        conn = sqliteOps.connect(None)
         try:
             db = GencodeAttrsSqliteTable(conn, "gencodeAttrs", True)
             db.loads([GencodeAttrs(*self.testData[0]), GencodeAttrs(*self.testData[1])])
@@ -311,7 +310,7 @@ class GencodeTranscriptSourceSqliteTableTests(TestCaseBase):
 
     @classmethod
     def setUpClass(cls):
-        cls.clsConn = sqliteConnect(None)
+        cls.clsConn = sqliteOps.connect(None)
         cls.transSrcTestDb = GencodeTranscriptSourceSqliteTable(cls.clsConn, "gencodeTranscriptSource", True)
         cls.transSrcTestDb.loadTsv(cls.getInputFile("gencodeTranscriptSource.tsv"))
         cls.transSrcTestDb.index()
@@ -328,7 +327,7 @@ class GencodeTranscriptSourceSqliteTableTests(TestCaseBase):
         self.assertEqual(transSrc, None)
 
     def testMemLoadGencodeTranscriptSource(self):
-        conn = sqliteConnect(None)
+        conn = sqliteOps.connect(None)
         try:
             db = GencodeTranscriptSourceSqliteTable(conn, "gencodeTransSource", True)
             db.loads([GencodeTranscriptSource(*self.testData[0]), GencodeTranscriptSource(*self.testData[1])])
@@ -346,7 +345,7 @@ class GencodeTranscriptionSupportLevelSqliteTableTests(TestCaseBase):
 
     @classmethod
     def setUpClass(cls):
-        cls.clsConn = sqliteConnect(None)
+        cls.clsConn = sqliteOps.connect(None)
         cls.transSrcTestDb = GencodeTranscriptionSupportLevelSqliteTable(cls.clsConn, "gencodeTranscriptionSupportLevel", True)
         cls.transSrcTestDb.loadTsv(cls.getInputFile("gencodeTranscriptionSupportLevel.tsv"))
         cls.transSrcTestDb.index()
@@ -363,7 +362,7 @@ class GencodeTranscriptionSupportLevelSqliteTableTests(TestCaseBase):
         self.assertEqual(transSrc, None)
 
     def testMemLoadGencodeTranscriptionSupportLevel(self):
-        conn = sqliteConnect(None)
+        conn = sqliteOps.connect(None)
         try:
             db = GencodeTranscriptionSupportLevelSqliteTable(conn, "gencodeTransSource", True)
             db.loads([GencodeTranscriptionSupportLevel(*self.testData[0]), GencodeTranscriptionSupportLevel(*self.testData[1])])

@@ -21,8 +21,7 @@ def connect(db="", confFile=None, dictCursor=False, host=None, hgConf=None,
     conv = getAutoSqlConverter() if useAutoSqlConv else MySQLdb.converters.conversions
     if host is None:
         host = hgConf["db.host"]
-    conn = MySQLdb.Connect(host=host, user=hgConf["db.user"], passwd=hgConf["db.password"], db=db, cursorclass=cursorclass, conv=conv)
-    return conn
+    return MySQLdb.Connect(host=host, user=hgConf["db.user"], passwd=hgConf["db.password"], db=db, cursorclass=cursorclass, conv=conv)
 
 
 def getAutoSqlConverter():

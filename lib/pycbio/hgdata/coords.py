@@ -165,11 +165,11 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
                       size=self.size)
 
     def abs(self):
-        "force to positive strand"
-        if self.strand == '+':
-            return self
-        else:
+        "convert to positive strand if on negative strand"
+        if self.strand == '-':
             return self.reverse()
+        else:
+            return self
 
     def adjust(self, **kwargs):
         "return version with any field update via keyword arguments"
@@ -185,9 +185,11 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
             return Coords(self.name, self.start, self.end)
 
     def intersect(self, other):
+        """Intersection range, or non if not on same chromosome."""
+        # FIXME: need to define for different strand
         self._checkCmpType(other)
         if self.name != other.name:
-            return Coords(None, 0, 0)
+            return None
         else:
             start = max(self.start, other.start)
             end = min(self.end, other.end)

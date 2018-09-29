@@ -13,7 +13,6 @@ def _noneIfNa(name):
 def _naIfNone(name):
     return "na" if name is None else name
 
-
 class AssemblyReport(object):
     """Parse assembly reports files, e.g.
       ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_assembly_report.txt

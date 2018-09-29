@@ -20,6 +20,15 @@ def mySqlSetErrorOnWarn():
         _mySqlErrorOnWarnDone = True
 
 
+def connect(host, port, user, password, db="", dictCursor=False):
+    """Connect to genome mysql server, using explict parameters.
+    """
+    cursorclass = MySQLdb.cursors.DictCursor if dictCursor else MySQLdb.cursors.Cursor
+    return MySQLdb.Connect(host=host, port=port, user=user, passwd=password, db=db, cursorclass=cursorclass)
+    return conn
+
+
+
 def cursorColIdxMap(cur):
     """generate a hash of column name to row index given a cursor that has had
     a select executed"""
