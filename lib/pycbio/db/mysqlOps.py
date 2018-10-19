@@ -25,8 +25,6 @@ def connect(host, port, user, password, db="", dictCursor=False):
     """
     cursorclass = MySQLdb.cursors.DictCursor if dictCursor else MySQLdb.cursors.Cursor
     return MySQLdb.Connect(host=host, port=port, user=user, passwd=password, db=db, cursorclass=cursorclass)
-    return conn
-
 
 
 def cursorColIdxMap(cur):

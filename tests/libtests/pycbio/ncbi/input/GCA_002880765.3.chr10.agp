@@ -1,0 +1,15 @@
+# AGP dumped from Genomic-Collection: Assembly Clint_PTRv2 Primary_Assembly
+# (Assembly accession = GCA_002880765.3, asm_id = 1704653)
+# Chromosomes-from-Scaffolds (placed)
+##agp-version 2.0
+# Format: object object_beg object_end part_number component_type component_id component_beg component_end  orientation
+#   Gaps: object object_beg object_end part_number     N          gap_length   gap_type      linkage        evidence
+CM009248.2	1	19390040	1	W	KZ622779.1	1	19390040	-
+CM009248.2	19390041	19390140	2	U	100	contig	no	na
+CM009248.2	19390141	38555298	3	W	KZ622780.1	1	19165158	+
+CM009248.2	38555299	38555398	4	U	100	contig	no	na
+CM009248.2	38555399	75251514	5	W	KZ622781.1	1	36696116	-
+CM009248.2	75251515	75251614	6	U	100	contig	no	na
+CM009248.2	75251615	127816455	7	W	KZ622782.1	1	52564841	+
+CM009248.2	127816456	127816555	8	U	100	contig	no	na
+CM009248.2	127816556	129809613	9	W	KZ622783.1	1	1993058	?
