@@ -228,7 +228,7 @@ class PslMap(object):
             if sz > 0:
                 psl.tNumInsert += 1
                 psl.tBaseInsert += sz
-        psl.blocks.append(PslBlock(psl, rng.qStart, rng.tStart, len(rng)))
+        psl.addBlock(PslBlock(rng.qStart, rng.tStart, len(rng)))
 
     def _rangesToPsl(self, rangeGen):
         # FIXME: psl building should go a function in Psl
@@ -249,7 +249,6 @@ class PslMap(object):
         if rngs[0].tStrand == '-':
             psl.tStart, psl.tEnd = reverseCoords(psl.tStart, psl.tEnd, psl.tSize)
         psl.strand = rngs[0].qStrand + ('-' if rngs[0].tStrand == '-' else '')
-        psl.blockCount = len(rngs)
         prevRng = None
         for rng in rngs:
             self._addRangeToPsl(psl, rng, prevRng)

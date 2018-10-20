@@ -139,6 +139,7 @@ class IncludeFilter(object):
         else:
             return seq.sequenceRole in self.keep
 
+
 def main():
     args = parseArgs()
     asmReport = AssemblyReport(args.assemblyReport)

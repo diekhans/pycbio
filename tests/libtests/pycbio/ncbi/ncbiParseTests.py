@@ -50,7 +50,7 @@ class NcbiParseTests(TestCaseBase):
 
     def testAgpGrch38(self):
         agp = Agp(self.getInputFile("GCA_000001305.2.chr22.agp"))
-        agpRows = [str(rec) for rec in agp.recs]
+        agpRows = [rec.format(True) for rec in agp.recs]
         self.assertEqual(agpRows,
                          ['CM000684.2\t1\t10000\t1\tN\t10000\ttelomere\tno\tna',
                           'CM000684.2\t10001\t10510000\t2\tN\t10500000\tshort_arm\tno\tna',
@@ -128,8 +128,8 @@ class NcbiParseTests(TestCaseBase):
                           'CM000684.2\t50808469\t50818468\t74\tN\t10000\ttelomere\tno\tna'])
 
     def testAgpClint(self):
-        agp = Agp(self.getInputFile("GCA_002880765.3.chr10.agp"))
-        agpRows = [str(rec) for rec in agp.recs]
+        agp = Agp(self.getInputFile("GCA_002880755.3.chr10.agp"))
+        agpRows = [rec.format(True) for rec in agp.recs]
         self.assertEqual(agpRows,
                          ['CM009248.2\t1\t19390040\t1\tW\tKZ622779.1\t1\t19390040\t-',
                           'CM009248.2\t19390041\t19390140\t2\tU\t100\tcontig\tno\tna',

@@ -155,7 +155,7 @@ class PslSqliteTableTests(TestCaseBase):
         conn = sqliteOps.connect(None)
         try:
             pslDb = PslSqliteTable(conn, "pslRows", True)
-            pslDb.loads([Psl(self.testData[0]), Psl(self.testData[1])])
+            pslDb.loads([Psl.fromRow(self.testData[0]), Psl.fromRow(self.testData[1])])
             pslDb.index()
             coords = self._makeObjCoords(pslDb.getByQName("NM_025031.1"))
             self.assertEqual(coords, [('NM_025031.1', 'chr22', 48109515, 48454184, '+')])

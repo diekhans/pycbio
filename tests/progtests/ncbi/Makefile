@@ -5,7 +5,9 @@ export PYTHONPATH
 
 ncbiGbFetch = ${runBin}/ncbiGbFetch
 ncbiAssemblyReportConvert = ${runBin}/ncbiAssemblyReportConvert
+agpToPsl = ${runBin}/agpToPsl
 
+ncbiTestInputDir = ../../libtests/pycbio/ncbi/input
 
 # refseq mRNAs, ESTs
 testAccver = NM_013266.2 AK289756.1 BG187649.1 U14680.1
@@ -18,7 +20,7 @@ ifeq ($(findstring .,$(shell hostname -f)),)
 endif
 
 
-test: fetchTests asmReportCnvTests
+test: fetchTests asmReportCnvTests agpToPslTests
 
 fetchTests: gbffFetchTest faFetchTest
 
@@ -34,7 +36,7 @@ asmReportCnvTests: asmSeqNameUcscLiftTest asmRefSeqGencodeLiftTest asmSeqNameSiz
 	asmGencodeNameSizesMainChromsTest asmGencodeNameSizesMainAsmTest \
 	asmIdmapTest asmIdmapMainAsmTest asmIdmapMixedAsmTest
 
-asmReportTestFile = ../../libtests/pycbio/ncbi/input/GCF_000001405.28.assembly.txt
+asmReportTestFile = ${ncbiTestInputDir}/GCF_000001405.28.assembly.txt
 
 asmSeqNameUcscLiftTest: mkdirs
 	${ncbiAssemblyReportConvert} --fromIdType=sequenceName --toIdType=ucscStyleName lift ${asmReportTestFile} output/$@.lift
@@ -67,6 +69,26 @@ asmIdmapMainAsmTest: mkdirs
 asmIdmapMixedAsmTest: mkdirs
 	${ncbiAssemblyReportConvert} --fromIdType=ucscStyleName --toIdType=sequenceNameGenbankAccn idmap ${asmReportTestFile} output/$@.idmap
 	${diff} expected/$@.idmap output/$@.idmap
+
+clintChimpAgp = input/GCA_002880755.3.chr10.comp.agp$
+grch38Agp = ${ncbiTestInputDir}/GCA_000001305.2.chr22.agp
+
+agpToPslTests: agpToPslBasicTest agpToPslLocalCompTest agpToPslGapsTest
+
+agpToPslBasicTest: mkdirs
+	${agpToPsl} ${clintChimpAgp} output/$@.psl
+	pslCheck output/$@.psl
+	${diff} expected/$@.psl output/$@.psl
+
+agpToPslLocalCompTest: mkdirs
+	${agpToPsl} --componentSizes=input/Clint_Chimp.chroms --componentLocalId2Acc=input/Clint_Chimp.component_localID2acc ${clintChimpAgp} output/$@.psl
+	pslCheck output/$@.psl
+	${diff} expected/$@.psl output/$@.psl
+
+agpToPslGapsTest: mkdirs
+	${agpToPsl} ${grch38Agp} output/$@.psl
+	pslCheck output/$@.psl
+	${diff} expected/$@.psl output/$@.psl
 
 mkdirs:
 	@mkdir -p output

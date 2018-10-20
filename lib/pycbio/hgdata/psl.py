@@ -33,10 +33,10 @@ class PslBlock(object):
     """Block of a PSL"""
     __slots__ = ("psl", "iBlk", "qStart", "qEnd", "tStart", "tEnd", "size", "qSeq", "tSeq")
 
-    def __init__(self, psl, qStart, tStart, size, qSeq=None, tSeq=None):
+    def __init__(self, qStart, tStart, size, qSeq=None, tSeq=None):
         "sets iBlk base on being added in ascending order"
-        self.psl = psl
-        self.iBlk = len(psl.blocks)
+        self.psl = None
+        self.iBlk = None
         self.qStart = qStart
         self.qEnd = qStart + size
         self.tStart = tStart
@@ -105,18 +105,18 @@ class PslBlock(object):
 
     def reverseComplement(self, newPsl):
         "construct a block that is the reverse complement of this block"
-        return PslBlock(newPsl, self.psl.qSize - self.qEnd,
+        return PslBlock(self.psl.qSize - self.qEnd,
                         self.psl.tSize - self.tEnd, self.size,
                         (dnaOps.reverseComplement(self.qSeq) if (self.qSeq is not None) else None),
                         (dnaOps.reverseComplement(self.tSeq) if (self.tSeq is not None) else None))
 
     def swapSides(self, newPsl):
         "construct a block with query and target swapped "
-        return PslBlock(newPsl, self.tStart, self.qStart, self.size, self.tSeq, self.qSeq)
+        return PslBlock(self.tStart, self.qStart, self.size, self.tSeq, self.qSeq)
 
     def swapSidesReverseComplement(self, newPsl):
         "construct a block with query and target swapped and reverse complemented "
-        return PslBlock(newPsl, self.psl.tSize - self.tEnd,
+        return PslBlock(self.psl.tSize - self.tEnd,
                         self.psl.qSize - self.qEnd, self.size,
                         (dnaOps.reverseComplement(self.tSeq) if (self.tSeq is not None) else None),
                         (dnaOps.reverseComplement(self.qSeq) if (self.qSeq is not None) else None))
@@ -124,12 +124,11 @@ class PslBlock(object):
 
 class Psl(object):
     """Object containing data from a PSL record."""
-    __slots__ = ("match", "misMatch", "repMatch", "nCount", "qNumInsert", "qBaseInsert", "tNumInsert", "tBaseInsert", "strand", "qName", "qSize", "qStart", "qEnd", "tName", "tSize", "tStart", "tEnd", "blockCount", "blocks")
+    __slots__ = ("match", "misMatch", "repMatch", "nCount", "qNumInsert", "qBaseInsert", "tNumInsert", "tBaseInsert", "strand", "qName", "qSize", "qStart", "qEnd", "tName", "tSize", "tStart", "tEnd", "blocks")
 
     @classmethod
-    def _parseBlocks(cls, psl, blockSizesStr, qStartsStr, tStartsStr, qSeqsStr, tSeqsStr):
+    def _parseBlocks(cls, psl, blockCount, blockSizesStr, qStartsStr, tStartsStr, qSeqsStr, tSeqsStr):
         "convert parallel arrays to PslBlock objects"
-        psl.blocks = []
         blockSizes = intArraySplit(blockSizesStr)
         qStarts = intArraySplit(qStartsStr)
         tStarts = intArraySplit(tStartsStr)
@@ -137,10 +136,10 @@ class Psl(object):
         if haveSeqs:
             qSeqs = strArraySplit(qSeqsStr)
             tSeqs = strArraySplit(tSeqsStr)
-        for i in range(psl.blockCount):
-            psl.blocks.append(PslBlock(psl, qStarts[i], tStarts[i], blockSizes[i],
-                                       (qSeqs[i] if haveSeqs else None),
-                                       (tSeqs[i] if haveSeqs else None)))
+        for i in range(blockCount):
+            psl.addBlock(PslBlock(qStarts[i], tStarts[i], blockSizes[i],
+                                  (qSeqs[i] if haveSeqs else None),
+                                  (tSeqs[i] if haveSeqs else None)))
 
     @classmethod
     def fromRow(cls, row):
@@ -164,9 +163,10 @@ class Psl(object):
         psl.tSize = int(row[14])
         psl.tStart = int(row[15])
         psl.tEnd = int(row[16])
-        psl.blockCount = int(row[17])
+        psl.blocks = []
+        blockCount = int(row[17])
         haveSeqs = len(row) > 21
-        cls._parseBlocks(psl, row[18], row[19], row[20],
+        cls._parseBlocks(psl, blockCount, row[18], row[19], row[20],
                          (row[21] if haveSeqs else None),
                          (row[22] if haveSeqs else None))
         return psl
@@ -193,9 +193,10 @@ class Psl(object):
         psl.tSize = row[dbColIdxMap["tSize"]]
         psl.tStart = row[dbColIdxMap["tStart"]]
         psl.tEnd = row[dbColIdxMap["tEnd"]]
-        psl.blockCount = row[dbColIdxMap["blockCount"]]
+        psl.blocks = []
+        blockCount = row[dbColIdxMap["blockCount"]]
         haveSeqs = "qSeqs" in dbColIdxMap
-        cls._parseBlocks(psl, row[dbColIdxMap["blockSizes"]],
+        cls._parseBlocks(psl, blockCount, row[dbColIdxMap["blockSizes"]],
                          row[dbColIdxMap["qStarts"]], row[dbColIdxMap["tStarts"]],
                          (row[dbColIdxMap["qSeqs"]] if haveSeqs else None),
                          (row[dbColIdxMap["tSeqs"]] if haveSeqs else None))
@@ -225,11 +226,17 @@ class Psl(object):
         psl.tSize = tSize
         psl.tStart = tStart
         psl.tEnd = tEnd
-        psl.blockCount = 0
         psl.blocks = []
         return psl
 
+    def addBlock(self, blk):
+        blk.psl = self
+        blk.iBlk = len(self.blocks)
+        self.blocks.append(blk)
 
+    @property
+    def blockCount(self):
+        return len(self.blocks)
 
     @property
     def qStrand(self):
@@ -438,10 +445,9 @@ class Psl(object):
         rc.tSize = self.tSize
         rc.tStart = self.tStart
         rc.tEnd = self.tEnd
-        rc.blockCount = self.blockCount
         rc.blocks = []
         for i in range(self.blockCount - 1, -1, -1):
-            rc.blocks.append(self.blocks[i].reverseComplement(rc))
+            rc.addBlock(self.blocks[i].reverseComplement(rc))
         return rc
 
     def _swapStrand(self, rc, keepTStrandImplicit, doRc):
@@ -484,15 +490,14 @@ class Psl(object):
         swap.tSize = self.qSize
         swap.tStart = self.qStart
         swap.tEnd = self.qEnd
-        swap.blockCount = self.blockCount
         swap.blocks = []
 
         if doRc:
             for i in range(self.blockCount - 1, -1, -1):
-                swap.blocks.append(self.blocks[i].swapSidesReverseComplement(swap))
+                swap.addBlock(self.blocks[i].swapSidesReverseComplement(swap))
         else:
             for i in range(self.blockCount):
-                swap.blocks.append(self.blocks[i].swapSides(swap))
+                swap.addBlock(self.blocks[i].swapSides(swap))
         return swap
 
 
