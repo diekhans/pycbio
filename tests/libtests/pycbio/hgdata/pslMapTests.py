@@ -17,8 +17,8 @@ _pslDoubleDel2 = "298	106	0	0	0	0	0	0	-	DQ216042.1-1.1	1232	53	593	chrX	15491375
 _pslNegMrna = "5148	0	415	0	0	0	27	208231	-	NM_017651	5564	0	5563	chr6	171115067	135605109	135818903	28	1676,103,59,98,163,56,121,27,197,141,131,119,107,230,124,133,153,186,96,193,220,182,560,54,125,64,62,183,	1,1677,1780,1839,1937,2100,2156,2277,2304,2501,2642,2773,2892,2999,3229,3353,3486,3639,3825,3921,4114,4334,4516,5076,5130,5255,5319,5381,	135605109,135611560,135621637,135639656,135644299,135679269,135715913,135726088,135732485,135748304,135749766,135751019,135752345,135754164,135759512,135763719,135768145,135769427,135774478,135776871,135778631,135784262,135786951,135788718,135811760,135813365,135818325,135818720,"  # flake8: noqa
 _pslAugustusBlat = "39	0	0	0	0	0	1	3	-	jg18564.t1::chr12:78274203-78324771(+)	972	123	162	19	61431566	38013595	38013637	2	18,21,	810,828,	38013595,38013616,"
 
-def splitToPsl(ps):
-    return Psl(ps.split("\t"))
+def splitToPsl(line):
+    return Psl.fromRow(line.split("\t"))
 
 def _mapToTuple(pmr):
     typ = "blk" if (pmr.qStart is not None) and (pmr.tStart is not None) else "gap"
@@ -47,7 +47,7 @@ class TargetToQueryTests(TestCaseBase):
                           ('blk', None, 290, 340, None, '+', None, 1031868, 1031918, None, '+')),
                          got)
 
-        # crossing gaps, with strand reversal 
+        # crossing gaps, with strand reversal
         got = _targetToQueryMap(psl, 134342819, 134350339, tStrand='-')  # 1024398-1031918 on - strand
         self.assertEqual((('blk', None, 50, 119, None, '+', None, 134350270, 134350339, None, '-'),
                           ('gap', 119, None, None, 119, '+', None, 134346309, 134350270, None, '-'),
@@ -69,7 +69,7 @@ class TargetToQueryTests(TestCaseBase):
                           ('blk', None, 1823, 2517, None, '+', None, 1053014, 1053708, None, '+'),
                           ('gap', 2517, None, None, None, '+', None, 1053708, 1053908, None, '+')),
                          got)
-        
+
     def testDoubleDel1(self):
         "gap with deletions on both sizes, query one a single base"
         psl = splitToPsl(_pslDoubleDel1)

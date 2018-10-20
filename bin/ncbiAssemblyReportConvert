@@ -139,14 +139,17 @@ class IncludeFilter(object):
         else:
             return seq.sequenceRole in self.keep
 
+def main():
+    args = parseArgs()
+    asmReport = AssemblyReport(args.assemblyReport)
+    filterFn = IncludeFilter(args.include)
+    with open(args.outFile, "w") as outFh:
+        if args.outputType == OUTPUT_LIFT:
+            createLift(asmReport, filterFn, args.fromIdType, args.toIdType, outFh)
+        elif args.outputType == OUTPUT_SIZES:
+            createSizes(asmReport, filterFn, args.fromIdType, outFh)
+        elif args.outputType == OUTPUT_IDMAP:
+            createIdmap(asmReport, filterFn, args.fromIdType, args.toIdType, outFh)
 
-args = parseArgs()
-asmReport = AssemblyReport(args.assemblyReport)
-filterFn = IncludeFilter(args.include)
-with open(args.outFile, "w") as outFh:
-    if args.outputType == OUTPUT_LIFT:
-        createLift(asmReport, filterFn, args.fromIdType, args.toIdType, outFh)
-    elif args.outputType == OUTPUT_SIZES:
-        createSizes(asmReport, filterFn, args.fromIdType, outFh)
-    elif args.outputType == OUTPUT_IDMAP:
-        createIdmap(asmReport, filterFn, args.fromIdType, args.toIdType, outFh)
+
+main()

@@ -21,7 +21,7 @@ class ChromInfoTbl(dict):
     "object to manage information about chromosomes"
 
     def __init__(self, chromSizes=None, conn=None, chromClass=ChromInfo):
-        "loads from either chromSizes file or database conn 2chromInfo table"
+        "loads from either chromSizes file or database conn chromInfo table"
         self.chromClass = chromClass
         if chromSizes is not None:
             self.loadChromSizes(chromSizes)

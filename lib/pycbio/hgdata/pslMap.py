@@ -235,7 +235,7 @@ class PslMap(object):
         rngs = [rng for rng in rangeGen if rng.isAligned]
         if len(rngs) == 0:
             return None
-        psl = Psl()
+        psl = Psl.create()
         psl.qName = self.mapPsl.qName
         psl.qStart = rngs[0].qStart
         psl.qEnd = rngs[-1].qEnd

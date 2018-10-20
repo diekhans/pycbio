@@ -126,9 +126,10 @@ class Psl(object):
     """Object containing data from a PSL record."""
     __slots__ = ("match", "misMatch", "repMatch", "nCount", "qNumInsert", "qBaseInsert", "tNumInsert", "tBaseInsert", "strand", "qName", "qSize", "qStart", "qEnd", "tName", "tSize", "tStart", "tEnd", "blockCount", "blocks")
 
-    def _parseBlocks(self, blockSizesStr, qStartsStr, tStartsStr, qSeqsStr, tSeqsStr):
+    @classmethod
+    def _parseBlocks(cls, psl, blockSizesStr, qStartsStr, tStartsStr, qSeqsStr, tSeqsStr):
         "convert parallel arrays to PslBlock objects"
-        self.blocks = []
+        psl.blocks = []
         blockSizes = intArraySplit(blockSizesStr)
         qStarts = intArraySplit(qStartsStr)
         tStarts = intArraySplit(tStartsStr)
@@ -136,93 +137,99 @@ class Psl(object):
         if haveSeqs:
             qSeqs = strArraySplit(qSeqsStr)
             tSeqs = strArraySplit(tSeqsStr)
-        for i in range(self.blockCount):
-            self.blocks.append(PslBlock(self, qStarts[i], tStarts[i], blockSizes[i],
-                                        (qSeqs[i] if haveSeqs else None),
-                                        (tSeqs[i] if haveSeqs else None)))
+        for i in range(psl.blockCount):
+            psl.blocks.append(PslBlock(psl, qStarts[i], tStarts[i], blockSizes[i],
+                                       (qSeqs[i] if haveSeqs else None),
+                                       (tSeqs[i] if haveSeqs else None)))
 
-    def _parse(self, row):
-        self.match = int(row[0])
-        self.misMatch = int(row[1])
-        self.repMatch = int(row[2])
-        self.nCount = int(row[3])
-        self.qNumInsert = int(row[4])
-        self.qBaseInsert = int(row[5])
-        self.tNumInsert = int(row[6])
-        self.tBaseInsert = int(row[7])
-        self.strand = row[8]
-        self.qName = row[9]
-        self.qSize = int(row[10])
-        self.qStart = int(row[11])
-        self.qEnd = int(row[12])
-        self.tName = row[13]
-        self.tSize = int(row[14])
-        self.tStart = int(row[15])
-        self.tEnd = int(row[16])
-        self.blockCount = int(row[17])
+    @classmethod
+    def fromRow(cls, row):
+        """"Create PSL from a text row of columns, usually split from a tab
+        file line"""
+        psl = Psl()
+        psl.match = int(row[0])
+        psl.misMatch = int(row[1])
+        psl.repMatch = int(row[2])
+        psl.nCount = int(row[3])
+        psl.qNumInsert = int(row[4])
+        psl.qBaseInsert = int(row[5])
+        psl.tNumInsert = int(row[6])
+        psl.tBaseInsert = int(row[7])
+        psl.strand = row[8]
+        psl.qName = row[9]
+        psl.qSize = int(row[10])
+        psl.qStart = int(row[11])
+        psl.qEnd = int(row[12])
+        psl.tName = row[13]
+        psl.tSize = int(row[14])
+        psl.tStart = int(row[15])
+        psl.tEnd = int(row[16])
+        psl.blockCount = int(row[17])
         haveSeqs = len(row) > 21
-        self._parseBlocks(row[18], row[19], row[20],
-                          (row[21] if haveSeqs else None),
-                          (row[22] if haveSeqs else None))
+        cls._parseBlocks(psl, row[18], row[19], row[20],
+                         (row[21] if haveSeqs else None),
+                         (row[22] if haveSeqs else None))
+        return psl
 
-    def _loadDb(self, row, dbColIdxMap):
+    @classmethod
+    def fromDbRow(cls, row, dbColIdxMap):
+        """"Create PSL from a database row"""
         # FIXME: change to use DictCursor
-        # FIXME: move out of here, rename to no use confusing `load' (read)
-        self.match = row[dbColIdxMap["matches"]]
-        self.misMatch = row[dbColIdxMap["misMatches"]]
-        self.repMatch = row[dbColIdxMap["repMatches"]]
-        self.nCount = row[dbColIdxMap["nCount"]]
-        self.qNumInsert = row[dbColIdxMap["qNumInsert"]]
-        self.qBaseInsert = row[dbColIdxMap["qBaseInsert"]]
-        self.tNumInsert = row[dbColIdxMap["tNumInsert"]]
-        self.tBaseInsert = row[dbColIdxMap["tBaseInsert"]]
-        self.strand = row[dbColIdxMap["strand"]]
-        self.qName = row[dbColIdxMap["qName"]]
-        self.qSize = row[dbColIdxMap["qSize"]]
-        self.qStart = row[dbColIdxMap["qStart"]]
-        self.qEnd = row[dbColIdxMap["qEnd"]]
-        self.tName = row[dbColIdxMap["tName"]]
-        self.tSize = row[dbColIdxMap["tSize"]]
-        self.tStart = row[dbColIdxMap["tStart"]]
-        self.tEnd = row[dbColIdxMap["tEnd"]]
-        self.blockCount = row[dbColIdxMap["blockCount"]]
+        psl = Psl()
+        psl.match = row[dbColIdxMap["matches"]]
+        psl.misMatch = row[dbColIdxMap["misMatches"]]
+        psl.repMatch = row[dbColIdxMap["repMatches"]]
+        psl.nCount = row[dbColIdxMap["nCount"]]
+        psl.qNumInsert = row[dbColIdxMap["qNumInsert"]]
+        psl.qBaseInsert = row[dbColIdxMap["qBaseInsert"]]
+        psl.tNumInsert = row[dbColIdxMap["tNumInsert"]]
+        psl.tBaseInsert = row[dbColIdxMap["tBaseInsert"]]
+        psl.strand = row[dbColIdxMap["strand"]]
+        psl.qName = row[dbColIdxMap["qName"]]
+        psl.qSize = row[dbColIdxMap["qSize"]]
+        psl.qStart = row[dbColIdxMap["qStart"]]
+        psl.qEnd = row[dbColIdxMap["qEnd"]]
+        psl.tName = row[dbColIdxMap["tName"]]
+        psl.tSize = row[dbColIdxMap["tSize"]]
+        psl.tStart = row[dbColIdxMap["tStart"]]
+        psl.tEnd = row[dbColIdxMap["tEnd"]]
+        psl.blockCount = row[dbColIdxMap["blockCount"]]
         haveSeqs = "qSeqs" in dbColIdxMap
-        self._parseBlocks(row[dbColIdxMap["blockSizes"]], row[dbColIdxMap["qStarts"]], row[dbColIdxMap["tStarts"]],
-                          (row[dbColIdxMap["qSeqs"]] if haveSeqs else None),
-                          (row[dbColIdxMap["tSeqs"]] if haveSeqs else None))
+        cls._parseBlocks(psl, row[dbColIdxMap["blockSizes"]],
+                         row[dbColIdxMap["qStarts"]], row[dbColIdxMap["tStarts"]],
+                         (row[dbColIdxMap["qSeqs"]] if haveSeqs else None),
+                         (row[dbColIdxMap["tSeqs"]] if haveSeqs else None))
+        return psl
 
-    def _empty(self):
-        self.match = 0
-        self.misMatch = 0
-        self.repMatch = 0
-        self.nCount = 0
-        self.qNumInsert = 0
-        self.qBaseInsert = 0
-        self.tNumInsert = 0
-        self.tBaseInsert = 0
-        self.strand = None
-        self.qName = None
-        self.qSize = 0
-        self.qStart = 0
-        self.qEnd = 0
-        self.tName = None
-        self.tSize = 0
-        self.tStart = 0
-        self.tEnd = 0
-        self.blockCount = 0
-        self.blocks = []
+    @classmethod
+    def create(cls,
+               qName=None, qSize=0, qStart=0, qEnd=0,
+               tName=None, tSize=0, tStart=0, tEnd=0,
+               strand=None):
+        "create a new PSL"
+        psl = Psl()
+        psl.match = 0
+        psl.misMatch = 0
+        psl.repMatch = 0
+        psl.nCount = 0
+        psl.qNumInsert = 0
+        psl.qBaseInsert = 0
+        psl.tNumInsert = 0
+        psl.tBaseInsert = 0
+        psl.strand = strand
+        psl.qName = qName
+        psl.qSize = qSize
+        psl.qStart = qStart
+        psl.qEnd = qEnd
+        psl.tName = tName
+        psl.tSize = tSize
+        psl.tStart = tStart
+        psl.tEnd = tEnd
+        psl.blockCount = 0
+        psl.blocks = []
+        return psl
 
-    def __init__(self, row=None, dbColIdxMap=None):
-        """construct a new PSL, either parsing a row, loading a row from a
-        dbapi cursor (dbColIdxMap created by sys.dbOpts.cursorColIdxMap), or
-        creating an empty one."""
-        # FIXME: use factory rather than overload
-        if dbColIdxMap is not None:
-            self._loadDb(row, dbColIdxMap)
-        elif row is not None:
-            self._parse(row)
-        else:
-            self._empty()
+
 
     @property
     def qStrand(self):
@@ -413,7 +420,7 @@ class Psl(object):
 
     def reverseComplement(self):
         "create a new PSL that is reverse complemented"
-        rc = Psl(None)
+        rc = Psl()
         rc.match = self.match
         rc.misMatch = self.misMatch
         rc.repMatch = self.repMatch
@@ -459,7 +466,7 @@ class Psl(object):
         strand explicit."""
         doRc = (keepTStrandImplicit and (len(self.strand) == 1) and (self.qStrand == "-"))
 
-        swap = Psl(None)
+        swap = Psl()
         swap.match = self.match
         swap.misMatch = self.misMatch
         swap.repMatch = self.repMatch
@@ -495,7 +502,7 @@ class PslReader(object):
         self.fspec = fspec
 
     def __iter__(self):
-        for psl in TabFileReader(self.fspec, rowClass=Psl, hashAreComments=True, skipBlankLines=True):
+        for psl in TabFileReader(self.fspec, rowClass=Psl.fromRow, hashAreComments=True, skipBlankLines=True):
             yield psl
 
 

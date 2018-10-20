@@ -53,7 +53,7 @@ class OpsTests(TestCaseBase):
 
     @staticmethod
     def _splitToPsl(ps):
-        return Psl(ps.split("\t"))
+        return Psl.fromRow(ps.split("\t"))
 
     def _rcTest(self, psIn, psExpect):
         self.assertEqual(str(self._splitToPsl(psIn).reverseComplement()), psExpect)

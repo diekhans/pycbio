@@ -26,7 +26,7 @@ class PslMySqlReader(object):
             cur.execute(self.query, self.queryArgs)
             colIdxMap = mysqlOps.cursorColIdxMap(cur)
             for row in cur:
-                yield Psl(row, dbColIdxMap=colIdxMap)
+                yield Psl.fromDbRow(row, dbColIdxMap=colIdxMap)
         finally:
             cur.close()
 

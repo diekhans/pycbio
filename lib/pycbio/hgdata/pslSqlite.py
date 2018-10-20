@@ -97,7 +97,7 @@ class PslSqliteTable(HgSqliteTable):
 
     @staticmethod
     def _getRowFactory(raw):
-        return None if raw else lambda cur, row: Psl(row)
+        return None if raw else lambda cur, row: Psl.fromRow(row)
 
     def getAll(self, raw=False):
         """Generator for PSLs for all rows in a table. If raw is

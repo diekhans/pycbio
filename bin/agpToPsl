@@ -1,0 +1,90 @@
+#!/usr/bin/env python
+# Copyright 2006-2018 Mark Diekhans
+
+from builtins import object
+import sys
+import os
+myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
+sys.path.insert(0, os.path.join(myBinDir, "../lib"))
+import argparse
+from collections import defaultdict
+from pycbio.ncbi.agp import Gp
+from pycbio.sys import PycbioException
+from pycbio.sys import fileOps
+from pycbio.tsv.tsvFile import TabFileReader
+from pycbio.hgdata.chromInfo import ChromInfo
+
+def parseArgs():
+    usage = """
+Generate an PSL from an AGP file, where the target is the AGO object sequence and the
+query is the component.
+"""
+    parser = argparse.ArgumentParser(description=usage)
+    parser.add_argument('--componentSizes', type=str,
+                        help="file containing the component sequence sizes.  If --componentLocalId2acc is specified, the names should be the local ids."
+                        "  If not specified, component sizes are computed from maximum size in AGP.")
+    parser.add_argument('--componentLocalId2Acc', type=str
+                        help="NCBI component_localID2acc file, if specified, the query names are mapped to the local ids")
+    parser.add_argument('agpFile', type=str,
+                        help="NCBI AGP file")
+    parser.add_argument('pslFile', type=str,
+                        help="PSL output file")
+    return parser.parse_args()
+
+
+def loadComponentSizeMap(componentSizes):
+    componentSizeMap = {}
+    for row in TabFileReader(componentSizeMap, skipBlankLines=True):
+        componentSizeMap[row[0]] = int(row[1])
+    return componentSizeMap
+
+
+def componentSizesFromAgp(agp):
+    componentSizeMap = {}
+    for row in agp.recs:
+        componentSizeMap[agp.component.name] = max(componentSizeMap[agp.component.name], agp.component.end)
+    return dict(componentSizeMap)
+
+
+def objectSizesFromAgp(agp):
+    objectSizeMap = {}
+    for row in agp.recs:
+        objectSizeMap[agp.object.name] = max(objectSizeMap[agp.object.name], agp.object.end)
+    return dict(objectSizeMap)
+
+
+def loadComponentLocalIdMap(componentLocalId2Acc):
+    componentLocalIdMap = {}
+    for row in TabFileReader(componentLocalIdMap, hashAreComments=True, skipBlankLines=True):
+        componentLocalIdMap[row[1]] = row[0]
+    return componentLocalIdMap
+
+
+def recToPsl(rec, objectSizeMap, componentSizeMap, componentLocalIdMap):
+    psl =
+
+def buildPsls(agp, objectSizeMap, componentSizeMap, componentLocalIdMap):
+    psls = []
+    for rec in agp.recs:
+        if rec.isBlock():
+            psls.append(recToPsl(rec, componentSizeMap, componentLocalIdMap))
+    return psls
+
+
+def main():
+    args = parseArgs()
+    agp = Agp(args.agpFile)
+    if args.componentSizes is not None:
+        componentSizeMap = loadComponentSizeMap(args.componentSizes)
+    else:
+        componentSizeMap = componentSizesFromAgp(agp)
+    objectSizeMap = objectSizesFromAgp(agp)
+    componentLocalIdMap = None
+    if args.componentLocalId2Acc is not None:
+        componentLocalIdMap = loadComponentLocalIdMap(args.componentLocalId2Acc)
+    psls = buildPsls(agp, objectSizeMap, componentSizeMap, componentLocalIdMap)
+    with fileOps.opengz(args.pslFile) as fh:
+        for psl in psls:
+            print(psl.toRow(), file=fh)
+
+main()
