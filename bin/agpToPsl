@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # Copyright 2006-2018 Mark Diekhans
 
+from __future__ import print_function
 import sys
 import os
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
@@ -19,16 +20,22 @@ Generate an PSL from an AGP file, where the target is the AGO object sequence an
 query is the component.
 """
     parser = argparse.ArgumentParser(description=usage)
-    parser.add_argument('--componentSizes', type=str,
+    parser.add_argument('--componentSizes',
                         help="file containing the component sequence sizes.  If --componentLocalId2acc is specified, the names should be the local ids."
                         "  If not specified, component sizes are computed from maximum size in AGP.")
-    parser.add_argument('--componentLocalId2Acc', type=str,
+    parser.add_argument('--componentLocalId2Acc',
                         help="NCBI component_localID2acc file, if specified, the query names are mapped to the local ids")
+    parser.add_argument('--skipUnmappable', action="store_true",
+                        help="skip sequence where query id can't be mapped with --componentLocalId2Acc or --componentSizes")
     parser.add_argument('agpFile', type=str,
                         help="NCBI AGP file")
     parser.add_argument('pslFile', type=str,
                         help="PSL output file")
     return parser.parse_args()
+
+
+class UnmappedNameException(PycbioException):
+    pass
 
 
 class NameMap(object):
@@ -50,7 +57,7 @@ class NameMap(object):
         try:
             return self.mappings[name]
         except KeyError as ex:
-            raise pycbioRaiseFrom(PycbioException("name {} not found in {} map".format(name, self.nameDesc)), ex)
+            raise pycbioRaiseFrom(UnmappedNameException("name {} not found in {} map".format(name, self.nameDesc)), ex)
 
 
 def loadComponentSizeMap(componentSizes):
@@ -94,12 +101,22 @@ def recToPsl(rec, objectSizeMap, componentSizeMap, componentLocalIdMap):
     psl.blocks.append(blk)
     return psl
 
+def buildPsl(rec, objectSizeMap, componentSizeMap, componentLocalIdMap, skipUnmappable):
+    try:
+        return recToPsl(rec, objectSizeMap, componentSizeMap, componentLocalIdMap)
+    except UnmappedNameException as ex:
+        if skipUnmappable:
+            print("Warning", str(ex), file=sys.stderr)
+            return None
+        raise
 
-def buildPsls(agp, objectSizeMap, componentSizeMap, componentLocalIdMap):
+def buildPsls(agp, objectSizeMap, componentSizeMap, componentLocalIdMap, skipUnmappable):
     psls = []
     for rec in agp.recs:
         if rec.isBlock:
-            psls.append(recToPsl(rec, objectSizeMap, componentSizeMap, componentLocalIdMap))
+            psl = buildPsl(rec, objectSizeMap, componentSizeMap, componentLocalIdMap, skipUnmappable)
+            if psl is not None:
+                psls.append(psl)
     return psls
 
 
@@ -115,7 +132,7 @@ def main():
     else:
         componentSizeMap = componentSizesFromAgp(agp, componentLocalIdMap)
     objectSizeMap = objectSizesFromAgp(agp)
-    psls = buildPsls(agp, objectSizeMap, componentSizeMap, componentLocalIdMap)
+    psls = buildPsls(agp, objectSizeMap, componentSizeMap, componentLocalIdMap, args.skipUnmappable)
     with fileOps.opengz(args.pslFile, 'w') as fh:
         for psl in psls:
             print("\t".join(psl.toRow()), file=fh)

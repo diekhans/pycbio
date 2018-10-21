@@ -73,7 +73,7 @@ asmIdmapMixedAsmTest: mkdirs
 clintChimpAgp = input/GCA_002880755.3.chr10.comp.agp$
 grch38Agp = ${ncbiTestInputDir}/GCA_000001305.2.chr22.agp
 
-agpToPslTests: agpToPslBasicTest agpToPslLocalCompTest agpToPslGapsTest
+agpToPslTests: agpToPslBasicTest agpToPslLocalCompTest agpToPslSkipTest agpToPslGapsTest
 
 agpToPslBasicTest: mkdirs
 	${agpToPsl} ${clintChimpAgp} output/$@.psl
@@ -84,6 +84,12 @@ agpToPslLocalCompTest: mkdirs
 	${agpToPsl} --componentSizes=input/Clint_Chimp.chroms --componentLocalId2Acc=input/Clint_Chimp.component_localID2acc ${clintChimpAgp} output/$@.psl
 	pslCheck output/$@.psl
 	${diff} expected/$@.psl output/$@.psl
+
+agpToPslSkipTest: mkdirs
+	${agpToPsl} --skipUnmappable --componentSizes=input/Clint_Chimp.skip.chroms --componentLocalId2Acc=input/Clint_Chimp.skip.component_localID2acc ${clintChimpAgp} output/$@.psl >output/$@.out 2>&1
+	pslCheck output/$@.psl
+	${diff} expected/$@.psl output/$@.psl
+	${diff} expected/$@.out output/$@.out
 
 agpToPslGapsTest: mkdirs
 	${agpToPsl} ${grch38Agp} output/$@.psl
