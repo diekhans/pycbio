@@ -10,7 +10,7 @@ agpToPsl = ${runBin}/agpToPsl
 ncbiTestInputDir = ../../libtests/pycbio/ncbi/input
 
 # refseq mRNAs, ESTs
-testAccver = NM_013266.2 AK289756.1 BG187649.1 U14680.1
+testAccver = NM_013266.3 AK289756.1 BG187649.1 U14680.1
 
 diff = diff -u
 
