@@ -141,11 +141,42 @@ class Psl(object):
                                   (qSeqs[i] if haveSeqs else None),
                                   (tSeqs[i] if haveSeqs else None)))
 
+    def __init__(self, strand=None,
+               qName=None, qSize=0, qStart=0, qEnd=0,
+               tName=None, tSize=0, tStart=0, tEnd=0):
+        "create a new PSL with now blocks"
+        self.match = 0
+        self.misMatch = 0
+        self.repMatch = 0
+        self.nCount = 0
+        self.qNumInsert = 0
+        self.qBaseInsert = 0
+        self.tNumInsert = 0
+        self.tBaseInsert = 0
+        self.strand = strand
+        self.qName = qName
+        self.qSize = qSize
+        self.qStart = qStart
+        self.qEnd = qEnd
+        self.tName = tName
+        self.tSize = tSize
+        self.tStart = tStart
+        self.tEnd = tEnd
+        self.blocks = []
+
     @classmethod
     def fromRow(cls, row):
         """"Create PSL from a text row of columns, usually split from a tab
         file line"""
-        psl = Psl()
+        psl = Psl(strand=row[8],
+                  qName=row[9],
+                  qSize=int(row[10]),
+                  qStart=int(row[11]),
+                  qEnd=int(row[12]),
+                  tName=row[13],
+                  tSize=int(row[14]),
+                  tStart=int(row[15]),
+                  tEnd=int(row[16]))
         psl.match = int(row[0])
         psl.misMatch = int(row[1])
         psl.repMatch = int(row[2])
@@ -154,16 +185,6 @@ class Psl(object):
         psl.qBaseInsert = int(row[5])
         psl.tNumInsert = int(row[6])
         psl.tBaseInsert = int(row[7])
-        psl.strand = row[8]
-        psl.qName = row[9]
-        psl.qSize = int(row[10])
-        psl.qStart = int(row[11])
-        psl.qEnd = int(row[12])
-        psl.tName = row[13]
-        psl.tSize = int(row[14])
-        psl.tStart = int(row[15])
-        psl.tEnd = int(row[16])
-        psl.blocks = []
         blockCount = int(row[17])
         haveSeqs = len(row) > 21
         cls._parseBlocks(psl, blockCount, row[18], row[19], row[20],
@@ -175,7 +196,15 @@ class Psl(object):
     def fromDbRow(cls, row, dbColIdxMap):
         """"Create PSL from a database row"""
         # FIXME: change to use DictCursor
-        psl = Psl()
+        psl = Psl(strand=row[dbColIdxMap["strand"]],
+                  qName=row[dbColIdxMap["qName"]],
+                  qSize=row[dbColIdxMap["qSize"]],
+                  qStart=row[dbColIdxMap["qStart"]],
+                  qEnd=row[dbColIdxMap["qEnd"]],
+                  tName=row[dbColIdxMap["tName"]],
+                  tSize=row[dbColIdxMap["tSize"]],
+                  tStart=row[dbColIdxMap["tStart"]],
+                  tEnd=row[dbColIdxMap["tEnd"]])
         psl.match = row[dbColIdxMap["matches"]]
         psl.misMatch = row[dbColIdxMap["misMatches"]]
         psl.repMatch = row[dbColIdxMap["repMatches"]]
@@ -184,16 +213,6 @@ class Psl(object):
         psl.qBaseInsert = row[dbColIdxMap["qBaseInsert"]]
         psl.tNumInsert = row[dbColIdxMap["tNumInsert"]]
         psl.tBaseInsert = row[dbColIdxMap["tBaseInsert"]]
-        psl.strand = row[dbColIdxMap["strand"]]
-        psl.qName = row[dbColIdxMap["qName"]]
-        psl.qSize = row[dbColIdxMap["qSize"]]
-        psl.qStart = row[dbColIdxMap["qStart"]]
-        psl.qEnd = row[dbColIdxMap["qEnd"]]
-        psl.tName = row[dbColIdxMap["tName"]]
-        psl.tSize = row[dbColIdxMap["tSize"]]
-        psl.tStart = row[dbColIdxMap["tStart"]]
-        psl.tEnd = row[dbColIdxMap["tEnd"]]
-        psl.blocks = []
         blockCount = row[dbColIdxMap["blockCount"]]
         haveSeqs = "qSeqs" in dbColIdxMap
         cls._parseBlocks(psl, blockCount, row[dbColIdxMap["blockSizes"]],
@@ -208,25 +227,15 @@ class Psl(object):
                tName=None, tSize=0, tStart=0, tEnd=0,
                strand=None):
         "create a new PSL"
-        psl = Psl()
-        psl.match = 0
-        psl.misMatch = 0
-        psl.repMatch = 0
-        psl.nCount = 0
-        psl.qNumInsert = 0
-        psl.qBaseInsert = 0
-        psl.tNumInsert = 0
-        psl.tBaseInsert = 0
-        psl.strand = strand
-        psl.qName = qName
-        psl.qSize = qSize
-        psl.qStart = qStart
-        psl.qEnd = qEnd
-        psl.tName = tName
-        psl.tSize = tSize
-        psl.tStart = tStart
-        psl.tEnd = tEnd
-        psl.blocks = []
+        psl = Psl(strand=strand,
+                  qName=qName,
+                  qSize=qSize,
+                  qStart=qStart,
+                  qEnd=qEnd,
+                  tName=tName,
+                  tSize=tSize,
+                  tStart=tStart,
+                  tEnd=tEnd)
         return psl
 
     def addBlock(self, blk):
