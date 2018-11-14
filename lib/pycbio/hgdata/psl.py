@@ -141,10 +141,10 @@ class Psl(object):
                                   (qSeqs[i] if haveSeqs else None),
                                   (tSeqs[i] if haveSeqs else None)))
 
-    def __init__(self, strand=None,
-               qName=None, qSize=0, qStart=0, qEnd=0,
-               tName=None, tSize=0, tStart=0, tEnd=0):
-        "create a new PSL with now blocks"
+    def __init__(self, qName=None, qSize=0, qStart=0, qEnd=0,
+                 tName=None, tSize=0, tStart=0, tEnd=0,
+                 strand=None):
+        "create a new PSL with no blocks"
         self.match = 0
         self.misMatch = 0
         self.repMatch = 0
@@ -168,15 +168,9 @@ class Psl(object):
     def fromRow(cls, row):
         """"Create PSL from a text row of columns, usually split from a tab
         file line"""
-        psl = Psl(strand=row[8],
-                  qName=row[9],
-                  qSize=int(row[10]),
-                  qStart=int(row[11]),
-                  qEnd=int(row[12]),
-                  tName=row[13],
-                  tSize=int(row[14]),
-                  tStart=int(row[15]),
-                  tEnd=int(row[16]))
+        psl = Psl(qName=row[9], qSize=int(row[10]), qStart=int(row[11]), qEnd=int(row[12]),
+                  tName=row[13], tSize=int(row[14]), tStart=int(row[15]), tEnd=int(row[16]),
+                  strand=row[8])
         psl.match = int(row[0])
         psl.misMatch = int(row[1])
         psl.repMatch = int(row[2])
@@ -196,15 +190,15 @@ class Psl(object):
     def fromDbRow(cls, row, dbColIdxMap):
         """"Create PSL from a database row"""
         # FIXME: change to use DictCursor
-        psl = Psl(strand=row[dbColIdxMap["strand"]],
-                  qName=row[dbColIdxMap["qName"]],
+        psl = Psl(qName=row[dbColIdxMap["qName"]],
                   qSize=row[dbColIdxMap["qSize"]],
                   qStart=row[dbColIdxMap["qStart"]],
                   qEnd=row[dbColIdxMap["qEnd"]],
                   tName=row[dbColIdxMap["tName"]],
                   tSize=row[dbColIdxMap["tSize"]],
                   tStart=row[dbColIdxMap["tStart"]],
-                  tEnd=row[dbColIdxMap["tEnd"]])
+                  tEnd=row[dbColIdxMap["tEnd"]],
+                  strand=row[dbColIdxMap["strand"]],)
         psl.match = row[dbColIdxMap["matches"]]
         psl.misMatch = row[dbColIdxMap["misMatches"]]
         psl.repMatch = row[dbColIdxMap["repMatches"]]
@@ -227,15 +221,9 @@ class Psl(object):
                tName=None, tSize=0, tStart=0, tEnd=0,
                strand=None):
         "create a new PSL"
-        psl = Psl(strand=strand,
-                  qName=qName,
-                  qSize=qSize,
-                  qStart=qStart,
-                  qEnd=qEnd,
-                  tName=tName,
-                  tSize=tSize,
-                  tStart=tStart,
-                  tEnd=tEnd)
+        psl = Psl(qName=qName, qSize=qSize, qStart=qStart, qEnd=qEnd,
+                  tName=tName, tSize=tSize, tStart=tStart, tEnd=tEnd,
+                  strand=strand)
         return psl
 
     def addBlock(self, blk):
@@ -436,7 +424,9 @@ class Psl(object):
 
     def reverseComplement(self):
         "create a new PSL that is reverse complemented"
-        rc = Psl()
+        rc = Psl(qName=self.qName, qSize=self.qSize, qStart=self.qStart, qEnd=self.qEnd,
+                 tName=self.tName, tSize=self.tSize, tStart=self.tStart,tEnd=self.tEnd,
+                 strand=reverseStrand(self.qStrand) + reverseStrand(self.tStrand))
         rc.match = self.match
         rc.misMatch = self.misMatch
         rc.repMatch = self.repMatch
@@ -445,21 +435,11 @@ class Psl(object):
         rc.qBaseInsert = self.qBaseInsert
         rc.tNumInsert = self.tNumInsert
         rc.tBaseInsert = self.tBaseInsert
-        rc.strand = reverseStrand(self.qStrand) + reverseStrand(self.tStrand)
-        rc.qName = self.qName
-        rc.qSize = self.qSize
-        rc.qStart = self.qStart
-        rc.qEnd = self.qEnd
-        rc.tName = self.tName
-        rc.tSize = self.tSize
-        rc.tStart = self.tStart
-        rc.tEnd = self.tEnd
-        rc.blocks = []
         for i in range(self.blockCount - 1, -1, -1):
             rc.addBlock(self.blocks[i].reverseComplement(rc))
         return rc
 
-    def _swapStrand(self, rc, keepTStrandImplicit, doRc):
+    def _swapStrand(self, keepTStrandImplicit, doRc):
         # don't make implicit if already explicit
         if keepTStrandImplicit and (len(self.strand) == 1):
             qs = reverseStrand(self.tStrand) if doRc else self.tStrand
@@ -481,7 +461,11 @@ class Psl(object):
         strand explicit."""
         doRc = (keepTStrandImplicit and (len(self.strand) == 1) and (self.qStrand == "-"))
 
-        swap = Psl()
+        swap = Psl(qName=self.tName, qSize=self.tSize,
+                   qStart=self.tStart, qEnd=self.tEnd,
+                   tName=self.qName, tSize=self.qSize,
+                   tStart=self.qStart, tEnd=self.qEnd,
+                   strand=self._swapStrand(keepTStrandImplicit, doRc))
         swap.match = self.match
         swap.misMatch = self.misMatch
         swap.repMatch = self.repMatch
@@ -490,16 +474,6 @@ class Psl(object):
         swap.qBaseInsert = self.tBaseInsert
         swap.tNumInsert = self.qNumInsert
         swap.tBaseInsert = self.qBaseInsert
-        swap.strand = self._swapStrand(swap, keepTStrandImplicit, doRc)
-        swap.qName = self.tName
-        swap.qSize = self.tSize
-        swap.qStart = self.tStart
-        swap.qEnd = self.tEnd
-        swap.tName = self.qName
-        swap.tSize = self.qSize
-        swap.tStart = self.qStart
-        swap.tEnd = self.qEnd
-        swap.blocks = []
 
         if doRc:
             for i in range(self.blockCount - 1, -1, -1):
