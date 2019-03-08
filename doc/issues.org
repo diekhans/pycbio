@@ -19,3 +19,4 @@
 see unittest/case.py: # store exception, without traceback, for later retrieval
 
 * convert lib/pycbio/hgdata/binnerSA.py to peewee
+* GenePred, etc should have abstraction around from dbColIdxMap, could be good to use dictcursors

@@ -18,6 +18,7 @@ class GencodeAttrs(namedtuple("GencodeAttrs",
                                "transcriptName", "transcriptType", "transcriptStatus", "havanaGeneId",
                                "havanaTranscriptId", "ccdsId", "level", "transcriptClass", "proteinId"))):
     """Attributes of a GENCODE transcript. New attribute added to table become optional"""
+    __slots__ = ()
     def __new__(cls, geneId, geneName, geneType, geneStatus, transcriptId,
                 transcriptName, transcriptType, transcriptStatus, havanaGeneId,
                 havanaTranscriptId, ccdsId, level, transcriptClass, proteinId=None):
@@ -135,6 +136,7 @@ class GencodeAttrsSqliteTable(HgSqliteTable):
 class GencodeTranscriptSource(namedtuple("GencodeTranscriptSource",
                                          ("transcriptId", "source",))):
     """GENCODE transcript source"""
+    __slots__ = ()
     pass
 
 
@@ -194,6 +196,7 @@ class GencodeTranscriptSourceSqliteTable(HgSqliteTable):
 class GencodeTranscriptionSupportLevel(namedtuple("GencodeTranscriptionSupportLevel",
                                                   ("transcriptId", "level",))):
     """GENCODE transcription support level"""
+    __slots__ = ()
     pass
 
 
@@ -252,6 +255,7 @@ class GencodeTranscriptionSupportLevelSqliteTable(HgSqliteTable):
 class GencodeTag(namedtuple("GencodeTag",
                             ("transcriptId", "tag",))):
     """GENCODE transcription support level"""
+    __slots__ = ()
     pass
 
 
