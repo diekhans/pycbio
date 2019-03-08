@@ -252,8 +252,8 @@ class Gff3Parser(object):
         """
         m = self.SPLIT_ATTR_RE.match(attrStr)
         if m is None:
-            raise GFF3Exception("can't parse attr/value: '" + attrStr +
-                                "'", self.fileName, self.lineNumber)
+            raise GFF3Exception("can't parse attr/value: '" + attrStr + "'",
+                                self.fileName, self.lineNumber)
         name = urllib.parse.unquote(m.group(1))
         val = m.group(2)
         # Split by comma separate then unquote.  Commas in values must be

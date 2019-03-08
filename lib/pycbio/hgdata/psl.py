@@ -425,7 +425,7 @@ class Psl(object):
     def reverseComplement(self):
         "create a new PSL that is reverse complemented"
         rc = Psl(qName=self.qName, qSize=self.qSize, qStart=self.qStart, qEnd=self.qEnd,
-                 tName=self.tName, tSize=self.tSize, tStart=self.tStart,tEnd=self.tEnd,
+                 tName=self.tName, tSize=self.tSize, tStart=self.tStart, tEnd=self.tEnd,
                  strand=reverseStrand(self.qStrand) + reverseStrand(self.tStrand))
         rc.match = self.match
         rc.misMatch = self.misMatch

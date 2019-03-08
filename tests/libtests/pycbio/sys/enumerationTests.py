@@ -23,7 +23,7 @@ class EnumerationTests(TestCaseBase):
         self.assertTrue(Colors.red == Colors.red)
         self.assertTrue(Colors.red != Colors.blue)
         self.assertTrue(Colors.red is not None)
-        self.assertTrue(None != Colors.red)   # flake8: noqa
+        self.assertTrue(None != Colors.red)   # noqa
 
     def testBasics(self):
         Colors = self._getColors()
@@ -90,7 +90,7 @@ class EnumerationTests(TestCaseBase):
     def FIXME_testErrors(self):
         Colors = self._getColors()
         # check if immutable
-        with self.assertRaises(TypeError) as cm:
+        with self.assertRaises(TypeError):
             Colors.red.name = "purple"
         with self.assertRaises(TypeError):
             Colors.red = None
@@ -123,6 +123,7 @@ def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(EnumerationTests))
     return ts
+
 
 if __name__ == '__main__':
     unittest.main()

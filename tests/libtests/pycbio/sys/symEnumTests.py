@@ -41,7 +41,7 @@ class SymEnumTests(TestCaseBase):
         self.assertTrue(Color.red == Color.red)
         self.assertTrue(Color.red != Color.blue)
         self.assertTrue(Color.red is not None)
-        self.assertTrue(None != Color.red)  # flake8: noqa
+        self.assertTrue(None != Color.red)  # noqa
 
     def testLookup(self):
         self.assertTrue(Color.red == Color("red"))
@@ -103,7 +103,7 @@ class SymEnumTests(TestCaseBase):
         self.assertTrue(Color.green in stuff2)
 
     def testColorPickle(self):
-        for protocol in range(0, pickle.HIGHEST_PROTOCOL+1):
+        for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
             self._testColorPickleProtocol(protocol)
 
     def testExtNameLookup(self):
@@ -134,11 +134,11 @@ class SymEnumTests(TestCaseBase):
         self.assertTrue(GeneFeature.cds in stuff2)
 
     def testGeneFeaturePickle(self):
-        for protocol in range(0, pickle.HIGHEST_PROTOCOL+1):
+        for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
             self._testGeneFeaturePickleProtocol(protocol)
 
     def testBasicsFn(self):
-        FnColor = SymEnum("FnColor", ("red","green", "blue"))
+        FnColor = SymEnum("FnColor", ("red", "green", "blue"))
         self.assertEqual(FnColor.red.name, "red")
         self.assertEqual(FnColor.green.name, "green")
         self.assertEqual(FnColor.blue.name, "blue")
@@ -146,7 +146,7 @@ class SymEnumTests(TestCaseBase):
         self.assertTrue(FnColor.red == FnColor.red)
         self.assertTrue(FnColor.red != FnColor.blue)
         self.assertTrue(FnColor.red is not None)
-        self.assertTrue(None != FnColor.red)
+        self.assertTrue(None != FnColor.red)   # noqa
 
     def testAutoDef(self):
         class AutoDef(SymEnum):
@@ -178,7 +178,7 @@ class SymEnumTests(TestCaseBase):
         self.assertTrue(ColorNoDict.purple == ColorNoDict.purple)
         self.assertTrue(ColorNoDict.purple != ColorNoDict.black)
         self.assertTrue(ColorNoDict.purple is not None)
-        self.assertTrue(None != ColorNoDict.purple)  # flake8: noqa
+        self.assertTrue(None != ColorNoDict.purple)  # noqa
 
     def testLookupNoDict(self):
         self.assertTrue(ColorNoDict.purple == ColorNoDict("purple"))
@@ -203,6 +203,7 @@ def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(SymEnumTests))
     return ts
+
 
 if __name__ == '__main__':
     unittest.main()

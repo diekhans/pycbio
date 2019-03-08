@@ -1,8 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2006-2012 Mark Diekhans
 
-from builtins import str
-from builtins import object
 import sys
 import os
 import traceback
@@ -61,7 +59,7 @@ records.
 
 The --mrnaProtMap file can be produce
     wget ftp://ftp.ncbi.nih.gov/genomes/H_sapiens/RNA/rna.gbk.gz
-    zcat rna.gbk.gz |awk '/^VERSION/{mrna=$2} /\/protein_id=/{print mrna"\t"gensub("^.*\"(.*)\"","\\1","g",$1)}'  >mrna2prot.tbl
+    zcat rna.gbk.gz |awk '/^VERSION/{mrna=$2} /\\/protein_id=/{print mrna"\t"gensub("^.*\"(.*)\"","\\1","g",$1)}'  >mrna2prot.tbl
 
 You will also need to lift the contigs to chromosomes.
 """

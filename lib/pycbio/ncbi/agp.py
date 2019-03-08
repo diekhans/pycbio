@@ -90,7 +90,7 @@ class Agp(object):
             try:
                 self._parseLine(line)
             except Exception as ex:
-                raise pycbioRaiseFrom(AgpException(str(ex), agpFile, lineNum, line), ex)
+                raise pycbioRaiseFrom(AgpException(str(ex), fh.name, lineNum, line), ex)
 
     def _parseLine(self, line):
         if line.startswith("##agp-version"):
