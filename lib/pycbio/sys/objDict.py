@@ -6,7 +6,10 @@
 
 
 class ObjDict(dict):
-    """Dict object where keys are field names"""
+    """Dict object where keys are field names.
+    This is especially useful for JSON by doing:
+       json.load(fh, object_hook=ObjDict):
+    """
 
     def __getattr__(self, name):
         if name in self:

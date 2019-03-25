@@ -4,16 +4,19 @@ browser.
 """
 from __future__ import print_function
 from __future__ import division
-from six.moves.urllib.parse import urlencode
+from six.moves.urllib.parse import urlencode, urlunparse
 from builtins import range
 from past.utils import old_div
+import copy
 from pycbio.html.htmlPage import HtmlPage
 from pycbio.sys import fileOps
 
 # FIXME: need to encode text
 # FIXME: need to have ability set attributes on cells (e.g. heatmap)
 #        this could be done by having full object model of rows.
+# FIXME: cellClasses is also a pain, a Cell object would be
 # FIXME: subrows is a hack, having full object model can make this go away
+# FIXME add altcounter thing form gencode/projs/mm39/mus-grch39-eval/bin/browserDirBuild
 
 
 defaultStyle = """
@@ -54,25 +57,26 @@ class SubRows(object):
 
 class Entry(object):
     "entry in directory"
-    __slots__ = ("row", "key", "cssClass", "subRowGroups", "tdStyles")
+    __slots__ = ("row", "key", "cssRowClass", "cssCellClasses", "subRowGroups")
 
-    def __init__(self, row, key=None, cssClass=None, subRows=None, tdStyles=None):
+    def __init__(self, row, key=None, cssRowClass=None, cssCellClasses=None, subRows=None):
         """Entry in directory, key can be some value(s) used in sorting. The
         row should be HTML encoded.  If subRows is not None, it should be a SubRow
         object or list of SubRow objects, used to produce row spanning rows for
-        contained in this row."""
+        contained in this row.  If cssCellClasses is not None, it should be an parallel
+        vector with wither None or the class name for the corresponding cells"""
         self.row = tuple(row)
         self.key = key
-        self.cssClass = cssClass
-        self.tdStyles = tdStyles
+        self.cssRowClass = copy.copy(cssRowClass)
+        self.cssCellClasses = copy.copy(cssCellClasses)
         self.subRowGroups = None
         if subRows is not None:
             if isinstance(subRows, SubRows):
                 self.subRowGroups = [subRows]
             else:
                 self.subRowGroups = subRows
-        assert((self.tdStyles is None) or (len(self.tdStyles) == len(row)))
-        assert((self.tdStyles is None) or (self.subRowGroups is None))  # can't have both yet
+        assert((self.cssCellClasses is None) or (len(self.cssCellClasses) == len(row)))
+        assert((self.cssCellClasses is None) or (self.subRowGroups is None))  # can't have both yet
 
     def _numSubRowGroupCols(self):
         n = 0
@@ -111,19 +115,22 @@ class Entry(object):
             hrow.append("</tr>\n")
         return "".join(hrow)
 
+    def _mkRowStart(self):
+        return "<tr>" if self.cssRowClass is None else '<tr class="{}">'.format(self.cssRowClass)
+
     def _toHtmlRowWithStyle(self):
-        hrow = ["<tr>"]
+        hrow = [self._mkRowStart()]
         for i in range(len(self.row)):
-            if self.tdStyles[i] is not None:
-                td = '<td style="%s">' % self.tdStyles[i]
+            if self.cssCellClasses[i] is not None:
+                cell = '<td class="{}">{}'.format(self.cssCellClasses[i], str(self.row[i]))
             else:
-                td = "<td>"
-            hrow.append(td + str(self.row[i]))
+                cell = "<td>{}".format(str(self.row[i]))
+            hrow.append(cell)
         hrow.append("</tr>\n")
         return "".join(hrow)
 
     def _toHtmlRowSimple(self):
-        hrow = ["<tr>"]
+        hrow = [self._mkRowStart()]
         for c in self.row:
             hrow.append("<td>" + str(c))
         hrow.append("</tr>\n")
@@ -132,7 +139,7 @@ class Entry(object):
     def toHtmlRow(self):
         if self.subRowGroups is not None:
             return self._toHtmlRowWithSubRows()
-        if self.tdStyles is not None:
+        if self.cssCellClasses is not None:
             return self._toHtmlRowWithStyle()
         else:
             return self._toHtmlRowSimple()
@@ -145,7 +152,7 @@ class BrowserDir(object):
 
     def __init__(self, browserUrl, defaultDb, colNames=None, pageSize=50,
                  title=None, dirPercent=15, below=False, pageDesc=None,
-                 tracks=None, initTracks=None, style=defaultStyle, numColumns=1, customTrackUrl=None):
+                 tracks={}, initTracks={}, style=defaultStyle, numColumns=1, customTrackUrl=None):
         """The tracks arg is a dict of track name to setting, it is added to
         each URL and the initial setting of the frame. The initTracks arg is
         similar, however its only set in the initial frame and not added to
@@ -167,38 +174,35 @@ class BrowserDir(object):
         self.entries = []
         self.style = style
         self.customTrackUrl = customTrackUrl
-        self.trackArgs = self._mkTracksArgs(tracks)
-        self.initTrackArgs = self._mkTracksArgs(initTracks)
+        self.trackArgs = tracks.copy()
+        self.initTrackArgs = initTracks.copy()
         if customTrackUrl is not None:
             self.trackArgs["hgt.customText"] = self.customTrackUrl
 
-    def _mkTracksArgs(self, tracks):
-        args = {}
-        if tracks is not None:
-            args.join(tracks)
-        return args
-
     def mkUrl(self, coords, db=None, extra=None):
-        # FIXME: use python library
-        args = {"db": db if db is not None else self.defaultDb,
-                "position": coords} | self.trackArgs
+        """extract is a dict, the track arguments are added on if db defaultDb or None"""
+        if db is None:
+            db = self.defaultDb
+        args = {"db": db,
+                "position": str(coords)}
+        if db == self.defaultDb:
+            args.update(self.trackArgs)
         if extra is not None:
-            args |= extra
+            args.update(extra)
         return "{}/cgi-bin/hgTracks?{}".format(self.browserUrl, urlencode(args))
 
     def mkDefaultUrl(self):
         return self.mkUrl("default", db=self.defaultDb, extra=self.initTrackArgs)
 
-    def mkAnchor(self, coords, text=None, target="browser"):
+    def mkAnchor(self, coords, text=None, db=None, target="browser"):
         if text is None:
             text = str(coords)
-        return "<a href=\"{}\" target={}>{}</a>".format(self.mkUrl(coords), target, text)
+        return "<a href=\"{}\" target={}>{}</a>".format(self.mkUrl(coords, db=db), target, text)
 
-    def addRow(self, row, key=None, cssClass=None, subRows=None, tdStyles=None):
+    def addRow(self, row, key=None, cssRowClass=None, cssCellClasses=None, subRows=None):
         """add an encoded row, row can be a list or an Entry object"""
-        # FIXME: hacky, have two add functions
         if not isinstance(row, Entry):
-            row = Entry(row, key, cssClass, subRows, tdStyles)
+            row = Entry(row, key, cssRowClass, cssCellClasses, subRows)
         self.entries.append(row)
 
     def add(self, coords, name=None):

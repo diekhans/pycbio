@@ -263,7 +263,7 @@ def readFileLines(fspec):
 
 
 def readNonCommentLines(fspec):
-    """read lines from an open file on file by name into a list, removing the
+    """read lines from an open file or file by name into a list, removing the
     newlines, striping leading and training white space, and skipping blank
     lines and those with the first non-space character is '#'."""
     lines = []

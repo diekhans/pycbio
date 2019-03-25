@@ -9,9 +9,14 @@ from pycbio.hgdata.genePred import GenePred
 class GenePredMySqlReader(object):
     """Read genePreds from a mysql query"""
     def __init__(self, conn, query, queryArgs=None):
-        cur = conn.cursor()
+        self.conn = conn
+        self.query = query
+        self.queryArgs = queryArgs
+
+    def __iter__(self):
+        cur = self.conn.cursor()
         try:
-            cur.execute(query, queryArgs)
+            cur.execute(self.query, self.queryArgs)
             colIdxMap = mysqlOps.cursorColIdxMap(cur)
             for row in cur:
                 yield GenePred(row, dbColIdxMap=colIdxMap)

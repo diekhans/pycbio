@@ -58,6 +58,14 @@ class SqliteCursor(object):
         return self.trans.__exit__(*args)
 
 
+def query(conn, sql, args=None):
+    "generator to run an SQL query on a connection"
+    with SqliteCursor(conn) as cur:
+        cur.execute(sql, args)
+        for row in cur:
+            yield row
+
+
 def haveTable(conn, table):
     "check if a table exists"
     sql = """SELECT count(*) FROM sqlite_master WHERE (type = "table") AND (name = ?);"""

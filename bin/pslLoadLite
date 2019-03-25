@@ -1,0 +1,132 @@
+#!/usr/bin/env python3
+# Copyright 2006-2018 Mark Diekhans
+
+import sys
+import os
+myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
+sys.path.insert(0, os.path.join(myBinDir, "../lib"))
+import argparse
+from pycbio.ncbi.agp import Agp
+from pycbio.sys import PycbioException, pycbioRaiseFrom
+from pycbio.sys import fileOps
+from pycbio.tsv.tabFile import TabFileReader
+from pycbio.hgdata.psl import Psl, PslBlock
+
+
+def parseArgs():
+    usage = """
+Load a PSL file into an SQLite database
+"""
+    parser = argparse.ArgumentParser(description=usage)
+    parser.add_argument('sqliteDb', type=str,
+                        help="")
+    parser.add_argument('pslFile', type=str,
+                        help="PSL output file")
+    return parser.parse_args()
+
+
+class UnmappedNameException(PycbioException):
+    pass
+
+
+class NameMap(object):
+    """call to do name mapping with useful errors"""
+    def __init__(self, nameDesc):
+        self.nameDesc = nameDesc
+        self.mappings = {}
+
+    def set(self, name, value):
+        self.mappings[name] = value
+
+    def get(self, name, default):
+        if name in self.mappings:
+            return self.mappings[name]
+        else:
+            return default
+
+    def __call__(self, name):
+        try:
+            return self.mappings[name]
+        except KeyError as ex:
+            raise pycbioRaiseFrom(UnmappedNameException("name {} not found in {} map".format(name, self.nameDesc)), ex)
+
+
+def loadComponentSizeMap(componentSizes):
+    componentSizeMap = NameMap("component size")
+    for row in TabFileReader(componentSizes, skipBlankLines=True):
+        componentSizeMap.set(row[0], int(row[1]))
+    return componentSizeMap
+
+
+def componentSizesFromAgp(agp, componentLocalIdMap):
+    componentSizeMap = NameMap("component size")
+    for rec in agp.recs:
+        if rec.isBlock:
+            componentSizeMap.set(rec.component.name,
+                                 max(componentSizeMap.get(rec.component.name, 0), rec.component.end))
+    return componentSizeMap
+
+
+def objectSizesFromAgp(agp):
+    objectSizeMap = NameMap("object size map")
+    for rec in agp.recs:
+        if rec.isBlock:
+            objectSizeMap.set(rec.object.name,
+                              max(objectSizeMap.get(rec.object.name, 0), rec.object.end))
+    return objectSizeMap
+
+
+def loadComponentLocalIdMap(componentLocalId2Acc):
+    componentLocalIdMap = NameMap("component local id")
+    for row in TabFileReader(componentLocalId2Acc, hashAreComments=True, skipBlankLines=True):
+        componentLocalIdMap.set(row[1], row[0])
+    return componentLocalIdMap
+
+
+def recToPsl(rec, objectSizeMap, componentSizeMap, componentLocalIdMap):
+    compName = componentLocalIdMap(rec.component.name)
+    psl = Psl.create(compName, componentSizeMap(compName), rec.component.start, rec.component.end,
+                     rec.object.name, objectSizeMap(rec.object.name), rec.object.start, rec.object.end, rec.component.strand)
+    psl.match = len(rec.object)
+    blk = PslBlock(rec.component.start, rec.object.start, len(rec.object))
+    psl.blocks.append(blk)
+    return psl
+
+def buildPsl(rec, objectSizeMap, componentSizeMap, componentLocalIdMap, skipUnmappable):
+    try:
+        return recToPsl(rec, objectSizeMap, componentSizeMap, componentLocalIdMap)
+    except UnmappedNameException as ex:
+        if skipUnmappable:
+            print("Warning", str(ex), file=sys.stderr)
+            return None
+        raise
+
+def buildPsls(agp, objectSizeMap, componentSizeMap, componentLocalIdMap, skipUnmappable):
+    psls = []
+    for rec in agp.recs:
+        if rec.isBlock:
+            psl = buildPsl(rec, objectSizeMap, componentSizeMap, componentLocalIdMap, skipUnmappable)
+            if psl is not None:
+                psls.append(psl)
+    return psls
+
+
+def main():
+    args = parseArgs()
+    agp = Agp(args.agpFile)
+    if args.componentLocalId2Acc is not None:
+        componentLocalIdMap = loadComponentLocalIdMap(args.componentLocalId2Acc)
+    else:
+        componentLocalIdMap = lambda a: a  # NOQA pass through
+    if args.componentSizes is not None:
+        componentSizeMap = loadComponentSizeMap(args.componentSizes)
+    else:
+        componentSizeMap = componentSizesFromAgp(agp, componentLocalIdMap)
+    objectSizeMap = objectSizesFromAgp(agp)
+    psls = buildPsls(agp, objectSizeMap, componentSizeMap, componentLocalIdMap, args.skipUnmappable)
+    with fileOps.opengz(args.pslFile, 'w') as fh:
+        for psl in psls:
+            print("\t".join(psl.toRow()), file=fh)
+
+
+main()
