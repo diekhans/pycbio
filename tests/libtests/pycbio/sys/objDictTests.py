@@ -3,8 +3,7 @@ import unittest
 import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
-from pycbio.sys.objDict import ObjDict
-from pycbio.sys.defaultObjDict import DefaultObjDict
+from pycbio.sys.objDict import ObjDict, OrderedObjDict, DefaultObjDict
 from pycbio.sys.testCaseBase import TestCaseBase
 
 class TestMixin(object):
@@ -15,10 +14,7 @@ class TestMixin(object):
         keyValues = tuple(keyValues)
         self.assertEqual(expect, keyValues)
 
-
-class ObjDictTests(TestCaseBase, TestMixin):
-    def testBasic(self):
-        od = ObjDict()
+    def sharedBasic(self, od):
         od.one = "value 1"
         od["two"] = "value 2"
         od.three = "value 3"
@@ -34,6 +30,27 @@ class ObjDictTests(TestCaseBase, TestMixin):
 
         self.assertEqual("value 1", od.one)
 
+        with self.assertRaises(AttributeError):
+            od.ten
+
+class ObjDictTests(TestCaseBase, TestMixin):
+    def testBasic(self):
+        od = ObjDict()
+        self.sharedBasic(od)
+
+
+class OrderedObjDictTests(TestCaseBase, TestMixin):
+    def testBasic(self):
+        od = OrderedObjDict()
+        self.sharedBasic(od)
+
+    def testOrder(self):
+        od = OrderedObjDict(B=1, A=2, C=3, D=4)
+        self.assertEqual(list(od.keys()), ['B', 'A', 'C', 'D'])
+        self.assertEqual(list(od.values()), [1, 2, 3, 4])
+        od.F = 5
+        self.assertEqual(list(od.keys()), ['B', 'A', 'C', 'D', 'F'])
+        self.assertEqual(list(od.values()), [1, 2, 3, 4, 5])
 
 class DefaultObjDictTests(TestCaseBase, TestMixin):
     def testList(self):
@@ -52,12 +69,16 @@ class DefaultObjDictTests(TestCaseBase, TestMixin):
 
         self.assertEqual("value 1.1", od.one[0])
 
+        self.assertEqual(od.ten, [])
 
 def suite():
     ts = unittest.TestSuite()
-    ts.addTest(unittest.makeSuite(ObjDict))
+    ts.addTest(unittest.makeSuite(ObjDictTests))
+    ts.addTest(unittest.makeSuite(OrderedObjDictTests))
+    ts.addTest(unittest.makeSuite(DefaultObjDictTests))
     return ts
 
 
 if __name__ == '__main__':
-    unittest.main()
+    runner = unittest.TextTestRunner()
+    runner.run(suite())

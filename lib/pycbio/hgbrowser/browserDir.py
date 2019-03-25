@@ -4,7 +4,7 @@ browser.
 """
 from __future__ import print_function
 from __future__ import division
-from six.moves.urllib.parse import urlencode, urlunparse
+from six.moves.urllib.parse import urlencode
 from builtins import range
 from past.utils import old_div
 import copy

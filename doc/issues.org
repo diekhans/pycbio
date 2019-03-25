@@ -22,3 +22,4 @@ see unittest/case.py: # store exception, without traceback, for later retrieval
 * GenePred, etc should have abstraction around from dbColIdxMap, could be good
 switch to dictcursors
 * also custom cursors that work off of namedtuples would be great, especially to unify the sqlite/mysql interface stuff.
+* tests use obsolete makeSuite

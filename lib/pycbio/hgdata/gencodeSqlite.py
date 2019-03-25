@@ -19,6 +19,7 @@ class GencodeAttrs(namedtuple("GencodeAttrs",
                                "havanaTranscriptId", "ccdsId", "level", "transcriptClass", "proteinId"))):
     """Attributes of a GENCODE transcript. New attribute added to table become optional"""
     __slots__ = ()
+
     def __new__(cls, geneId, geneName, geneType, geneStatus, transcriptId,
                 transcriptName, transcriptType, transcriptStatus, havanaGeneId,
                 havanaTranscriptId, ccdsId, level, transcriptClass, proteinId=None):
