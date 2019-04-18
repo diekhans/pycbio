@@ -122,7 +122,7 @@ class SymEnumMeta(EnumMeta):
             return member
 
     def __call__(cls, value, names=None, module=None, typ=None):
-        "look up a value object, either by name of value,"
+        "look up a value object, either by name or value"
         if (names is None) and isinstance(value, six.string_types):
             return SymEnumMeta._lookUpByStr(cls, value)
         else:
@@ -149,7 +149,7 @@ class SymEnumMixin(object):
             return self.value < other
 
     def __reduce_ex__(self, proto):
-        return self.__class__, ()
+        return self.__class__, (self.value, )
 
 
 class SymEnum(six.with_metaclass(SymEnumMeta, SymEnumMixin, Enum)):
