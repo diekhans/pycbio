@@ -49,7 +49,7 @@ class Bed(object):
                 break
         if i == 9:
             i = 11  # blocks take up three columns
-        if self.extraCols != None:
+        if self.extraCols is not None:
             i += len(self.extraCols)
         return i
 

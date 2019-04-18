@@ -6,3 +6,4 @@ enum-compat
 mysqlclient
 apsw
 deprecation
+flake8
