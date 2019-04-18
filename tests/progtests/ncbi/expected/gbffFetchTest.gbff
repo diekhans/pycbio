@@ -125,7 +125,7 @@ LOCUS       BG187649                 790 bp    mRNA    linear   EST 29-JAN-2011
 DEFINITION  RST6530 Athersys RAGE Library Homo sapiens cDNA, mRNA sequence.
 ACCESSION   BG187649
 VERSION     BG187649.1
-DBLINK      BioSample: LIBEST_008655
+DBLINK      BioSample: SAMN00163181
 KEYWORDS    EST.
 SOURCE      Homo sapiens (human)
   ORGANISM  Homo sapiens
@@ -155,7 +155,7 @@ FEATURES             Location/Qualifiers
                      /mol_type="mRNA"
                      /db_xref="taxon:9606"
                      /cell_line="HT1080"
-                     /clone_lib="LIBEST_008655 Athersys RAGE Library"
+                     /clone_lib="SAMN00163181 Athersys RAGE Library"
                      /note="See 'Creation of Genome-wide Protein Expression
                      Libraries using Random Activation of Gene Expression',
                      Nature Biotechnology, in press. Note that even though the
@@ -312,6 +312,8 @@ COMMENT     REVIEWED REFSEQ: This record has been curated by NCBI staff. The
             reference sequence was derived from AK313882.1, AF091606.1,
             AC018979.9 and BX103986.1.
             This sequence is a reference standard in the RefSeqGene project.
+            [WARNING] On Nov 22, 2018 this sequence was replaced by
+            NM_013266.4.
             On Mar 27, 2014 this sequence version replaced NM_013266.2.
             
             Summary: This gene encodes a protein that belongs to the
