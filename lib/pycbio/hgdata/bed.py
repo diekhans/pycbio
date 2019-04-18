@@ -1,6 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 from __future__ import print_function
 from builtins import range
+import copy
 from pycbio.tsv.tabFile import TabFile, TabFileReader
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin
 from collections import defaultdict, namedtuple
@@ -9,9 +10,11 @@ from collections import defaultdict, namedtuple
 # FIXME: not complete, needs tests
 
 class Bed(object):
-    """Object wrapper for a BED record"""
+    """Object wrapper for a BED record.  ExtraCols is a vector of extra
+        columns to add."""
     __slots__ = ("chrom", "chromStart", "chromEnd", "name", "score",
-                 "strand", "thickStart", "thickEnd", "itemRgb", "blocks")
+                 "strand", "thickStart", "thickEnd", "itemRgb", "blocks",
+                 "extraCols")
 
     class Block(namedtuple("Block", ("start", "end"))):
         """A block in the BED.  Coordinates are absolute, not relative"""
@@ -24,7 +27,7 @@ class Bed(object):
             return "{}-{}".format(self.start, self.end)
 
     def __init__(self, chrom, chromStart, chromEnd, name=None, score=None, strand=None,
-                 thickStart=None, thickEnd=None, itemRgb=None, blocks=None):
+                 thickStart=None, thickEnd=None, itemRgb=None, blocks=None, extraCols=None):
         self.chrom = chrom
         self.chromStart = chromStart
         self.chromEnd = chromEnd
@@ -34,16 +37,20 @@ class Bed(object):
         self.thickStart = thickStart
         self.thickEnd = thickEnd
         self.itemRgb = itemRgb
-        self.blocks = blocks
+        self.blocks = copy.copy(blocks)
+        self.extraCols = copy.copy(extraCols)
 
     @property
     def numCols(self):
         "Returns the number of columns in the BED"
-        for i in range(len(self.__slots__)):
+        # exclude extraCols
+        for i in range(len(self.__slots__) - 1):
             if getattr(self, self.__slots__[i]) is None:
                 break
         if i == 9:
             i = 11  # blocks take up three columns
+        if self.extraCols != None:
+            i += len(self.extraCols)
         return i
 
     def _getBlockColumns(self):
@@ -71,6 +78,8 @@ class Bed(object):
         if numCols > 10:
             row.append(str(len(self.blocks)))
             row.extend(self._getBlockColumns())
+        if self.extraCols is not None:
+            row.extend([str(c) for c in self.extraCols])
         return row
 
     @staticmethod
@@ -124,7 +133,7 @@ class Bed(object):
         return "\t".join(self.getRow())
 
     def write(self, fh):
-        """write BED to a tab-seperated file"""
+        """write BED to a tab-separated file"""
         fh.write(str(self))
         fh.write('\n')
 

@@ -76,6 +76,11 @@ class Color(namedtuple("Color", ("red", "green", "blue",
         return (self._realToInt8(self.red), self._realToInt8(self.green), self._realToInt8(self.blue))
 
     @property
+    def packRgb8(self):
+        "return packed 8-bit int RGB values (e.g.#008000)"
+        return (self._realToInt8(self.red) << 16) | (self._realToInt8(self.green) << 8) | self._realToInt8(self.blue)
+
+    @property
     def hsv(self):
         "HSV as tuple of real numbers"
         return (self.hue, self.saturation, self.value)

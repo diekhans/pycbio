@@ -44,6 +44,8 @@ class ColorTests(TestCaseBase):
     def testPackRgb8(self):
         self.assertEqual(Color.fromPackRgb8(0x008000), Color.fromRgb8(0x00, 0x80, 0x00))
         self.assertEqual(Color.fromPackRgb8(0xFFA510), Color.fromRgb8(0xFF, 0xA5, 0x10))
+        self.assertEqual(Color.fromPackRgb8(0x008000).packRgb8, 0x008000)
+        self.assertEqual(Color.fromPackRgb8(0xFFA510).packRgb8, 0xFFA510)
 
     def testRegress(self):
         c = Color.fromRgb8(16, 78, 139)
