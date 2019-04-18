@@ -3,7 +3,7 @@ include ${root}/defs.mk
 
 export PYTHONPATH
 
-csvToTsv = ${runBin}/csvToTsv
+csvToTsv = ${binDir}/csvToTsv
 
 test: sraRunTest
 

@@ -10,8 +10,7 @@ libcomp:
 	PYTHONPATH=lib ${PYTHON} -m compileall -l lib/pycbio lib/pycbio/*
 
 test:
-	(cd tests && ${MAKE} test PYTHON=python3)
-	(cd tests && ${MAKE} test PYTHON=python2)
+	cd tests && ${MAKE} test
 
 lint:
 	${FLAKE8} lib/pycbio tests/libtests ${pyprogs}

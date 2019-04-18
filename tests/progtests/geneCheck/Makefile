@@ -3,7 +3,7 @@ include ${root}/defs.mk
 
 export PYTHONPATH
 
-geneCheckStats = ${runBin}/geneCheckStats
+geneCheckStats = ${binDir}/geneCheckStats
 
 test: testAkrj
 

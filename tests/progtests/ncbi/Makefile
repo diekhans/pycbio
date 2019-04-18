@@ -3,9 +3,9 @@ include ${root}/defs.mk
 
 export PYTHONPATH
 
-ncbiGbFetch = ${runBin}/ncbiGbFetch
-ncbiAssemblyReportConvert = ${runBin}/ncbiAssemblyReportConvert
-agpToPsl = ${runBin}/agpToPsl
+ncbiGbFetch = ${binDir}/ncbiGbFetch
+ncbiAssemblyReportConvert = ${binDir}/ncbiAssemblyReportConvert
+agpToPsl = ${binDir}/agpToPsl
 
 ncbiTestInputDir = ../../libtests/pycbio/ncbi/input
 

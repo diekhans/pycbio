@@ -3,7 +3,7 @@ include ${root}/defs.mk
 
 export PYTHONPATH
 
-gbffGenesToGenePred = ${runBin}/gbffGenesToGenePred
+gbffGenesToGenePred = ${binDir}/gbffGenesToGenePred
 
 # FIXME: exonsOnlyTest currently produces no results.  Would need to implement
 # a GeneFeatures object that isn't actually associated with a feature

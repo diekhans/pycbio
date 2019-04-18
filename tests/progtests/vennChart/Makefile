@@ -1,7 +1,7 @@
+root = ../../..
+include ${root}/defs.mk
 
-export PYTHONPATH=../../..
-binDir = ../../../bin
-diff = diff -u
+export PYTHONPATH
 
 test: bool3PdfTest
 
