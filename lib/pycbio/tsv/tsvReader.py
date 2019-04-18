@@ -66,10 +66,6 @@ class TsvReader(object):
     read from a dbapi cursor object (must set allowEmpty to true)
     """
 
-    # FIXME: database reading doesn't work, need to not use csv reader for it
-    # should have separate class for dbapi reading, build on a core
-    # class.
-
     def _readRow(self):
         "read the next row, returning None on EOF"
         if self.reader is None:
@@ -146,7 +142,6 @@ class TsvReader(object):
         inFh - If not None, this is used as the open file, rather than
           opening it.  Closed when the end of file is reached.
         allowEmpty - an empty input results in an EOF rather than an error.
-          Should specify this if reading from a database query.
         dialect - a csv dialect object or name.
         """
         self.columns = []

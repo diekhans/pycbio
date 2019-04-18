@@ -20,7 +20,7 @@ class TsvRow(object):
     # places when they are stored as fields
 
     def __init__(self, reader, row):
-        # FIXME: stupid names
+        # FIXMEL should reference one class
         self._columns_ = reader.columns
         self._colTypes_ = reader.colTypes
         self._colMap_ = reader.colMap
