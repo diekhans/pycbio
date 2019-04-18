@@ -10,6 +10,9 @@ import linecache
 import threading
 
 # FIXME: can this be replace by the pdb trace facility???.
+# FIXME: can this be a context too.
+# FIXME: allow file-like as well as file
+# FIXME: should ignore traceback,linecache by default
 
 # used to detect traces that are currently open to prevent closing
 _activeTraceFds = set()

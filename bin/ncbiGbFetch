@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 # Copyright 2006-2012 Mark Diekhans
 
+import six
 import sys
 import os
 import socket
 import argparse
+import time
+from six.moves.urllib.error import HTTPError
 myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 from Bio import Entrez
@@ -64,13 +67,23 @@ def getEmail():
         raise pycbioRaiseFrom(PycbioException("unable to obtain email address, specify on command line"), ex)
 
 
+def efetchRetried(opts, gbid, fmt):
+    "efetch, with sleeping and retry to deal with NCBI rate limit"
+    triesLeft = 3
+    while True:
+        try:
+            return Entrez.efetch(db="nucleotide", id=gbid, rettype=fmt, retmode="text", email=opts.email)
+        except HTTPError as err:
+             if (429 <= err.code <= 599) and (triesLeft > 0):
+                 time.sleep(15)
+             else:
+                 raise
+        triesLeft -= 1
+
 def efetch(opts, gbid, outFh):
     "fetch a genbank entry or fasta"
-    if opts.fasta:
-        fmt = "fasta"
-    else:
-        fmt = "gbwithparts"
-    resp = Entrez.efetch(db="nucleotide", id=gbid, rettype=fmt, retmode="text", email=opts.email)
+    fmt = "fasta" if opts.fasta else "gbwithparts"
+    resp = efetchRetried(opts, gbid, fmt)
     ent = resp.read()
     if len(ent) <= 1:
         raise PycbioException("no entry found for \"{}\"".format(id))
