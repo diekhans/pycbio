@@ -4,7 +4,10 @@ import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.hgdata.psl import Psl, PslTbl
+from pycbio.hgdata.psl import Psl, PslTbl, pslFromExonerateCigar
+
+def splitToPsl(ps):
+    return Psl.fromRow(ps.split("\t"))
 
 
 class ReadTests(TestCaseBase):
@@ -51,12 +54,8 @@ class OpsTests(TestCaseBase):
     psTransNegPos = "71	5	0	0	1	93	2	213667	-+	AA608343.1a	186	0	169	chr5	180857866	157138232	157351975	3	27,29,20,	17,137,166,	157138232,157351058,157351955,"
     psTransNegNeg = "47	4	0	0	1	122	1	46	--	AA608343.1b	186	5	178	chr6	170899992	29962882	29962979	2	30,21,	8,160,	140937013,140937089,"
 
-    @staticmethod
-    def _splitToPsl(ps):
-        return Psl.fromRow(ps.split("\t"))
-
     def _rcTest(self, psIn, psExpect):
-        self.assertEqual(str(self._splitToPsl(psIn).reverseComplement()), psExpect)
+        self.assertEqual(str(splitToPsl(psIn).reverseComplement()), psExpect)
 
     def testReverseComplement(self):
         self._rcTest(self.psPos, "0	10	111	0	1	13	3	344548	--	NM_025031.1	664	21	155	chr22	49554710	48109515	48454184	4	81,12,11,17,	509,603,615,626,	1100526,1101151,1445166,1445178,")
@@ -67,7 +66,7 @@ class OpsTests(TestCaseBase):
         self._rcTest(self.psTransNegNeg, "47	4	0	0	1	122	1	46	++	AA608343.1b	186	5	178	chr6	170899992	29962882	29962979	2	21,30,	5,148,	29962882,29962949,")
 
     def _swapTest(self, psIn, psExpect):
-        self.assertEqual(str(self._splitToPsl(psIn).swapSides(keepTStrandImplicit=True)), psExpect)
+        self.assertEqual(str(splitToPsl(psIn).swapSides(keepTStrandImplicit=True)), psExpect)
 
     def testSwapSizes(self):
         self._swapTest(self.psPos, "0	10	111	0	3	344548	1	13	+	chr22	49554710	48109515	48454184	NM_025031.1	664	21	155	4	17,11,12,81,	48109515,48109533,48453547,48454103,	21,38,49,74,")
@@ -78,7 +77,7 @@ class OpsTests(TestCaseBase):
         self._swapTest(self.psTransNegNeg, "47	4	0	0	1	46	1	122	--	chr6	170899992	29962882	29962979	AA608343.1b	186	5	178	2	30,21,	140937013,140937089,	8,160,")
 
     def _swapDropImplicitTest(self, psIn, psExpect):
-        self.assertEqual(str(self._splitToPsl(psIn).swapSides(keepTStrandImplicit=False)), psExpect)
+        self.assertEqual(str(splitToPsl(psIn).swapSides(keepTStrandImplicit=False)), psExpect)
 
     def testSwapSizesDropImplicit(self):
         self._swapDropImplicitTest(self.psPos, "0	10	111	0	3	344548	1	13	++	chr22	49554710	48109515	48454184	NM_025031.1	664	21	155	4	17,11,12,81,	48109515,48109533,48453547,48454103,	21,38,49,74,")
@@ -91,15 +90,43 @@ class OpsTests(TestCaseBase):
     def testCmpUniq(self):
         "check that PSL compares correctly"
         # set should product uniqueness
-        psls = set([self._splitToPsl(self.psPos),
-                    self._splitToPsl(self.psPos)])
+        psls = set([splitToPsl(self.psPos),
+                    splitToPsl(self.psPos)])
         self.assertEqual(1, len(psls))
+
+class ExonerateCigarTests(TestCaseBase):
+    "Exonerate cigar to PSL tests"
+
+    @staticmethod
+    def _cigarInfoToArgs(cigarInfo):
+        return [int(c) if c.isdigit() else c for c in cigarInfo.split()]
+
+    def _testCnv(self, cigarInfo, psExpect):
+        gotPsl = pslFromExonerateCigar(*self._cigarInfoToArgs(cigarInfo))
+        self.assertEqual(str(gotPsl), psExpect)
+
+    def testPosSimple(self):
+        self._testCnv("AF275801.1 511 0 481 + chrM 16569 5030 5511 + 481M",
+                      "481	0	0	0	0	0	0	0	+	AF275801.1	511	0	481	chrM	16569	5030	5511	1	481,	0,	5030,")
+
+    def testPosComplex(self):
+        self._testCnv("Y17179.1 264 0 264 + chrM 16569 8661 8929 + 20MD83MI68MI6M2I5MI81M",
+                      "263	0	0	0	1	1	4	5	+	Y17179.1	264	0	264	chrM	16569	8661	8929	6	20,83,68,6,5,81,	0,21,104,172,178,183,	8661,8681,8765,8834,8842,8848,")
+
+    def testNegSimple(self):
+        self._testCnv("U85268.1 302 0 302 - chrM 16569 6887 7189 + 302M",
+                      "302	0	0	0	0	0	0	0	-	U85268.1	302	0	302	chrM	16569	6887	7189	1	302,	0,	6887,")
+
+    def testNegComplex(self):
+        self._testCnv("BX648054.1 1736 0 1719 - chrM 16569 5900 12135 - 1196M4516I523M",
+                      "1719	0	0	0	0	0	1	4516	+	BX648054.1	1736	0	1719	chrM	16569	5900	12135	2	523,1196,	0,523,	5900,10939,")
 
 
 def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(ReadTests))
     ts.addTest(unittest.makeSuite(OpsTests))
+    ts.addTest(unittest.makeSuite(ExonerateCigarTests))
     return ts
 
 
