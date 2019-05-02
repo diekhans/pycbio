@@ -136,7 +136,7 @@ def setupFromCmd(opts, prog=None):
     N.B: logging must be initialized after daemonization
     """
     if prog is None:
-        prog = os.path.basesname(sys.argv[0])
+        prog = os.path.basename(sys.argv[0])
     level = _convertLevel(opts.logLevel) if opts.logLevel is not None else logging.INFO
     if opts.syslogFacility is not None:
         setupSyslogLogger(opts.syslogFacility, level, prog=prog)

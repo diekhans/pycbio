@@ -39,7 +39,8 @@ def setSynchronous(conn, mode):
 
 
 class SqliteCursor(object):
-    """context manager creating an sqlite cursor in a single transaction"""
+    """Context manager creating an sqlite cursor and a transaction.
+    """
     def __init__(self, conn, rowFactory=None):
         self.conn = conn
         self.rowFactory = rowFactory
@@ -73,3 +74,17 @@ def haveTable(conn, table):
         cur.execute(sql, (table, ))
         row = next(cur)
         return row[0] > 0
+
+fastLoadPragmas = (
+    "PRAGMA cache_size = 1000000;"
+    "PRAGMA synchronous = OFF;"
+    "PRAGMA journal_mode = OFF;"
+    "PRAGMA locking_mode = EXCLUSIVE;"
+    "PRAGMA count_changes = OFF;"
+    "PRAGMA temp_store = MEMORY;"
+    "PRAGMA auto_vacuum = NONE;")
+
+
+def setFastLoadPragmas(conn):
+    """setup pragmas for faster bulk loading"""
+    cur.execute(fastLoadPragmas)
