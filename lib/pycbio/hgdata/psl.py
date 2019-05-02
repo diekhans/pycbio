@@ -32,16 +32,14 @@ def reverseStrand(s):
 
 class PslBlock(object):
     """Block of a PSL"""
-    __slots__ = ("psl", "iBlk", "qStart", "qEnd", "tStart", "tEnd", "size", "qSeq", "tSeq")
+    __slots__ = ("psl", "iBlk", "qStart", "tStart", "size", "qSeq", "tSeq")
 
     def __init__(self, qStart, tStart, size, qSeq=None, tSeq=None):
         "sets iBlk base on being added in ascending order"
         self.psl = None
         self.iBlk = None
         self.qStart = qStart
-        self.qEnd = qStart + size
         self.tStart = tStart
-        self.tEnd = tStart + size
         self.size = size
         self.qSeq = qSeq
         self.tSeq = tSeq
@@ -51,6 +49,14 @@ class PslBlock(object):
 
     def __str__(self):
         return "{}..{} <=> {}..{}".format(self.qStart, self.qEnd, self.tStart, self.tEnd)
+
+    @property
+    def qEnd(self):
+        return self.qStart + self.size
+
+    @property
+    def tEnd(self):
+        return self.tStart + self.size
 
     @property
     def qStartPlus(self):
