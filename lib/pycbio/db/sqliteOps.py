@@ -75,6 +75,7 @@ def haveTable(conn, table):
         row = next(cur)
         return row[0] > 0
 
+
 fastLoadPragmas = (
     "PRAGMA cache_size = 1000000;"
     "PRAGMA synchronous = OFF;"
@@ -87,4 +88,5 @@ fastLoadPragmas = (
 
 def setFastLoadPragmas(conn):
     """setup pragmas for faster bulk loading"""
-    cur.execute(fastLoadPragmas)
+    with SqliteCursor(conn) as cur:
+        cur.execute(fastLoadPragmas)

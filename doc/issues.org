@@ -24,3 +24,4 @@ switch to dictcursors
 * also custom cursors that work off of namedtuples would be great, especially to unify the sqlite/mysql interface stuff.
 * tests use obsolete makeSuite
 * WARNING: mysql pslMySqlTests tests don't work on python3
+* sqlite wrapper classes really are not that useful, they could just be functions instead.

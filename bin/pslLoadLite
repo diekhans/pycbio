@@ -117,7 +117,7 @@ def main():
     if args.componentLocalId2Acc is not None:
         componentLocalIdMap = loadComponentLocalIdMap(args.componentLocalId2Acc)
     else:
-        componentLocalIdMap = lambda a: a  # NOQA pass through
+        ocomponentLocalIdMap = lambda a: a  # NOQA pass through
     if args.componentSizes is not None:
         componentSizeMap = loadComponentSizeMap(args.componentSizes)
     else:

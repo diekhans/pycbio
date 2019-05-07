@@ -6,6 +6,7 @@ random access uses.
 from __future__ import print_function
 from future.standard_library import install_aliases
 install_aliases()
+from pycbio.db import sqliteOps
 from pycbio.hgdata.hgSqlite import HgSqliteTable
 from pycbio.hgdata.genePred import GenePred
 from pycbio.hgdata.rangeFinder import Binner
@@ -95,6 +96,12 @@ class GenePredSqliteTable(HgSqliteTable):
         specified, don't convert to GenePred objects if raw is True."""
         sql = "SELECT {columns} FROM {table}"
         return self.queryRows(sql, self.columnNames, self._getRowFactory(raw))
+
+    def getNames(self):
+        sql = "SELECT distinct name FROM {table}"
+        with sqliteOps.SqliteCursor(self.conn, rowFactory=self._getRowFactory(raw=True)) as cur:
+            cur.execute(sql)
+            return [row[0] for row in cur]
 
     def getByName(self, name, raw=False):
         """generator for list of GenePred objects (or raw rows) for all alignments for name """
