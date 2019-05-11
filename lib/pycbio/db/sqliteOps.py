@@ -23,7 +23,10 @@ def connect(sqliteDb, create=False, readonly=True, timeout=None, synchronous=Non
     kwargs = {"flags": flags}
     if timeout is not None:
         kwargs["timeout"] = timeout
-    conn = apsw.Connection(sqliteDb, **kwargs)
+    try:
+        conn = apsw.Connection(sqliteDb, **kwargs)
+    except apsw.CantOpenError as ex:
+        raise apsw.CantOpenError(str(apsw.CantOpenError) + ": " + sqliteDb)
     if synchronous is not None:
         setSynchronous(conn, synchronous)
     return conn
