@@ -25,3 +25,4 @@ switch to dictcursors
 * tests use obsolete makeSuite
 * WARNING: mysql pslMySqlTests tests don't work on python3
 * sqlite wrapper classes really are not that useful, they could just be functions instead.
+* rename getRow() functions to toRow()

@@ -11,13 +11,15 @@ from collections import defaultdict, namedtuple
 
 class Bed(object):
     """Object wrapper for a BED record.  ExtraCols is a vector of extra
-        columns to add."""
+    columns to add.  Extra columns can also be added by extending and overriding
+    toRow() and parse"""
     __slots__ = ("chrom", "chromStart", "chromEnd", "name", "score",
                  "strand", "thickStart", "thickEnd", "itemRgb", "blocks",
                  "extraCols")
 
     class Block(namedtuple("Block", ("start", "end"))):
-        """A block in the BED.  Coordinates are absolute, not relative"""
+        """A block in the BED.  Coordinates are absolute, not relative and are transformed on write.
+        """
         __slots__ = ()
 
         def __len__(self):
@@ -41,14 +43,14 @@ class Bed(object):
         self.extraCols = copy.copy(extraCols)
 
     @property
-    def numCols(self):
-        "Returns the number of columns in the BED"
+    def numberOfColumns(self):
+        """Returns the number of columns in the BED when formatted as a row."""
         # exclude extraCols
         for i in range(len(self.__slots__) - 1):
             if getattr(self, self.__slots__[i]) is None:
                 break
-        if i == 9:
-            i = 11  # blocks take up three columns
+        if i >= 9:
+            i += 2  # blocks take up three columns
         if self.extraCols is not None:
             i += len(self.extraCols)
         return i
@@ -61,21 +63,20 @@ class Bed(object):
             sizes.append(str(len(blk)))
         return [intArrayJoin(sizes), intArrayJoin(relStarts)]
 
-    def getRow(self):
-        numCols = self.numCols
+    def toRow(self):
         row = [self.chrom, str(self.chromStart), str(self.chromEnd)]
-        if numCols > 3:
+        if self.name is not None:
             row.append(str(self.name))
-        if numCols > 4:
+        if self.score is not None:
             row.append(str(self.score))
-        if numCols > 5:
+        if self.strand is not None:
             row.append(self.strand)
-        if numCols > 7:
+        if self.thickStart is not None:
             row.append(str(self.thickStart))
             row.append(str(self.thickEnd))
-        if numCols > 9:
+        if self.itemRgb is not None:
             row.append(str(self.itemRgb))
-        if numCols > 10:
+        if self.blocks is not None:
             row.append(str(len(self.blocks)))
             row.extend(self._getBlockColumns())
         if self.extraCols is not None:
@@ -92,8 +93,8 @@ class Bed(object):
             blocks.append(Bed.Block(start, start + sizes[i]))
         return blocks
 
-    @staticmethod
-    def parse(row):
+    @classmethod
+    def parse(cls, row):
         """parse bed string columns into a bed object"""
         numCols = len(row)
         chrom = row[0]
@@ -125,12 +126,12 @@ class Bed(object):
             blocks = Bed._parseBlockColumns(chromStart, row)
         else:
             blocks = None
-        return Bed(chrom, chromStart, chromEnd, name, score, strand,
+        return cls(chrom, chromStart, chromEnd, name, score, strand,
                    thickStart, thickEnd, itemRgb, blocks)
 
     def __str__(self):
         "return BED as a tab-separated string"
-        return "\t".join(self.getRow())
+        return "\t".join(self.toRow())
 
     def write(self, fh):
         """write BED to a tab-separated file"""
