@@ -75,7 +75,7 @@ class Bed(object):
             row.append(str(self.thickStart))
             row.append(str(self.thickEnd))
         if self.itemRgb is not None:
-            row.append(str(self.itemRgb))
+            row.append(int(self.itemRgb))
         if self.blocks is not None:
             row.append(str(len(self.blocks)))
             row.extend(self._getBlockColumns())
@@ -119,7 +119,7 @@ class Bed(object):
             thickStart = None
             thickEnd = None
         if numCols > 8:
-            itemRgb = row[8]
+            itemRgb = int(row[8])
         else:
             itemRgb = None
         if numCols > 11:
