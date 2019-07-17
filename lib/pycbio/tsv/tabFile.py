@@ -28,9 +28,9 @@ def TabFileReader(fspec, rowClass=None, hashAreComments=False, skipBlankLines=Fa
     def processLine(line):
         if hashAreComments and line.startswith("#"):
             return None
-        row = line[0:-1].split('\t')
-        if skipBlankLines and (len(row) == 0):
+        if skipBlankLines and (len(line) <= 1):  # include \n
             return None
+        row = line[0:-1].split('\t')
         return rowClass(row) if rowClass is not None else row
 
     lineNum = -1
