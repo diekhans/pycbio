@@ -7,8 +7,10 @@ from collections import defaultdict, OrderedDict
 
 class ObjDict(dict):
     """Dict object where keys are field names.
-    This is especially useful for JSON by doing:
+    This is useful for JSON by doing:
        json.load(fh, object_hook=ObjDict):
+    or more efficiently in Python3:
+       json.load(fh, object_pairs_hook=ObjDict):
     """
 
     def __getattr__(self, name):
