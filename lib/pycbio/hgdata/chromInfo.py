@@ -3,45 +3,40 @@ Object with chromosome information that can be loaded from a variety of
 sources.
 """
 # Copyright 2006-2012 Mark Diekhans
-from __future__ import print_function
+from collections import namedtuple
 from pycbio.tsv import TabFile
 
-
-class ChromInfo(object):
+class ChromInfo(namedtuple("chromInfo",
+                           ("chrom", "size"))):
     "object with chromosome information"
-    def __init__(self, chrom, size):
-        self.chrom = chrom
-        self.size = size
 
     def __str__(self):
-        return self.chrom + " " + str(self.size)
+        return f"{self.chrom}\t{self.size}"
 
 
 class ChromInfoTbl(dict):
-    "object to manage information about chromosomes"
-
-    def __init__(self, chromSizes=None, conn=None, chromClass=ChromInfo):
-        "loads from either chromSizes file or database conn chromInfo table"
-        self.chromClass = chromClass
-        if chromSizes is not None:
-            self.loadChromSizes(chromSizes)
-        elif conn is not None:
-            self.loadChromInfoDb(conn)
+    """object to manage information about chromosomes, indexed by chrom name"""
 
     def _addRow(self, chrom, size):
-        self[chrom] = self.chromClass(chrom, size)
+        self[chrom] = ChromInfo(chrom, size)
 
-    def loadChromSizes(self, chromSizes):
+    @staticmethod
+    def loadFile(chromSizes):
         "Load from chrom.sizes file"
+        chroms = ChromInfoTbl()
         for row in TabFile(chromSizes):
-            self._addRow(row[0], int(row[1]))
+            chroms._addRow(row[0], int(row[1]))
+        return chroms
 
-    def loadChromInfoDb(self, conn):
+    @staticmethod
+    def loadDb(conn):
         "Load from chromoInfo table"
+        chroms = ChromInfoTbl()
         cur = conn.cursor()
         try:
-            cur.execute("select chrom, size from chromInfo")
+            cur.execute("SELECT chrom, size FROM chromInfo")
             for row in cur:
-                self.__addRow(row[0], row[1])
+                chroms._addRow(row[0], int(row[1]))
         finally:
             cur.close()
+        return chroms
