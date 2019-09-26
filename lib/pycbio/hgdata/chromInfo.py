@@ -11,7 +11,7 @@ class ChromInfo(namedtuple("chromInfo",
     "object with chromosome information"
 
     def __str__(self):
-        return f"{self.chrom}\t{self.size}"
+        return "{chrom}\t{size}".format(self)
 
 
 class ChromInfoTbl(dict):
