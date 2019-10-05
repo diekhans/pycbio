@@ -35,7 +35,6 @@ csv.field_size_limit(sys.maxsize)
 # FIXME: rowClass interface is hacky.  It could be a keyword/value and not have to do column lookup.
 # FIXME: maybe build on csv.Reader class and keep less of our own crap (although column stuff is nice)
 #        however, csv.reader has got us into trouble because of print formatted files with quotes in data
-# FIXME: drop rdb stuff
 # FIXME: add default for column not in file to typemap
 
 # typeMap converter for str types were empty represents None
@@ -91,8 +90,6 @@ class TsvReader(object):
             if not allowEmpty:
                 raise TsvError("empty TSV file", reader=self)
         else:
-            if self.isRdb:
-                self._readRow()  # skip format line
             if (len(row) > 0) and row[0].startswith('#'):
                 row[0] = row[0][1:]
             self._setupColumns(row)
@@ -124,7 +121,7 @@ class TsvReader(object):
                 self.colTypes.append(defaultColType)
 
     def __init__(self, fileName, rowClass=None, typeMap=None, defaultColType=None, columns=None, columnNameMapper=None,
-                 ignoreExtraCols=False, isRdb=False, inFh=None, allowEmpty=False, dialect=csv.excel_tab,
+                 ignoreExtraCols=False, inFh=None, allowEmpty=False, dialect=csv.excel_tab,
                  encoding=None, errors=None):
         """Open TSV file and read header into object.  Removes leading # from
         UCSC header.
@@ -142,7 +139,6 @@ class TsvReader(object):
             should not be in the file.
         columnNameMapper - function to map column names to the internal name.
         ignoreExtraCols - should extra columns be ignored?
-        isRdb - file is an RDB file, ignore second row (type map still needed).
         inFh - If not None, this is used as the open file, rather than
           opening it.  Closed when the end of file is reached.
         allowEmpty - an empty input results in an EOF rather than an error.
@@ -161,7 +157,6 @@ class TsvReader(object):
         if rowClass is None:
             self.rowClass = TsvRow
         self.columnNameMapper = columnNameMapper
-        self.isRdb = isRdb
         self.colTypes = None
         self.ignoreExtraCols = ignoreExtraCols
         if inFh is not None:

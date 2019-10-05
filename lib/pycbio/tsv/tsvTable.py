@@ -83,7 +83,7 @@ class TsvTable(list):
                 self._indexRow(colIndexMap, row)
 
     def __init__(self, fileName, uniqKeyCols=None, multiKeyCols=None, rowClass=None, typeMap=None,
-                 defaultColType=None, columns=None, columnNameMapper=None, ignoreExtraCols=False, isRdb=False, inFh=None, allowEmpty=False, dialect=csv.excel_tab):
+                 defaultColType=None, columns=None, columnNameMapper=None, ignoreExtraCols=False, inFh=None, allowEmpty=False, dialect=csv.excel_tab):
         """Read TSV file into the object
 
         fileName - name of file, opened unless inFh is specified
@@ -102,13 +102,12 @@ class TsvTable(list):
         columns - if specified, the column names to use.  The header
             should not be in the file.
         ignoreExtraCols - should extra columns be ignored?
-        isRdb - file is an RDB file, ignore second row (type map still needed).
         inFh - If not None, this is used as the open file, rather than
           opening it.  Closed when the end of file is reached.
         allowEmpty - an empty input results in an EOF rather than an error.
           Should specify this if reading from a database query.
         """
-        reader = TsvReader(fileName, rowClass=rowClass, typeMap=typeMap, defaultColType=defaultColType, isRdb=isRdb, columns=columns, columnNameMapper=columnNameMapper,
+        reader = TsvReader(fileName, rowClass=rowClass, typeMap=typeMap, defaultColType=defaultColType, columns=columns, columnNameMapper=columnNameMapper,
                            ignoreExtraCols=ignoreExtraCols, inFh=inFh, allowEmpty=allowEmpty, dialect=dialect)
         try:
             self.columns = reader.columns
