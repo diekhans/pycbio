@@ -36,6 +36,7 @@ csv.field_size_limit(sys.maxsize)
 # FIXME: maybe build on csv.Reader class and keep less of our own crap (although column stuff is nice)
 #        however, csv.reader has got us into trouble because of print formatted files with quotes in data
 # FIXME: drop rdb stuff
+# FIXME: add default for column not in file to typemap
 
 # typeMap converter for str types were empty represents None
 strOrNoneType = (lambda v: None if (v == "") else v,
@@ -44,6 +45,9 @@ strOrNoneType = (lambda v: None if (v == "") else v,
 # typeMap converter for int types were empty represents None
 intOrNoneType = (lambda v: None if (v == "") else int(v),
                  lambda v: "" if (v is None) else str(v))
+
+floatOrNoneType = (lambda v: None if (v == "") else float(v),
+                   lambda v: "" if (v is None) else str(v))
 
 
 class printf_basic_dialect(csv.Dialect):

@@ -19,7 +19,7 @@ from pycbio.tsv.tabFile import TabFile
 from pycbio.tsv.tabFile import TabFileReader
 
 __all__ = (TsvError.__name__, TsvRow.__name__, TsvReader.__name__,
-           "strOrNoneType", "intOrNoneType",
+           "strOrNoneType", "intOrNoneType", "floatOrNoneType",
            TsvTable.__name__, TabFile.__name__, TabFileReader.__name__,
            tsvRowToDict.__name__,
            printf_basic_dialect.__name__)
