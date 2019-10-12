@@ -344,6 +344,7 @@ def atomicTmpFile(finalPath):
     as finalPath.  In final path is in /dev (/dev/null, /dev/stdout), it is
     returned unchanged and atomicTmpInstall will do nothing..  Thread-safe."""
     # FIXME: this would make a good object and maybe contact manager
+    # FIXME: shoudn't have to generate tmp name in loop as host+pid should be enough
     # note: this can't use tmpFileGet, since file should not be created or be private
     finalDir = os.path.dirname(os.path.normpath(finalPath))
     if finalDir == '/dev':
