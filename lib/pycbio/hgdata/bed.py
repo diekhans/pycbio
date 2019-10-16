@@ -119,7 +119,7 @@ class Bed(object):
             thickStart = None
             thickEnd = None
         if numCols > 8:
-            itemRgb = int(row[8])
+            itemRgb = row[8]
         else:
             itemRgb = None
         if numCols > 11:
