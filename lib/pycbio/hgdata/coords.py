@@ -55,9 +55,9 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
 
     @classmethod
     def parse(cls, coordsStr, strand=None, size=None):
-        """Construct an object from genome browser 'name:start-end'.
-        If allowSimpleName is specified, then only 'name' can be used. The range
-        will be None..None if size is not specified, otherwise 0..size"""
+        """Construct an object from genome browser 'name:start-end' or 'name".
+        If only a simple names is specified without a size, the range
+        will be None..None, with a size it will be 0..size"""
         try:
             if strand not in ('+', '-', None):
                 raise CoordsError("invalid strand")
