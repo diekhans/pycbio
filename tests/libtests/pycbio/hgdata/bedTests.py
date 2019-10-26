@@ -4,7 +4,7 @@ import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.hgdata.bed import BedTable
+from pycbio.hgdata.bed import BedTable, BedReader
 
 
 class BedTests(TestCaseBase):
@@ -23,6 +23,21 @@ class BedTests(TestCaseBase):
             for bed in beds:
                 bed.write(outFh)
         self.diffFiles(self.getInputFile("fromPslMinTest.bed"), outBedFile)
+
+    def testBed12Extra(self):
+        beds = BedTable(self.getInputFile("bed12extra.bed"))
+        outBedFile = self.getOutputFile(".bed")
+        with open(outBedFile, "w") as outFh:
+            for bed in beds:
+                bed.write(outFh)
+        self.diffFiles(self.getInputFile("bed12extra.bed"), outBedFile)
+
+    def testBed6Extra(self):
+        outBedFile = self.getOutputFile(".bed")
+        with open(outBedFile, "w") as outFh:
+            for bed in BedReader(self.getInputFile("bed6extra.bed"), numStdCols=6):
+                bed.write(outFh)
+        self.diffFiles(self.getInputFile("bed6extra.bed"), outBedFile)
 
 
 def suite():

@@ -11,15 +11,15 @@ csv.field_size_limit(sys.maxsize)
 
 
 class TabFile(list):
-    """Class for reading tab-separated files.
+    """Class for reading and hold tab-separated files.
     """
 
-    def __init__(self, fileName, rowClass=None, hashAreComments=False):
+    def __init__(self, fileName, rowClass=None, hashAreComments=False, skipBlankLines=False):
         """Read tab file into the object
         """
         self.fileName = fileName
         self.rowClass = rowClass
-        for row in TabFileReader(self.fileName, rowClass=rowClass, hashAreComments=hashAreComments):
+        for row in TabFileReader(self.fileName, rowClass=rowClass, hashAreComments=hashAreComments, skipBlankLines=skipBlankLines):
             self.append(row)
 
 

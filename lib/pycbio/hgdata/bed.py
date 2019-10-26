@@ -11,8 +11,9 @@ from collections import defaultdict, namedtuple
 
 class Bed(object):
     """Object wrapper for a BED record.  ExtraCols is a vector of extra
-    columns to add.  Extra columns can also be added by extending and overriding
-    toRow() and parse"""
+    columns to add.  Special columns be added by extending and overriding
+    parse() and toRow() to do special handling.  For BED with more than
+    specified numbed of parse columns, extra columns as passed though."""
     __slots__ = ("chrom", "chromStart", "chromEnd", "name", "score",
                  "strand", "thickStart", "thickEnd", "itemRgb", "blocks",
                  "extraCols")
@@ -94,40 +95,48 @@ class Bed(object):
         return blocks
 
     @classmethod
-    def parse(cls, row):
-        """parse bed string columns into a bed object"""
-        numCols = len(row)
+    def parse(cls, row, numStdCols=None):
+        """Parse bed string columns into a bed object.  If numStdCols
+        is specified, only those columns are parse and the remained goes
+        to extraCols."""
+        assert((numStdCols is None) or (3 <= numStdCols <= 12))
+        if numStdCols is None:
+            numStdCols = min(len(row), 12)
         chrom = row[0]
         chromStart = int(row[1])
         chromEnd = int(row[2])
-        if numCols > 3:
+        if numStdCols > 3:
             name = row[3]
         else:
             name = None
-        if numCols > 4:
+        if numStdCols > 4:
             score = int(row[4])
         else:
             score = None
-        if numCols > 5:
+        if numStdCols > 5:
             strand = row[5]
         else:
             strand = None
-        if numCols > 7:
+        if numStdCols > 7:
             thickStart = int(row[6])
             thickEnd = int(row[7])
         else:
             thickStart = None
             thickEnd = None
-        if numCols > 8:
+        if numStdCols > 8:
             itemRgb = row[8]
         else:
             itemRgb = None
-        if numCols > 11:
+        if numStdCols > 11:
             blocks = Bed._parseBlockColumns(chromStart, row)
         else:
             blocks = None
+        if len(row) > numStdCols:
+            extraCols = row[numStdCols:]
+        else:
+            extraCols = None
         return cls(chrom, chromStart, chromEnd, name, score, strand,
-                   thickStart, thickEnd, itemRgb, blocks)
+                   thickStart, thickEnd, itemRgb, blocks, extraCols)
 
     def __str__(self):
         "return BED as a tab-separated string"
@@ -139,9 +148,11 @@ class Bed(object):
         fh.write('\n')
 
 
-def BedReader(fspec):
-    """Generator to read BED objects loaded from a tab-file or file-like object"""
-    for bed in TabFileReader(fspec, rowClass=Bed.parse, hashAreComments=True, skipBlankLines=True):
+def BedReader(fspec, numStdCols=None):
+    """Generator to read BED objects loaded from a tab-file or file-like
+    object.  See Bed.parse()."""
+    for bed in TabFileReader(fspec, rowClass=lambda r: Bed.parse(r, numStdCols=numStdCols),
+                             hashAreComments=True, skipBlankLines=True):
         yield bed
 
 
@@ -154,8 +165,9 @@ class BedTable(TabFile):
         for bed in self:
             self.nameMap[bed.name].append(bed)
 
-    def __init__(self, fileName, nameIdx=False):
-        super(BedTable, self).__init__(fileName, rowClass=lambda r: Bed.parse(r), hashAreComments=True)
+    def __init__(self, fileName, nameIdx=False, numStdCols=None):
+        super(BedTable, self).__init__(fileName, rowClass=lambda r: Bed.parse(r, numStdCols=numStdCols),
+                                       hashAreComments=True, skipBlankLines=True)
         self.nameMap = None
         if nameIdx:
             self._mkNameIdx()
