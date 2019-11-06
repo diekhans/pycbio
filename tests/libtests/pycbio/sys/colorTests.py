@@ -69,6 +69,12 @@ class SvgColorsTests(TestCaseBase):
     def testBlack(self):
         self.assertEqual(SvgColors.black, Color.fromRgb(0.0, 0.0, 0.0))
 
+    def testLookup(self):
+        self.assertEqual(SvgColors.yellowgreen, SvgColors.lookup("yellowgreen"))
+
+    def testLookupBad(self):
+        with self.assertRaises(AttributeError):
+            SvgColors.lookup("evil")
 
 # FIXME: many more tests needed
 

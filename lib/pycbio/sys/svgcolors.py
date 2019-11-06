@@ -163,3 +163,7 @@ class SvgColors(object):
     whitesmoke = _mkcolor(0xf5f5f5)
     yellow = _mkcolor(0xffff00)
     yellowgreen = _mkcolor(0x9acd32)
+
+    @classmethod
+    def lookup(cls, name):
+        return getattr(cls, name.lower())
