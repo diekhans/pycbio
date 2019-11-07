@@ -26,3 +26,8 @@ switch to dictcursors
 * WARNING: mysql pslMySqlTests tests don't work on python3
 * sqlite wrapper classes really are not that useful, they could just be functions instead.
 * rename getRow() functions to toRow()
+* hglite-split spliting up hglite stuff
+** ideas: 
+ - hglite* table -> model, not just a reader, not confusing with other tables.
+   but models are records in am ORM, 
+- get*() to read*() methods
