@@ -38,6 +38,8 @@ typeMap = {
     "strand": intern,
     "txStart": int,
     "txEnd": int,
+    "rnaLength": int,
+    "cdsLength": int,
     "hasExonConflicts": cgBoolSpec,
     "hasCdsConflicts": cgBoolSpec,
     "exonConflicts": strArrayType,
@@ -46,7 +48,7 @@ typeMap = {
 
 
 class Cluster(list):
-    """one gene cluster, a list of gene objects from file, A field
+    """one gene cluster, a list of genePred objects from file, A field
     clusterObj is added to each row that links back to this object"""
     def __init__(self, clusterId):
         self.clusterId = clusterId

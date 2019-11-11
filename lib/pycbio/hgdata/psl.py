@@ -294,6 +294,14 @@ class Psl(object):
                 ((self.strand[1] == '-') and
                  (self.tStart == (self.tSize - (self.tStarts[lastBlock] + 3 * self.blockSizes[lastBlock])))))
 
+    @property
+    def tLength(self):
+        return self.tEnd - self.tStart
+
+    @property
+    def qLength(self):
+        return self.qEnd - self.qStart
+
     def tOverlap(self, tName, tStart, tEnd):
         "test for overlap of target range"
         return (tName == self.tName) and (tStart < self.tEnd) and (tEnd > self.tStart)

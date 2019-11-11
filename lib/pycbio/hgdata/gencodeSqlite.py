@@ -8,10 +8,14 @@ import sys
 from future.standard_library import install_aliases
 install_aliases()
 from collections import namedtuple
+from pycbio.db import sqliteOps
 from pycbio.sys import PycbioException
 from pycbio.hgdata.hgSqlite import HgSqliteTable, noneIfEmpty
+from pycbio.hgdata.rangeFinder import Binner
 from pycbio.tsv import TsvReader
 
+# FIXME: binning code redundant with other objects.
+# FIXME: needs tests
 
 class GencodeAttrs(namedtuple("GencodeAttrs",
                               ("geneId", "geneName", "geneType", "geneStatus", "transcriptId",
@@ -311,3 +315,106 @@ class GencodeTagSqliteTable(HgSqliteTable):
         """get the GencodeTag objects for transcriptId, or empty if not found."""
         sql = "SELECT {columns} FROM {table} WHERE transcriptId = ?"
         return self._queryRows(sql, transcriptId)
+
+
+class GencodeGene(namedtuple("GencodeGene",
+                             ("chrom", "chromStart", "chromEnd", "name",
+                              "score", "strand", "geneType", "geneName"))):
+    """GENCODE gene bounds.  A BED-6 based object with gene bounds and
+    type. 'name' is the geneId, score is unused."""
+    __slots__ = ()
+
+    def __new__(cls, chrom, chromStart, chromEnd, name, score, strand, geneType, geneName):
+        return super(GencodeGene, cls).__new__(cls, chrom, int(chromStart), chromEnd, int(name),
+                                               int(score), strand, geneType, geneName)
+
+
+class GencodeGeneSqliteTable(HgSqliteTable):
+    """Table of GencodeGene objects, name might not be unique due to PAR"""
+    createSql = """CREATE TABLE {table} (
+             bin INT UNSIGNED NOT NULL,
+             chrom TEXT NOT NULL,
+             chromStart INT UNSIGNED NOT NULL,
+             chromEnd INT UNSIGNED NOT NULL,
+             name TEXT NOT NULL,
+             score INT UNSIGNED NOT NULL DEFAULT 0,
+             strand TEXT NOT NULL,
+             geneType TEXT NOT NULL,
+             geneName TEXT NOT NULL
+        """
+    insertSql = """INSERT INTO {table} ({columns}) VALUES ({values});"""
+    indexSql = [
+        """CREATE INDEX {table}_chrom_bin ON {table} (chrom, bin)""",
+        """CREATE INDEX {table}_name ON {table} (name)""",
+        """CREATE INDEX {table}_geneType ON {table} (geneId)"""]
+
+    # doesn't include bin
+    columnNames = ("chrom", "chromStart", "chromEnd", "name",
+                   "score", "strand", "geneType", "geneName")
+    columnNamesBin = ("bin",) + columnNames
+
+    def __init__(self, conn, table, create=False):
+        super(GencodeGeneSqliteTable, self).__init__(conn, table)
+        if create:
+            self.create()
+
+    def create(self):
+        self._create(self.createSql)
+
+    def index(self):
+        """create index after loading"""
+        self._index(self.indexSql)
+
+    def loadsWithBin(self, binnedRows):
+        """load GencodeGene rows which already have bin column"""
+        self._inserts(self.insertSql, self.columnNamesBin, binnedRows)
+
+    def loads(self, rows):
+        """load rows, which can be list-like or GencodeGene objects, adding bin"""
+        binnedRows = []
+        for row in rows:
+            bin = Binner.calcBin(int(row[1]), int(row[2]))
+            binnedRows.append((bin,) + tuple(row))
+        self.loadsWithBin(binnedRows)
+
+    @staticmethod
+    def _getRowFactory(raw):
+        return None if raw else lambda cur, row: GencodeGene(row)
+
+    def getAll(self, raw=False):
+        """Generator for all GencodeGene in a table. Don't convert to GencodeGene
+        objects if raw is True."""
+        sql = "SELECT {columns} FROM {table}"
+        return self.queryRows(sql, self.columnNames, self._getRowFactory(raw))
+
+    def getNames(self):
+        sql = "SELECT distinct name FROM {table}"
+        with sqliteOps.SqliteCursor(self.conn, rowFactory=self._getRowFactory(raw=True)) as cur:
+            cur.execute(sql)
+        return [row[0] for row in cur]
+
+    def getByName(self, name, raw=False):
+        """generator for list of GencodeGene objects (or raw rows) for all alignments for name """
+        sql = "SELECT {columns} FROM {table} WHERE name = ?"
+        return self.queryRows(sql, self.columnNames, self._getRowFactory(raw), name)
+
+    def getByOid(self, startOid, endOid, raw=False):
+        """Generator for GencodeGenes for a range of OIDs (1/2 open).  If raw is
+        specified, don't convert to GencodeGene objects if raw is True."""
+        sql = "SELECT {columns} FROM {table} WHERE (oid >= ?) and (oid < ?)"
+        return self.queryRows(sql, self.columnNames, self._getRowFactory(raw), startOid, endOid)
+
+    def getRangeOverlap(self, chrom, start, end, strand=None, raw=False):
+        """Get annotations overlapping range To query the whole sequence, set
+        start and end to None.  If raw is specified. Don't convert to GencodeGene
+        objects if raw is True."""
+        if start is None:
+            rangeWhere = "(chrom = '{}')".format(chrom)
+        else:
+            rangeWhere = Binner.getOverlappingSqlExpr("bin", "chrom", "txStart", "txEnd", chrom, start, end)
+            sql = "SELECT {{columns}} FROM {{table}} WHERE {}".format(rangeWhere)
+            sqlArgs = []
+        if strand is not None:
+            sql += " AND (strand = ?)"
+            sqlArgs.append(strand)
+        return self.queryRows(sql, self.columnNames, self._getRowFactory(raw), *sqlArgs)

@@ -73,27 +73,18 @@ class GenePredSqliteTable(HgSqliteTable):
             binnedRows.append((bin,) + tuple(row))
         self.loadsWithBin(binnedRows)
 
-    # FIXME: dups code above
-    @staticmethod
-    def _binGenePredRow(row):
-        "add bin; note modifies row"
-        row.insert(0, Binner.calcBin(int(row[3]), int(row[4])))
-        return row
-
     def loadGenePredFile(self, genePredFile):
         """load a genePred file, adding bin"""
-        rows = []
-        for row in TabFileReader(genePredFile):
-            rows.append(self._binGenePredRow(row))
-        self.loadsWithBin(rows)
+        rows = [row for row in TabFileReader(genePredFile)]
+        self.loads(rows)
 
     @staticmethod
     def _getRowFactory(raw):
         return None if raw else lambda cur, row: GenePred(row)
 
     def getAll(self, raw=False):
-        """Generator for all genePreds in a table.  If raw is
-        specified, don't convert to GenePred objects if raw is True."""
+        """Generator for all genePreds in a table. Don't convert to GenePred
+        objects if raw is True."""
         sql = "SELECT {columns} FROM {table}"
         return self.queryRows(sql, self.columnNames, self._getRowFactory(raw))
 

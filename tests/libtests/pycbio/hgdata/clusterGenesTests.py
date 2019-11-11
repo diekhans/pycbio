@@ -17,16 +17,16 @@ class ReadTests(TestCaseBase):
             clCnt += 1
             for g in cl:
                 geneCnt += 1
-        self.assertEqual(clCnt, 169)
-        self.assertEqual(geneCnt, 192)
+        self.assertEqual(clCnt, 16)
+        self.assertEqual(geneCnt, 49)
 
         # try getting gene, and go back to it's cluster
-        self.assertEqual(len(clusters.genes["NM_022114.2"]), 1)
-        g = clusters.genes["NM_022114.2"][0]
+        self.assertEqual(len(clusters.genes["NR_046018.2"]), 1)
+        g = clusters.genes["ENST00000335137.4"][0]
         cl = g.clusterObj
-        self.assertEqual(len(cl), 2)
-        self.assertTrue((cl[0].gene == "NM_199454.1") or (cl[1].gene == "NM_199454.1"))
-
+        self.assertEqual(len(cl), 3)
+        self.assertEqual(frozenset([g.gene for g in cl]),
+                         frozenset(["ENST00000335137.4", "NM_001005484.1", "ENST00000641515.2"]))
 
 def suite():
     ts = unittest.TestSuite()
