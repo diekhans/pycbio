@@ -60,10 +60,7 @@ class DbReadTests(TestCaseBase):
 def suite():
     ts = unittest.TestSuite()
     if onTestHost:
-        if six.PY3:
-            print("WARNING: mysql pslMySqlTests tests don't work on python3")
-        else:
-            ts.addTest(unittest.makeSuite(DbReadTests))
+        ts.addTest(unittest.makeSuite(DbReadTests))
     return ts
 
 
