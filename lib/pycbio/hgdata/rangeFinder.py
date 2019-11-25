@@ -269,4 +269,4 @@ class RangeFinder(object):
             bins.dump(fh)
 
 
-__all__ = (RangeFinder.__name__,)
+__all__ = (RemoveValueError.__name__, Binner.__name__, RangeFinder.__name__,)
