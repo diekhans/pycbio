@@ -9,7 +9,6 @@ import re
 import socket
 import tempfile
 import pipettor
-from threading import Lock
 from pycbio.sys import PycbioException
 
 # FIXME: normalize file line read routines to all take fh or name, remove redundant code.
@@ -321,9 +320,14 @@ def tmpDirGet(prefix=None, suffix=".tmp", tmpDir=None):
     return tempfile.mkdtemp(prefix=prefix, suffix=suffix, dir=findTmpDir(tmpDir))
 
 
-_hostName = None  # get first time when needed
-_atomicNextNum = 0  # number to include in atomicTmpFile, just in case same process tries creates multiple
-_atomicTmpFileMutex = Lock()
+##
+# Globals for creating new atomic file names. Note that this is tread friendly even
+# without a lock.  The next number is use to generate a unique name in case there is
+# a stale file. If incrementing it fails due to two threads going through here,
+# it just means another trip through the check loop.
+##
+_hostName = None  # lazy
+_atomicNextNum = 0
 
 
 def _tryForNewAtomicTmpFile(finalDir, finalBasename, finalExt):
@@ -343,7 +347,7 @@ def atomicTmpFile(finalPath):
     same directory as finalPath. The temporary file will have the same extension
     as finalPath.  In final path is in /dev (/dev/null, /dev/stdout), it is
     returned unchanged and atomicTmpInstall will do nothing..  Thread-safe."""
-    # FIXME: this would make a good object and maybe contact manager
+    # FIXME: this would make a good contact manager
     # FIXME: shoudn't have to generate tmp name in loop as host+pid should be enough
     # note: this can't use tmpFileGet, since file should not be created or be private
     finalDir = os.path.dirname(os.path.normpath(finalPath))
@@ -356,10 +360,9 @@ def atomicTmpFile(finalPath):
     global _hostName
     if _hostName is None:
         _hostName = socket.gethostname()
-    with _atomicTmpFileMutex:
-        tmpPath = None
-        while tmpPath is None:
-            tmpPath = _tryForNewAtomicTmpFile(finalDir, finalBasename, finalExt)
+    tmpPath = None
+    while tmpPath is None:
+        tmpPath = _tryForNewAtomicTmpFile(finalDir, finalBasename, finalExt)
     return tmpPath
 
 
