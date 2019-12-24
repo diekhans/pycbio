@@ -65,8 +65,7 @@ class FileOpsTests(TestCaseBase):
         inf = self.getInputFile("simple1.txt")
         outf = self.getOutputFile(".out")
         outfTmp = fileOps.atomicTmpFile(outf)
-        with open(inf) as inFh, open(outfTmp, "w") as outFh:
-            shutil.copyfileobj(inFh, outFh)
+        shutil.copyfile(inf, outfTmp)
         fileOps.atomicInstall(outfTmp, outf)
         self.diffFiles(inf, outf)
 
@@ -75,6 +74,24 @@ class FileOpsTests(TestCaseBase):
         tmp = fileOps.atomicTmpFile(devn)
         self.assertEqual(tmp, devn)
         fileOps.atomicInstall(tmp, devn)
+
+    def testAtomicContextOk(self):
+        inf = self.getInputFile("simple1.txt")
+        outf = self.getOutputFile(".out")
+        with fileOps.AtomicFileCreate(outf) as outfTmp:
+            shutil.copyfile(inf, outfTmp)
+        self.diffFiles(inf, outf)
+
+    def testAtomicContextError(self):
+        inf = self.getInputFile("simple1.txt")
+        outf = self.getOutputFile(".out")
+        try:
+            with fileOps.AtomicFileCreate(outf) as outfTmp:
+                shutil.copyfile(inf, outfTmp)
+                raise Exception("stop!")
+        except Exception as ex:
+            self.assertEqual(str(ex), "stop!")
+        self.assertFalse(os.path.exists(outf))
 
     simple1Lines = ['one', 'two', 'three', 'four', 'five', 'six']
 

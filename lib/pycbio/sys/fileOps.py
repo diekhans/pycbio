@@ -319,19 +319,15 @@ def tmpDirGet(prefix=None, suffix=".tmp", tmpDir=None):
     will only be accessible to user."""
     return tempfile.mkdtemp(prefix=prefix, suffix=suffix, dir=findTmpDir(tmpDir))
 
-
-##
-# Globals for creating new atomic file names. Note that this is tread friendly even
-# without a lock.  The next number is use to generate a unique name in case there is
-# a stale file. If incrementing it fails due to two threads going through here,
-# it just means another trip through the check loop.
-##
+## globals for atomic file creation
 _hostName = None  # lazy
-_atomicNextNum = 0
+_atomicNextNum = 0  # number to include in atomicTmpFile to avoid existing files
+_atomicTmpFileMutex = Lock()  # controls increment of _atomicTmpFileMutex
 
 
 def _tryForNewAtomicTmpFile(finalDir, finalBasename, finalExt):
-    "Attempt to get a tmp file name, return None in the rare change that it exists"
+    """Attempt to get a tmp file name, return None in the rare chance that it
+    already exists"""
     global _atomicNextNum
     baseName = "{}.{}.{}.{}.tmp{}".format(finalBasename, _hostName, os.getpid(), _atomicNextNum, finalExt)
     _atomicNextNum += 1
@@ -347,8 +343,6 @@ def atomicTmpFile(finalPath):
     same directory as finalPath. The temporary file will have the same extension
     as finalPath.  In final path is in /dev (/dev/null, /dev/stdout), it is
     returned unchanged and atomicTmpInstall will do nothing..  Thread-safe."""
-    # FIXME: this would make a good contact manager
-    # FIXME: shoudn't have to generate tmp name in loop as host+pid should be enough
     # note: this can't use tmpFileGet, since file should not be created or be private
     finalDir = os.path.dirname(os.path.normpath(finalPath))
     if finalDir == '/dev':
@@ -371,6 +365,31 @@ def atomicInstall(tmpPath, finalPath):
     if os.path.dirname(os.path.normpath(finalPath)) != '/dev':
         os.rename(tmpPath, finalPath)
 
+
+class AtomicFileCreate(object):
+    """Context manager to great an temporary file.  Entering returns path to the
+    temporary file in the same directory.  If the code in context succeeds,
+    the file renamed to it's actually nape.  If an error occurs, the file is
+    not installed and is removed unless keeps is specified.
+    """
+    def __init__(self, finalPath, keep=False):
+        self.finalPath = finalPath
+        self.keep = keep
+        self.tmpPath = None
+
+    def __enter__(self):
+        self.tmpPath = atomicTmpFile(self.finalPath)
+        return self.tmpPath
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        if exc_type is None:
+            atomicInstall(self.tmpPath, self.finalPath)
+        elif not self.keep:
+            try:
+                os.unlink(self.tmpPath)
+            except:
+                pass
+        return False
 
 def uncompressedBase(path):
     "return the file path, removing a compression extension if it exists"
