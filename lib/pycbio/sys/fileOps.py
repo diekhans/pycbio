@@ -367,10 +367,10 @@ def atomicInstall(tmpPath, finalPath):
 
 
 class AtomicFileCreate(object):
-    """Context manager to great an temporary file.  Entering returns path to the
-    temporary file in the same directory.  If the code in context succeeds,
-    the file renamed to it's actually nape.  If an error occurs, the file is
-    not installed and is removed unless keeps is specified.
+    """Context manager to create a temporary file.  Entering returns path to
+    the temporary file in the same directory as finalPath.  If the code in
+    context succeeds, the file renamed to its actually name.  If an error
+    occurs, the file is not installed and is removed unless keep is specified.
     """
     def __init__(self, finalPath, keep=False):
         self.finalPath = finalPath
