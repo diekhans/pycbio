@@ -319,25 +319,6 @@ def tmpDirGet(prefix=None, suffix=".tmp", tmpDir=None):
     will only be accessible to user."""
     return tempfile.mkdtemp(prefix=prefix, suffix=suffix, dir=findTmpDir(tmpDir))
 
-## globals for atomic file creation
-_hostName = None  # lazy
-_atomicNextNum = 0  # number to include in atomicTmpFile to avoid existing files
-_atomicTmpFileMutex = Lock()  # controls increment of _atomicTmpFileMutex
-
-
-def _tryForNewAtomicTmpFile(finalDir, finalBasename, finalExt):
-    """Attempt to get a tmp file name, return None in the rare chance that it
-    already exists"""
-    global _atomicNextNum
-    baseName = "{}.{}.{}.{}.tmp{}".format(finalBasename, _hostName, os.getpid(), _atomicNextNum, finalExt)
-    _atomicNextNum += 1
-    tmpPath = os.path.join(finalDir, baseName)
-    if os.path.exists(tmpPath):
-        return None
-    else:
-        return tmpPath
-
-
 def atomicTmpFile(finalPath):
     """Return a tmp file name to use with atomicInstall.  This will be in the
     same directory as finalPath. The temporary file will have the same extension
@@ -347,17 +328,10 @@ def atomicTmpFile(finalPath):
     finalDir = os.path.dirname(os.path.normpath(finalPath))
     if finalDir == '/dev':
         return finalPath
-    if finalDir == "":
-        finalDir = '.'
     finalBasename = os.path.basename(finalPath)
     finalExt = os.path.splitext(finalPath)[1]
-    global _hostName
-    if _hostName is None:
-        _hostName = socket.gethostname()
-    tmpPath = None
-    while tmpPath is None:
-        tmpPath = _tryForNewAtomicTmpFile(finalDir, finalBasename, finalExt)
-    return tmpPath
+    baseName = "{}.{}.{}.tmp{}".format(finalBasename, socket.gethostname(), os.getpid(), finalExt)
+    return os.path.join(finalDir, baseName)
 
 
 def atomicInstall(tmpPath, finalPath):
