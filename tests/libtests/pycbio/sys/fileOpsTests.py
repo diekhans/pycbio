@@ -3,6 +3,7 @@ import unittest
 import os
 import sys
 import shutil
+from contextlib import contextmanager
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
@@ -92,6 +93,23 @@ class FileOpsTests(TestCaseBase):
         except Exception as ex:
             self.assertEqual(str(ex), "stop!")
         self.assertFalse(os.path.exists(outf))
+
+    @staticmethod
+    @contextmanager
+    def _atomicWriteContextOpen(fileName):
+        # does our context manger work inside of another
+        with fileOps.AtomicFileCreate(fileName) as tmpFileName:
+            with open(tmpFileName, 'wb') as f:
+                yield f
+
+    def testAtomicContextInContext(self):
+        # this crashed with hand written context manager vs context lib
+        inf = self.getInputFile("simple1.txt")
+        outf = self.getOutputFile(".out")
+        with self._atomicWriteContextOpen(outf) as outFh:
+            with open(inf, "rb") as inFh:
+                shutil.copyfileobj(inFh, outFh)
+        self.diffFiles(inf, outf)
 
     simple1Lines = ['one', 'two', 'three', 'four', 'five', 'six']
 

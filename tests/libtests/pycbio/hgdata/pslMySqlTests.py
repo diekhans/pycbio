@@ -1,6 +1,5 @@
 # Copyright 2006-2012 Mark Diekhans
 from __future__ import print_function
-import six
 import unittest
 import sys
 if __name__ == '__main__':

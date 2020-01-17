@@ -9,6 +9,7 @@ import re
 import socket
 import tempfile
 import pipettor
+from contextlib import contextmanager
 from pycbio.sys import PycbioException
 
 # FIXME: normalize file line read routines to all take fh or name, remove redundant code.
@@ -325,14 +326,16 @@ def atomicTmpFile(finalPath):
     as finalPath.  In final path is in /dev (/dev/null, /dev/stdout), it is
     returned unchanged and atomicTmpInstall will do nothing..  Thread-safe."""
     # note: this can't use tmpFileGet, since file should not be created or be private
-    finalDir = os.path.dirname(os.path.normpath(finalPath))
+    finalDir = os.path.dirname(os.path.normpath(finalPath))  # maybe empty
     if finalDir == '/dev':
         return finalPath
     finalBasename = os.path.basename(finalPath)
     finalExt = os.path.splitext(finalPath)[1]
-    baseName = "{}.{}.{}.tmp{}".format(finalBasename, socket.gethostname(), os.getpid(), finalExt)
-    return os.path.join(finalDir, baseName)
-
+    tmpBasename = "{}.{}.{}.tmp{}".format(finalBasename, socket.gethostname(), os.getpid(), finalExt)
+    tmpPath = os.path.join(finalDir, tmpBasename)
+    if os.path.exists(tmpPath):
+        os.unlink(tmpPath)
+    return tmpPath
 
 def atomicInstall(tmpPath, finalPath):
     "atomic install of tmpPath as finalPath"
@@ -340,30 +343,24 @@ def atomicInstall(tmpPath, finalPath):
         os.rename(tmpPath, finalPath)
 
 
-class AtomicFileCreate(object):
+@contextmanager
+def AtomicFileCreate(finalPath, keep=False):
     """Context manager to create a temporary file.  Entering returns path to
     the temporary file in the same directory as finalPath.  If the code in
     context succeeds, the file renamed to its actually name.  If an error
     occurs, the file is not installed and is removed unless keep is specified.
     """
-    def __init__(self, finalPath, keep=False):
-        self.finalPath = finalPath
-        self.keep = keep
-        self.tmpPath = None
-
-    def __enter__(self):
-        self.tmpPath = atomicTmpFile(self.finalPath)
-        return self.tmpPath
-
-    def __exit__(self, exc_type, exc_value, exc_traceback):
-        if exc_type is None:
-            atomicInstall(self.tmpPath, self.finalPath)
-        elif not self.keep:
+    tmpPath = atomicTmpFile(finalPath)
+    try:
+        yield tmpPath
+        atomicInstall(tmpPath, finalPath)
+    except Exception:
+        if not keep:
             try:
-                os.unlink(self.tmpPath)
-            except:
+                os.unlink(tmpPath)
+            except Exception:
                 pass
-        return False
+        raise
 
 def uncompressedBase(path):
     "return the file path, removing a compression extension if it exists"
