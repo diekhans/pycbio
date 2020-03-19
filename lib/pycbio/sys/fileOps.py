@@ -322,9 +322,11 @@ def tmpDirGet(prefix=None, suffix=".tmp", tmpDir=None):
 
 def atomicTmpFile(finalPath):
     """Return a tmp file name to use with atomicInstall.  This will be in the
-    same directory as finalPath. The temporary file will have the same extension
-    as finalPath.  In final path is in /dev (/dev/null, /dev/stdout), it is
-    returned unchanged and atomicTmpInstall will do nothing..  Thread-safe."""
+    same directory as finalPath. The temporary file will have the same
+    extension as finalPath.  In final path is in /dev (/dev/null,
+    /dev/stdout), it is returned unchanged and atomicTmpInstall will do
+    nothing.  The output directory will be created if it doesn't exist.
+    Thread-safe."""
     # note: this can't use tmpFileGet, since file should not be created or be private
     finalDir = os.path.dirname(os.path.normpath(finalPath))  # maybe empty
     if finalDir == '/dev':
@@ -335,6 +337,8 @@ def atomicTmpFile(finalPath):
     tmpPath = os.path.join(finalDir, tmpBasename)
     if os.path.exists(tmpPath):
         os.unlink(tmpPath)
+    else:
+        ensureDir(finalDir)
     return tmpPath
 
 def atomicInstall(tmpPath, finalPath):
@@ -349,6 +353,7 @@ def AtomicFileCreate(finalPath, keep=False):
     the temporary file in the same directory as finalPath.  If the code in
     context succeeds, the file renamed to its actually name.  If an error
     occurs, the file is not installed and is removed unless keep is specified.
+    The output directory will be created if it doesn't exist.  Thread-safe.
     """
     tmpPath = atomicTmpFile(finalPath)
     try:
