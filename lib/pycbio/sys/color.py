@@ -2,6 +2,7 @@
 from __future__ import print_function
 from __future__ import division
 from builtins import round
+import re
 import colorsys
 from collections import namedtuple
 
@@ -169,3 +170,11 @@ class Color(namedtuple("Color", ("red", "green", "blue",
     def fromHsvi(h, s, v):
         "construct from integer HSV values"
         return Color.fromHsv(h / 306.0, s / 100.0, v / 100.0)
+
+    @staticmethod
+    def fromHtmlColor(hcolor):
+        "construct from a HTML color string in the form #804c66"
+        mat = re.match("^#([0-9a-fA-F]{6})$", hcolor)
+        if not mat:
+            raise ValueError("invalid HTML color: {}".format(hcolor))
+        return Color.fromPackRgb8(int(mat.group(1), base=16))

@@ -41,6 +41,10 @@ class ColorTests(TestCaseBase):
         self.assertEqual(c.hsvi, (330, 40, 50))
         self.assertEqual(c.toHtmlColor(), "#804c66")
 
+    def testHtmlColor(self):
+        c = Color.fromHtmlColor("#804c66")
+        self.assertEqual(c.toHtmlColor(), "#804c66")
+
     def testPackRgb8(self):
         self.assertEqual(Color.fromPackRgb8(0x008000), Color.fromRgb8(0x00, 0x80, 0x00))
         self.assertEqual(Color.fromPackRgb8(0xFFA510), Color.fromRgb8(0xFF, 0xA5, 0x10))
