@@ -31,3 +31,10 @@ switch to dictcursors
  - hglite* table -> model, not just a reader, not confusing with other tables.
    but models are records in am ORM, 
 - get*() to read*() methods
+* provide support for implementing commands that have optional stdin/stdout
+using /dev/stdout doesn't work, as it reset file to the beginning, rather
+that append to current location.  Doing:
+  fh = os.fdopen(os.dup(sys.stdout.fileno()), "w")
+works better
+partial test implemented here:
+tests/libtests/pycbio/sys/fileOpsTests.py::DISABLED_testOpengzDevStdout()
