@@ -2,6 +2,7 @@
 from __future__ import print_function
 from builtins import range
 import copy
+from pycbio.sys import PycbioException
 from pycbio.tsv.tabFile import TabFile, TabFileReader
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin
 from collections import defaultdict, namedtuple
@@ -13,7 +14,8 @@ class Bed(object):
     """Object wrapper for a BED record.  ExtraCols is a vector of extra
     columns to add.  Special columns be added by extending and overriding
     parse() and toRow() to do special handling.  For BED with more than
-    specified numbed of parse columns, extra columns as passed though."""
+    specified numbed of parse columns, extra columns as passed though.
+    """
     __slots__ = ("chrom", "chromStart", "chromEnd", "name", "score",
                  "strand", "thickStart", "thickEnd", "itemRgb", "blocks",
                  "extraCols")
@@ -102,6 +104,8 @@ class Bed(object):
         assert((numStdCols is None) or (3 <= numStdCols <= 12))
         if numStdCols is None:
             numStdCols = min(len(row), 12)
+        if len(row) < numStdCols:
+            raise PycbioException("expected at least {} columns, found {}: ".format(numStdCols, len(row)))
         chrom = row[0]
         chromStart = int(row[1])
         chromEnd = int(row[2])
