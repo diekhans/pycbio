@@ -337,7 +337,7 @@ def atomicTmpFile(finalPath):
     tmpPath = os.path.join(finalDir, tmpBasename)
     if os.path.exists(tmpPath):
         os.unlink(tmpPath)
-    else:
+    elif finalDir != "":
         ensureDir(finalDir)
     return tmpPath
 
