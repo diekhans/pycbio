@@ -509,21 +509,6 @@ FEATURES             Location/Qualifiers
                      /gene="CTNNA3"
                      /gene_synonym="ARVD13; VR22"
                      /inference="alignment:Splign:2.1.0"
-     STS             2656..3162
-                     /gene="CTNNA3"
-                     /gene_synonym="ARVD13; VR22"
-                     /standard_name="CTNNA3_4652"
-                     /db_xref="UniSTS:462847"
-     STS             10434..10643
-                     /gene="CTNNA3"
-                     /gene_synonym="ARVD13; VR22"
-                     /standard_name="WI-21189"
-                     /db_xref="UniSTS:65280"
-     STS             10546..10695
-                     /gene="CTNNA3"
-                     /gene_synonym="ARVD13; VR22"
-                     /standard_name="RH11215"
-                     /db_xref="UniSTS:2078"
      regulatory      10666..10671
                      /regulatory_class="polyA_signal_sequence"
                      /gene="CTNNA3"
