@@ -127,7 +127,7 @@ def _dumpStacksHandler(signal, frame):
     print("###### stack traces {} ######".format(datetime.now().isoformat()), file=fh)
     id2name = dict([(th.ident, th.name) for th in threading.enumerate()])
     for threadId, stack in sys._current_frames().items():
-        print("# Thread: {}({})".format(id2name.get(threadId,""), threadId), file=fh)
+        print("# Thread: {}({})".format(id2name.get(threadId, ""), threadId), file=fh)
         traceback.print_stack(f=stack, file=fh)
     print("\n", file=fh)
     fh.flush()
@@ -135,5 +135,6 @@ def _dumpStacksHandler(signal, frame):
 def enableDumpStack(sig=signal.SIGUSR1):
     """enable dumping stacks when the specified signal is received"""
     signal.signal(sig, _dumpStacksHandler)
+
 
 __all__ = (getActiveTraceFds.__name__, Trace.__name__, enableDumpStack.__name__)
