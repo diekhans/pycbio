@@ -10,7 +10,7 @@ import linecache
 import threading
 import signal
 import traceback
-import datetime
+from datetime import datetime
 
 # FIXME: can this be replace by the pdb trace facility???.
 # FIXME: can this be a context too.

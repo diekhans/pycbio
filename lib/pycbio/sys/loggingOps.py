@@ -53,7 +53,7 @@ def _convertLevel(level):
 
 def setupLogger(handler, formatter=None):
     """add handle to logger and set logger level to the minimum of it's
-    current and the handler level"""
+    current and the handler level.  Returns logger."""
     logger = logging.getLogger()
     if handler.level is not None:
         logger.setLevel(min(handler.level, logger.level))
@@ -63,15 +63,15 @@ def setupLogger(handler, formatter=None):
 
 
 def setupStreamLogger(fh, level, formatter=None):
-    "configure logging to a specified open file."
+    "Configure logging to a specified open file.  Returns logger."
     handler = logging.StreamHandler(stream=fh)
     handler.setLevel(_convertLevel(level))
-    setupLogger(handler, formatter)
+    return setupLogger(handler, formatter)
 
 
 def setupStderrLogger(level, formatter=None):
-    "configure logging to stderr"
-    setupStreamLogger(sys.stderr, _convertLevel(level), formatter)
+    "configure logging to stderr  Returns logger."
+    return setupStreamLogger(sys.stderr, _convertLevel(level), formatter)
 
 
 def getSyslogAddress():
@@ -84,7 +84,7 @@ def getSyslogAddress():
 
 def setupSyslogLogger(facility, level, prog=None, address=None, formatter=None):
     """configure logging to syslog based on the specified facility.  If
-    prog specified, each line is prefixed with the name"""
+    prog specified, each line is prefixed with the name.  Returns logger."""
     if address is None:
         address = getSyslogAddress()
     handler = SysLogHandler(address=address, facility=facility)
@@ -92,15 +92,15 @@ def setupSyslogLogger(facility, level, prog=None, address=None, formatter=None):
     if prog is not None:
         handler.setFormatter(logging.Formatter(fmt="{} %(message)s".format(prog)))
     handler.setLevel(level)
-    setupLogger(handler, formatter)
+    return setupLogger(handler, formatter)
 
 
 def setupNullLogger(level=None):
-    "configure discard logging"
+    "configure discard logging.  Returns logger."
     handler = logging.NullHandler()
     if level is not None:
         handler.setLevel(_convertLevel(level))
-    setupLogger(handler)
+    return setupLogger(handler)
 
 
 def addCmdOptions(parser):
