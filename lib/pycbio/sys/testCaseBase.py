@@ -93,10 +93,8 @@ class TestCaseBase(unittest.TestCase):
 
     def getOutputFile(self, ext):
         """Get path to the output file, using the current test id and append
-        ext, which should contain a dot.  Remove file is if exists"""
+        ext, which should contain a dot."""
         f = os.path.join(self.getOutputDir(), self.getId() + ext)
-        if os.path.exists(f):
-            os.unlink(f)
         fileOps.ensureFileDir(f)
         return f
 
