@@ -1,13 +1,16 @@
 # Copyright 2006-2012 Mark Diekhans
-"""Debug tracing to a file"""
+"""Debug tracing and stack dumps on signals """
 # ideas from:
 #  http://www.dalkescientific.com/writings/diary/archive/2005/04/20/tracing_python_code.html
-
+from __future__ import print_function
 import sys
 import os
 import types
 import linecache
 import threading
+import signal
+import traceback
+import datetime
 
 # FIXME: can this be replace by the pdb trace facility???.
 # FIXME: can this be a context too.
@@ -118,5 +121,19 @@ class Trace(object):
                 self._logLine(frame, event)
         return self._callback
 
+def _dumpStacksHandler(signal, frame):
+    """Signal handler to print the stacks of all threads to stderr"""
+    fh = sys.stderr
+    print("###### stack traces {} ######".format(datetime.now().isoformat()), file=fh)
+    id2name = dict([(th.ident, th.name) for th in threading.enumerate()])
+    for threadId, stack in sys._current_frames().items():
+        print("# Thread: {}({})".format(id2name.get(threadId,""), threadId), file=fh)
+        traceback.print_stack(f=stack, file=fh)
+    print("\n", file=fh)
+    fh.flush()
+
+def enableDumpStack(sig=signal.SIGUSR1):
+    """enable dumping stacks when the specified signal is received"""
+    signal.signal(sig, _dumpStacksHandler)
 
 __all__ = (getActiveTraceFds.__name__, Trace.__name__)
