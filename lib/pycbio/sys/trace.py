@@ -46,7 +46,7 @@ class Trace(object):
                 self.ignoreMods.add(m)
 
     def enable(self):
-        """enable logging on all threads."""
+        """enable logging on all threads. """
         assert(self.fh is not None)
         sys.settrace(self._callback)
         threading.settrace(self._callback)
@@ -136,4 +136,4 @@ def enableDumpStack(sig=signal.SIGUSR1):
     """enable dumping stacks when the specified signal is received"""
     signal.signal(sig, _dumpStacksHandler)
 
-__all__ = (getActiveTraceFds.__name__, Trace.__name__)
+__all__ = (getActiveTraceFds.__name__, Trace.__name__, enableDumpStack.__name__)
