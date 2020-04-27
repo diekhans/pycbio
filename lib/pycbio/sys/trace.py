@@ -98,11 +98,14 @@ class Trace(object):
     def _logLine(self, frame, event):
         "log a code line"
         lineno = frame.f_lineno
-        fname = frame.f_globals["__file__"]
-        if (fname.endswith(".pyc") or fname.endswith(".pyo")):
-            fname = fname[:-1]
+        if frame.f_globals["__file__"] is not None:
+            fname = frame.f_globals["__file__"]
+            if (fname.endswith(".pyc") or fname.endswith(".pyo")):
+                fname = fname[:-1]
+            line = linecache.getline(fname, lineno)
+        else:
+            line = "<file name not available>"
         name = frame.f_globals["__name__"]
-        line = linecache.getline(fname, lineno)
         self.log(name, ":", lineno, self._getIndent(), line.rstrip())
 
     _logEvents = frozenset(["call", "line"])
