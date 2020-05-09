@@ -24,10 +24,9 @@ class WithSrcCds(object):
 
 class PairAlignPsl(TestCaseBase):
     def _dumpNDiff(self, alns, suffix):
-        fh = open(self.getOutputFile(suffix), "w")
-        for pa in alns:
-            pa.dump(fh)
-        fh.close()
+        with open(self.getOutputFile(suffix), "w") as fh:
+            for pa in alns:
+                pa.dump(fh)
         self.diffExpected(suffix)
 
     def testLoad(self):

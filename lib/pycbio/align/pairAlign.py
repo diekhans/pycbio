@@ -545,9 +545,9 @@ def _addPslBlk(pslBlk, aln, prevBlk, inclUnaln):
 def fromPsl(psl, qCdsRange=None, inclUnaln=False, projectCds=False, contained=False):
     """generate a PairAlign from a PSL. cdsRange is None or a tuple. In
     inclUnaln is True, then include Block objects for unaligned regions"""
-    qCds = _getCds(qCdsRange, psl.getQStrand(), psl.qSize)
-    qSeq = _mkPslSeq(psl.qName, psl.qStart, psl.qEnd, psl.qSize, psl.getQStrand(), qCds)
-    tSeq = _mkPslSeq(psl.tName, psl.tStart, psl.tEnd, psl.tSize, psl.getTStrand())
+    qCds = _getCds(qCdsRange, psl.qStrand, psl.qSize)
+    qSeq = _mkPslSeq(psl.qName, psl.qStart, psl.qEnd, psl.qSize, psl.qStrand, qCds)
+    tSeq = _mkPslSeq(psl.tName, psl.tStart, psl.tEnd, psl.tSize, psl.tStrand)
     aln = PairAlign(qSeq, tSeq)
     prevBlk = None
     for i in range(psl.blockCount):

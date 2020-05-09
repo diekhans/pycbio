@@ -137,6 +137,10 @@ class Para(object):
         lines = self._para("make", self.jobFile)
         return BatchStats(lines)
 
+    def free(self):
+        "free the batch"
+        self._para("freeBatch")
+
     def time(self):
         "run para check and return statistics as a list of lines"
         return self._para("time")
