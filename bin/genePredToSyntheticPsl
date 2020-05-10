@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+# Copyright 2006-2020 Mark Diekhans
+from __future__ import print_function
+from builtins import range
+import sys
+import os
+myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
+sys.path.insert(0, os.path.join(myBinDir, "../lib"))
+import argparse
+from pycbio.hgdata.chromSizes import ChromInfoTbl
+from pycbio.hgdata.genePred import GenePredReader
+from pycbio.hgdata.psl import Psl, PslBlock
+from pycbio.sys import fileOps
+
+raise Exception("this program has never been used or tested, as transMapPslToGenePred usually does the trick")
+
+def parseArgs():
+    desc = """Convert a genePred to a synthetic, one-to-one PSL"""
+
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("genePredIn",
+                        help="input genePred, must have exonFrame")
+    parser.add_argument("chromSizes",
+                        help="chromSizes file")
+    parser.add_argument("pslOut",
+                        help="output PSL")
+    parser.add_argument("cdsTsv",
+                        help="TSV with CDS frame information for each coding transcript")
+    return parser.parse_args()
+
+def covertBlockCds(gp, iBlk, exon, qStart, cdsFh):
+    fileOps.prRowv(cdsFh, gp.name, iBlk, qStart, exon.start, exon.size(),
+                   exon.frame)
+
+def convertBlock(gp, iBlk, qStart, psl, cdsFh):
+    exon = gp.exons[iBlk]
+    psl.addBlock(PslBlock(qStart, exon.start, exon.size()))
+    if gp.hasCds():
+        covertBlockCds(gp, iBlk, exon, qStart, cdsFh)
+
+def convertGenePred(gp, chromSizes, pslFh, cdsFh):
+    if not gp.hasExonFrames:
+        raise Exception("genePred must have exon frames: {}".format(gp.name))
+    tSize = chromSizes[gp.chrom]
+    qSize = gp.getLenExons()
+    qStart = 0
+    psl = Psl(qName=gp.name, qSize=qSize, qStart=0, qEnd=qSize,
+              tName=gp.chrom, tSize=tSize, tStart=gp.txStart, tEnd=gp.txEnd,
+              strand=gp.strand)
+    for iBlk in range(len(gp.exons)):
+        convertBlock(gp, iBlk, qStart, psl, cdsFh)
+        qStart += gp.exons[iBlk].size()
+    psl.write(pslFh)
+
+def convertGenePreds(genePredFh, chromSizes, pslFh, cdsFh):
+    fileOps.prRowv(cdsFh, "name", "block", "qStart", "tStart", "size", "frame")
+    for gp in GenePredReader(genePredFh):
+        convertGenePred(gp, chromSizes, pslFh, cdsFh)
+
+def genePredToSyntheticPsl(opts):
+    chromSizes = ChromInfoTbl.loadFile(opts.chromSizes)
+    with open(opts.genePredIn) as genePredFh:
+        with open(opts.pslOut, "w") as pslFh:
+            with open(opts.cdsTsv, "w") as cdsFh:
+                convertGenePreds(genePredFh, chromSizes, pslFh, cdsFh)
+
+
+genePredToSyntheticPsl(parseArgs())
