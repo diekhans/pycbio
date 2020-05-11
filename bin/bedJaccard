@@ -14,7 +14,7 @@ from pycbio.hgdata.bed import BedReader, BedTable
 from pycbio.hgdata.rangeFinder import RangeFinder
 
 
-ReportTypes = SymEnum("ReportTypes", ("stats", "pairings",))
+ReportTypes = SymEnum("ReportTypes", ("stats", "pairings", "bestPairings"))
 
 
 def parseArgs():
@@ -146,6 +146,14 @@ def reportPairings(bedTblA, bedTblB, tsvFh):
         for p in scoresByName[name]:
             fileOps.prRowv(tsvFh, name, str(p))
 
+def reportBestPairings(bedTblA, bedTblB, tsvFh):
+    scoresByName = jaccardScoreByName(bedTblA, bedTblB)
+    fileOps.prRowv(tsvFh, "name", "bedA", "bedB", "score")
+    for name in sorted(scoresByName.keys()):
+        best = scoresByName[name][0]
+        if best.score > 0:
+            fileOps.prRowv(tsvFh, name, str(best))
+
 def computeBestScoreStats(scoresByName):
     bestScores = [scoresByName[n][0].score for n in scoresByName.keys()]
     return statistics.median(bestScores), statistics.mean(bestScores)
@@ -174,6 +182,8 @@ def bedJacquard(opts):
     with open(opts.outTsv, "w") as tsvFh:
         if opts.report == ReportTypes.pairings:
             reportPairings(bedTblA, bedTblB, tsvFh)
+        elif opts.report == ReportTypes.bestPairings:
+            reportBestPairings(bedTblA, bedTblB, tsvFh)
         elif opts.report == ReportTypes.stats:
             reportStats(bedTblA, bedTblB, tsvFh)
 
