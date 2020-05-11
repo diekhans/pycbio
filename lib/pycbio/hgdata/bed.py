@@ -146,6 +146,27 @@ class Bed(object):
         "return BED as a tab-separated string"
         return "\t".join(self.toRow())
 
+    @property
+    def start(self):
+        """alias for chromStart"""
+        return self.chromStart
+
+    @property
+    def end(self):
+        """alias for chromEnd"""
+        return self.chromEnd
+
+    def span(self):
+        "distance from start to end"
+        return self.chromEnd - self.chromStart
+
+    def coverage(self):
+        """number of bases covered"""
+        if self.blocks is None:
+            return self.span()
+        else:
+            return sum([len(b) for b in self.blocks])
+
     def write(self, fh):
         """write BED to a tab-separated file"""
         fh.write(str(self))
