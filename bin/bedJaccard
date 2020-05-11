@@ -10,11 +10,13 @@ from collections import namedtuple
 import statistics
 from pycbio.sys import fileOps
 from pycbio.sys.symEnum import SymEnum
-from pycbio.hgdata.bed import BedReader, BedTable
+from pycbio.hgdata.bed import BedTable
 from pycbio.hgdata.rangeFinder import RangeFinder
 
 
-ReportTypes = SymEnum("ReportTypes", ("stats", "pairings", "bestPairings"))
+ReportTypes = SymEnum("ReportTypes",
+                      ("nameStats", "namePairing", "bestNamePairing",
+                       "overStats", "bestOverPairing"))
 
 
 def parseArgs():
@@ -22,10 +24,24 @@ def parseArgs():
     By default, it compute statistics between BED based on the same name.
     This can be used to compare different alignments or other ways of processing
     the same inputs.
+
+    Report options;
+      - nameStats - output statistics for mappings of the same name
+      - namePairing - list pairings and scores for the same BED name
+      - bestNamePairing - list best pairings and scores for the same BED name
+      - overStats - output statistics for mappings based on overlap.
+      - bestOverPairing - list best pairings and scores for records overlapping.
+
+    For name pairing, mappings from bedA and bedB are grouped by name and the best
+    pairings found by reciprocal-best.
+
+    For overlap parings, records in bedA are pairs based on overlaping records in bedB.
+    Here bedB is consider the target, we don't to reciprocal-best to get the pairings.
+    For overlapping, we don't consider bedAs that don't overlap any bedBs.
     """
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument("--report", choices=ReportTypes.__members__.values(),
-                        type=ReportTypes, default=ReportTypes.stats,
+                        type=ReportTypes, default=ReportTypes.nameStats,
                         help="type of report to produce")
     parser.add_argument("bedFileA",
                         help="first BED file")
@@ -38,29 +54,40 @@ def parseArgs():
 def fmtScore(score):
     return "{:6f}".format(score)
 
+def bedNameStr(bed):
+    if bed is None:
+        return ""
+    else:
+        return bed.name
+
+def bedCoordsStr(bed):
+    if bed is None:
+        return ""
+    else:
+        return "{}:{}-{}".format(bed.chrom, bed.start, bed.end)
+
 def loadBedToIdTable(bedFile):
     return BedTable(bedFile, nameIdx=True)
 
-def loadBedToRangeFinder(bedFile):
+def buildRangeFinder(bedTbl):
     rf = RangeFinder()
-    for bed in BedReader(bedFile):
+    for bed in bedTbl:
         rf.add(bed.chrom, bed.start, bed.end, bed, bed.strand)
     return rf
 
 class BedPairScore(namedtuple("BedPairScore",
                               ("bedA", "bedB", "score"))):
 
-    @staticmethod
-    def _coordsStr(bed):
-        if bed is None:
-            return "None"
-        else:
-            return "{}:{}-{}".format(bed.chrom, bed.start, bed.end)
-
     def __str__(self):
-        return "{}\t{}\t{}".format(self._coordsStr(self.bedA),
-                                   self._coordsStr(self.bedB),
-                                   fmtScore(self.score))
+        return "{}\t{}\t{}\t{}\t{}".format(bedNameStr(self.bedA), bedCoordsStr(self.bedA),
+                                           bedNameStr(self.bedB), bedCoordsStr(self.bedB),
+                                           fmtScore(self.score))
+
+def bedPairsSort(bedPairs):
+    return sorted(bedPairs,
+                  key=lambda p: (-p.score,
+                                 -(p.bedA.coverage() + p.bedB.coverage()),
+                                 -(p.bedA.span() + p.bedB.span())))
 
 def intersection(rangeA, rangeB):
     return max(0, min(rangeA.end, rangeB.end) - max(rangeA.start, rangeB.start))
@@ -95,16 +122,13 @@ def scoreAllPairs(bedsA, bedsB):
     """don't save ones with no overlap, sort by descending score, with
     trying to pick longest in a tie, which should be predictable enough
     for tests."""
-    scored = []
+    bedPairs = []
     for bedA in bedsA:
         for bedB in bedsB:
             score = calcBedJaccard(bedA, bedB)
             if score > 0.0:
-                scored.append(BedPairScore(bedA, bedB, score))
-    return sorted(scored,
-                  key=lambda p: (-p.score,
-                                 -(p.bedA.coverage() + p.bedB.coverage()),
-                                 -(p.bedA.span() + p.bedB.span())))
+                bedPairs.append(BedPairScore(bedA, bedB, score))
+    return bedPairsSort(bedPairs)
 
 def pickReciprocalBests(allPairs, doneById):
     picked = []
@@ -139,53 +163,96 @@ def jaccardScoreByName(bedTblA, bedTblB):
         scoresByName[name] = jaccardScoresForName(bedTblA, bedTblB, name)
     return scoresByName
 
-def reportPairings(bedTblA, bedTblB, tsvFh):
-    scoresByName = jaccardScoreByName(bedTblA, bedTblB)
-    fileOps.prRowv(tsvFh, "name", "bedA", "bedB", "score")
-    for name in sorted(scoresByName.keys()):
-        for p in scoresByName[name]:
-            fileOps.prRowv(tsvFh, name, str(p))
+def jaccardScoresForOverlap(bedA, bedRfB):
+    bedPairs = []
+    for bedB in bedRfB.overlapping(bedA.chrom, bedA.start, bedA.end, bedA.strand):
+        score = calcBedJaccard(bedA, bedB)
+        if score > 0.0:
+            bedPairs.append(BedPairScore(bedA, bedB, score))
+    return bedPairsSort(bedPairs)
 
-def reportBestPairings(bedTblA, bedTblB, tsvFh):
+def jaccardScoreByOverlap(bedTblA, bedTblB):
+    bedRfB = buildRangeFinder(bedTblB)
+    scoresByA = {}
+    for bedA in bedTblA:
+        bedPairs = jaccardScoresForOverlap(bedA, bedRfB)
+        if len(bedPairs) > 0:
+            scoresByA[id(bedA)] = bedPairs
+    return scoresByA
+
+def writeBedPairHeader(tsvFh):
+    fileOps.prRowv(tsvFh, "nameA", "coordsA", "nameB", "coordsB", "score")
+
+def writeBedPair(tsvFh, bedPair):
+    fileOps.prRowv(tsvFh, str(bedPair))
+
+def reportNamePairing(bedTblA, bedTblB, tsvFh):
+    writeBedPairHeader(tsvFh)
     scoresByName = jaccardScoreByName(bedTblA, bedTblB)
-    fileOps.prRowv(tsvFh, "name", "bedA", "bedB", "score")
+    for name in sorted(scoresByName.keys()):
+        for bp in scoresByName[name]:
+            writeBedPair(tsvFh, bp)
+
+def reportBestNamePairing(bedTblA, bedTblB, tsvFh):
+    writeBedPairHeader(tsvFh)
+    scoresByName = jaccardScoreByName(bedTblA, bedTblB)
     for name in sorted(scoresByName.keys()):
         best = scoresByName[name][0]
         if best.score > 0:
-            fileOps.prRowv(tsvFh, name, str(best))
+            writeBedPair(tsvFh, best)
 
-def computeBestScoreStats(scoresByName):
-    bestScores = [scoresByName[n][0].score for n in scoresByName.keys()]
+def reportBestOverPairing(bedTblA, bedTblB, tsvFh):
+    writeBedPairHeader(tsvFh)
+    scoresByA = jaccardScoreByOverlap(bedTblA, bedTblB)
+    for bedPairs in sorted(scoresByA.values(),
+                           key=lambda bps: (bps[0].bedA.chrom, bps[0].bedA.start, -bps[0].bedA.end)):
+        writeBedPair(tsvFh, bedPairs[0])
+
+def computeBestScoreStats(scoresByKey):
+    bestScores = [scoresByKey[k][0].score for k in scoresByKey.keys()]
     return statistics.median(bestScores), statistics.mean(bestScores)
 
-def computeOverScoreStats(scoresByName):
+def computeOverallScoreStats(scoresByKey):
     allScores = [p.score
-                 for n in scoresByName.keys()
-                 for p in scoresByName[n]]
+                 for k in scoresByKey.keys()
+                 for p in scoresByKey[k]]
     return statistics.median(allScores), statistics.mean(allScores)
 
-def reportStats(bedTblA, bedTblB, tsvFh):
-    scoresByName = jaccardScoreByName(bedTblA, bedTblB)
-
-    medianBestScore, meanBestScore = computeBestScoreStats(scoresByName)
-    medianOverallScore, meanOverallScore = computeOverScoreStats(scoresByName)
+def statsMakeReport(scoresByKey, groupType, tsvFh):
+    medianBestScore, meanBestScore = computeBestScoreStats(scoresByKey)
+    medianOverallScore, meanOverallScore = computeOverallScoreStats(scoresByKey)
 
     fileOps.prRowv(tsvFh, "what", "value")
+    fileOps.prRowv(tsvFh, "groupType", groupType)
     fileOps.prRowv(tsvFh, "medianBestScore", fmtScore(medianBestScore))
     fileOps.prRowv(tsvFh, "meanBestScore", fmtScore(meanBestScore))
     fileOps.prRowv(tsvFh, "medianOverallScore", fmtScore(medianOverallScore))
     fileOps.prRowv(tsvFh, "meanOverallScore", fmtScore(meanOverallScore))
 
+def reportNameStats(bedTblA, bedTblB, tsvFh):
+    scoresByName = jaccardScoreByName(bedTblA, bedTblB)
+    statsMakeReport(scoresByName, "byName", tsvFh)
+
+def reportOverStats(bedTblA, bedTblB, tsvFh):
+    scoresByA = jaccardScoreByOverlap(bedTblA, bedTblB)
+    statsMakeReport(scoresByA, "byOverlap", tsvFh)
+
 def bedJacquard(opts):
     bedTblA = loadBedToIdTable(opts.bedFileA)
     bedTblB = loadBedToIdTable(opts.bedFileB)
     with open(opts.outTsv, "w") as tsvFh:
-        if opts.report == ReportTypes.pairings:
-            reportPairings(bedTblA, bedTblB, tsvFh)
-        elif opts.report == ReportTypes.bestPairings:
-            reportBestPairings(bedTblA, bedTblB, tsvFh)
-        elif opts.report == ReportTypes.stats:
-            reportStats(bedTblA, bedTblB, tsvFh)
+        if opts.report == ReportTypes.namePairing:
+            reportNamePairing(bedTblA, bedTblB, tsvFh)
+        elif opts.report == ReportTypes.bestNamePairing:
+            reportBestNamePairing(bedTblA, bedTblB, tsvFh)
+        elif opts.report == ReportTypes.nameStats:
+            reportNameStats(bedTblA, bedTblB, tsvFh)
+        elif opts.report == ReportTypes.bestOverPairing:
+            reportBestOverPairing(bedTblA, bedTblB, tsvFh)
+        elif opts.report == ReportTypes.overStats:
+            reportOverStats(bedTblA, bedTblB, tsvFh)
+        else:
+            raise Exception("BUG: {} not handled".format(opts.report))
 
 
 bedJacquard(parseArgs())
