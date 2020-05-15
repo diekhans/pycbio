@@ -6,3 +6,7 @@ meanNumMappingsAll	0.724138
 medianNumMappingsAll	1.000000
 meanNumMappingsSome	1.235294
 medianNumMappingsSome	1.000000
+meanBaseMappingRate	0.511177
+medianBaseMappingRate	0.720414
+meanCdsBaseMappingRate	0.000000
+medianCdsBaseMappingRate	0.000000

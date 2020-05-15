@@ -140,10 +140,9 @@ def findBestMapping(mapping):
 def collectBestMappings(mappings):
     return [findBestMapping(ma) for ma in mappings.values()]
 
-def calcMultiMapStats(bestMappings, inclUnmapped):
-    numMapped = [ma.mappingCnt for ma in bestMappings
-                 if inclUnmapped or (ma.mappingCnt > 0)]
-    return statistics.mean(numMapped), statistics.median(numMapped)
+def getNumMappingCnts(bestMappings, inclUnmapped):
+    return [ma.mappingCnt for ma in bestMappings
+            if inclUnmapped or (ma.mappingCnt > 0)]
 
 def buildPercentHisto():
     return {b: 0 for b in range(0, 101, 10)}
@@ -169,21 +168,28 @@ def fracCdsMappedHisto(bestMappings, inclUnmapped):
     return histo, len(useMappings)
 
 def reportStats(mappings, tsvFh):
+    fileOps.prRowv(tsvFh, "what", "value")
     bestMappings = collectBestMappings(mappings)
+
     srcCnt = len(bestMappings)
     mappedCnt = len([ma for ma in bestMappings if ma.mappingCnt > 0])
-
-    meanNumMappingsAll, medianNumMappingsAll = calcMultiMapStats(bestMappings, inclUnmapped=True)
-    meanNumMappingsSome, medianNumMappingsSome = calcMultiMapStats(bestMappings, inclUnmapped=False)
-
-    fileOps.prRowv(tsvFh, "what", "value")
     fileOps.prRowv(tsvFh, "srcTrans", srcCnt)
     fileOps.prRowv(tsvFh, "srcMapped", mappedCnt)
     fileOps.prRowv(tsvFh, "srcMapRate", fmtRate(mappedCnt, srcCnt))
-    fileOps.prRowv(tsvFh, "meanNumMappingsAll", fmtFloat(meanNumMappingsAll))
-    fileOps.prRowv(tsvFh, "medianNumMappingsAll", fmtFloat(medianNumMappingsAll))
-    fileOps.prRowv(tsvFh, "meanNumMappingsSome", fmtFloat(meanNumMappingsSome))
-    fileOps.prRowv(tsvFh, "medianNumMappingsSome", fmtFloat(medianNumMappingsSome))
+
+    numMappingsAll = getNumMappingCnts(bestMappings, inclUnmapped=True)
+    numMappingsSome = getNumMappingCnts(bestMappings, inclUnmapped=False)
+    fileOps.prRowv(tsvFh, "meanNumMappingsAll", fmtFloat(statistics.mean(numMappingsAll)))
+    fileOps.prRowv(tsvFh, "medianNumMappingsAll", fmtFloat(statistics.median(numMappingsAll)))
+    fileOps.prRowv(tsvFh, "meanNumMappingsSome", fmtFloat(statistics.mean(numMappingsSome)))
+    fileOps.prRowv(tsvFh, "medianNumMappingsSome", fmtFloat(statistics.median(numMappingsSome)))
+
+    baseMappingRates = [m.baseMapRate() for m in bestMappings]
+    cdsBaseMappingRates = [m.cdsBaseMapRate() for m in bestMappings]
+    fileOps.prRowv(tsvFh, "meanBaseMappingRate", fmtFloat(statistics.mean(baseMappingRates)))
+    fileOps.prRowv(tsvFh, "medianBaseMappingRate", fmtFloat(statistics.median(baseMappingRates)))
+    fileOps.prRowv(tsvFh, "meanCdsBaseMappingRate", fmtFloat(statistics.mean(cdsBaseMappingRates)))
+    fileOps.prRowv(tsvFh, "medianCdsBaseMappingRate", fmtFloat(statistics.median(cdsBaseMappingRates)))
 
 def outputHisto(bestMappings, tsvFh, *, inclUnmapped, cds):
     histo, total = fracMappedHisto(bestMappings, inclUnmapped=inclUnmapped)
