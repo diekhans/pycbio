@@ -1,7 +1,7 @@
 root = ../..
 include ${root}/defs.mk
 
-subdirs = gbff geneCheck ncbi csvToTsv bedMappingCmp
+subdirs = gbff geneCheck ncbi csvToTsv bedMappingCmp bedMappingAnalyze
 # FIXME: not done: vennChart
 
 all:

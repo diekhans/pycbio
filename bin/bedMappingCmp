@@ -240,7 +240,7 @@ def reportOverStats(bedTblA, bedTblB, tsvFh):
     scoresByA = jaccardScoreByOverlap(bedTblA, bedTblB)
     statsMakeReport(scoresByA, "byOverlap", tsvFh)
 
-def bedJacquard(opts):
+def bedMappingCmp(opts):
     bedTblA = loadBedToIdTable(opts.bedFileA)
     bedTblB = loadBedToIdTable(opts.bedFileB)
     with open(opts.outTsv, "w") as tsvFh:
@@ -258,4 +258,4 @@ def bedJacquard(opts):
             raise Exception("BUG: {} not handled".format(opts.report))
 
 
-bedJacquard(parseArgs())
+bedMappingCmp(parseArgs())

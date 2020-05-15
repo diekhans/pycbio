@@ -1,0 +1,212 @@
+#!/usr/bin/env python3
+# Copyright 2006-2020 Mark Diekhans
+
+import sys
+import os
+myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
+sys.path.insert(0, os.path.join(myBinDir, "../lib"))
+import argparse
+import re
+from collections import namedtuple
+import statistics
+import math
+from pycbio.sys import fileOps
+from pycbio.sys.symEnum import SymEnum
+from pycbio.hgdata.bed import BedReader
+
+
+# FIXME: this should really allow for the transmap unique src/dest
+# id generation stuff to match ids.  Right now, it just discards
+# duplicate sources
+
+ReportTypes = SymEnum("ReportTypes",
+                      ("stats", "histo"))
+
+IdOpts = SymEnum("IdOpts", ("dropUniqId",))
+
+
+def parseArgs():
+    desc = """Analyze mappings, comparing source to target.
+
+    Report options;
+      - stats - basic mapping stats
+      - histo - histograms of fraction mapped
+    """
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("--report", choices=ReportTypes.__members__.values(),
+                        type=ReportTypes, default=ReportTypes.stats,
+                        help="type of report to produce")
+    parser.add_argument("--dropUniqId", action="store_true",
+                        help="drop everything starting with the last dash from the id when looking up")
+    parser.add_argument("srcBedFile",
+                        help="source genome BED file")
+    parser.add_argument("destBedFile",
+                        help="destination BED file")
+    parser.add_argument("outTsv",
+                        help="TSV report output, format depends on report")
+    opts = parser.parse_args()
+    opts.idOpts = set()
+    if opts.dropUniqId:
+        opts.idOpts.add(IdOpts.dropUniqId)
+    return opts
+
+def fixUpId(tid, idOpts):
+    if IdOpts.dropUniqId in idOpts:
+        m = re.match("^(.*)-([0-9.]+)?$", tid)
+        if m:
+            tid = m.group(1)
+    return tid
+
+def fmtFloat(rate):
+    return "{:4f}".format(rate)
+
+def fmtRate(cnt, total):
+    return fmtFloat(cnt / total)
+
+class TranscriptMapping(object):
+    def __init__(self, transId, srcTrans):
+        self.transId = transId  # might be cleaned of suffixes
+        self.srcTrans = srcTrans
+        self.destTranses = []
+
+    def addDestTrans(self, destTrans):
+        self.destTranses.append(destTrans)
+
+class Mappings(dict):
+    def __init__(self, srcBedFile, destBedFile, idOpts):
+        self.dupSrcCnt = 0
+        for bed in BedReader(srcBedFile):
+            self.addSrcTrans(bed, idOpts)
+        for bed in BedReader(destBedFile):
+            self.addDestTrans(bed, idOpts)
+
+    def addSrcTrans(self, srcTrans, idOpts):
+        transId = fixUpId(srcTrans.name, idOpts)
+        tm = self.get(transId)
+        if tm is None:
+            self[transId] = TranscriptMapping(transId, srcTrans)
+        else:
+            self.dupSrcCnt += 1
+
+    def addDestTrans(self, destTrans, idOpts):
+        tid = fixUpId(destTrans.name, idOpts)
+        tm = self.get(tid)
+        if tm is None:
+            raise Exception("source transcript not found for: {}".format(destTrans.name))
+        tm.addDestTrans(destTrans)
+
+class TransStats(namedtuple("TransStats",
+                            ("trans", "bases", "cdsBases"))):
+    pass
+
+class MappingStats(namedtuple("MappingStats",
+                              ("src", "dest", "mappingCnt"))):
+
+    def baseMapRate(self):
+        return self.dest.bases / self.src.bases
+
+    def cdsBaseMapRate(self):
+        return self.dest.cdsBases / self.src.cdsBases
+
+def calcCdsBases(trans, blk):
+    return max(min(trans.thickEnd, blk.end) - max(trans.thickStart, blk.start), 0)
+
+def calcTransStats(trans):
+    bases = cdsBases = 0
+    for blk in trans.blocks:
+        bases += len(blk)
+        cdsBases += calcCdsBases(trans, blk)
+    return TransStats(trans, bases, cdsBases)
+
+def scoreMapping(srcStats, destStats):
+    # use average of change in base and cds bases
+    return ((destStats.bases / srcStats.bases) + (destStats.cdsBases / srcStats.cdsBases)) / 2
+
+def findBestMapping(mapping):
+    "get best mapping for one of the source transcripts"
+    bestDestStats = None
+    bestScore = 0
+    srcStats = calcTransStats(mapping.srcTrans)
+    for destTrans in mapping.destTranses:
+        destStats = calcTransStats(destTrans)
+        score = scoreMapping(srcStats, destStats)
+        if score > bestScore:
+            bestDestStats = destStats
+            bestScore = score
+    if bestDestStats is None:
+        bestDestStats = TransStats(None, 0, 0)
+    return MappingStats(srcStats, bestDestStats, len(mapping.destTranses))
+
+def collectBestMappings(mappings):
+    return [findBestMapping(ma) for ma in mappings.values()]
+
+def calcMultiMapStats(bestMappings, inclUnmapped):
+    numMapped = [ma.mappingCnt for ma in bestMappings
+                 if inclUnmapped or (ma.mappingCnt > 0)]
+    return statistics.mean(numMapped), statistics.median(numMapped)
+
+def buildPercentHisto():
+    return {b: 0 for b in range(0, 101, 10)}
+
+def getPercentBucket(frac):
+    b = 10 * (math.floor(100 * frac) // 10)
+    return b
+
+def fracMappedHisto(bestMappings, inclUnmapped):
+    useMappings = [ma for ma in bestMappings
+                   if inclUnmapped or (ma.mappingCnt > 0)]
+    histo = buildPercentHisto()
+    for ma in useMappings:
+        histo[getPercentBucket(ma.baseMapRate())] += 1
+    return histo, len(useMappings)
+
+def fracCdsMappedHisto(bestMappings, inclUnmapped):
+    useMappings = [ma for ma in bestMappings
+                   if (ma.src.cdsBases > 0) and (inclUnmapped or (ma.mappingCnt > 0))]
+    histo = buildPercentHisto()
+    for ma in useMappings:
+        histo[getPercentBucket(ma.cdsMapRate())] += 1
+    return histo, len(useMappings)
+
+def reportStats(mappings, tsvFh):
+    bestMappings = collectBestMappings(mappings)
+    srcCnt = len(bestMappings)
+    mappedCnt = len([ma for ma in bestMappings if ma.mappingCnt > 0])
+
+    meanNumMappingsAll, medianNumMappingsAll = calcMultiMapStats(bestMappings, inclUnmapped=True)
+    meanNumMappingsSome, medianNumMappingsSome = calcMultiMapStats(bestMappings, inclUnmapped=False)
+
+    fileOps.prRowv(tsvFh, "what", "value")
+    fileOps.prRowv(tsvFh, "srcTrans", srcCnt)
+    fileOps.prRowv(tsvFh, "srcMapped", mappedCnt)
+    fileOps.prRowv(tsvFh, "srcMapRate", fmtRate(mappedCnt, srcCnt))
+    fileOps.prRowv(tsvFh, "meanNumMappingsAll", fmtFloat(meanNumMappingsAll))
+    fileOps.prRowv(tsvFh, "medianNumMappingsAll", fmtFloat(medianNumMappingsAll))
+    fileOps.prRowv(tsvFh, "meanNumMappingsSome", fmtFloat(meanNumMappingsSome))
+    fileOps.prRowv(tsvFh, "medianNumMappingsSome", fmtFloat(medianNumMappingsSome))
+
+def outputHisto(bestMappings, tsvFh, *, inclUnmapped, cds):
+    histo, total = fracMappedHisto(bestMappings, inclUnmapped=inclUnmapped)
+    label = ("cds" if cds else "bases") + "Mapped" + ("All" if inclUnmapped else "Some")
+    for bi in sorted(histo.keys(), reverse=True):
+        fileOps.prRowv(tsvFh, label, bi, histo[bi], fmtRate(histo[bi], total))
+
+def reportHistos(mappings, tsvFh):
+    bestMappings = collectBestMappings(mappings)
+    fileOps.prRowv(tsvFh, "what", "fracMapped", "count", "rate")
+    for inclUnmapped in (True, False):
+        for cds in (True, False):
+            outputHisto(bestMappings, tsvFh, inclUnmapped=inclUnmapped, cds=cds)
+
+def bedMappingAnalyze(opts):
+    mappings = Mappings(opts.srcBedFile, opts.destBedFile, opts.idOpts)
+    with open(opts.outTsv, "w") as tsvFh:
+        if opts.report == ReportTypes.stats:
+            reportStats(mappings, tsvFh)
+        elif opts.report == ReportTypes.histo:
+            reportHistos(mappings, tsvFh)
+        else:
+            raise Exception("BUG: {} not handled".format(opts.report))
+
+
+bedMappingAnalyze(parseArgs())
