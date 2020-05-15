@@ -211,26 +211,24 @@ def reportBestOverPairing(bedTblA, bedTblB, tsvFh):
                            key=lambda bps: (bps[0].bedA.chrom, bps[0].bedA.start, -bps[0].bedA.end)):
         writeBedPair(tsvFh, bedPairs[0])
 
-def computeBestScoreStats(scoresByKey):
-    bestScores = [scoresByKey[k][0].score for k in scoresByKey.keys()]
-    return statistics.median(bestScores), statistics.mean(bestScores)
+def getBestScores(scoresByKey):
+    return [scoresByKey[k][0].score for k in scoresByKey.keys()]
 
-def computeOverallScoreStats(scoresByKey):
-    allScores = [p.score
-                 for k in scoresByKey.keys()
-                 for p in scoresByKey[k]]
-    return statistics.median(allScores), statistics.mean(allScores)
+def getOverallScores(scoresByKey):
+    return [p.score
+            for k in scoresByKey.keys()
+            for p in scoresByKey[k]]
 
 def statsMakeReport(scoresByKey, groupType, tsvFh):
-    medianBestScore, meanBestScore = computeBestScoreStats(scoresByKey)
-    medianOverallScore, meanOverallScore = computeOverallScoreStats(scoresByKey)
+    bestScores = getBestScores(scoresByKey)
+    overallScores = getOverallScores(scoresByKey)
 
     fileOps.prRowv(tsvFh, "what", "value")
     fileOps.prRowv(tsvFh, "groupType", groupType)
-    fileOps.prRowv(tsvFh, "medianBestScore", fmtScore(medianBestScore))
-    fileOps.prRowv(tsvFh, "meanBestScore", fmtScore(meanBestScore))
-    fileOps.prRowv(tsvFh, "medianOverallScore", fmtScore(medianOverallScore))
-    fileOps.prRowv(tsvFh, "meanOverallScore", fmtScore(meanOverallScore))
+    fileOps.prRowv(tsvFh, "meanBestScore", fmtScore(statistics.mean(bestScores)))
+    fileOps.prRowv(tsvFh, "medianBestScore", fmtScore(statistics.median(bestScores)))
+    fileOps.prRowv(tsvFh, "meanOverallScore", fmtScore(statistics.mean(overallScores)))
+    fileOps.prRowv(tsvFh, "medianOverallScore", fmtScore(statistics.median(overallScores)))
 
 def reportNameStats(bedTblA, bedTblB, tsvFh):
     scoresByName = jaccardScoreByName(bedTblA, bedTblB)

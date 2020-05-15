@@ -1,6 +1,6 @@
 what	value
 groupType	byOverlap
-medianBestScore	1.000000
 meanBestScore	0.956642
-medianOverallScore	0.884615
+medianBestScore	1.000000
 meanOverallScore	0.728460
+medianOverallScore	0.884615
