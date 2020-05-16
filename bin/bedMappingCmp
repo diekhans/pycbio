@@ -37,8 +37,8 @@ def parseArgs():
     by name and the best pairings found by reciprocal-best.
 
     Overlap pairing is intended for comparing a mapping to a target
-    annotation.  With overlap pairing, records in bedA are pairs based on
-    overlaping records in bedB.  Here bedB is consider the target, we don't to
+    annotation.  With overlap pairing, records in bedA are paired based on
+    overlapping records in bedB.  Here bedB is consider the target, we don't to
     reciprocal-best to get the pairings.  For overlapping, we don't consider
     bedAs that don't overlap any bedBs.
     """
