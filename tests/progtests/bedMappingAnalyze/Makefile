@@ -27,7 +27,7 @@ testHistoTm: mkdirs
 galGalTests: testStatsGalGal testHistoGalGal
 
 testStatsGalGal: mkdirs
-	${bedMappingAnalyze} --report=stats --valueCol=map ${galGalDir}/hg38.src.bed ${galGalDir}/hg38-galGal4.halMap.bed output/$@.tsv
+	${bedMappingAnalyze} --report=stats --valueCol=map --floatPrecision=2 ${galGalDir}/hg38.src.bed ${galGalDir}/hg38-galGal4.halMap.bed output/$@.tsv
 	${diff} expected/$@.tsv output/$@.tsv
 
 testHistoGalGal: mkdirs

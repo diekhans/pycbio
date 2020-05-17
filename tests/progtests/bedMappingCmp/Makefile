@@ -7,7 +7,7 @@ bedMappingCmp = ${binDir}/bedMappingCmp
 
 # test data
 #  - set1A, set1B - hack from some transmap BED in various ways.
-#  - hg38 to galGal4 mappings in select regions:
+#  - hg38 to galGal4 mappings in selected regions:
 #     - hg38.src.bed - source transcripts that were mapped
 #     - hg38-galGal4.halMap.bed - hg38 to galGal4 using HAL alignments
 #     - hg38-galGal4.lastzMap.bed - hg38 to galGal4 using LASTZ alignments
@@ -48,11 +48,11 @@ testNamePairingGalGal: mkdirs
 	${diff} expected/$@.tsv output/$@.tsv
 
 testBestNamePairingGalGal: mkdirs
-	${bedMappingCmp} --report=bestNamePairing input/hg38-galGal4.lastzMap.bed input/hg38-galGal4.halMap.bed output/$@.tsv
+	${bedMappingCmp} --report=bestNamePairing --floatPrecision=2 input/hg38-galGal4.lastzMap.bed input/hg38-galGal4.halMap.bed output/$@.tsv
 	${diff} expected/$@.tsv output/$@.tsv
 
 testNameStatsGalGal: mkdirs
-	${bedMappingCmp} --report=nameStats input/hg38-galGal4.lastzMap.bed input/hg38-galGal4.halMap.bed output/$@.tsv
+	${bedMappingCmp} --report=nameStats --floatPrecision=2 input/hg38-galGal4.lastzMap.bed input/hg38-galGal4.halMap.bed output/$@.tsv
 	${diff} expected/$@.tsv output/$@.tsv
 
 testBestOverPairingGalGal: mkdirs

@@ -8,6 +8,7 @@ sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 import argparse
 import re
 from collections import namedtuple
+from functools import partial
 import statistics
 import math
 from pycbio.sys import fileOps
@@ -41,6 +42,8 @@ def parseArgs():
                         help="name to use for value column name, useful when joining")
     parser.add_argument("--dropUniqId", action="store_true",
                         help="drop everything starting with the last dash from the id when looking up")
+    parser.add_argument("--floatPrecision", type=int, default=4,
+                        help="use this precision for floating-point")
     parser.add_argument("srcBedFile",
                         help="source genome BED file")
     parser.add_argument("destBedFile",
@@ -60,8 +63,11 @@ def fixUpId(tid, idOpts):
             tid = m.group(1)
     return tid
 
-def fmtFloat(rate):
-    return "{:4f}".format(rate)
+def fmtFloatGuts(val, precision=4):
+    return f"{{:0.{precision}f}}".format(val)
+
+
+fmtFloat = None  # replaced by a partial function to fmtFloatGuts
 
 def fmtRate(cnt, total):
     return fmtFloat(cnt / total)
@@ -211,6 +217,8 @@ def reportHistos(mappings, valueCol, tsvFh):
             outputHisto(bestMappings, tsvFh, inclUnmapped=inclUnmapped, cds=cds)
 
 def bedMappingAnalyze(opts):
+    global fmtFloat
+    fmtFloat = partial(fmtFloatGuts, precision=opts.floatPrecision)
     mappings = Mappings(opts.srcBedFile, opts.destBedFile, opts.idOpts)
     with open(opts.outTsv, "w") as tsvFh:
         if opts.report == ReportTypes.stats:

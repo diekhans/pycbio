@@ -7,6 +7,7 @@ myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
 sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 import argparse
 from collections import namedtuple
+from functools import partial
 import statistics
 from pycbio.sys import fileOps
 from pycbio.sys.symEnum import SymEnum
@@ -46,6 +47,8 @@ def parseArgs():
     parser.add_argument("--report", choices=ReportTypes.__members__.values(),
                         type=ReportTypes, default=ReportTypes.nameStats,
                         help="type of report to produce")
+    parser.add_argument("--floatPrecision", type=int, default=4,
+                        help="use this precision for floating-point")
     parser.add_argument("bedFileA",
                         help="first BED file")
     parser.add_argument("bedFileB",
@@ -54,8 +57,11 @@ def parseArgs():
                         help="TSV report output, format depends on report")
     return parser.parse_args()
 
-def fmtScore(score):
-    return "{:6f}".format(score)
+def fmtFloatGuts(val, precision=4):
+    return f"{{:0.{precision}f}}".format(val)
+
+
+fmtFloat = None  # replaced by a partial function to fmtFloatGuts
 
 def bedNameStr(bed):
     if bed is None:
@@ -84,7 +90,7 @@ class BedPairScore(namedtuple("BedPairScore",
     def __str__(self):
         return "{}\t{}\t{}\t{}\t{}".format(bedNameStr(self.bedA), bedCoordsStr(self.bedA),
                                            bedNameStr(self.bedB), bedCoordsStr(self.bedB),
-                                           fmtScore(self.score))
+                                           fmtFloat(self.score))
 
 def bedPairsSort(bedPairs):
     return sorted(bedPairs,
@@ -225,10 +231,10 @@ def statsMakeReport(scoresByKey, groupType, tsvFh):
 
     fileOps.prRowv(tsvFh, "what", "value")
     fileOps.prRowv(tsvFh, "groupType", groupType)
-    fileOps.prRowv(tsvFh, "meanBestScore", fmtScore(statistics.mean(bestScores)))
-    fileOps.prRowv(tsvFh, "medianBestScore", fmtScore(statistics.median(bestScores)))
-    fileOps.prRowv(tsvFh, "meanOverallScore", fmtScore(statistics.mean(overallScores)))
-    fileOps.prRowv(tsvFh, "medianOverallScore", fmtScore(statistics.median(overallScores)))
+    fileOps.prRowv(tsvFh, "meanBestScore", fmtFloat(statistics.mean(bestScores)))
+    fileOps.prRowv(tsvFh, "medianBestScore", fmtFloat(statistics.median(bestScores)))
+    fileOps.prRowv(tsvFh, "meanOverallScore", fmtFloat(statistics.mean(overallScores)))
+    fileOps.prRowv(tsvFh, "medianOverallScore", fmtFloat(statistics.median(overallScores)))
 
 def reportNameStats(bedTblA, bedTblB, tsvFh):
     scoresByName = jaccardScoreByName(bedTblA, bedTblB)
@@ -239,6 +245,8 @@ def reportOverStats(bedTblA, bedTblB, tsvFh):
     statsMakeReport(scoresByA, "byOverlap", tsvFh)
 
 def bedMappingCmp(opts):
+    global fmtFloat
+    fmtFloat = partial(fmtFloatGuts, precision=opts.floatPrecision)
     bedTblA = loadBedToIdTable(opts.bedFileA)
     bedTblB = loadBedToIdTable(opts.bedFileB)
     with open(opts.outTsv, "w") as tsvFh:
