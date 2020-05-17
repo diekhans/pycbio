@@ -1,7 +1,9 @@
 what	map
 srcTrans	16
-srcMapped	16
-srcMapRate	1.00
+numMapped	16
+rateMapped	1.00
+numMultiMapped	0
+rateMultiMapped	0.00
 meanNumMappingsAll	1.00
 medianNumMappingsAll	1.00
 meanNumMappingsSome	1.00

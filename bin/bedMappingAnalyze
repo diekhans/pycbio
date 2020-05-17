@@ -177,26 +177,29 @@ def fracCdsMappedHisto(bestMappings, inclUnmapped):
     return histo, len(useMappings)
 
 def reportStats(mappings, valueCol, tsvFh):
+    bestMappings = collectBestMappings(mappings)
+    srcCnt = len(bestMappings)
+    mappedCnt = len([ma for ma in bestMappings if ma.mappingCnt > 0])
+    numMappingsAll = getNumMappingCnts(bestMappings, inclUnmapped=True)
+    numMappingsSome = getNumMappingCnts(bestMappings, inclUnmapped=False)
+    baseMappingRates = [m.baseMapRate() for m in bestMappings]
+    cdsBaseMappingRates = [m.cdsBaseMapRate() for m in bestMappings]
+    multiMapCnt = sum(1 for c in numMappingsAll if c > 1)
+
     if valueCol is None:
         valueCol = "value"
     fileOps.prRowv(tsvFh, "what", valueCol)
-    bestMappings = collectBestMappings(mappings)
-
-    srcCnt = len(bestMappings)
-    mappedCnt = len([ma for ma in bestMappings if ma.mappingCnt > 0])
     fileOps.prRowv(tsvFh, "srcTrans", srcCnt)
-    fileOps.prRowv(tsvFh, "srcMapped", mappedCnt)
-    fileOps.prRowv(tsvFh, "srcMapRate", fmtRate(mappedCnt, srcCnt))
+    fileOps.prRowv(tsvFh, "numMapped", mappedCnt)
+    fileOps.prRowv(tsvFh, "rateMapped", fmtRate(mappedCnt, srcCnt))
+    fileOps.prRowv(tsvFh, "numMultiMapped", multiMapCnt)
+    fileOps.prRowv(tsvFh, "rateMultiMapped", fmtRate(multiMapCnt, mappedCnt))
 
-    numMappingsAll = getNumMappingCnts(bestMappings, inclUnmapped=True)
-    numMappingsSome = getNumMappingCnts(bestMappings, inclUnmapped=False)
     fileOps.prRowv(tsvFh, "meanNumMappingsAll", fmtFloat(statistics.mean(numMappingsAll)))
     fileOps.prRowv(tsvFh, "medianNumMappingsAll", fmtFloat(statistics.median(numMappingsAll)))
     fileOps.prRowv(tsvFh, "meanNumMappingsSome", fmtFloat(statistics.mean(numMappingsSome)))
     fileOps.prRowv(tsvFh, "medianNumMappingsSome", fmtFloat(statistics.median(numMappingsSome)))
 
-    baseMappingRates = [m.baseMapRate() for m in bestMappings]
-    cdsBaseMappingRates = [m.cdsBaseMapRate() for m in bestMappings]
     fileOps.prRowv(tsvFh, "meanBaseMappingRate", fmtFloat(statistics.mean(baseMappingRates)))
     fileOps.prRowv(tsvFh, "medianBaseMappingRate", fmtFloat(statistics.median(baseMappingRates)))
     fileOps.prRowv(tsvFh, "meanCdsBaseMappingRate", fmtFloat(statistics.mean(cdsBaseMappingRates)))

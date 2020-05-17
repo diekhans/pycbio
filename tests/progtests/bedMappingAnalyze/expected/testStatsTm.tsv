@@ -1,7 +1,9 @@
 what	value
 srcTrans	29
-srcMapped	17
-srcMapRate	0.5862
+numMapped	17
+rateMapped	0.5862
+numMultiMapped	4
+rateMultiMapped	0.2353
 meanNumMappingsAll	0.7241
 medianNumMappingsAll	1.0000
 meanNumMappingsSome	1.2353
