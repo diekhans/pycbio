@@ -20,7 +20,7 @@ from pycbio.hgdata.bed import BedReader
 # duplicate sources
 
 ReportTypes = SymEnum("ReportTypes",
-                      ("stats", "histo"))
+                      ("stats", "itemStats", "histo"))
 
 IdOpts = SymEnum("IdOpts", ("dropUniqId",))
 
@@ -30,12 +30,15 @@ def parseArgs():
 
     Report options;
       - stats - basic mapping stats
+      - itemStats - statistic for each mapping
       - histo - histograms of fraction mapped
     """
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument("--report", choices=ReportTypes.__members__.values(),
                         type=ReportTypes, default=ReportTypes.stats,
                         help="type of report to produce")
+    parser.add_argument("--valueCol",
+                        help="name to use for value column name, useful when joining")
     parser.add_argument("--dropUniqId", action="store_true",
                         help="drop everything starting with the last dash from the id when looking up")
     parser.add_argument("srcBedFile",
@@ -167,8 +170,10 @@ def fracCdsMappedHisto(bestMappings, inclUnmapped):
         histo[getPercentBucket(ma.cdsMapRate())] += 1
     return histo, len(useMappings)
 
-def reportStats(mappings, tsvFh):
-    fileOps.prRowv(tsvFh, "what", "value")
+def reportStats(mappings, valueCol, tsvFh):
+    if valueCol is None:
+        valueCol = "value"
+    fileOps.prRowv(tsvFh, "what", valueCol)
     bestMappings = collectBestMappings(mappings)
 
     srcCnt = len(bestMappings)
@@ -197,9 +202,10 @@ def outputHisto(bestMappings, tsvFh, *, inclUnmapped, cds):
     for bi in sorted(histo.keys(), reverse=True):
         fileOps.prRowv(tsvFh, label, bi, histo[bi], fmtRate(histo[bi], total))
 
-def reportHistos(mappings, tsvFh):
+def reportHistos(mappings, valueCol, tsvFh):
+    colPre = '' if valueCol is None else (valueCol + "_")
+    fileOps.prRowv(tsvFh, "what", "fracMapped", "{}count".format(colPre), "{}rate".format(colPre))
     bestMappings = collectBestMappings(mappings)
-    fileOps.prRowv(tsvFh, "what", "fracMapped", "count", "rate")
     for inclUnmapped in (True, False):
         for cds in (True, False):
             outputHisto(bestMappings, tsvFh, inclUnmapped=inclUnmapped, cds=cds)
@@ -208,9 +214,9 @@ def bedMappingAnalyze(opts):
     mappings = Mappings(opts.srcBedFile, opts.destBedFile, opts.idOpts)
     with open(opts.outTsv, "w") as tsvFh:
         if opts.report == ReportTypes.stats:
-            reportStats(mappings, tsvFh)
+            reportStats(mappings, opts.valueCol, tsvFh)
         elif opts.report == ReportTypes.histo:
-            reportHistos(mappings, tsvFh)
+            reportHistos(mappings, opts.valueCol, tsvFh)
         else:
             raise Exception("BUG: {} not handled".format(opts.report))
 
