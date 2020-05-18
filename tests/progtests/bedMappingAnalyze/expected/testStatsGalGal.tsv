@@ -3,11 +3,12 @@ srcTrans	16
 numMapped	16
 rateMapped	1.00
 numMultiMapped	0
+rateMultiMappedSrc	0.00
 rateMultiMapped	0.00
-meanNumMappingsAll	1.00
+meanNumMappingsSrc	1.00
 medianNumMappingsAll	1.00
-meanNumMappingsSome	1.00
-medianNumMappingsSome	1.00
+meanNumMappings	1.00
+medianNumMappings	1.00
 meanBaseMappingRate	0.76
 medianBaseMappingRate	0.79
 meanCdsBaseMappingRate	0.95

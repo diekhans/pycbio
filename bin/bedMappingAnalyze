@@ -193,12 +193,13 @@ def reportStats(mappings, valueCol, tsvFh):
     fileOps.prRowv(tsvFh, "numMapped", mappedCnt)
     fileOps.prRowv(tsvFh, "rateMapped", fmtRate(mappedCnt, srcCnt))
     fileOps.prRowv(tsvFh, "numMultiMapped", multiMapCnt)
+    fileOps.prRowv(tsvFh, "rateMultiMappedSrc", fmtRate(multiMapCnt, srcCnt))
     fileOps.prRowv(tsvFh, "rateMultiMapped", fmtRate(multiMapCnt, mappedCnt))
 
-    fileOps.prRowv(tsvFh, "meanNumMappingsAll", fmtFloat(statistics.mean(numMappingsAll)))
+    fileOps.prRowv(tsvFh, "meanNumMappingsSrc", fmtFloat(statistics.mean(numMappingsAll)))
     fileOps.prRowv(tsvFh, "medianNumMappingsAll", fmtFloat(statistics.median(numMappingsAll)))
-    fileOps.prRowv(tsvFh, "meanNumMappingsSome", fmtFloat(statistics.mean(numMappingsSome)))
-    fileOps.prRowv(tsvFh, "medianNumMappingsSome", fmtFloat(statistics.median(numMappingsSome)))
+    fileOps.prRowv(tsvFh, "meanNumMappings", fmtFloat(statistics.mean(numMappingsSome)))
+    fileOps.prRowv(tsvFh, "medianNumMappings", fmtFloat(statistics.median(numMappingsSome)))
 
     fileOps.prRowv(tsvFh, "meanBaseMappingRate", fmtFloat(statistics.mean(baseMappingRates)))
     fileOps.prRowv(tsvFh, "medianBaseMappingRate", fmtFloat(statistics.median(baseMappingRates)))
@@ -207,7 +208,7 @@ def reportStats(mappings, valueCol, tsvFh):
 
 def outputHisto(bestMappings, tsvFh, *, inclUnmapped, cds):
     histo, total = fracMappedHisto(bestMappings, inclUnmapped=inclUnmapped)
-    label = ("cds" if cds else "bases") + "Mapped" + ("All" if inclUnmapped else "Some")
+    label = ("cds" if cds else "bases") + "Mapped" + ("Src" if inclUnmapped else "")
     for bi in sorted(histo.keys(), reverse=True):
         fileOps.prRowv(tsvFh, label, bi, histo[bi], fmtRate(histo[bi], total))
 
