@@ -231,6 +231,8 @@ def statsMakeReport(scoresByKey, groupType, tsvFh):
 
     fileOps.prRowv(tsvFh, "what", "value")
     fileOps.prRowv(tsvFh, "groupType", groupType)
+    fileOps.prRowv(tsvFh, "bestScoresCnt", len(bestScores))
+    fileOps.prRowv(tsvFh, "overallScoresCnt", len(overallScores))
     fileOps.prRowv(tsvFh, "meanBestScore", fmtFloat(statistics.mean(bestScores)))
     fileOps.prRowv(tsvFh, "medianBestScore", fmtFloat(statistics.median(bestScores)))
     fileOps.prRowv(tsvFh, "meanOverallScore", fmtFloat(statistics.mean(overallScores)))
