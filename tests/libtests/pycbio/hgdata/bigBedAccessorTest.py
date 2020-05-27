@@ -28,13 +28,22 @@ class BigBedAccessorTests(TestCaseBase):
         self._assertBeds(self._loadBed12Extra(), fromBigBed)
 
     def testBed12Rand(self):
+        bed12extra = self._loadBed12Extra()
         with BigBedAccessor(self.getInputFile("bed12extra.bigBed"), numStdCols=12) as fh:
             fromBigBed = []
-            bed12extra = self._loadBed12Extra()
             for bed in bed12extra:
-                for bb in fh.overlapping(bed.chrom, bed.start, bed.end):
-                    fromBigBed.append(bb)
+                fromBigBed.extend(bb for bb in fh.overlapping(bed.chrom, bed.start, bed.end))
         self._assertBeds(bed12extra, fromBigBed)
+
+    def testBed12NonOver(self):
+        with BigBedAccessor(self.getInputFile("bed12extra.bigBed"), numStdCols=12) as fh:
+            fromBigBed = list(fh.overlapping("chr1", 60000, 61000))
+        self._assertBeds([], fromBigBed)
+
+    def testBed12NonChrom(self):
+        with BigBedAccessor(self.getInputFile("bed12extra.bigBed"), numStdCols=12) as fh:
+            fromBigBed = list(fh.overlapping("chrNotThere", 35244, 36073))
+        self._assertBeds([], fromBigBed)
 
 def suite():
     ts = unittest.TestSuite()

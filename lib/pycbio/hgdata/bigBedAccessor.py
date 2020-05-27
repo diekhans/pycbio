@@ -36,8 +36,10 @@ class BigBedAccessor(object):
 
     def overlapping(self, chrom, start, end):
         if chrom in self.bigBedFh.chroms():
-            for entry in self.bigBedFh.entries(chrom, start, end):
-                yield self._recToBed(chrom, entry)
+            entries = self.bigBedFh.entries(chrom, start, end)
+            if entries is not None:
+                for entry in entries:
+                    yield self._recToBed(chrom, entry)
 
     def __iter__(self):
         "iterating is not memory efficient"
