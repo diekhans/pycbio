@@ -7,3 +7,4 @@ mysqlclient
 apsw
 deprecation
 flake8
+pyBigWig
