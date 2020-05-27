@@ -156,6 +156,10 @@ class Bed(object):
         """alias for chromEnd"""
         return self.chromEnd
 
+    @property
+    def blockCount(self):
+        return len(self.blocks)
+
     def span(self):
         "distance from start to end"
         return self.chromEnd - self.chromStart
