@@ -7,9 +7,9 @@ from pycbio.sys.symEnum import SymEnum
 # align is:
 #  #qName	qSize	tName	tStart	tEnd	ident	qCover	repMatch	tCover
 # query is:
-#  #qName	qSize	alnCnt	minIdent	maxIndent	meanIdent	minQCover	maxQCover	meanQCover	minRepMatch	maxRepMatch	meanRepMatch	minTCover	maxTCover
+#  #qName	qSize	alnCnt	minIdent	maxIdent	meanIdent	minQCover	maxQCover	meanQCover	minRepMatch	maxRepMatch	meanRepMatch	minTCover	maxTCover
 # overall is:
-#  #queryCnt	minQSize	maxQSize	meanQSize	alnCnt	minIdent	maxIndent	meanIdent	minQCover	maxQCover	meanQCover	minRepMatch	maxRepMatch	meanRepMatch	minTCover	maxTCover	aligned	aligned1	alignedN	totalAlignedSize
+#  #queryCnt	minQSize	maxQSize	meanQSize	alnCnt	minIdent	maxIdent	meanIdent	minQCover	maxQCover	meanQCover	minRepMatch	maxRepMatch	meanRepMatch	minTCover	maxTCover	aligned	aligned1	alignedN	totalAlignedSize
 
 typeMap = {
     "qSize": int,
@@ -32,7 +32,7 @@ typeMap = {
     "minQSize": int,
     "maxQSize": int,
     "meanQSize": int,
-    "maxIndent": float,
+    "maxIdent": float,
     "minRepMatch": float,
     "maxTCover": float,
     "aligned": int,
