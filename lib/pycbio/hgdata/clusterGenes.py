@@ -1,5 +1,5 @@
 # Copyright 2006-2012 Mark Diekhans
-"""Module to access output of ClusterGenes"""
+"""Module to access output of clusterGenes UCSC browser command"""
 
 import six
 if six.PY3:
