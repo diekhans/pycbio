@@ -109,9 +109,9 @@ class ClusterGenes(list):
     def __init__(self, clusterGenesOut):
         self.genes = defaultdict(list)
         self.tableSet = set()
-        tsv = TsvReader(clusterGenesOut, typeMap=typeMap)
-        self.columns = tsv.columns
-        for gene in tsv:
+        tsvRdr = TsvReader(clusterGenesOut, typeMap=typeMap)
+        self.columns = tsvRdr.columns
+        for gene in tsvRdr:
             self._addGene(gene)
 
     def haveCluster(self, clusterId):
