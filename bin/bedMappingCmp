@@ -21,7 +21,7 @@ ReportTypes = SymEnum("ReportTypes",
 
 
 def parseArgs():
-    desc = """Computer Jaccard statistics comparing two BED files.
+    desc = """Computer per-BED record Jaccard statistics comparing two BED files.
     By default, it compute statistics between BED based on the same name.
     This can be used to compare different alignments or other ways of processing
     the same inputs.

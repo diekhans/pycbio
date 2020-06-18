@@ -20,11 +20,15 @@ from pycbio.hgdata.bed import BedReader
 # id generation stuff to match ids.  Right now, it just discards
 # duplicate sources
 
+# FIXME: generally not that happy with this selecting best, etc.
+
+# FIXME: would be much better is histos were left to another program and this
+# just output raw data
+
 ReportTypes = SymEnum("ReportTypes",
                       ("stats", "itemStats", "histo"))
 
 IdOpts = SymEnum("IdOpts", ("dropUniqId",))
-
 
 def parseArgs():
     desc = """Analyze mappings, comparing source to target.
