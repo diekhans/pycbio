@@ -6,11 +6,10 @@ export PYTHONPATH
 bedToCdsBed = ${binDir}/bedToCdsBed
 
 # test data
-#  - hg38.src.tm.bed, felCat9.dest.tm.bed - taken from transMap, includes some from PAR
 #  - hg38 to galGal4 mappings in selected regions:
-#    see ../bedMappingCmp/Makefile
+#    see ../bedMappingCmp/Makefile (now in branch)
 
-galGalDir = ../bedMappingCmp/input
+galGalDir = ./input
 
 test: targetBedTest mappedBedTest
 

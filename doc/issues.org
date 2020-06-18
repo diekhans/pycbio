@@ -38,3 +38,4 @@ that append to current location.  Doing:
 works better
 partial test implemented here:
 tests/libtests/pycbio/sys/fileOpsTests.py::DISABLED_testOpengzDevStdout()
+bed-analysis-tools has some tools that were quickly hacked to compare mappings and alignments for the cactus paper.  It got rather hacky, but there might be some seeds of good commands here.
