@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+# Copyright 2006-2020 Mark Diekhans
+
+import sys
+import os
+myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
+sys.path.insert(0, os.path.join(myBinDir, "../lib"))
+import argparse
+from pycbio.hgdata.bed import Bed, BedReader
+
+
+def parseArgs():
+    desc = """convert a BED to a BED of only CDS (thick region,
+    dropping BEDs without CDS.
+    """
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("inBedFile",
+                        help="input BED")
+    parser.add_argument("cdsBedFile",
+                        help="outputCdsFile")
+    return parser.parse_args()
+
+def trimBlock(blk, cdsStart, cdsEnd):
+    start = max(cdsStart, blk.start)
+    end = min(cdsEnd, blk.end)
+    if start >= end:
+        return None
+    else:
+        return Bed.Block(start, end)
+
+def trimBlocks(blocks, cdsStart, cdsEnd):
+    cdsBlocks = []
+    for blk in blocks:
+        cdsBlk = trimBlock(blk, cdsStart, cdsEnd)
+        if cdsBlk is not None:
+            cdsBlocks.append(cdsBlk)
+    return cdsBlocks
+
+def convertBedToCdsBed(bed):
+    if (bed.thickStart is None) or (bed.thickStart >= bed.thickEnd):
+        return None
+    bed.blocks = trimBlocks(bed.blocks, bed.thickStart, bed.thickEnd)
+    bed.thickStart = bed.start
+    bed.thickEnd = bed.end
+    return bed
+
+def bedToCdsBed(opts):
+    with open(opts.cdsBedFile, "w") as cdsBedFh:
+        for bed in BedReader(opts.inBedFile):
+            cdsBed = convertBedToCdsBed(bed)
+            if cdsBed is not None:
+                cdsBed.write(cdsBedFh)
+
+
+bedToCdsBed(parseArgs())
