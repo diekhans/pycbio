@@ -8,7 +8,7 @@ bedMappingCmp = ${binDir}/bedMappingCmp
 # test data
 #  - set1A, set1B - hack from some transmap BED in various ways.
 #  - hg38 to galGal4 mappings in selected regions:
-#     - hg38.src.bed - source transcripts that were mapped
+#     - hg38.src.bed - source transcripts that were mapped, plus some unmapped.
 #     - hg38-galGal4.halMap.bed - hg38 to galGal4 using HAL alignments
 #     - hg38-galGal4.lastzMap.bed - hg38 to galGal4 using LASTZ alignments
 #     - galGal4.target.bed - Ensembl annotations in regions
@@ -40,19 +40,33 @@ testOverStats1: mkdirs
 	${diff} expected/$@.tsv output/$@.tsv
 
 
-galGalTests: testNamePairingGalGal testBestNamePairingGalGal testNameStatsGalGal \
+galGalTests: testNamePairingGalGal testNamePairingSrcGalGal \
+	testBestNamePairingGalGal testBestNamePairingSrcGalGal \
+	testNameStatsGalGal testNameStatsSrcGalGal \
 	testBestOverPairingGalGal testOverStatsGalGal
 
 testNamePairingGalGal: mkdirs
 	${bedMappingCmp} --report=namePairing input/hg38-galGal4.lastzMap.bed input/hg38-galGal4.halMap.bed output/$@.tsv
 	${diff} expected/$@.tsv output/$@.tsv
 
+testNamePairingSrcGalGal: mkdirs
+	${bedMappingCmp} --report=namePairing --sourceBed=input/hg38.src.bed input/hg38-galGal4.lastzMap.bed input/hg38-galGal4.halMap.bed output/$@.tsv
+	${diff} expected/$@.tsv output/$@.tsv
+
 testBestNamePairingGalGal: mkdirs
 	${bedMappingCmp} --report=bestNamePairing --floatPrecision=2 input/hg38-galGal4.lastzMap.bed input/hg38-galGal4.halMap.bed output/$@.tsv
 	${diff} expected/$@.tsv output/$@.tsv
 
+testBestNamePairingSrcGalGal: mkdirs
+	${bedMappingCmp} --report=bestNamePairing --sourceBed=input/hg38.src.bed --floatPrecision=2 input/hg38-galGal4.lastzMap.bed input/hg38-galGal4.halMap.bed output/$@.tsv
+	${diff} expected/$@.tsv output/$@.tsv
+
 testNameStatsGalGal: mkdirs
 	${bedMappingCmp} --report=nameStats --floatPrecision=2 input/hg38-galGal4.lastzMap.bed input/hg38-galGal4.halMap.bed output/$@.tsv
+	${diff} expected/$@.tsv output/$@.tsv
+
+testNameStatsSrcGalGal: mkdirs
+	${bedMappingCmp} --report=nameStats --sourceBed=input/hg38.src.bed --floatPrecision=2 input/hg38-galGal4.lastzMap.bed input/hg38-galGal4.halMap.bed output/$@.tsv
 	${diff} expected/$@.tsv output/$@.tsv
 
 testBestOverPairingGalGal: mkdirs
