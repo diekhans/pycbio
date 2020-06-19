@@ -40,8 +40,8 @@ def convertBedToCdsBed(bed):
     if (bed.thickStart is None) or (bed.thickStart >= bed.thickEnd):
         return None
     bed.blocks = trimBlocks(bed.blocks, bed.thickStart, bed.thickEnd)
-    bed.thickStart = bed.start
-    bed.thickEnd = bed.end
+    bed.chromStart = bed.thickStart
+    bed.chromEnd = bed.thickEnd
     return bed
 
 def bedToCdsBed(opts):
