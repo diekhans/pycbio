@@ -62,6 +62,12 @@ class SqliteCursor(object):
         return self.trans.__exit__(*args)
 
 
+def makeInSeqArg(vals):
+    """generate the IN operator sequence, including parentheses for a set of
+    values.  Use this for 'SELECT ... WHERE foo in ?'."""
+    return "({})".format(','.join(apsw.format_sql_value(v) for v in vals))
+
+
 def query(conn, sql, args=None):
     "generator to run an SQL query on a connection"
     with SqliteCursor(conn) as cur:
