@@ -12,8 +12,6 @@ from pycbio.hgdata.cigar import ExonerateCigar
 from collections import defaultdict
 from deprecation import deprecated
 
-# FIXME: Should have factory rather than __init__ multiplexing nonsense **
-# FIXME: should have builder functions
 # FIXME: drop sequence support, it is almost never used
 
 # Notes:

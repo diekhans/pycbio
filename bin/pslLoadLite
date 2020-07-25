@@ -12,6 +12,7 @@ from pycbio.sys import fileOps
 from pycbio.tsv.tabFile import TabFileReader
 from pycbio.hgdata.psl import Psl, PslBlock
 
+# FIXME: not done, doesn't work
 
 def parseArgs():
     usage = """
