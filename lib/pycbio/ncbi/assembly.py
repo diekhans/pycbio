@@ -35,7 +35,7 @@ class AssemblyReport(object):
         @property
         def gencodeName(self):
             """GENCODE uses UCSC name for primary chromosomes and mitochondia and GENBANK accessions
-            for others"""
+            for others. """
             if self.sequenceRole == "assembled-molecule":
                 return self.ucscStyleName
             else:

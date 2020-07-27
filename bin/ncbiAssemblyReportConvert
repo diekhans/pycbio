@@ -41,11 +41,15 @@ Special id types:
 """
     parser = argparse.ArgumentParser(description=usage)
     parser.add_argument('--fromIdType', type=str, choices=ID_TYPES,
-                        help="from sequence id type")
+                        help="from sequence id type, also id type for sizes")
     parser.add_argument('--toIdType', type=str, choices=ID_TYPES,
                         help="map to sequence id type")
     parser.add_argument('--include', type=str, choices=(INCLUDE_MAIN_CHROMS, INCLUDE_MAIN_ASM),
                         help="only include sequence of this type")
+    parser.add_argument('--verbose', action="store_true",
+                        help="verbose tracing")
+    parser.add_argument('--fail', action="store_true",
+                        help="fail if all sequences not converted")
     parser.add_argument('outputType', type=str, choices=(OUTPUT_LIFT, OUTPUT_SIZES, OUTPUT_IDMAP),
                         help="type of output to create; one of lift, sizes, or idmap")
     parser.add_argument('assemblyReport', type=str,
@@ -64,6 +68,13 @@ Special id types:
     return args
 
 
+class CnvInfo(object):
+    """info about conversion"""
+    def __init__(self, verbose):
+        self.verbose = verbose
+        self.skipCnt = 0
+
+
 def emptyIfNone(val):
     return val if val is not None else ""
 
@@ -78,44 +89,57 @@ def getId(seq, idType):
         return getattr(seq, idType)
 
 
-def createLiftRec(seq, fromIdType, toIdType, outFh):
+def createLiftRec(seq, fromIdType, toIdType, cnvInfo, outFh):
     fromId = getId(seq, fromIdType)
     toId = getId(seq, toIdType)
     if (fromId is not None) and (toId is not None):
         fileOps.prRowv(outFh, 0, fromId, seq.sequenceLength, toId, seq.sequenceLength)
+    else:
+        cnvInfo.skipCnt += 1
+        if cnvInfo.verbose:
+            print(f"drop sequenceName:{seq.sequenceName} {fromIdType}:{fromId} {toIdType}:{toId}", file=sys.stderr)
 
 
-def createLift(asmReport, filterFn, fromIdType, toIdType, outFh):
+def createLift(asmReport, filterFn, fromIdType, toIdType, cnvInfo, outFh):
     "create a lift file for the two id types"
     for seq in asmReport.seqs:
         if filterFn(seq):
-            createLiftRec(seq, fromIdType, toIdType, outFh)
+            createLiftRec(seq, fromIdType, toIdType, cnvInfo, outFh)
 
 
-def createSizeRec(seq, fromIdType, outFh):
+def createSizeRec(seq, fromIdType, cnvInfo, outFh):
     fromId = getId(seq, fromIdType)
     if fromId is not None:
         fileOps.prRowv(outFh, fromId, seq.sequenceLength)
+    else:
+        cnvInfo.skipCnt += 1
+        if cnvInfo.verbose:
+            print(f"drop sequenceName:{seq.sequenceName} {fromIdType}:{fromId}", file=sys.stderr)
 
 
-def createSizes(asmReport, filterFn, fromIdType, outFh):
+def createSizes(asmReport, filterFn, fromIdType, cnvInfo, outFh):
     "create a size file for the id type"
     for seq in asmReport.seqs:
         if filterFn(seq):
-            createSizeRec(seq, fromIdType, outFh)
+            createSizeRec(seq, fromIdType, cnvInfo, outFh)
 
 
-def createIdmapRec(seq, fromIdType, toIdType, outFh):
-    if getId(seq, fromIdType) is not None:
+def createIdmapRec(seq, fromIdType, toIdType, cnvInfo, outFh):
+    fromId = getId(seq, fromIdType)
+    if fromId is not None:
         fileOps.prRowv(outFh, getId(seq, fromIdType), getId(seq, toIdType))
+    else:
+        cnvInfo.skipCnt += 1
+        if cnvInfo.verbose:
+            print(f"drop sequenceName:{seq.sequenceName} {fromIdType}:{fromId}", file=sys.stderr)
 
 
-def createIdmap(asmReport, filterFn, fromIdType, toIdType, outFh):
+def createIdmap(asmReport, filterFn, fromIdType, toIdType, cnvInfo, outFh):
     """create a TSV of sequence name mappings, including gencode"""
     fileOps.prRowv(outFh, fromIdType, toIdType)
     for seq in asmReport.seqs:
         if filterFn(seq):
-            createIdmapRec(seq, fromIdType, toIdType, outFh)
+            createIdmapRec(seq, fromIdType, toIdType, cnvInfo, outFh)
 
 
 class IncludeFilter(object):
@@ -139,17 +163,21 @@ class IncludeFilter(object):
             return seq.sequenceRole in self.keep
 
 
-def main():
-    args = parseArgs()
+def main(args):
     asmReport = AssemblyReport(args.assemblyReport)
     filterFn = IncludeFilter(args.include)
+    cnvInfo = CnvInfo(args.verbose)
     with open(args.outFile, "w") as outFh:
         if args.outputType == OUTPUT_LIFT:
-            createLift(asmReport, filterFn, args.fromIdType, args.toIdType, outFh)
+            createLift(asmReport, filterFn, args.fromIdType, args.toIdType, cnvInfo, outFh)
         elif args.outputType == OUTPUT_SIZES:
-            createSizes(asmReport, filterFn, args.fromIdType, outFh)
+            createSizes(asmReport, filterFn, args.fromIdType, cnvInfo, outFh)
         elif args.outputType == OUTPUT_IDMAP:
-            createIdmap(asmReport, filterFn, args.fromIdType, args.toIdType, outFh)
+            createIdmap(asmReport, filterFn, args.fromIdType, args.toIdType, cnvInfo, outFh)
+    if cnvInfo.skipCnt > 0:
+        print(f"warning: {cnvInfo.skipCnt} sequences skip due to no mapping", file=sys.stderr)
+        if args.fail:
+            exit(1)
 
 
-main()
+main(parseArgs())

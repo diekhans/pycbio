@@ -39,8 +39,9 @@ asmReportCnvTests: asmSeqNameUcscLiftTest asmRefSeqGencodeLiftTest asmSeqNameSiz
 asmReportTestFile = ${ncbiTestInputDir}/GCF_000001405.28.assembly.txt
 
 asmSeqNameUcscLiftTest: mkdirs
-	${ncbiAssemblyReportConvert} --fromIdType=sequenceName --toIdType=ucscStyleName lift ${asmReportTestFile} output/$@.lift
+	${ncbiAssemblyReportConvert} --fromIdType=sequenceName --toIdType=ucscStyleName lift ${asmReportTestFile} output/$@.lift 2>output/$@.err
 	${diff} expected/$@.lift output/$@.lift
+	${diff} expected/$@.err output/$@.err
 
 asmRefSeqGencodeLiftTest: mkdirs
 	${ncbiAssemblyReportConvert} --fromIdType=refSeqAccn --toIdType=gencode lift ${asmReportTestFile} output/$@.lift
@@ -67,8 +68,9 @@ asmIdmapMainAsmTest: mkdirs
 	${diff} expected/$@.idmap output/$@.idmap
 
 asmIdmapMixedAsmTest: mkdirs
-	${ncbiAssemblyReportConvert} --fromIdType=ucscStyleName --toIdType=sequenceNameGenbankAccn idmap ${asmReportTestFile} output/$@.idmap
+	${ncbiAssemblyReportConvert} --fromIdType=ucscStyleName --toIdType=sequenceNameGenbankAccn idmap ${asmReportTestFile} output/$@.idmap 2>output/$@.err
 	${diff} expected/$@.idmap output/$@.idmap
+	${diff} expected/$@.err output/$@.err
 
 clintChimpAgp = input/GCA_002880755.3.chr10.comp.agp$
 grch38Agp = ${ncbiTestInputDir}/GCA_000001305.2.chr22.agp
