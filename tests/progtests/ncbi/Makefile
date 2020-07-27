@@ -34,12 +34,12 @@ faFetchTest: mkdirs
 
 asmReportCnvTests: asmSeqNameUcscLiftTest asmRefSeqGencodeLiftTest asmSeqNameSizesTest \
 	asmGencodeNameSizesMainChromsTest asmGencodeNameSizesMainAsmTest \
-	asmIdmapTest asmIdmapMainAsmTest asmIdmapMixedAsmTest
+	asmIdmapTest asmIdmapMainAsmTest asmIdmapMixedAsmTest asmUmappedErrTest
 
 asmReportTestFile = ${ncbiTestInputDir}/GCF_000001405.28.assembly.txt
 
 asmSeqNameUcscLiftTest: mkdirs
-	${ncbiAssemblyReportConvert} --fromIdType=sequenceName --toIdType=ucscStyleName lift ${asmReportTestFile} output/$@.lift 2>output/$@.err
+	${ncbiAssemblyReportConvert} --skipUnmapped --fromIdType=sequenceName --toIdType=ucscStyleName lift ${asmReportTestFile} output/$@.lift 2>output/$@.err
 	${diff} expected/$@.lift output/$@.lift
 	${diff} expected/$@.err output/$@.err
 
@@ -68,8 +68,12 @@ asmIdmapMainAsmTest: mkdirs
 	${diff} expected/$@.idmap output/$@.idmap
 
 asmIdmapMixedAsmTest: mkdirs
-	${ncbiAssemblyReportConvert} --fromIdType=ucscStyleName --toIdType=sequenceNameGenbankAccn idmap ${asmReportTestFile} output/$@.idmap 2>output/$@.err
+	${ncbiAssemblyReportConvert} --skipUnmapped --fromIdType=ucscStyleName --toIdType=sequenceNameGenbankAccn idmap ${asmReportTestFile} output/$@.idmap 2>output/$@.err
 	${diff} expected/$@.idmap output/$@.idmap
+	${diff} expected/$@.err output/$@.err
+
+asmUmappedErrTest: mkdirs
+	${ncbiAssemblyReportConvert} --fromIdType=ucscStyleName --toIdType=sequenceNameGenbankAccn idmap ${asmReportTestFile} output/$@.idmap 2>output/$@.err || true
 	${diff} expected/$@.err output/$@.err
 
 clintChimpAgp = input/GCA_002880755.3.chr10.comp.agp$

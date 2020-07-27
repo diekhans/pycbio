@@ -48,8 +48,8 @@ Special id types:
                         help="only include sequence of this type")
     parser.add_argument('--verbose', action="store_true",
                         help="verbose tracing")
-    parser.add_argument('--fail', action="store_true",
-                        help="fail if all sequences not converted")
+    parser.add_argument('--skipUnmapped', action="store_true",
+                        help="skipUnmapped sequences")
     parser.add_argument('outputType', type=str, choices=(OUTPUT_LIFT, OUTPUT_SIZES, OUTPUT_IDMAP),
                         help="type of output to create; one of lift, sizes, or idmap")
     parser.add_argument('assemblyReport', type=str,
@@ -70,8 +70,8 @@ Special id types:
 
 class CnvInfo(object):
     """info about conversion"""
-    def __init__(self, verbose):
-        self.verbose = verbose
+    def __init__(self, prSkipped):
+        self.prSkipped = prSkipped
         self.skipCnt = 0
 
 
@@ -96,8 +96,8 @@ def createLiftRec(seq, fromIdType, toIdType, cnvInfo, outFh):
         fileOps.prRowv(outFh, 0, fromId, seq.sequenceLength, toId, seq.sequenceLength)
     else:
         cnvInfo.skipCnt += 1
-        if cnvInfo.verbose:
-            print(f"drop sequenceName:{seq.sequenceName} {fromIdType}:{fromId} {toIdType}:{toId}", file=sys.stderr)
+        if cnvInfo.prSkipped:
+            print(f"drop sequenceName: {seq.sequenceName} {fromIdType}: {fromId} {toIdType}: {toId}", file=sys.stderr)
 
 
 def createLift(asmReport, filterFn, fromIdType, toIdType, cnvInfo, outFh):
@@ -113,8 +113,8 @@ def createSizeRec(seq, fromIdType, cnvInfo, outFh):
         fileOps.prRowv(outFh, fromId, seq.sequenceLength)
     else:
         cnvInfo.skipCnt += 1
-        if cnvInfo.verbose:
-            print(f"drop sequenceName:{seq.sequenceName} {fromIdType}:{fromId}", file=sys.stderr)
+        if cnvInfo.prSkipped:
+            print(f"drop sequenceName: {seq.sequenceName} {fromIdType}: {fromId}", file=sys.stderr)
 
 
 def createSizes(asmReport, filterFn, fromIdType, cnvInfo, outFh):
@@ -130,8 +130,8 @@ def createIdmapRec(seq, fromIdType, toIdType, cnvInfo, outFh):
         fileOps.prRowv(outFh, getId(seq, fromIdType), getId(seq, toIdType))
     else:
         cnvInfo.skipCnt += 1
-        if cnvInfo.verbose:
-            print(f"drop sequenceName:{seq.sequenceName} {fromIdType}:{fromId}", file=sys.stderr)
+        if cnvInfo.prSkipped:
+            print(f"drop sequenceName: {seq.sequenceName} {fromIdType}: {fromId}", file=sys.stderr)
 
 
 def createIdmap(asmReport, filterFn, fromIdType, toIdType, cnvInfo, outFh):
@@ -166,7 +166,8 @@ class IncludeFilter(object):
 def main(args):
     asmReport = AssemblyReport(args.assemblyReport)
     filterFn = IncludeFilter(args.include)
-    cnvInfo = CnvInfo(args.verbose)
+    # if skipping, print only if verbose
+    cnvInfo = CnvInfo(args.verbose or not args.skipUnmapped)
     with open(args.outFile, "w") as outFh:
         if args.outputType == OUTPUT_LIFT:
             createLift(asmReport, filterFn, args.fromIdType, args.toIdType, cnvInfo, outFh)
@@ -175,8 +176,9 @@ def main(args):
         elif args.outputType == OUTPUT_IDMAP:
             createIdmap(asmReport, filterFn, args.fromIdType, args.toIdType, cnvInfo, outFh)
     if cnvInfo.skipCnt > 0:
-        print(f"warning: {cnvInfo.skipCnt} sequences skip due to no mapping", file=sys.stderr)
-        if args.fail:
+        print("{}: {} sequences skip due to no mapping".format("Warning" if args.skipUnmapped else "Error",
+                                                               cnvInfo.skipCnt), file=sys.stderr)
+        if not args.skipUnmapped:
             exit(1)
 
 

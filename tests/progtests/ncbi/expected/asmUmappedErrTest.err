@@ -1,0 +1,4 @@
+drop sequenceName: HG986_PATCH ucscStyleName: None
+drop sequenceName: HSCHR5_7_CTG1 ucscStyleName: None
+drop sequenceName: HG2128_PATCH ucscStyleName: None
+Error: 3 sequences skip due to no mapping
