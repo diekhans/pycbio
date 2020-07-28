@@ -3,13 +3,14 @@
 
 import sys
 import os
+from os import path as osp
 import socket
 import argparse
 import time
 from six.moves.urllib.error import HTTPError
-myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
-sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 from Bio import Entrez
+
+sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.sys import PycbioException, pycbioRaiseFrom
 
 host = "eutils.ncbi.nlm.nih.gov"

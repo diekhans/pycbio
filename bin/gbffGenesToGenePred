@@ -2,14 +2,14 @@
 # Copyright 2006-2012 Mark Diekhans
 
 import sys
-import os
+from os import path as osp
 import traceback
 import re
-myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
-sys.path.insert(0, os.path.join(myBinDir, "../lib"))
 import warnings
 from Bio import SeqIO
 import argparse
+
+sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.sys import PycbioException
 from pycbio.sys import fileOps, setOps
 from pycbio.sys.symEnum import SymEnum

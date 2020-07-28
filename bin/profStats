@@ -2,11 +2,11 @@
 # Copyright 2006-2012 Mark Diekhans
 
 import sys
-import os
-myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
-sys.path.insert(0, os.path.join(myBinDir, "../lib"))
+from os import path as osp
 import argparse
 import pstats
+
+sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.sys.symEnum import SymEnum
 
 validSortKeys = ('calls', 'cumulative', 'file', 'module', 'pcalls', 'line',
@@ -20,12 +20,12 @@ def parseArgs():
 
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument("--sort", action="append", dest="sortKeys", default=["cumulative"],
-                        choice=validSortKeys,
+                        choices=validSortKeys,
                         help="sort result by specified key, which maybe repeated, one of: "
                         + ", ".join(validSortKeys))
     parser.add_argument("--report", dest="reportType", type=ReportType, default=ReportType.basic,
                         help="specify type of report to produce, one of: "
-                        + ", ".join([str(v) for v in ReportType.values]))
+                        + ", ".join([str(v) for v in ReportType]))
     parser.add_argument("--stripDirs", action="store_true", dest="stripDirs", default=False,
                         help="strip directory names from output")
     parser.add_argument("profLog",

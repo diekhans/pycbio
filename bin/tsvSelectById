@@ -2,10 +2,10 @@
 # Copyright 2006-2012 Mark Diekhans
 
 import sys
-import os
-myBinDir = os.path.dirname(os.path.realpath(sys.argv[0]))
-sys.path.insert(0, os.path.join(myBinDir, "../lib"))
+from os import path as osp
 import argparse
+
+sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.sys import PycbioException
 from pycbio.tsv import TsvReader, TsvTable
 

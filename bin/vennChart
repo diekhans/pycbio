@@ -2,11 +2,11 @@
 # Copyright 2006-2012 Mark Diekhans
 
 import sys
-import os
-myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
-sys.path.insert(0, os.path.join(myBinDir, "../lib"))
-from python.tsv import TsvReader
+from os import path as osp
 import argparse
+
+sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
+from python.tsv import TsvReader
 
 
 def parseArgs():

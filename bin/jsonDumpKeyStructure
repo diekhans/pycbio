@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
 import sys
-import os
+from os import path as osp
 import argparse
-myBinDir = os.path.normpath(os.path.dirname(sys.argv[0]))
-sys.path.insert(0, os.path.join(myBinDir, "../lib"))
-from pycbio.sys import fileOps
 import json
+
+sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
+from pycbio.sys import fileOps
 
 
 def parseArgs():
