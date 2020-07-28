@@ -123,6 +123,8 @@ def addCmdOptions(parser):
     parser.add_argument("--syslogFacility", type=validateFacility,
                         help="Set syslog facility to case-insensitive symbolic value, if not specified, logging is not done to stderr, "
                         " one of {}".format(", ".join(getFacilityNames())))
+    parser.add_argument("--logStderr", action="store_true",
+                        help="also log to stderr, even when logging to syslog")
     parser.add_argument("--logLevel", type=validateLevel,
                         help="Set level to case-insensitive symbolic value, one of {}".format(", ".join(getLevelNames())))
     parser.add_argument("--logConfFile",
@@ -140,7 +142,7 @@ def setupFromCmd(opts, prog=None):
     level = _convertLevel(opts.logLevel) if opts.logLevel is not None else logging.INFO
     if opts.syslogFacility is not None:
         setupSyslogLogger(opts.syslogFacility, level, prog=prog)
-    else:
+    if (opts.syslogFacility is None) or opts.logStderr:
         setupStderrLogger(level)
     if opts.logConfFile is not None:
         logging.config.fileConfig(opts.logConfFile)
