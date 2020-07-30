@@ -32,7 +32,7 @@ class ObjDict(dict):
 class OrderedObjDict(OrderedDict):
     """OrderedDict object where keys are field names.
     This is especially useful for JSON by doing:
-       json.load(fh, object_hook=ObjDict):
+       json.load(fh, object_hook=OrderedObjDict):
     """
 
     def __getattr__(self, name):
