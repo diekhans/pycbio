@@ -24,7 +24,7 @@ class TabFile(list):
 
 
 def TabFileReader(fspec, rowClass=None, hashAreComments=False, skipBlankLines=False):
-    """generator over non-empty tab file rows"""
+    """generator over tab file rows"""
     def processLine(line):
         if hashAreComments and line.startswith("#"):
             return None
