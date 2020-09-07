@@ -177,10 +177,10 @@ class Bed(object):
         fh.write('\n')
 
 
-def BedReader(fspec, numStdCols=None):
+def BedReader(fspec, numStdCols=None, bedClass=Bed):
     """Generator to read BED objects loaded from a tab-file or file-like
     object.  See Bed.parse()."""
-    for bed in TabFileReader(fspec, rowClass=lambda r: Bed.parse(r, numStdCols=numStdCols),
+    for bed in TabFileReader(fspec, rowClass=lambda r: beadClass.parse(r, numStdCols=numStdCols),
                              hashAreComments=True, skipBlankLines=True):
         yield bed
 
