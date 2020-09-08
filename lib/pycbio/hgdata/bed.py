@@ -9,6 +9,7 @@ from collections import defaultdict, namedtuple
 
 
 # FIXME: not complete, needs tests
+# FIXME: really need a better way to deal with derived classes than extraArgs
 
 class Bed(object):
     """Object wrapper for a BED record.  ExtraCols is a vector of extra
@@ -180,7 +181,7 @@ class Bed(object):
 def BedReader(fspec, numStdCols=None, bedClass=Bed):
     """Generator to read BED objects loaded from a tab-file or file-like
     object.  See Bed.parse()."""
-    for bed in TabFileReader(fspec, rowClass=lambda r: beadClass.parse(r, numStdCols=numStdCols),
+    for bed in TabFileReader(fspec, rowClass=lambda r: bedClass.parse(r, numStdCols=numStdCols),
                              hashAreComments=True, skipBlankLines=True):
         yield bed
 
