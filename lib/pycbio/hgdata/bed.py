@@ -161,10 +161,12 @@ class Bed(object):
     def blockCount(self):
         return len(self.blocks)
 
+    @property
     def span(self):
         "distance from start to end"
         return self.chromEnd - self.chromStart
 
+    @property
     def coverage(self):
         """number of bases covered"""
         if self.blocks is None:
