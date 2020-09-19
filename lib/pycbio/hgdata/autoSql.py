@@ -18,7 +18,7 @@ def strArraySplit(commaStr):
 
 
 def strArrayJoin(strs):
-    "formatter for a list into a comma seperated string"
+    "formatter for a list into a comma separated string"
     if strs is not None:
         return ",".join(strs) + ","
     else:

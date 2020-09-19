@@ -4,6 +4,7 @@ Functions and classes for working with Sqlite 3 databases.
 """
 import apsw
 
+# FIXME: no tests
 
 def connect(sqliteDb, create=False, readonly=True, timeout=None, synchronous=None):
     """Connect to an sqlite3 database.  If create is specified, then database
@@ -68,9 +69,9 @@ def makeInSeqArg(vals):
     return "({})".format(','.join(apsw.format_sql_value(v) for v in vals))
 
 
-def query(conn, sql, args=None):
+def query(conn, sql, args=None, rowFactory=None):
     "generator to run an SQL query on a connection"
-    with SqliteCursor(conn) as cur:
+    with SqliteCursor(conn, rowFactory=rowFactory) as cur:
         cur.execute(sql, args)
         for row in cur:
             yield row
