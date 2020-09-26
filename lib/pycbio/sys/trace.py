@@ -104,7 +104,7 @@ class Trace(object):
     def _logLine(self, frame, event):
         "log a code line"
         lineno = frame.f_lineno
-        if frame.f_globals["__file__"] is not None:
+        if getattr(frame.f_globals, "__file__", None) is not None:
             fname = frame.f_globals["__file__"]
             if (fname.endswith(".pyc") or fname.endswith(".pyo")):
                 fname = fname[:-1]
