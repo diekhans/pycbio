@@ -39,7 +39,6 @@ class TestCaseBase(unittest.TestCase):
     def __init__(self, methodName='runTest'):
         """initialize, removing old output files associated with the class"""
         super(TestCaseBase, self).__init__(methodName)
-        self.maxDiff = None
         clId = self.getClassId()
         od = self.getOutputDir()
         for f in glob.glob(os.path.join(od, "/{}.*".format(clId))) + glob.glob(os.path.join(od, "/tmp.*.{}.*".format(clId))):
@@ -95,7 +94,6 @@ class TestCaseBase(unittest.TestCase):
         """Get path to the output file, using the current test id and append
         ext, which should contain a dot."""
         f = os.path.join(self.getOutputDir(), self.getId() + ext)
-        fileOps.ensureFileDir(f)
         return f
 
     def getExpectedFile(self, ext, basename=None):
@@ -120,11 +118,9 @@ class TestCaseBase(unittest.TestCase):
         outLines = self._getLines(outFile)
 
         diff = difflib.unified_diff(expLines, outLines, expFile, outFile)
-        cnt = 0
         for l in diff:
             print(l, end=' ')
-            cnt += 1
-        self.assertTrue(cnt == 0)
+        self.assertTrue(len(diff) == 0)
 
     def diffExpected(self, ext):
         """diff expected and output files, with names computed from test id."""
