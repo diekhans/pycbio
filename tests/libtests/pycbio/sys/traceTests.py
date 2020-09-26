@@ -18,9 +18,21 @@ class DumpStackTests(TestCaseBase):
         self.assertRegex(errout, ".*foo3.*")
         self.assertRegex(errout, ".*stack traces.*")
 
+class TraceTests(TestCaseBase):
+    def testTrace(self):
+        outf = self.getOutputFile('err')
+        with open(outf, "w") as outfh:
+            subprocess.check_call([sys.executable, os.path.join(myDir, "tryTrace.py")], stderr=outfh)
+        with open(outf) as outfh:
+            errout = outfh.read()
+        self.assertRegex(errout, "foo2()")
+        self.assertRegex(errout, "foo3()")
+        self.assertRegex(errout, "cnt5 = cnt4 \\+ 1")
+
 def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(DumpStackTests))
+    ts.addTest(unittest.makeSuite(TraceTests))
     return ts
 
 

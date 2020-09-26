@@ -104,8 +104,8 @@ class Trace(object):
     def _logLine(self, frame, event):
         "log a code line"
         lineno = frame.f_lineno
-        if getattr(frame.f_globals, "__file__", None) is not None:
-            fname = frame.f_globals["__file__"]
+        fname = frame.f_globals.get("__file__")
+        if fname is not None:
             if (fname.endswith(".pyc") or fname.endswith(".pyo")):
                 fname = fname[:-1]
             line = linecache.getline(fname, lineno)
@@ -125,8 +125,8 @@ class Trace(object):
                 self.depth -= 1
                 if self.depth < 0:
                     self.depth = 0
-
-            if event in Trace._logEvents:
+            # FIXME: not sure how Trace ended up None in python 2
+            if (Trace is not None) and event in Trace._logEvents:
                 self._logLine(frame, event)
         return self._callback
 
