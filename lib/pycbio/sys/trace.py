@@ -30,9 +30,13 @@ class Trace(object):
     """Trace object, associate with an open trace file.  File is flushed after
     each write to debug blocking"""
 
-    def __init__(self, traceFile, ignoreMods=None, inclThread=False, inclPid=False, callIndent=True):
+    def __init__(self, traceFileSpec, ignoreMods=None, inclThread=False, inclPid=False, callIndent=True):
         "open log file. ignoreMods is a sequence of module objects or names to skip"
-        self.fh = open(traceFile, "w")
+        self._wasOpen = hasattr(traceFileSpec, "fileno")
+        if self._wasOpen:
+            self.fh = traceFileSpec
+        else:
+            self.fh = open(traceFileSpec, "w")
         _activeTraceFds.add(self.fh.fileno())
         self.inclThread = inclThread
         self.inclPid = inclPid
@@ -61,7 +65,9 @@ class Trace(object):
         if self.fh is not None:
             self.disable()
             _activeTraceFds.remove(self.fh.fileno())
-            self.fh.close()
+            if self._wasOpen:
+                self.fh.close()
+            self.fh = None
 
     def log(self, *args):
         """log arguments as a message followed by a newline"""
