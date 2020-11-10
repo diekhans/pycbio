@@ -52,6 +52,7 @@ class OrderedObjDictTests(TestCaseBase, TestMixin):
         self.assertEqual(list(od.keys()), ['B', 'A', 'C', 'D', 'F'])
         self.assertEqual(list(od.values()), [1, 2, 3, 4, 5])
 
+
 class DefaultObjDictTests(TestCaseBase, TestMixin):
     def testList(self):
         od = DefaultObjDict(list)

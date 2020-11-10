@@ -18,20 +18,19 @@ from pycbio.tsv import TsvReader
 # FIXME: needs tests
 
 class GencodeAttrs(namedtuple("GencodeAttrs",
-                              ("geneId", "geneName", "geneType", "geneStatus", "transcriptId",
-                               "transcriptName", "transcriptType", "transcriptStatus", "havanaGeneId",
-                               "havanaTranscriptId", "ccdsId", "level", "transcriptClass", "proteinId"))):
+                              ("geneId", "geneName", "geneType", "unused1", "transcriptId",
+                               "transcriptName", "transcriptType", "unused2", "unused3",
+                               "unused4", "ccdsId", "level", "transcriptClass", "proteinId"))):
     """Attributes of a GENCODE transcript. New attribute added to table become optional"""
     __slots__ = ()
 
-    def __new__(cls, geneId, geneName, geneType, geneStatus, transcriptId,
-                transcriptName, transcriptType, transcriptStatus, havanaGeneId,
-                havanaTranscriptId, ccdsId, level, transcriptClass, proteinId=None):
+    def __new__(cls, geneId, geneName, geneType, unused1, transcriptId,
+                transcriptName, transcriptType, unused2, unused3,
+                unused4, ccdsId, level, transcriptClass, proteinId=None):
         return super(GencodeAttrs, cls).__new__(cls, geneId, geneName, geneType,
                                                 geneStatus, transcriptId,
                                                 transcriptName, transcriptType,
-                                                transcriptStatus, havanaGeneId,
-                                                havanaTranscriptId, ccdsId, level,
+                                                unused1, unused2, unused3, ccdsId, level,
                                                 transcriptClass, proteinId)
 
 
@@ -43,13 +42,13 @@ class GencodeAttrsSqliteTable(HgSqliteTable):
             geneId TEXT NOT NULL,
             geneName TEXT NOT NULL,
             geneType TEXT NOT NULL,
-            geneStatus TEXT DEFAULT NULL,
+            unused1 TEXT DEFAULT NULL,
             transcriptId TEXT NOT NULL,
             transcriptName TEXT NOT NULL,
             transcriptType TEXT NOT NULL,
-            transcriptStatus TEXT DEFAULT NULL,
-            havanaGeneId TEXT DEFAULT NULL,
-            havanaTranscriptId TEXT DEFAULT NULL,
+            unused2 TEXT DEFAULT NULL,
+            unused3 TEXT DEFAULT NULL,
+            unused4 TEXT DEFAULT NULL,
             ccdsId TEXT DEFAULT NULL,
             level INT NOT NULL,
             transcriptClass TEXT NOT NULL,
@@ -61,8 +60,6 @@ class GencodeAttrsSqliteTable(HgSqliteTable):
         """CREATE INDEX {table}_geneType ON {table} (geneType)""",
         """CREATE INDEX {table}_transcriptId ON {table} (transcriptId)""",
         """CREATE INDEX {table}_transcriptType ON {table} (transcriptType)""",
-        """CREATE INDEX {table}_havanaGeneId ON {table} (havanaGeneId)""",
-        """CREATE INDEX {table}_havanaTranscriptId ON {table} (havanaTranscriptId)""",
         """CREATE INDEX {table}_ccdsId ON {table} (ccdsId)""",
         """CREATE INDEX {table}_proteinId ON {table} (proteinId)""",
     ]
@@ -92,10 +89,10 @@ class GencodeAttrsSqliteTable(HgSqliteTable):
 
     def loadTsv(self, attrsFile):
         """load a GENCODE attributes file, adding bin"""
-        typeMap = {"geneStatus": noneIfEmpty,
-                   "transcriptStatus": noneIfEmpty,
-                   "havanaGeneId": noneIfEmpty,
-                   "havanaTranscriptId": noneIfEmpty,
+        typeMap = {"unused1": noneIfEmpty,
+                   "unused2": noneIfEmpty,
+                   "unused3": noneIfEmpty,
+                   "unused4": noneIfEmpty,
                    "ccdsId": noneIfEmpty,
                    "proteinId": noneIfEmpty,
                    "level": int}

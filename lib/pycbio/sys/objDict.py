@@ -5,6 +5,8 @@
 # https://goodcode.io/articles/python-dict-object/
 from collections import defaultdict, OrderedDict
 
+# FIXME: remove dup code with a mixin?
+
 class ObjDict(dict):
     """Dict object where keys are field names.
     This is useful for JSON by doing:
@@ -31,8 +33,10 @@ class ObjDict(dict):
 
 class OrderedObjDict(OrderedDict):
     """OrderedDict object where keys are field names.
-    This is especially useful for JSON by doing:
-       json.load(fh, object_hook=OrderedObjDict)
+    This is useful for JSON by doing:
+       json.load(fh, object_hook=OrderedObjDict):
+    or more efficiently in Python3:
+       json.load(fh, object_pairs_hook=OrderedObjDict):
     """
 
     def __getattr__(self, name):

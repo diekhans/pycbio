@@ -117,7 +117,7 @@ class TestCaseBase(unittest.TestCase):
         expLines = self._getLines(expFile)
         outLines = self._getLines(outFile)
 
-        diff = difflib.unified_diff(expLines, outLines, expFile, outFile)
+        diff = list(difflib.unified_diff(expLines, outLines, expFile, outFile))
         for l in diff:
             print(l, end=' ')
         self.assertTrue(len(diff) == 0)
