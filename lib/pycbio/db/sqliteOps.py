@@ -5,6 +5,12 @@ Functions and classes for working with Sqlite 3 databases.
 import apsw
 
 # FIXME: no tests
+# FIXME: add options to do logging, both of exceptions (apsw handler) and queries
+# FIXME  gets Obj of rows:
+#   def row_factory(cursor, row):
+#    columns = [t[0] for t in cursor.getdescription()]
+#     return ObjDict(zip(columns, row))
+
 
 def connect(sqliteDb, create=False, readonly=True, timeout=None, synchronous=None):
     """Connect to an sqlite3 database.  If create is specified, then database
@@ -67,6 +73,19 @@ def makeInSeqArg(vals):
     """generate the IN operator sequence, including parentheses for a set of
     values.  Use this for 'SELECT ... WHERE foo in ?'."""
     return "({})".format(','.join(apsw.format_sql_value(v) for v in vals))
+
+def run(conn, sql, args=None):
+    "Run an SQL query on a connection that does create transaction or return rows"
+    cur = conn.cursor()
+    try:
+        cur.execute(sql, args)
+    finally:
+        cur.close()
+
+def execute(conn, sql, args=None):
+    "Run an SQL query on a connection that does not return rows"
+    with SqliteCursor(conn) as cur:
+        cur.execute(sql, args)
 
 
 def query(conn, sql, args=None, rowFactory=None):

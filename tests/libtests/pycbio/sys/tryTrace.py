@@ -12,6 +12,7 @@ def foo3():
     cnt3 = cnt2 + 1
     cnt4 = cnt3 + 1
     cnt5 = cnt4 + 1
+    return cnt5
 
 def foo2():
     foo3()
@@ -21,6 +22,7 @@ def foo1():
 
 def foo():
     foo1()
+
 
 trace = Trace(sys.stderr)
 trace.enable()
