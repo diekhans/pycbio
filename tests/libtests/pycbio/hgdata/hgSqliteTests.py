@@ -12,7 +12,9 @@ from pycbio.db import sqliteOps
 from pycbio.hgdata.sequenceSqlite import SequenceSqliteTable, Sequence
 from pycbio.hgdata.pslSqlite import PslSqliteTable
 from pycbio.hgdata.genePredSqlite import GenePredSqliteTable
-from pycbio.hgdata.gencodeSqlite import GencodeAttrs, GencodeAttrsSqliteTable, GencodeTranscriptSource, GencodeTranscriptSourceSqliteTable, GencodeTranscriptionSupportLevel, GencodeTranscriptionSupportLevelSqliteTable
+from pycbio.hgdata.gencodeSqlite import GencodeAttrs, GencodeAttrsSqliteTable, GencodeTranscriptSource, GencodeTranscriptSourceSqliteTable
+from pycbio.hgdata.gencodeSqlite import GencodeTranscriptionSupportLevel, GencodeTranscriptionSupportLevelSqliteTable
+from pycbio.hgdata.gencodeSqlite import GencodeToGeneSymbol, GencodeToGeneSymbolSqliteTable
 from pycbio.hgdata.psl import Psl
 from pycbio.hgdata.genePred import GenePred
 
@@ -155,7 +157,7 @@ class PslSqliteTableTests(TestCaseBase):
         conn = sqliteOps.connect(None)
         try:
             pslDb = PslSqliteTable(conn, "pslRows", True)
-            pslDb.loads([Psl.fromRow(self.testData[0]), Psl.fromRow(self.testData[1])])
+            pslDb.loads([Psl.fromRow(p) for p in self.testData])
             pslDb.index()
             coords = self._makeObjCoords(pslDb.getByQName("NM_025031.1"))
             self.assertEqual(coords, [('NM_025031.1', 'chr22', 48109515, 48454184, '+')])
@@ -227,7 +229,7 @@ class GenePredSqliteTableTests(TestCaseBase):
         conn = sqliteOps.connect(None)
         try:
             gpDb = GenePredSqliteTable(conn, "refGene", True)
-            gpDb.loads([GenePred(self.testData[0]), GenePred(self.testData[1])])
+            gpDb.loads([GenePred(r) for r in self.testData])
             gpDb.index()
             coords = self._makeObjCoords(gpDb.getByName("NM_000017.1"))
             self.assertEqual(coords, [("NM_000017.1", "chr12", 119575618, 119589763, '+')])
@@ -248,9 +250,9 @@ class GenePredSqliteTableTests(TestCaseBase):
 
 class GencodeAttrsSqliteTableTests(TestCaseBase):
     # test have optional protein ids
-    testData = (("ENSG00000187191.14", "DAZ3", "protein_coding", None, "ENST00000315357.9", "DAZ3-201", "protein_coding", None, "OTTHUMG00000045099.2", None, None, 3, "coding", "ENSP00000324965.7"),
-                ("ENSG00000187191.14", "DAZ3", "protein_coding", None, "ENST00000382365.6", "DAZ3-001", "protein_coding", None, "OTTHUMG00000045099.2", "OTTHUMT00000104777.2", "CCDS35489.1", 2, "coding", "ENSP00000371802.2"),
-                ("ENSG00000187191.14", "DAZ3", "protein_coding", None, "ENST00000446723.4", "DAZ3-202", "protein_coding", None, "OTTHUMG00000045099.2", None, None, 3, "coding", "ENSP00000401049.1"))
+    testData = (("ENSG00000187191.14", "DAZ3", "protein_coding", "ENST00000315357.9", "DAZ3-201", "protein_coding", None, 3, "coding", "ENSP00000324965.7"),
+                ("ENSG00000187191.14", "DAZ3", "protein_coding", "ENST00000382365.6", "DAZ3-001", "protein_coding", "CCDS35489.1", 2, "coding", "ENSP00000371802.2"),
+                ("ENSG00000187191.14", "DAZ3", "protein_coding", "ENST00000446723.4", "DAZ3-202", "protein_coding", None, 3, "coding", "ENSP00000401049.1"))
 
     # same with protein ids dropped
     testDataPrev = tuple((r[0:-1] for r in testData))
@@ -295,7 +297,7 @@ class GencodeAttrsSqliteTableTests(TestCaseBase):
         conn = sqliteOps.connect(None)
         try:
             db = GencodeAttrsSqliteTable(conn, "gencodeAttrs", True)
-            db.loads([GencodeAttrs(*self.testData[0]), GencodeAttrs(*self.testData[1])])
+            db.loads([GencodeAttrs(*r) for r in self.testData])
             db.index()
             attrs = db.getByTranscriptId("ENST00000382365.6")
             self.assertEqual(attrs, GencodeAttrs(*self.testData[1]))
@@ -369,6 +371,40 @@ class GencodeTranscriptionSupportLevelSqliteTableTests(TestCaseBase):
             db.index()
             transSrc = db.getByTranscriptId("ENST00000382365.6")
             self.assertEqual(transSrc, GencodeTranscriptionSupportLevel(*self.testData[0]))
+        finally:
+            conn.close()
+
+class GencodeToGeneSymbolSqliteTableTests(TestCaseBase):
+    testData = (("ENST00000538324.2", "ABO", "HGNC:79"),
+                ("ENST00000215794.8", "USP18", "HGNC:12616"),
+                ("ENST00000434390.1", "FAM230D", "HGNC:53910"))
+
+    @classmethod
+    def setUpClass(cls):
+        cls.clsConn = sqliteOps.connect(None)
+        cls.transSrcTestDb = GencodeToGeneSymbolSqliteTable(cls.clsConn, "gencodeToGeneSymbol", True)
+        cls.transSrcTestDb.loadTsv(cls.getInputFile("gencodeToGeneSymbol.tsv"))
+        cls.transSrcTestDb.index()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.clsConn.close()
+        cls.clsConn = cls.gpTestdb = None
+
+    def testGetTranscriptId(self):
+        transSrc = self.transSrcTestDb.getByTranscriptId("ENST00000538324.2")
+        self.assertEqual(transSrc, GencodeToGeneSymbol(*self.testData[0]))
+        transSrc = self.transSrcTestDb.getByTranscriptId("fred")
+        self.assertEqual(transSrc, None)
+
+    def testMemLoadGencodeToGeneSymbol(self):
+        conn = sqliteOps.connect(None)
+        try:
+            db = GencodeToGeneSymbolSqliteTable(conn, "gencodeTransSource", True)
+            db.loads([GencodeToGeneSymbol(*r) for r in self.testData])
+            db.index()
+            transSrc = db.getByTranscriptId("ENST00000434390.1")
+            self.assertEqual(transSrc, GencodeToGeneSymbol(*self.testData[2]))
         finally:
             conn.close()
 

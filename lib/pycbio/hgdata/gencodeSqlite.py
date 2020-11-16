@@ -4,7 +4,6 @@ Storage of GENCODE data from UCSC import in sqlite for use in cluster jobs and
 other random access uses.
 """
 from __future__ import print_function
-import sys
 from future.standard_library import install_aliases
 install_aliases()
 from collections import namedtuple
@@ -18,20 +17,18 @@ from pycbio.tsv import TsvReader
 # FIXME: needs tests
 
 class GencodeAttrs(namedtuple("GencodeAttrs",
-                              ("geneId", "geneName", "geneType", "unused1", "transcriptId",
-                               "transcriptName", "transcriptType", "unused2", "unused3",
-                               "unused4", "ccdsId", "level", "transcriptClass", "proteinId"))):
+                              ("geneId", "geneName", "geneType",
+                               "transcriptId", "transcriptName", "transcriptType",
+                               "ccdsId", "level", "transcriptClass", "proteinId"))):
     """Attributes of a GENCODE transcript. New attributes added to table become optional"""
     __slots__ = ()
 
-    def __new__(cls, geneId, geneName, geneType, unused1, transcriptId,
-                transcriptName, transcriptType, unused2, unused3,
-                unused4, ccdsId, level, transcriptClass, proteinId=None):
+    def __new__(cls, geneId, geneName, geneType,
+                transcriptId, transcriptName, transcriptType,
+                ccdsId, level, transcriptClass, proteinId=None):
         return super(GencodeAttrs, cls).__new__(cls, geneId, geneName, geneType,
-                                                None, transcriptId,
-                                                transcriptName, transcriptType,
-                                                unused1, unused2, unused3, ccdsId, level,
-                                                transcriptClass, proteinId)
+                                                transcriptId, transcriptName, transcriptType,
+                                                ccdsId, level, transcriptClass, proteinId)
 
 
 class GencodeAttrsSqliteTable(HgSqliteTable):
@@ -42,13 +39,9 @@ class GencodeAttrsSqliteTable(HgSqliteTable):
             geneId TEXT NOT NULL,
             geneName TEXT NOT NULL,
             geneType TEXT NOT NULL,
-            unused1 TEXT DEFAULT NULL,
             transcriptId TEXT NOT NULL,
             transcriptName TEXT NOT NULL,
             transcriptType TEXT NOT NULL,
-            unused2 TEXT DEFAULT NULL,
-            unused3 TEXT DEFAULT NULL,
-            unused4 TEXT DEFAULT NULL,
             ccdsId TEXT DEFAULT NULL,
             level INT NOT NULL,
             transcriptClass TEXT NOT NULL,
@@ -89,11 +82,7 @@ class GencodeAttrsSqliteTable(HgSqliteTable):
 
     def loadTsv(self, attrsFile):
         """load a GENCODE attributes file, adding bin"""
-        typeMap = {"unused1": noneIfEmpty,
-                   "unused2": noneIfEmpty,
-                   "unused3": noneIfEmpty,
-                   "unused4": noneIfEmpty,
-                   "ccdsId": noneIfEmpty,
+        typeMap = {"ccdsId": noneIfEmpty,
                    "proteinId": noneIfEmpty,
                    "level": int}
         rows = [self._loadTsvRow(row) for row in TsvReader(attrsFile, typeMap=typeMap)]
@@ -183,7 +172,7 @@ class GencodeTranscriptSourceSqliteTable(HgSqliteTable):
         self.loads(rows)
 
     def _queryRows(self, sql, *queryargs):
-        return self.queryRows(sql, self.columnNames, lambda cur, row: GencodeTranscriptSource(row[0], sys.intern(str(row[1]))), *queryargs)
+        return self.queryRows(sql, self.columnNames, lambda cur, row: GencodeTranscriptSource(*row), *queryargs)
 
     def getAll(self):
         sql = "select {columns} from {table}"
@@ -242,7 +231,7 @@ class GencodeTranscriptionSupportLevelSqliteTable(HgSqliteTable):
         self.loads(rows)
 
     def _queryRows(self, sql, *queryargs):
-        return self.queryRows(sql, self.columnNames, lambda cur, row: GencodeTranscriptionSupportLevel(row[0], row[1]), *queryargs)
+        return self.queryRows(sql, self.columnNames, lambda cur, row: GencodeTranscriptionSupportLevel(*row), *queryargs)
 
     def getAll(self):
         sql = "select {columns} from {table}"
@@ -302,7 +291,7 @@ class GencodeTagSqliteTable(HgSqliteTable):
         self.loads(rows)
 
     def _queryRows(self, sql, *queryargs):
-        return self.queryRows(sql, self.columnNames, lambda cur, row: GencodeTag(row[0], row[1]), *queryargs)
+        return self.queryRows(sql, self.columnNames, lambda cur, row: GencodeTag(*row), *queryargs)
 
     def getAll(self):
         sql = "SELECT {columns} FROM {table}"
@@ -312,6 +301,68 @@ class GencodeTagSqliteTable(HgSqliteTable):
         """get the GencodeTag objects for transcriptId, or empty if not found."""
         sql = "SELECT {columns} FROM {table} WHERE transcriptId = ?"
         return self._queryRows(sql, transcriptId)
+
+
+class GencodeToGeneSymbol(namedtuple("GencodeToGeneSymbol",
+                                     ("transcriptId", "symbol", "geneId",))):
+    """GENCODE gene symbol mapping"""
+    __slots__ = ()
+    pass
+
+
+class GencodeToGeneSymbolSqliteTable(HgSqliteTable):
+    """
+    GENCODE gene symbol from UCSC databases.
+    """
+    createSql = """CREATE TABLE {table} (
+            transcriptId TEXT NOT NULL,
+            symbol TEXT NOT NULL,
+            geneId TEXT NOT NULL)"""
+    insertSql = """INSERT INTO {table} ({columns}) VALUES ({values});"""
+    indexSql = [
+        """CREATE INDEX {table}_transcriptId ON {table} (transcriptId)""",
+        """CREATE INDEX {table}_symbol ON {table} (symbol)""",
+        """CREATE INDEX {table}_geneId ON {table} (geneId)""",
+    ]
+
+    columnNames = GencodeToGeneSymbol._fields
+
+    def __init__(self, conn, table, create=False):
+        super(GencodeToGeneSymbolSqliteTable, self).__init__(conn, table)
+        if create:
+            self.create()
+
+    def create(self):
+        self._create(self.createSql)
+
+    def index(self):
+        """create index after loading"""
+        self._index(self.indexSql)
+
+    def loads(self, rows):
+        """load rows, which can be list-like or GencodeToGeneSymbol object"""
+        self._inserts(self.insertSql, self.columnNames, rows)
+
+    def _loadTsvRow(self, tsvRow):
+        "convert to list in column order"
+        return [getattr(tsvRow, cn) for cn in self.columnNames]
+
+    def loadTsv(self, sourceFile):
+        """load a GENCODE attributes file, adding bin"""
+        rows = [self._loadTsvRow(row) for row in TsvReader(sourceFile)]
+        self.loads(rows)
+
+    def _queryRows(self, sql, *queryargs):
+        return self.queryRows(sql, self.columnNames, lambda cur, row: GencodeToGeneSymbol(*row), *queryargs)
+
+    def getAll(self):
+        sql = "select {columns} from {table}"
+        return self._queryRows(sql)
+
+    def getByTranscriptId(self, transcriptId):
+        """get the GencodeToGeneSymbol object for transcriptId, or None if not found."""
+        sql = "select {columns} from {table} where transcriptId = ?"
+        return next(self._queryRows(sql, transcriptId), None)
 
 
 class GencodeGene(namedtuple("GencodeGene",
