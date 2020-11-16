@@ -195,7 +195,7 @@ REFERENCE   1  (bases 1 to 10710)
             Daliento L, Corrado D, Rampazzo A and Bauce B.
   TITLE     Co-inheritance of mutations associated with arrhythmogenic
             cardiomyopathy and hypertrophic cardiomyopathy
-  JOURNAL   Eur. J. Hum. Genet. 25 (10), 1165-1169 (2017)
+  JOURNAL   Eur J Hum Genet 25 (10), 1165-1169 (2017)
    PUBMED   28699631
   REMARK    GeneRIF: Double MYH7 CTTNA3 heterozygotes showed a variable
             clinical expression of arrhythmogenic cardiomyopathy and
@@ -224,7 +224,7 @@ REFERENCE   3  (bases 1 to 10710)
   TITLE     Molecular Analysis of Hybrid Neurofibroma/Schwannoma Identifies
             Common Monosomy 22 and alpha-T-Catenin/CTNNA3 as a Novel Candidate
             Tumor Suppressor
-  JOURNAL   Am. J. Pathol. 186 (12), 3285-3296 (2016)
+  JOURNAL   Am J Pathol 186 (12), 3285-3296 (2016)
    PUBMED   27765635
   REMARK    GeneRIF: The functional investigations might indicate involvement
             of alpha-T-catenin/CTNNA3 in the biology of peripheral nerve sheath
@@ -233,7 +233,7 @@ REFERENCE   4  (bases 1 to 10710)
   AUTHORS   Gao L, Zhang Y, Deng J, Yu W and Yu Y.
   TITLE     Polymorphisms of CHAT but not TFAM or VR22 are Associated with
             Alzheimer Disease Risk
-  JOURNAL   Med. Sci. Monit. 22, 1924-1935 (2016)
+  JOURNAL   Med Sci Monit 22, 1924-1935 (2016)
    PUBMED   27272392
   REMARK    GeneRIF: We conducted a meta-analysis of studies involving CHAT,
             TFAM, and VR22 polymorphisms and Alzheimer disease susceptibility.
@@ -248,7 +248,7 @@ REFERENCE   5  (bases 1 to 10710)
             Thiene G, Daliento L, Nava A, van Roy F and Rampazzo A.
   TITLE     Mutations in the area composita protein alphaT-catenin are
             associated with arrhythmogenic right ventricular cardiomyopathy
-  JOURNAL   Eur. Heart J. 34 (3), 201-210 (2013)
+  JOURNAL   Eur Heart J 34 (3), 201-210 (2013)
    PUBMED   23136403
   REMARK    GeneRIF: Results suggest a causal relationship between CTNNA3
             mutations and arrhythmogenic right ventricular cardiomyopathy
@@ -257,7 +257,7 @@ REFERENCE   6  (bases 1 to 10710)
             G.
   TITLE     GATA-4 and MEF2C transcription factors control the tissue-specific
             expression of the alphaT-catenin gene CTNNA3
-  JOURNAL   Nucleic Acids Res. 32 (14), 4155-4165 (2004)
+  JOURNAL   Nucleic Acids Res 32 (14), 4155-4165 (2004)
    PUBMED   15302915
   REMARK    GeneRIF: GATA-4 and MEF2C transcription factors transactivate the
             alphaT-catenin gene CTNNA3 in a tissue-specific manner.
@@ -273,7 +273,7 @@ REFERENCE   7  (bases 1 to 10710)
   TITLE     Alpha-T-catenin is expressed in human brain and interacts with the
             Wnt signaling pathway but is not responsible for linkage to
             chromosome 10 in Alzheimer's disease
-  JOURNAL   Neuromolecular Med. 5 (2), 133-146 (2004)
+  JOURNAL   Neuromolecular Med 5 (2), 133-146 (2004)
    PUBMED   15075440
   REMARK    GeneRIF: We found no association between CTNNA3 and Alzheimer
             disease in subjects showing linkage to chromosome 10, nor were
@@ -285,7 +285,7 @@ REFERENCE   8  (bases 1 to 10710)
             Andrade M, Petersen R, Graff-Radford N, Hutton M and Younkin S.
   TITLE     Fine mapping of the alpha-T catenin gene to a quantitative trait
             locus on chromosome 10 in late-onset Alzheimer's disease pedigrees
-  JOURNAL   Hum. Mol. Genet. 12 (23), 3133-3143 (2003)
+  JOURNAL   Hum Mol Genet 12 (23), 3133-3143 (2003)
    PUBMED   14559775
   REMARK    GeneRIF: Alpha-T catenin gene has variants which influence Abeta42
             and contribute to the previously reported linkage for plasma
@@ -295,7 +295,7 @@ REFERENCE   9  (bases 1 to 10710)
             Montoye T, van Hengel J, Bowles NE, van Roy F and Towbin JA.
   TITLE     Assessment of the CTNNA3 gene encoding human alpha T-catenin
             regarding its involvement in dilated cardiomyopathy
-  JOURNAL   Hum. Genet. 112 (3), 227-236 (2003)
+  JOURNAL   Hum Genet 112 (3), 227-236 (2003)
    PUBMED   12596047
   REMARK    GeneRIF: gene localized on chromosome 10q21 and is 1,776 kb in
             length; mutation screening of all 18 exons of the CTNNA3 gene in a
@@ -306,7 +306,7 @@ REFERENCE   10 (bases 1 to 10710)
             C, Bruyneel E, Mareel M and van Roy F.
   TITLE     alphaT-catenin: a novel tissue-specific beta-catenin-binding
             protein mediating strong cell-cell adhesion
-  JOURNAL   J. Cell. Sci. 114 (Pt 17), 3177-3188 (2001)
+  JOURNAL   J Cell Sci 114 (Pt 17), 3177-3188 (2001)
    PUBMED   11590244
 COMMENT     REVIEWED REFSEQ: This record has been curated by NCBI staff. The
             reference sequence was derived from AK313882.1, AF091606.1,
