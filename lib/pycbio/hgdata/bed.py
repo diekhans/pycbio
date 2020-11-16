@@ -11,6 +11,9 @@ from collections import defaultdict, namedtuple
 # FIXME: not complete, needs tests
 # FIXME: really need a better way to deal with derived classes than extraArgs
 
+def emptyIfNone(v):
+    return v if v is not None else ""
+
 class Bed(object):
     """Object wrapper for a BED record.  ExtraCols is a vector of extra
     columns to add.  Special columns be added by extending and overriding
@@ -84,7 +87,7 @@ class Bed(object):
             row.append(str(len(self.blocks)))
             row.extend(self._getBlockColumns())
         if self.extraCols is not None:
-            row.extend([str(c) for c in self.extraCols])
+            row.extend([str(emptyIfNone(c)) for c in self.extraCols])
         return row
 
     @staticmethod

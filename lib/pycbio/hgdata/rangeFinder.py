@@ -8,12 +8,14 @@ generating SQL where clauses to restrict by bin."""
 # by Jim Kent.
 ##
 
+# from C code:
 # There's a bin for each 128k (1<<17) segment. The next coarsest is 8x as big
 # (1<<13).  That is for each 1M segment, for each 8M segment, for each 64M
 # segment, for each 512M segment, and one top level bin for 4Gb.  Note, since
 # start and end are int's, the practical limit is up to 2Gb-1, and thus, only
 # four result bins on the second level. A range goes into the smallest bin it
 # will fit in.
+
 from __future__ import print_function
 from builtins import range
 from collections import namedtuple
@@ -92,7 +94,9 @@ class Binner(object):
 
     @staticmethod
     def getOverlappingSqlExpr(binCol, seqCol, startCol, endCol, seq, start, end):
-        "generate an SQL expression for overlaps with the specified range"
+        """generate an SQL expression for overlaps with the specified range
+        in order to efficiently query, there should be an index on (seqName, bin)
+        """
         # build bin parts
         parts = []
         for bins in Binner.getOverlappingBins(start, end):

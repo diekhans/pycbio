@@ -3,16 +3,14 @@
 Functions and classes for working with Sqlite 3 databases.
 """
 import apsw
+from pycbio.sys.objDict import ObjDict
 
 # FIXME: no tests
 # FIXME: add options to do logging, both of exceptions (apsw handler) and queries
 # FIXME  gets Obj of rows:
-#   def row_factory(cursor, row):
-#    columns = [t[0] for t in cursor.getdescription()]
-#     return ObjDict(zip(columns, row))
 
 
-def connect(sqliteDb, create=False, readonly=True, timeout=None, synchronous=None):
+def connect(sqliteDb, create=False, readonly=True, timeout=None, synchronous=None, rowFactory=None):
     """Connect to an sqlite3 database.  If create is specified, then database
     is created if it doesn't exist.  If sqliteDb is None, and in-memory data
     is created with create and readonly flags being ignored. If create is True,
@@ -36,16 +34,23 @@ def connect(sqliteDb, create=False, readonly=True, timeout=None, synchronous=Non
         raise apsw.CantOpenError(str(apsw.CantOpenError) + ": " + sqliteDb) from ex
     if synchronous is not None:
         setSynchronous(conn, synchronous)
+    if rowFactory is not None:
+        conn.setrowtrace(rowFactory)
     return conn
-
 
 def setSynchronous(conn, mode):
     if mode is False:
         mode = "OFF"
     elif mode is True:
         mode = "NORMAL"
-    with SqliteCursor(conn) as cur:
-        cur.execute("PRAGMA synchronous={}".format(mode))
+    run(conn, "PRAGMA synchronous={}".format(mode))
+
+
+def objDictRowFactory(cur, row):
+    """Row factory to return a ObjDict of the result.  Note that non-unique
+    names from multiple tables will end up with the last column of the same
+    name winning.  In sane cases, these will have the same value"""
+    return ObjDict(zip((t[0] for t in cur.description), row))
 
 
 class SqliteCursor(object):
@@ -105,6 +110,10 @@ def haveTable(conn, table):
         return row[0] > 0
 
 
+# FIXME:
+#  this results in
+#    Error: there are still remaining sql statements to execute
+#  might want to write a load contact to wrap all of this
 fastLoadPragmas = (
     "PRAGMA cache_size = 1000000;"
     "PRAGMA synchronous = OFF;"
@@ -117,5 +126,4 @@ fastLoadPragmas = (
 
 def setFastLoadPragmas(conn):
     """setup pragmas for faster bulk loading"""
-    with SqliteCursor(conn) as cur:
-        cur.execute(fastLoadPragmas)
+    run(conn, fastLoadPragmas)
