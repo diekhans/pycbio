@@ -11,16 +11,17 @@ from collections import defaultdict, namedtuple
 # FIXME: not complete, needs tests
 # FIXME: really need a better way to deal with derived classes than extraArgs
 
-def emptyIfNone(v):
-    return v if v is not None else ""
+def defaultIfNone(v, dflt=""):
+    # also converts to a string
+    return str(v) if v is not None else str(dflt)
 
 class Bed(object):
     """Object wrapper for a BED record.  ExtraCols is a vector of extra
     columns to add.  Special columns be added by extending and overriding
-    parse() and toRow() to do special handling.  For BED with more than
-    specified numbed of parse columns, extra columns as passed though.
+    parse() and toRow(), numColumns to do special handling.
+    For BEDs with extra columns not handled by derived are stored in extraCols
     """
-    __slots__ = ("chrom", "chromStart", "chromEnd", "name", "score",
+    __slots__ = ("numStdCols", "chrom", "chromStart", "chromEnd", "name", "score",
                  "strand", "thickStart", "thickEnd", "itemRgb", "blocks",
                  "extraCols")
 
@@ -35,8 +36,9 @@ class Bed(object):
         def __str__(self):
             return "{}-{}".format(self.start, self.end)
 
-    def __init__(self, chrom, chromStart, chromEnd, name=None, score=None, strand=None,
+    def __init__(self, numStdCols, chrom, chromStart, chromEnd, name=None, score=None, strand=None,
                  thickStart=None, thickEnd=None, itemRgb=None, blocks=None, extraCols=None):
+        self.numStdCols = numStdCols
         self.chrom = chrom
         self.chromStart = chromStart
         self.chromEnd = chromEnd
@@ -50,17 +52,15 @@ class Bed(object):
         self.extraCols = copy.copy(extraCols)
 
     @property
-    def numberOfColumns(self):
+    def numColumns(self):
         """Returns the number of columns in the BED when formatted as a row."""
         # exclude extraCols
-        for i in range(len(self.__slots__) - 1):
-            if getattr(self, self.__slots__[i]) is None:
-                break
-        if i >= 9:
-            i += 2  # blocks take up three columns
+        n = self.numStdCols
+        if n >= 9:
+            n += 2  # blocks take up three columns
         if self.extraCols is not None:
-            i += len(self.extraCols)
-        return i
+            n += len(self.extraCols)
+        return n
 
     def _getBlockColumns(self):
         relStarts = []
@@ -72,22 +72,23 @@ class Bed(object):
 
     def toRow(self):
         row = [self.chrom, str(self.chromStart), str(self.chromEnd)]
-        if self.name is not None:
-            row.append(str(self.name))
-        if self.score is not None:
-            row.append(str(self.score))
-        if self.strand is not None:
-            row.append(self.strand)
-        if self.thickStart is not None:
-            row.append(str(self.thickStart))
-            row.append(str(self.thickEnd))
-        if self.itemRgb is not None:
+        if self.numStdCols >= 4:
+            row.append(defaultIfNone(self.name))
+        if self.numStdCols >= 5:
+            row.append(defaultIfNone(self.score, 0))
+        if self.numStdCols >= 6:
+            row.append(defaultIfNone(self.strand, '+'))
+        if self.numStdCols >= 7:
+            row.append(defaultIfNone(self.thickStart, self.chromEnd))
+        if self.numStdCols >= 8:
+            row.append(defaultIfNone(self.thickEnd, self.chromEnd))
+        if self.numStdCols >= 9:
             row.append(str(self.itemRgb))
-        if self.blocks is not None:
+        if self.numStdCols >= 10:
             row.append(str(len(self.blocks)))
             row.extend(self._getBlockColumns())
         if self.extraCols is not None:
-            row.extend([str(emptyIfNone(c)) for c in self.extraCols])
+            row.extend([str(defaultIfNone(c)) for c in self.extraCols])
         return row
 
     @staticmethod
@@ -102,7 +103,7 @@ class Bed(object):
 
     @classmethod
     def parse(cls, row, numStdCols=None):
-        """Parse bed string columns into a bed object.  If numStdCols
+        """Parse bed string columns into a bed object.  If self.numStdCols
         is specified, only those columns are parse and the remained goes
         to extraCols."""
         assert((numStdCols is None) or (3 <= numStdCols <= 12))
@@ -143,8 +144,8 @@ class Bed(object):
             extraCols = row[numStdCols:]
         else:
             extraCols = None
-        return cls(chrom, chromStart, chromEnd, name, score, strand,
-                   thickStart, thickEnd, itemRgb, blocks, extraCols)
+        return cls(numStdCols, chrom, chromStart, chromEnd, name=name, score=score, strand=strand,
+                   thickStart=thickStart, thickEnd=thickEnd, itemRgb=itemRgb, blocks=blocks, extraCols=extraCols)
 
     def __str__(self):
         "return BED as a tab-separated string"
