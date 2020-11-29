@@ -11,10 +11,11 @@ class BedGame(Bed):
     "example derived BED4+3 that adds columns"
     __slots__ = ("year", "month", "day")
 
-    def __init__(self, numStdCols, chrom, chromStart, chromEnd, name=None, year=None, month=None, day=None,
-                 score=None, strand=None, thickStart=None, thickEnd=None, itemRgb=None, blocks=None, extraCols=None):
+    def __init__(self, chrom, chromStart, chromEnd, name=None, year=None, month=None, day=None,
+                 score=None, strand=None, thickStart=None, thickEnd=None, itemRgb=None, blocks=None,
+                 extraCols=None, numStdCols=None):
         assert numStdCols == 4
-        super(BedGame, self).__init__(4, chrom, chromStart, chromEnd, name)
+        super(BedGame, self).__init__(chrom, chromStart, chromEnd, name, numStdCols=4)
         self.year = year
         self.month = month
         self.day = day

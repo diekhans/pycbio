@@ -1,6 +1,4 @@
 # Copyright 2006-2012 Mark Diekhans
-from __future__ import print_function
-from __future__ import division
 from past.builtins import cmp
 from builtins import range
 from past.utils import old_div
@@ -511,16 +509,6 @@ class PslTbl(list):
     """Table of PSL objects loaded from a tab-file
     """
 
-    def _mkQNameIdx(self):
-        self.qNameMap = defaultdict(list)
-        for psl in self:
-            self.qNameMap[psl.qName].append(psl)
-
-    def _mkTNameIdx(self):
-        self.tNameMap = defaultdict(list)
-        for psl in self:
-            self.tNameMap[psl.tName](psl)
-
     def __init__(self, fileName, qNameIdx=False, tNameIdx=False):
         for psl in PslReader(fileName):
             self.append(psl)
@@ -530,34 +518,51 @@ class PslTbl(list):
         if tNameIdx:
             self._mkTNameIdx()
 
-    def getQNameIter(self):
-        return iter(list(self.qNameMap.keys()))
+    def _mkQNameIdx(self):
+        self.qNameMap = defaultdict(list)
+        for psl in self:
+            self.qNameMap[psl.qName].append(psl)
+
+    def _mkTNameIdx(self):
+        self.tNameMap = defaultdict(list)
+        for psl in self:
+            self.tNameMap[psl.tName](psl)
+        self.tNameMap.default_factory = None
+
+    def getQNames(self):
+        return list(self.qNameMap.keys())
 
     def haveQName(self, qName):
         return (self.qNameMap.get(qName) is not None)
 
-    def getByQName(self, qName):
-        """generator to get all PSL with a give qName"""
+    def genByQName(self, qName):
+        """generator to get PSL for a give qName"""
         ent = self.qNameMap.get(qName)
         if ent is not None:
             for psl in ent:
                 yield psl
 
-    def getTNameIter(self):
-        return iter(list(self.tNameMap.keys()))
+    def getByQName(self, qName):
+        """get list of PSLs for a give qName"""
+        return list(self.genByQName(qName))
+
+    def getTNames(self):
+        return list(self.tNameMap.keys())
 
     def haveTName(self, tName):
         return (self.tNameMap.get(tName) is not None)
 
-    def getByTName(self, tName):
-        """generator to get all PSL with a give tName"""
+    def genByTName(self, tName):
+        """generator to get PSL for a give tName"""
         ent = self.tNameMap.get(tName)
         if ent is not None:
-            if isinstance(ent, list):
-                for psl in ent:
-                    yield psl
-            else:
-                yield ent
+            for psl in ent:
+                yield psl
+
+    def getByTName(self, tName):
+        """get a list PSL for a give tName"""
+        return list(self.genByTName(tName))
+
 
 def pslFromExonerateCigar(qName, qSize, qStart, qEnd, qStrand, tName, tSize, tStart, tEnd, tStrand, cigarStr):
     "create a PSL from an Ensembl-style cigar formatted alignment"

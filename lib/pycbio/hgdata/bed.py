@@ -21,9 +21,9 @@ class Bed(object):
     parse() and toRow(), numColumns to do special handling.
     For BEDs with extra columns not handled by derived are stored in extraCols
     """
-    __slots__ = ("numStdCols", "chrom", "chromStart", "chromEnd", "name", "score",
+    __slots__ = ("chrom", "chromStart", "chromEnd", "name", "score",
                  "strand", "thickStart", "thickEnd", "itemRgb", "blocks",
-                 "extraCols")
+                 "extraCols", "numStdCols")
 
     class Block(namedtuple("Block", ("start", "end"))):
         """A block in the BED.  Coordinates are absolute, not relative and are transformed on write.
@@ -36,9 +36,9 @@ class Bed(object):
         def __str__(self):
             return "{}-{}".format(self.start, self.end)
 
-    def __init__(self, numStdCols, chrom, chromStart, chromEnd, name=None, score=None, strand=None,
-                 thickStart=None, thickEnd=None, itemRgb=None, blocks=None, extraCols=None):
-        self.numStdCols = numStdCols
+    def __init__(self, chrom, chromStart, chromEnd, name=None, *, score=None, strand=None,
+                 thickStart=None, thickEnd=None, itemRgb=None, blocks=None, extraCols=None,
+                 numStdCols=None):
         self.chrom = chrom
         self.chromStart = chromStart
         self.chromEnd = chromEnd
@@ -50,6 +50,25 @@ class Bed(object):
         self.itemRgb = itemRgb
         self.blocks = copy.copy(blocks)
         self.extraCols = copy.copy(extraCols)
+
+        if numStdCols is None:
+            # computer based on what is specified
+            numStdCols = 3
+            if name is not None:
+                numStdCols += 1
+            if score is not None:
+                numStdCols += 1
+            if strand is not None:
+                numStdCols += 1
+            if thickStart is not None:
+                numStdCols += 2
+            if thickStart is not None:
+                numStdCols += 2
+            if itemRgb is not None:
+                numStdCols += 1
+            if blocks is not None:
+                numStdCols += 3
+        self.numStdCols = numStdCols
 
     @property
     def numColumns(self):
@@ -144,8 +163,9 @@ class Bed(object):
             extraCols = row[numStdCols:]
         else:
             extraCols = None
-        return cls(numStdCols, chrom, chromStart, chromEnd, name=name, score=score, strand=strand,
-                   thickStart=thickStart, thickEnd=thickEnd, itemRgb=itemRgb, blocks=blocks, extraCols=extraCols)
+        return cls(chrom, chromStart, chromEnd, name=name, score=score, strand=strand,
+                   thickStart=thickStart, thickEnd=thickEnd, itemRgb=itemRgb, blocks=blocks,
+                   extraCols=extraCols, numStdCols=numStdCols)
 
     def __str__(self):
         "return BED as a tab-separated string"
