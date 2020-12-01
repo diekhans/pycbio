@@ -1,8 +1,8 @@
 # Copyright 2006-2012 Mark Diekhans
 from past.builtins import cmp
 from builtins import range
-from past.utils import old_div
 from builtins import object
+import re
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin, strArraySplit, strArrayJoin
 from pycbio.tsv.tabFile import TabFileReader
 from pycbio.hgdata import dnaOps
@@ -20,11 +20,14 @@ from deprecation import deprecated
 def reverseCoords(start, end, size):
     return (size - end, size - start)
 
-
 def reverseStrand(s):
     "return reverse of a strand character"
     return "+" if (s == "-") else "-"
 
+def dropQueryUniq(qName):
+    """if a suffix in the form -[0-9]+(.[0-9]+)? is append to make the name unique,
+    drop it"""
+    return re.match('^(.+?)(-[0-9]+(.[0-9]+)*)?$', qName).group(1)
 
 class PslBlock(object):
     """Block of a PSL"""
@@ -509,19 +512,20 @@ class PslTbl(list):
     """Table of PSL objects loaded from a tab-file
     """
 
-    def __init__(self, fileName, qNameIdx=False, tNameIdx=False):
+    def __init__(self, fileName, qNameIdx=False, tNameIdx=False, qUniqDrop=False):
         for psl in PslReader(fileName):
             self.append(psl)
         self.qNameMap = self.tNameMap = None
         if qNameIdx:
-            self._mkQNameIdx()
+            self._mkQNameIdx(qUniqDrop)
         if tNameIdx:
             self._mkTNameIdx()
 
-    def _mkQNameIdx(self):
+    def _mkQNameIdx(self, qUniqDrop):
         self.qNameMap = defaultdict(list)
         for psl in self:
-            self.qNameMap[psl.qName].append(psl)
+            n = dropQueryUniq(psl.qName) if qUniqDrop else psl.qName
+            self.qNameMap[n].append(psl)
 
     def _mkTNameIdx(self):
         self.tNameMap = defaultdict(list)
