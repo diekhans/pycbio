@@ -7,11 +7,11 @@ from os import path as osp
 import socket
 import argparse
 import time
-from six.moves.urllib.error import HTTPError
+from urllib.error import HTTPError
 from Bio import Entrez
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
-from pycbio.sys import PycbioException, pycbioRaiseFrom
+from pycbio.sys import PycbioException
 
 host = "eutils.ncbi.nlm.nih.gov"
 
@@ -64,7 +64,7 @@ def getEmail():
     try:
         return os.getenv("USER") + "@" + socket.gethostbyaddr(socket.gethostname())[0]
     except Exception as ex:
-        raise pycbioRaiseFrom(PycbioException("unable to obtain email address, specify on command line"), ex)
+        raise PycbioException("unable to obtain email address, specify on command line") from ex
 
 
 def efetchRetried(opts, gbid, fmt):

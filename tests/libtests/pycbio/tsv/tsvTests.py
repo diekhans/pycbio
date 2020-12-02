@@ -1,6 +1,5 @@
 # Copyright 2006-2012 Mark Diekhans
 # -*- coding: utf-8 -*-
-from builtins import range
 import unittest
 import sys
 if __name__ == '__main__':

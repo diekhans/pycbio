@@ -1,7 +1,4 @@
 # Copyright 2006-2012 Mark Diekhans
-from past.builtins import cmp
-from builtins import range
-from builtins import object
 import re
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin, strArraySplit, strArrayJoin
 from pycbio.tsv.tabFile import TabFileReader
@@ -347,26 +344,14 @@ class Psl(object):
         fh.write('\n')
 
     @staticmethod
-    def queryCmp(psl1, psl2):
-        "sort compairson using query address"
-        # FIXME: convert to key
-        diff = cmp(psl1.qName, psl2.qName)
-        if diff != 0:
-            diff = psl1.qStart - psl2.qStart
-            if diff != 0:
-                diff = psl1.qEnd - psl2.qEnd
-        return diff
+    def queryKey(psl):
+        "sort key using query address"
+        return (psl.qName, psl.qStart, psl.qEnd)
 
     @staticmethod
-    def targetCmp(psl1, psl2):
-        "sort compairson using target address"
-        # FIXME: convert to key
-        diff = cmp(psl1.tName, psl2.tName)
-        if diff != 0:
-            diff = psl1.tStart - psl2.tStart
-            if diff != 0:
-                diff = psl1.tEnd - psl2.tEnd
-        return diff
+    def targetKey(psl):
+        "sort key using target address"
+        return (psl.tName, psl.tStart, psl.tEnd)
 
     def __eq__(self, other):
         "compare for equality of alignment"
@@ -426,7 +411,7 @@ class Psl(object):
         if aligned == 0.0:
             return 0.0  # just matches Ns
         else:
-            return old_div(float(self.match + self.repMatch), aligned)
+            return (self.match + self.repMatch) / aligned
 
     def basesAligned(self):
         # FIXME: make property
@@ -434,7 +419,7 @@ class Psl(object):
 
     def queryAligned(self):
         # FIXME: make property
-        return old_div(float(self.match + self.misMatch + self.repMatch), float(self.qSize))
+        return (self.match + self.misMatch + self.repMatch) / self.qSize
 
     def reverseComplement(self):
         "create a new PSL that is reverse complemented"

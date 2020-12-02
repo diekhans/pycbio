@@ -3,10 +3,6 @@
 Storage of genome data in sqlite for use in cluster jobs and other random
 access uses.
 """
-from __future__ import print_function
-import six
-from future.standard_library import install_aliases
-install_aliases()
 from pycbio.db.sqliteOps import SqliteCursor
 
 # FIXME: removed duplicated functions and move to base class or mix-in especially gencode
@@ -33,7 +29,7 @@ class HgSqliteTable(object):
                        createSql])
 
     def _index(self, indexSql):
-        if isinstance(indexSql, six.string_types):
+        if isinstance(indexSql, (str, bytes)):
             indexSql = [indexSql]
         self.executes(indexSql)
 

@@ -3,8 +3,6 @@
         ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump_readme.txt
         ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
 """
-
-from builtins import object
 import sys
 from collections import defaultdict
 from pycbio.sys import fileOps

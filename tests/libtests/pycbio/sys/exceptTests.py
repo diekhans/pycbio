@@ -3,7 +3,7 @@ import unittest
 import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
-from pycbio.sys import PycbioException, pycbioRaiseFrom, pycbioExFormat
+from pycbio.sys import PycbioException, pycbioExFormat
 from pycbio.sys.testCaseBase import TestCaseBase
 
 
@@ -20,7 +20,7 @@ class ExceptTests(TestCaseBase):
             fn3()
 
         def fn3():
-            pycbioRaiseFrom(TestExcept("testing 1 2 3"), None)
+            raise TestExcept("testing 1 2 3")
 
         # assetRaises doesn't save traceback in exception
         save_ex = None
@@ -38,7 +38,7 @@ class ExceptTests(TestCaseBase):
             try:
                 fn2()
             except Exception as e:
-                pycbioRaiseFrom(TestExcept("in-fn1"), e)
+                raise TestExcept("in-fn1") from e
 
         def fn2():
             fn3()
@@ -47,7 +47,7 @@ class ExceptTests(TestCaseBase):
             try:
                 fn4()
             except Exception as e:
-                pycbioRaiseFrom(TestExcept("in-fn3"), e)
+                raise TestExcept("in-fn3") from e
 
         def fn4():
             fn5()
@@ -59,10 +59,10 @@ class ExceptTests(TestCaseBase):
             try:
                 fn7()
             except Exception as e:
-                pycbioRaiseFrom(TestExcept("in-fn6"), e)
+                raise TestExcept("in-fn6") from e
 
         def fn7():
-            pycbioRaiseFrom(OSError("OS meltdown"))
+            raise OSError("OS meltdown")
 
         # assetRaises doesn't save traceback in exception
         save_ex = None
@@ -82,7 +82,7 @@ class ExceptTests(TestCaseBase):
             try:
                 fn2()
             except Exception as e:
-                pycbioRaiseFrom(TestExcept("in-fn1"), e)
+                raise TestExcept("in-fn1")from e
 
         def fn2():
             fn3()
@@ -91,7 +91,7 @@ class ExceptTests(TestCaseBase):
             try:
                 fn4()
             except Exception as e:
-                pycbioRaiseFrom(TestExcept("in-fn3"), e)
+                raise TestExcept("in-fn3")from e
 
         def fn4():
             fn5()
@@ -103,10 +103,10 @@ class ExceptTests(TestCaseBase):
             try:
                 fn7()
             except Exception as e:
-                pycbioRaiseFrom(TestExcept("in-fn6"), e)
+                raise TestExcept("in-fn6")from e
 
         def fn7():
-            pycbioRaiseFrom(OSError("OS meltdown"))
+            raise OSError("OS meltdown")
 
         # assetRaises doesn't save traceback in exception
         save_ex = None

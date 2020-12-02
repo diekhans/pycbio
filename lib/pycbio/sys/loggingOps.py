@@ -1,7 +1,6 @@
 """
 Operations associated with logging
 """
-import six
 import logging
 import os
 import sys
@@ -16,10 +15,7 @@ def getFacilityNames():
 
 
 def getLevelNames():
-    if six.PY2:
-        return tuple(sorted([l for l in logging._levelNames.values() if isinstance(l, six.string_types)]))
-    else:
-        return tuple(sorted(logging._nameToLevel.keys()))
+    return tuple(sorted(logging._nameToLevel.keys()))
 
 
 def parseFacility(facilityStr):
@@ -32,10 +28,7 @@ def parseFacility(facilityStr):
 
 def parseLevel(levelStr):
     "convert a log level string to numeric value"
-    if six.PY2:
-        level = logging._levelNames.get(levelStr.upper())
-    else:
-        level = logging._nameToLevel.get(levelStr.upper())
+    level = logging._nameToLevel.get(levelStr.upper())
     if level is None:
         raise ValueError("invalid logging level: \"{}\"".format(levelStr))
     return level

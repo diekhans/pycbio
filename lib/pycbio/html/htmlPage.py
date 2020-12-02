@@ -1,8 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
 """ Classes to handle creating HTML pages and fragments
 """
-from __future__ import print_function
-from builtins import range
 
 # FIXME: frameset kind of a hack
 # FIXME: should build a tree, not a list of lines, but avoid a DOM.

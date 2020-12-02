@@ -1,9 +1,4 @@
 # Copyright 2006-2012 Mark Diekhans
-from __future__ import print_function
-from __future__ import division
-from builtins import range
-from past.utils import old_div
-from builtins import object
 import copy
 from collections import defaultdict
 from pycbio.tsv.tabFile import TabFileReader
@@ -520,7 +515,7 @@ class GenePred(object):
         if overCnt == 0:
             return 0.0
         else:
-            return old_div(float(2 * overCnt), float(self.getLenExons() + gp2.getLenExons()))
+            return (2 * overCnt) / (self.getLenExons() + gp2.getLenExons())
 
     def cdsOverlapAmt(self, gp2):
         "count cds bases that overlap"
@@ -542,7 +537,7 @@ class GenePred(object):
         if overCnt == 0:
             return 0.0
         else:
-            return old_div(float(2 * overCnt), float(self.getLenCds() + gp2.getLenCds()))
+            return (2 * overCnt) / (self.getLenCds() + gp2.getLenCds())
 
     def cdsCover(self, gp2):
         "compute faction of CDS is covered a gene"
@@ -550,7 +545,7 @@ class GenePred(object):
         if overCnt == 0:
             return 0.0
         else:
-            return old_div(float(overCnt), float(self.getLenCds()))
+            return overCnt / self.getLenCds()
 
     def __str__(self):
         return "\t".join(self.getRow())

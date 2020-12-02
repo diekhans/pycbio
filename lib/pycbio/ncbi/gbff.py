@@ -2,8 +2,6 @@
 
 # this module is tested by pycbio/src/progs/gbff/gbffGenesToGenePred
 
-from __future__ import print_function
-from builtins import range
 from pycbio.sys import PycbioException
 from Bio import SeqFeature
 

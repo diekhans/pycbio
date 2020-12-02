@@ -1,8 +1,5 @@
-from __future__ import print_function
 # Copyright 2006-2012 Mark Diekhans
-from builtins import range
 from pycbio.sys import fileOps
-import six
 import os
 import sys
 import unittest
@@ -189,13 +186,6 @@ class TestCaseBase(unittest.TestCase):
         numOpen = self.numOpenFiles()
         if numOpen != prevNumOpen:
             self.fail("number of open files changed, was " + str(prevNumOpen) + ", now it's " + str(numOpen))
-
-    if six.PY2:
-        def assertRegex(self, *args):
-            return self.assertRegexpMatches(*args)
-
-        def assertRaisesRegex(self, *args):
-            return self.assertRaisesRegexp(*args)
 
     def assertRegexDotAll(self, obj, expectRe, msg=None):
         """Fail if the str(obj) does not match expectRe operator, including `.' matching newlines"""

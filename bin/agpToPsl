@@ -7,7 +7,7 @@ import argparse
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.ncbi.agp import Agp
-from pycbio.sys import PycbioException, pycbioRaiseFrom
+from pycbio.sys import PycbioException
 from pycbio.sys import fileOps
 from pycbio.tsv.tabFile import TabFileReader
 from pycbio.hgdata.psl import Psl, PslBlock
@@ -56,7 +56,7 @@ class NameMap(object):
         try:
             return self.mappings[name]
         except KeyError as ex:
-            raise pycbioRaiseFrom(UnmappedNameException("name {} not found in {} map".format(name, self.nameDesc)), ex)
+            raise UnmappedNameException("name {} not found in {} map".format(name, self.nameDesc)) from ex
 
 
 def loadComponentSizeMap(componentSizes):

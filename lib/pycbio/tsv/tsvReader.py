@@ -1,17 +1,10 @@
 # Copyright 2006-2012 Mark Diekhans
 """TSV reading classes"""
-from builtins import next
-from builtins import object
-from builtins import range
-from future.standard_library import install_aliases
-install_aliases()
 import sys
 import csv
-import six
 from pycbio.sys import fileOps
 from pycbio.tsv.tsvRow import TsvRow
 from pycbio.tsv import TsvError
-from pycbio.sys import pycbioRaiseFrom
 
 csv.field_size_limit(sys.maxsize)
 
@@ -162,8 +155,7 @@ class TsvReader(object):
         if inFh is not None:
             self.inFh = inFh
         else:
-            mode = "rU" if six.PY2 else "r"
-            self.inFh = fileOps.opengz(fileName, mode, encoding=encoding, errors=errors)
+            self.inFh = fileOps.opengz(fileName, encoding=encoding, errors=errors)
         try:
             self.reader = csv.reader(self.inFh, dialect=dialect)
             if columns:
@@ -190,7 +182,7 @@ class TsvReader(object):
         try:
             row = self._readRow()
         except Exception as ex:
-            pycbioRaiseFrom(TsvError("Error reading TSV row", self), ex)
+            raise TsvError("Error reading TSV row", self) from ex
         if row is None:
             raise StopIteration
         if ((self.ignoreExtraCols and (len(row) < len(self.columns))) or ((not self.ignoreExtraCols) and (len(row) != len(self.columns)))):
@@ -199,4 +191,4 @@ class TsvReader(object):
         try:
             return self.rowClass(self, row)
         except Exception as ex:
-            pycbioRaiseFrom(TsvError("Error converting TSV row to object", self), ex)
+            raise TsvError("Error converting TSV row to object", self) from ex

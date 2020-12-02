@@ -3,9 +3,6 @@
 Storage of GENCODE data from UCSC import in sqlite for use in cluster jobs and
 other random access uses.
 """
-from __future__ import print_function
-from future.standard_library import install_aliases
-install_aliases()
 from collections import namedtuple
 from pycbio.db import sqliteOps
 from pycbio.sys import PycbioException

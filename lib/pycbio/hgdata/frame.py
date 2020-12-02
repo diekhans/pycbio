@@ -1,5 +1,4 @@
 # Copyright 2006-2012 Mark Diekhans
-import six
 from pycbio.sys import PycbioException
 
 
@@ -22,7 +21,7 @@ class Frame(int):
     @staticmethod
     def fromPhase(phase):
         """construct a Frame from a GFF/GTF like phase, which maybe an int or str"""
-        if isinstance(phase, six.string_types):
+        if isinstance(phase, str):
             phase = int(phase)
         if phase == 0:
             return Frame(0)

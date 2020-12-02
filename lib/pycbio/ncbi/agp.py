@@ -2,7 +2,7 @@
 """Parsing of NCBI AGP files.
 """
 from pycbio.hgdata.coords import Coords
-from pycbio.sys import fileOps, PycbioException, pycbioRaiseFrom
+from pycbio.sys import fileOps, PycbioException
 
 
 class AgpException(PycbioException):
@@ -90,7 +90,7 @@ class Agp(object):
             try:
                 self._parseLine(line)
             except Exception as ex:
-                raise pycbioRaiseFrom(AgpException(str(ex), fh.name, lineNum, line), ex)
+                raise AgpException(str(ex), fh.name, lineNum, line) from ex
 
     def _parseLine(self, line):
         if line.startswith("##agp-version"):

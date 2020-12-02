@@ -1,7 +1,6 @@
 pipettor>=0.4.0
 numpy
 biopython
-future
 enum-compat
 mysqlclient
 apsw

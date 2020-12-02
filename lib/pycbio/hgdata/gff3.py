@@ -4,12 +4,6 @@ Object representation of GFF3 data and parser for GFF3 files.
 See: http://www.sequenceontology.org/gff3.shtml
 """
 
-from __future__ import print_function
-from __future__ import division
-from __future__ import unicode_literals
-
-from future import standard_library
-standard_library.install_aliases()
 import urllib.request
 import urllib.parse
 import urllib.error

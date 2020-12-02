@@ -1,7 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
 """Miscellaneous file operations"""
 
-import six
 import os
 import sys
 import errno
@@ -40,7 +39,7 @@ def rmFiles(*fileArgs):
     """Remove one or more files if they exist. Each file argument can be a
     single file name of a list of file names"""
     for files in fileArgs:
-        if isinstance(files, six.string_types):
+        if isinstance(files, str):
             files = [files]
         for f in files:
             if os.path.exists(f):
@@ -108,10 +107,8 @@ def opengz(fileName, mode="r", buffering=-1, encoding=None, errors=None):
             return pipettor.Popen([cmd], mode=mode, stdout=fileName, buffering=buffering, encoding=encoding, errors=errors)
         else:
             raise PycbioException("mode {} not support with compression for {}".format(mode, fileName))
-    elif six.PY3:
-        return open(fileName, mode, buffering=buffering, encoding=encoding, errors=errors)
     else:
-        return open(fileName, mode)
+        return open(fileName, mode, buffering=buffering, encoding=encoding, errors=errors)
 
 # FIXME: make these consistent and remove redundant code.  Maybe use
 # keyword for flush. Do we even need them with print function?
@@ -230,11 +227,11 @@ class FileAccessor(object):
         self.fh = None
 
     def __enter__(self):
-        self.fh = opengz(self.fspec, self.mode) if isinstance(self.fspec, six.string_types) else self.fspec
+        self.fh = opengz(self.fspec, self.mode) if isinstance(self.fspec, str) else self.fspec
         return self.fh
 
     def __exit__(self, typ, value, traceback):
-        if isinstance(self.fspec, six.string_types):
+        if isinstance(self.fspec, str):
             self.fh.close()
 
 

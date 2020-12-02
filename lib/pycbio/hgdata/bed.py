@@ -1,6 +1,4 @@
 # Copyright 2006-2012 Mark Diekhans
-from __future__ import print_function
-from builtins import range
 import copy
 from pycbio.sys import PycbioException
 from pycbio.tsv.tabFile import TabFile, TabFileReader

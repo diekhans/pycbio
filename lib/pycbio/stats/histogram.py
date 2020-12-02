@@ -1,8 +1,4 @@
-from __future__ import division
 # Copyright 2006-2012 Mark Diekhans
-from builtins import range
-from builtins import object
-from past.utils import old_div
 from pycbio.sys.fileOps import prLine, iterRows
 from pycbio.sys import PycbioException
 
@@ -22,7 +18,7 @@ class Bin(object):
 
     def getCenter(self):
         "return center point of bin"
-        return self.binMin + (old_div(self.binSize, 2.0))
+        return self.binMin + (self.binSize / 2.0)
 
     def __str__(self):
         return "bin: {} min: {} size: {} cnt: {} freq: {}".format(self.idx, self.binMin, self.binSize, self.cnt, self.freq)
@@ -140,14 +136,14 @@ class Histogram(object):
             self.binSizeUse = self.binFloorUse = self.binCeilUse = 0
         elif self.binSizeUse is None:
             # compute bin size from num bins
-            estBinSize = old_div(float(self.binMaxUse - self.binMinUse), float(self.numBinsUse - 1))
-            self.binSizeUse = old_div(float(self.binMaxUse - self.binMinUse + estBinSize), float(self.numBinsUse))
-            self.binFloorUse = self.binMinUse - (old_div(self.binSizeUse, 2.0))
+            estBinSize = (self.binMaxUse - self.binMinUse) / (self.numBinsUse - 1)
+            self.binSizeUse = (self.binMaxUse - self.binMinUse + estBinSize) / self.numBinsUse
+            self.binFloorUse = self.binMinUse - (self.binSizeUse / 2.0)
             self.binCeilUse = self.binFloorUse + (self.numBinsUse * self.binSizeUse)
         else:
             # compute num bins from bin size
             raise PycbioException("doesn't work")
-            self.numBinsUse = int(old_div(float(self.binMaxUse - self.binMinUse), float(self.binSizeUse)))
+            self.numBinsUse = (self.binMaxUse - self.binMinUse) // self.binSizeUse
             self.binFloorUse = self.binMinUse
             self.binCeilUse = self.binMaxUse
 
@@ -160,7 +156,7 @@ class Histogram(object):
         elif val > self.binMaxUse:
             return None if self.truncMax else self.numBinsUse - 1
         else:
-            return int(old_div((val - self.binFloorUse), float(self.binSizeUse)))
+            return (val - self.binFloorUse) // self.binSizeUse
 
     def _mkBins(self):
         self.bins = []
@@ -183,7 +179,7 @@ class Histogram(object):
         ndata = float(len(self.data))
         for bin in self.bins:
             if ndata != 0.0:
-                bin.freq = old_div(bin.cnt, ndata)
+                bin.freq = bin.cnt / ndata
             else:
                 bin.freq = 0.0
 

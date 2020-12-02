@@ -16,8 +16,6 @@ generating SQL where clauses to restrict by bin."""
 # four result bins on the second level. A range goes into the smallest bin it
 # will fit in.
 
-from __future__ import print_function
-from builtins import range
 from collections import namedtuple
 from pycbio.sys import PycbioException
 

@@ -157,8 +157,7 @@ class FileOpsTests(TestCaseBase):
 
     def testMd5Sums(self):
         expected = [("simple1.txt", "b256e7fa23f105539085c7c895557c41"),
-                    ("comments1.txt", "4179a04267de41833d87e182b22999ca"),
-                    ("funcArgs.config.py", "6df2aec2f839ff35ea26ca8440baee2d")]
+                    ("comments1.txt", "4179a04267de41833d87e182b22999ca")]
         got = fileOps.md5sums([self.getInputFile(f[0]) for f in expected])
         self.assertEqual(len(expected), len(got))
         for e, g in zip(expected, got):

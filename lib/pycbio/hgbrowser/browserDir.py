@@ -2,12 +2,8 @@
 """Create a frameset that that is a directory of locations in the genome
 browser.
 """
-from __future__ import print_function
-from __future__ import division
-from six.moves.urllib.parse import urlencode
-from builtins import range
-from past.utils import old_div
 import copy
+from urllib.parse import urlencode
 from pycbio.html.htmlPage import HtmlPage
 from pycbio.sys import fileOps
 
@@ -286,7 +282,7 @@ class BrowserDir(object):
     def _addMultiColEntryTbl(self, pg, pgEntries):
         pg.tableStart()
         nEnts = len(pgEntries)
-        rowsPerCol = old_div(nEnts, self.numColumns)
+        rowsPerCol = nEnts // self.numColumns
         iEnt = 0
         pg.add("<tr>")
         for icol in range(self.numColumns):
@@ -333,7 +329,7 @@ class BrowserDir(object):
             self._writeDirPage(outDir, self.entries, 1, 1)
         else:
             # split
-            numPages = old_div((len(self.entries) + self.pageSize - 1), self.pageSize)
+            numPages = (len(self.entries) + self.pageSize - 1) // self.pageSize
             for pageNum in range(1, numPages + 1):
                 first = (pageNum - 1) * self.pageSize
                 last = first + (self.pageSize - 1)

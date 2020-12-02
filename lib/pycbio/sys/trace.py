@@ -2,7 +2,6 @@
 """Debug tracing and stack dumps on signals """
 # ideas from:
 #  http://www.dalkescientific.com/writings/diary/archive/2005/04/20/tracing_python_code.html
-from __future__ import print_function
 import sys
 import os
 import types

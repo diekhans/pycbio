@@ -1,6 +1,5 @@
 # global passedInModule is optional
 
-from builtins import object
 global configPyFile
 
 

@@ -3,8 +3,6 @@
 Pairwise alignment.  All coordinates are strand-specific
 
 """
-from __future__ import print_function
-from builtins import range
 import copy
 import re
 from pycbio.hgdata.psl import PslReader

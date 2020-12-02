@@ -1,6 +1,5 @@
 # Copyright 2006-2012 Mark Diekhans
 """Functions useful for debugging"""
-from __future__ import print_function
 import os.path
 import sys
 import posix

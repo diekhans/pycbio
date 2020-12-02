@@ -1,8 +1,7 @@
 # Copyright 2015-2015 Mark Diekhans
 """Parsing of NCBI assembly information files.
 """
-import six
-from pycbio.sys import PycbioException
+from pycbio.sys import fileOps, PycbioException
 
 
 def _noneIfNa(name):
@@ -63,8 +62,7 @@ class AssemblyReport(object):
         self.byGenBankAccn = dict()
         self.byRefSeqAccn = dict()
         self.byUcscStyleName = dict()
-        mode = "r" if six.PY3 else "rU"
-        with open(asmReport, mode) as fh:
+        with fileOps.opengz(asmReport) as fh:
             self._parseMetaData(fh)
             self._skipToSeqTable(fh)
             self._parseRecords(fh)

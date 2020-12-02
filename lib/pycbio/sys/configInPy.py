@@ -1,10 +1,9 @@
 """
 Configuration files written as python programs.
 """
-from __future__ import print_function
 import os
 from types import FunctionType, ModuleType
-from pycbio.sys import PycbioException, pycbioRaiseFrom
+from pycbio.sys import PycbioException
 
 # FIXME: getFuncArgs could be handled by functools.partial much more elegantly
 
@@ -21,7 +20,7 @@ def _evalConfigFile(configPyFile, configEnv, extraEnv=None):
         with open(configPyFile) as fh:
             exec(fh.read(), configEnv, configEnv)
     except Exception as ex:
-        pycbioRaiseFrom(PycbioException("Error evaluating configuration file: {}".format(configPyFile)), ex)
+        raise PycbioException("Error evaluating configuration file: {}".format(configPyFile)) from ex
     return configEnv
 
 
@@ -57,7 +56,7 @@ def evalConfigFunc(configPyFile, getFuncName="getConfig", getFuncArgs=[], getFun
         return configFunc(*getFuncArgs, **getFuncKwargs)
     except Exception as ex:
         # FIXME really need traceback here
-        pycbioRaiseFrom(PycbioException("Error from configuration function {}(): {}".format(getFuncName, configPyFile)), ex)
+        raise PycbioException("Error from configuration function {}(): {}".format(getFuncName, configPyFile)) from ex
 
 
 class Config(object):

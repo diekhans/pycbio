@@ -3,9 +3,6 @@
 Storage of sequence tables in sqlite for use in cluster jobs and other
 random access uses.
 """
-from __future__ import print_function
-from future.standard_library import install_aliases
-install_aliases()
 from pycbio.hgdata.hgSqlite import HgSqliteTable
 from collections import namedtuple
 from pycbio.sys import PycbioException

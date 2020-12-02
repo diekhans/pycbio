@@ -1,7 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
 "Generate Venn diagram set intersection statistics"
 
-from builtins import object
 from pycbio.stats.subsets import Subsets
 from pycbio.sys import fileOps
 

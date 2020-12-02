@@ -1,7 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
 """classes for interacting with parasol batch system"""
-from builtins import object
-from six.moves import shlex_quote
+import shlex
 import os.path
 from pycbio.sys import PycbioException
 from pycbio.sys import fileOps
@@ -109,9 +108,9 @@ class Para(object):
         passed as arguments to the para command. Returns stdout as a list of
         lines, stderr in ProcException if the remote program encouners an
         error. There is a possibility for quoting hell here."""
-        paraCmd = ["para", "-batch={}".format(shlex_quote(self.paraDir))]
+        paraCmd = ["para", "-batch={}".format(shlex.quote(self.paraDir))]
         for pa in paraArgs:
-            paraCmd.append(shlex_quote(pa))
+            paraCmd.append(shlex.quote(pa))
         if self.cpu is not None:
             paraCmd.append("-cpu={}".format(self.cpu))
         if self.mem is not None:
@@ -120,7 +119,7 @@ class Para(object):
             paraCmd.append("-maxJob={}".format(self.maxJobs))
         if self.retries is not None:
             paraCmd.append("-retries={}".format(self.retries))
-        remCmd = "cd {} && {}".format(shlex_quote(self.runDir), " ".join(paraCmd))
+        remCmd = "cd {} && {}".format(shlex.quote(self.runDir), " ".join(paraCmd))
         return pipettor.runout(["ssh", "-nx", "-o", "ClearAllForwardings=yes", self.paraHost, remCmd]).split('\n')
 
     def wasStarted(self):

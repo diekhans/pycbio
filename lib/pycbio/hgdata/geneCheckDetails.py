@@ -1,7 +1,4 @@
 # Copyright 2006-2012 Mark Diekhans
-from past.builtins import cmp
-from future.standard_library import install_aliases
-install_aliases()
 from pycbio.tsv import TsvTable, TsvReader
 import sys
 
@@ -18,15 +15,6 @@ def strOrNone(val):
 typeMap = {"info": strOrNone,
            "chrStart": int,
            "chrEnd": int}
-
-
-def cmpByLocation(gcd1, gcd2):
-    d = cmp(gcd1.chr, gcd2.chr)
-    if d == 0:
-        d = cmp(gcd1.chrStart, gcd2.chrStart)
-        if d == 0:
-            d = cmp(gcd1.chrEnd, gcd2.chrEnd)
-    return d
 
 
 def GeneCheckDetailsReader(fspec):

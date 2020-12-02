@@ -1,7 +1,4 @@
 # Copyright 2006-2012 Mark Diekhans
-from past.builtins import cmp
-from builtins import object
-import six
 from pycbio.sys.typeOps import isListLike
 
 # FIXME:
@@ -65,22 +62,6 @@ class EnumValue(object):
 
     def __hash__(self):
         return hash(self.numValue)
-
-    if six.PY2:
-        def __cmp__(self, otherVal):
-            # FIXME: attempt to work around enum pickle problem in GenomeDefs, compare names rather than
-            # class objects.  Below should test be: not (isinstance(otherVal, EnumValue) and (otherVal.enum == self.enum)):
-            if otherVal is None:
-                return -1
-            elif type(otherVal) == int:
-                return cmp(self.numValue, otherVal)
-            elif not isinstance(otherVal, EnumValue):
-                raise TypeError("can't compare enumeration to type: " + str(type(otherVal)))
-            elif otherVal.enum.name != self.enum.name:
-                raise TypeError("can't compare enumerations of different types: "
-                                + otherVal.enum.name + " and " + self.enum.name)
-            else:
-                return cmp(self.numValue, otherVal.numValue)
 
     def __le__(self, other):
         if isinstance(other, EnumValue):

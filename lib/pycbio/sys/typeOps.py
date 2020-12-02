@@ -1,7 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
 """Miscellaneous type operations"""
 # FIXME: move to other modules or move set in here.
-from builtins import range
 from pycbio.sys import PycbioException
 
 

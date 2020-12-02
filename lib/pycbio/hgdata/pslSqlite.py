@@ -3,10 +3,6 @@
 Storage of PSL format tables in sqlite for use in cluster jobs and other
 random access uses.
 """
-from __future__ import print_function
-import six
-from future.standard_library import install_aliases
-install_aliases()
 from pycbio.hgdata.hgSqlite import HgSqliteTable
 from pycbio.hgdata.psl import Psl
 from pycbio.hgdata.rangeFinder import Binner
@@ -128,7 +124,7 @@ class PslSqliteTable(HgSqliteTable):
             rangeWhere = Binner.getOverlappingSqlExpr("bin", "tName", "tStart", "tEnd", tName, tStart, tEnd)
         sql = "SELECT {{columns}} FROM {{table}} WHERE {}".format(rangeWhere)
         if strand is not None:
-            if isinstance(strand, six.string_types):
+            if isinstance(strand, str):
                 strand = [strand]
             sql += " AND (strand in ({}))".format(','.join(["'{}'".format(s) for s in strand]))
         if extraWhere is not None:

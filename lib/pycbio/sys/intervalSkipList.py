@@ -10,8 +10,6 @@ see also
 http://www-pub.cise.ufl.edu/~hanson/IS-lists/
 """
 
-from builtins import range
-from builtins import object
 from collections import namedtuple
 
 

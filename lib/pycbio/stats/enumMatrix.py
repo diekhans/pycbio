@@ -1,7 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
 "array and matrix classed, indexed by Enumerations"
 
-from builtins import range
 from pycbio.sys.enumeration import Enumeration
 
 

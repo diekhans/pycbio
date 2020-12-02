@@ -1,10 +1,7 @@
 # Copyright 2006-2014 Mark Diekhans
-from __future__ import print_function
-import six
 import unittest
 import sys
 import pickle
-from builtins import range
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 
@@ -33,15 +30,19 @@ class ColorNoDict(SymEnum):
 
 
 class SymEnumTests(TestCaseBase):
+    def _checkColor(self, colorCls):
+        # this useful for pickle tests
+        self.assertEqual(colorCls.red.name, "red")
+        self.assertEqual(colorCls.green.name, "green")
+        self.assertEqual(colorCls.blue.name, "blue")
+        self.assertTrue(colorCls.red < colorCls.blue)
+        self.assertTrue(colorCls.red == colorCls.red)
+        self.assertTrue(colorCls.red != colorCls.blue)
+        self.assertTrue(colorCls.red is not None)
+        self.assertTrue(None != colorCls.red)   # noqa
+
     def testBasics(self):
-        self.assertEqual(Color.red.name, "red")
-        self.assertEqual(Color.green.name, "green")
-        self.assertEqual(Color.blue.name, "blue")
-        self.assertTrue(Color.red < Color.blue)
-        self.assertTrue(Color.red == Color.red)
-        self.assertTrue(Color.red != Color.blue)
-        self.assertTrue(Color.red is not None)
-        self.assertTrue(None != Color.red)  # noqa
+        self._checkColor(Color)
 
     def testLookup(self):
         self.assertTrue(Color.red == Color("red"))
@@ -153,11 +154,7 @@ class SymEnumTests(TestCaseBase):
             first = auto()
             second = auto()
             third = auto()
-        if six.PY3:
-            self.assertEqual([('first', 1), ('second', 2), ('third', 3)], list(sorted([(str(v), v.value) for v in AutoDef])))
-        else:  # PY2 auto() hack doesn't order keys
-            self.assertEqual(['first', 'second', 'third'], list(sorted([str(v) for v in AutoDef])))
-            self.assertEqual([1, 2, 3], list(sorted([v.value for v in AutoDef])))
+        self.assertEqual([('first', 1), ('second', 2), ('third', 3)], list(sorted([(str(v), v.value) for v in AutoDef])))
 
     def testWithSymEnumValue(self):
         class CdsStat(SymEnum):
@@ -198,6 +195,21 @@ class SymEnumTests(TestCaseBase):
 
     def testFormatPad(self):
         self.assertEqual("{:5}x".format(Color.red), "red  x")
+
+    def _testPickleProt(self, prot):
+        stuff = {}
+        stuff[Color.red] = "red one"
+        stuff[Color.green] = "green one"
+        world = pickle.dumps((Color, stuff), prot)
+        Color2, stuff2 = pickle.loads(world)
+
+        self.assertTrue(Color2.red in stuff2)
+        self.assertTrue(Color2.green in stuff2)
+        self._checkColor(Color2)
+
+    def testPickle(self):
+        for prot in range(0, pickle.HIGHEST_PROTOCOL + 1):
+            self._testPickleProt(prot)
 
 def suite():
     ts = unittest.TestSuite()

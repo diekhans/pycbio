@@ -1,13 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
-from __future__ import print_function
-from builtins import range
-from builtins import object
-from future.utils import raise_from
-import six
 from collections import defaultdict
 from pycbio.tsv.tsvReader import TsvReader
 from pycbio.tsv import TsvError
-from pycbio.sys import pycbioRaiseFrom
 import csv
 
 # FIX: maybe make each index it's own class to handle uniq check, etc.
@@ -28,7 +22,7 @@ class TsvTable(list):
 
     def _checkNormalizeKeySpec(self, keyCols):
         "keyCols and be string or a list"
-        if isinstance(keyCols, six.string_types):
+        if isinstance(keyCols, str):
             keyCols = (keyCols,)
         for keyCol in keyCols:
             if keyCol not in self.colMap:
@@ -118,12 +112,12 @@ class TsvTable(list):
             self._readBody(reader)
         except Exception as ex:
             reader.close()
-            pycbioRaiseFrom(TsvError("load failed", reader=reader), ex)
+            raise TsvError("load failed", reader=reader) from ex
 
     def addColumn(self, colName, initValue=None, colType=None):
         "add a column to all rows in the table"
         if colName in self.colMap:
-            raise_from(TsvError("column \"{}\" is already defined".format(colName)))
+            raise TsvError("column \"{}\" is already defined".format(colName))
 
         self.colMap[colName] = len(self.columns)
         if colType:

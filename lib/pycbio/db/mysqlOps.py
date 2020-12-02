@@ -1,6 +1,5 @@
 # Copyright 2006-2012 Mark Diekhans
 """Operations for accessing mysql"""
-from builtins import range
 import warnings
 import MySQLdb   # mysqlclient is required for python 3
 import MySQLdb.cursors

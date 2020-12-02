@@ -4,9 +4,7 @@
 # a better convention to avoid collisions or make these functions rather
 # than methods
 # FIXME: need accessor functions for columns
-from builtins import range
 from pycbio.tsv import TsvError
-from pycbio.sys import pycbioRaiseFrom
 
 
 def tsvRowToDict(row):
@@ -40,7 +38,7 @@ class TsvRow(object):
                 col = ct(col)
             setattr(self, self._columns_[i], col)
         except Exception as ex:
-            pycbioRaiseFrom(TsvError("Error converting TSV column {} ({}) to object, value \"{}\"".format(i, self._columns_[i], row[i])), ex)
+            raise TsvError("Error converting TSV column {} ({}) to object, value \"{}\"".format(i, self._columns_[i], row[i])) from ex
 
     def _parse(self, row):
         for i in range(len(self._columns_)):

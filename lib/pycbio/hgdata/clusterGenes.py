@@ -1,9 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
 """Module to access output of clusterGenes UCSC browser command"""
 
-import six
-if six.PY3:
-    from sys import intern
 from collections import defaultdict
 from pycbio.hgdata.autoSql import strArrayType
 from pycbio.tsv import TsvReader
@@ -33,9 +30,6 @@ cgBoolSpec = (cgBoolParse, cgBoolFormat)
 # cluster	table	gene	chrom	txStart	txEnd	strand
 typeMap = {
     "cluster": int,
-    "chrom": intern,
-    "table": intern,
-    "strand": intern,
     "txStart": int,
     "txEnd": int,
     "rnaLength": int,

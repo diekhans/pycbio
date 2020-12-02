@@ -40,16 +40,11 @@ Modified by markd:
 
 # FIXME: can this be replaced with something in pypi, is it really needed
 
-try:
-    import UserDict  # py2
-    _dbDictBase = UserDict.DictMixin
-except ImportError:
-    from collections import UserDict  # py3
-    _dbDictBase = UserDict
+from collections import UserDict
 from sqlite3 import dbapi2 as sqlite
 
 
-class DbDict(_dbDictBase):
+class DbDict(UserDict):
     ''' DbDict, a dictionnary-like object for large datasets (several
     Tera-bytes) backed by an SQLite database'''
 

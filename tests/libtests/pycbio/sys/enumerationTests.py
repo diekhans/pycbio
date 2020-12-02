@@ -1,6 +1,4 @@
 # Copyright 2006-2012 Mark Diekhans
-from future import standard_library
-standard_library.install_aliases()
 import unittest
 import sys
 import pickle
@@ -107,16 +105,9 @@ class EnumerationTests(TestCaseBase):
         self.assertTrue(Color2.green in stuff2)
         self._checkColors(Color2)
 
-    def testPickle2(self):
-        # FIXME: higher in py3, but enumeration is going to be replaced by symEnum, so this goes away
-        # self.assertTrue(pickle.HIGHEST_PROTOCOL == 2)
-        self._testPickleProt(2)
-
-    def testPickle1(self):
-        self._testPickleProt(1)
-
-    def testPickle0(self):
-        self._testPickleProt(0)
+    def testPickle(self):
+        for prot in range(0, pickle.HIGHEST_PROTOCOL + 1):
+            self._testPickleProt(prot)
 
 
 def suite():

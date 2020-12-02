@@ -1,7 +1,4 @@
 # Copyright 2006-2012 Mark Diekhans
-from __future__ import print_function
-from __future__ import division
-from builtins import round
 import re
 import colorsys
 from collections import namedtuple

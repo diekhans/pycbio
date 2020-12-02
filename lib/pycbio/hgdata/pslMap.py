@@ -1,5 +1,4 @@
 # Copyright 2006-2016 Mark Diekhans
-from __future__ import print_function
 from collections import namedtuple
 from pycbio.hgdata.psl import Psl, PslBlock, reverseCoords
 
