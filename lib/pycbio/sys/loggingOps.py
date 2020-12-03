@@ -53,7 +53,7 @@ def setupLogger(handler, formatter=None):
     logger.addHandler(handler)
     if formatter is not None:
         handler.setFormatter(formatter)
-
+    return logger
 
 def setupStreamLogger(fh, level, formatter=None):
     "Configure logging to a specified open file.  Returns logger."
