@@ -2,6 +2,7 @@
 import unittest
 import sys
 import pickle
+import json
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.objDict import ObjDict, DefaultObjDict
@@ -9,7 +10,7 @@ from pycbio.sys.testCaseBase import TestCaseBase
 try:
     import jsonpickle
     haveJsonPickle = True
-except:
+except ModuleNotFoundError:
     haveJsonPickle = False
     print("NOTE: jsonpickle not found, tests disabled", file=sys.stderr)
 
@@ -87,6 +88,15 @@ class ObjDictTests(TestCaseBase, TestMixin):
         if haveJsonPickle:
             self._runJsonPickleTest(ObjDictDerived())
 
+    def testJsonLoad(self):
+        with open(self.getInputFile("simpleObjs.json")) as fh:
+            objs = json.load(fh, object_pairs_hook=ObjDict)
+        self.assertTrue(isinstance(objs, list))
+        self.assertEqual(2, len(objs))
+        obj = objs[0]
+        self.assertTrue(isinstance(obj, ObjDict))
+        self.assertEqual('value 1', obj['one'])
+        self.assertEqual('value 2', obj.two)
 
 class DefaultObjDictTests(TestCaseBase, TestMixin):
     def _initObjDict(self, od):
@@ -146,6 +156,16 @@ class DefaultObjDictTests(TestCaseBase, TestMixin):
         if haveJsonPickle:
             self._runJsonPickleTest(DefaultObjDict(list))
 
+    # FIXME: doesn't work
+    def X_testJsonLoad(self):
+        with open(self.getInputFile("simpleObjs.json")) as fh:
+            objs = json.load(fh, object_pairs_hook=DefaultObjDict)
+        self.assertTrue(isinstance(objs, list))
+        self.assertEqual(2, len(objs))
+        obj = objs[0]
+        self.assertTrue(isinstance(obj, DefaultObjDict))
+        self.assertEqual('value 1', obj['one'])
+        self.assertEqual('value 2', obj.two)
 
 def suite():
     ts = unittest.TestSuite()

@@ -1,5 +1,5 @@
 * modify lib/pycbio/hgdata/gff3 to use gencode gtf/gff paradigm
-* DefaultObjDict pickle doesn't work (see disabled in objDictTests.py)
+* DefaultObjDict pickle doesn't work (see disabled in oobjDictTests.py)
 * drop enumeration
 * nasty BUG:  calling pipeline in a loop agaisnt an open file truncates it each exec
     ouch, this happens with subprocess.call_check too
