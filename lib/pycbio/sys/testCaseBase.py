@@ -1,5 +1,4 @@
 # Copyright 2006-2012 Mark Diekhans
-from pycbio.sys import fileOps
 import os
 import sys
 import unittest
@@ -12,6 +11,9 @@ import subprocess
 import traceback
 import warnings
 from pipes import quote
+from pycbio.sys import fileOps
+from pycbio.hgdata.hgConf import HgConf
+
 
 try:
     MAXFD = os.sysconf("SC_OPEN_MAX")
@@ -215,7 +217,21 @@ class TestCaseBase(unittest.TestCase):
         "If this is OS/X, output message to indicate this test is broken and return True "
         # FIXME: this is temporary, not needed any more
         if sys.platform == "darwin":
-            sys.stderr.write("WARNING: test {} doe not run on OS/X\n".format(self.id()))
+            print("WARNING: test {} does not run on OS/X".format(self.id()), file=sys.stderr)
             return True
         else:
+            return False
+
+    warnedAboutHgConf = False
+
+    def haveHgConf(self):
+        "check for ~/hg.conf so test can be skipped without it. Warn if not available"
+        try:
+            HgConf()
+            return True
+        except FileNotFoundError:
+            if not self.warnedAboutHgConf:
+                msg = "WARNING: hg.conf not found, database tests disabled: {}".format(HgConf.getHgConf())
+                print(msg, file=sys.stderr)
+                self.skipTest(msg)
             return False

@@ -10,14 +10,19 @@ class HgConf(dict):
        3) ~/.hg.conf
        user name is expanded"""
     def __init__(self, confFile=None):
+        confFile = self.getHgConf(confFile=confFile)
+        with open(confFile) as fh:
+            for line in fh:
+                self._parseLine(line)
+
+    @classmethod
+    def getHgConf(self, confFile=None):
         if confFile is None:
             confFile = os.getenv("HGDB_CONF")
         if confFile is None:
             confFile = "~/.hg.conf"
         confFile = os.path.expanduser(confFile)
-        with open(confFile) as fh:
-            for line in fh:
-                self._parseLine(line)
+        return confFile
 
     def _parseLine(self, line):
         line = line.strip()

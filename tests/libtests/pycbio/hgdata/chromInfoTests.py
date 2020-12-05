@@ -32,6 +32,8 @@ class ChromInfoTests(TestCaseBase):
         self._checkChroms(chroms)
 
     def testLoadDb(self):
+        if not self.haveHgConf():
+            return
         hgdb = "hg38"
         try:
             conn = connect(hgdb)

@@ -1,5 +1,5 @@
 {
-    "py/object": "__main__.ObjDictDerived",
+    "py/object": "libtests.pycbio.sys.objDictTests.ObjDictDerived",
     "one": "value 1",
     "two": "value 2",
     "three": "value 3"

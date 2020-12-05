@@ -23,6 +23,17 @@ class ObjDictDerived(ObjDict):
     __slots__ = ()
     pass
 
+def editJsonPicklePath(inJson, outJson):
+    "edit py/object entry in json file so it is independent on how this files  file is loaded"
+    # "py/object": "libtests.pycbio.sys.objDictTests.ObjDictDerived",
+    # or
+    # "py/object": "__main__.ObjDictDerived",
+    with open(inJson) as inFh:
+        with open(outJson, "w") as outFh:
+            for line in inFh:
+                line = line.replace("__main__.", "libtests.pycbio.sys.objDictTests.")
+                outFh.write(line)
+
 
 class ObjDictTests(TestCaseBase, TestMixin):
     def _initObjDict(self, od):
@@ -74,7 +85,8 @@ class ObjDictTests(TestCaseBase, TestMixin):
         self._initObjDict(od)
         with open(self.getOutputFile(".json"), 'w') as fh:
             print(jsonpickle.encode(od, indent=4), file=fh)
-        self.diffExpected(".json")
+        editJsonPicklePath(self.getOutputFile(".json"), self.getOutputFile(".edit.json"))
+        self.diffExpected(".edit.json")
         with open(self.getOutputFile(".json")) as fh:
             od2 = jsonpickle.decode(fh.read())
         self.assertTrue(isinstance(od2, ObjDict))
@@ -144,7 +156,8 @@ class DefaultObjDictTests(TestCaseBase, TestMixin):
 
         with open(self.getOutputFile(".json"), 'w') as fh:
             print(jsonpickle.encode(od, indent=4), file=fh)
-        self.diffExpected(".json")
+        editJsonPicklePath(self.getOutputFile(".json"), self.getOutputFile(".edit.json"))
+        self.diffExpected(".edit.json")
 
         with open(self.getOutputFile(".json")) as fh:
             od2 = jsonpickle.decode(fh.read())
