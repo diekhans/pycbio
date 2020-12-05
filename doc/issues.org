@@ -1,5 +1,5 @@
 * modify lib/pycbio/hgdata/gff3 to use gencode gtf/gff paradigm
-* make ObjDict use it's dictionary an abc.mutuablemapping to make more efficient.  See how this works with jsonpickle which makes an extra empty __dict__ for ObjDict derived classes.
+* DefaultObjDict pickle doesn't work (see disabled in objDictTests.py)
 * drop enumeration
 * nasty BUG:  calling pipeline in a loop agaisnt an open file truncates it each exec
     ouch, this happens with subprocess.call_check too
