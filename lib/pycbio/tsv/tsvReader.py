@@ -60,6 +60,8 @@ class TsvReader(object):
     becomes a field name.  It is also indexable by column name or int index.
     Columns can be automatically type converted by column name.  This can also
     read from a dbapi cursor object (must set allowEmpty to true)
+
+    If the first character of the header is '#', it is skipped.
     """
 
     def _readRow(self):
