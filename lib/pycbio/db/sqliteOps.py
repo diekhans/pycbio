@@ -45,13 +45,11 @@ def setSynchronous(conn, mode):
         mode = "NORMAL"
     run(conn, "PRAGMA synchronous={}".format(mode))
 
-
 def objDictRowFactory(cur, row):
     """Row factory to return a ObjDict of the result.  Note that non-unique
     names from multiple tables will end up with the last column of the same
     name winning.  In sane cases, these will have the same value"""
     return ObjDict(zip((t[0] for t in cur.description), row))
-
 
 class SqliteCursor(object):
     """Context manager creating an sqlite cursor and a transaction.

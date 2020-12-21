@@ -1,3 +1,4 @@
+* support psl sqlite stuff to build query bin ranges
 * modify lib/pycbio/hgdata/gff3 to use gencode gtf/gff paradigm
 * DefaultObjDict pickle doesn't work (see disabled in oobjDictTests.py)
 * drop enumeration
