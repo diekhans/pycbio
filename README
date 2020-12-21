@@ -1,9 +1,15 @@
 
-This is Mark Diekhans's <markd@ucsc.edu> personal collection of Python
-libraries and tools for computational biology related work.
+This is Mark Diekhans's <markd@ucsc.edu> personal collection of Python 3
+libraries and tools for computational biology related work.  it is especially
+geared to working with data from the UCSC Browser.
 
-
-
+This comes with a liberal BSD license. Use as you wish, however it comes with
+the caveat that I make break compatibility at any time.  As a personal tool,
+it has no formal release process.  If a project needs to link to a stable
+version, I will gladly add a tag on request.
 
 Additional, if you fork this package with the intent of redistributing it,
 please rename the top-level package from `pycbio', to avoid import conflicts.
+
+
+markd@ucsc.edu
