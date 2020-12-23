@@ -9,22 +9,28 @@ sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.ncbi.assembly import AssemblyReport
 from pycbio.sys import PycbioException
 from pycbio.sys import fileOps
+from pycbio.sys.symEnum import SymEnum, auto
 
-ID_TYPE_SEQUENCE_NAME = "sequenceName"
-ID_TYPE_GENBANK_ACCN = "genBankAccn"
-ID_TYPE_REFSEQ_ACCN = "refSeqAccn"
-ID_TYPE_UCSC_STYLE_NAME = "ucscStyleName"
-ID_TYPE_GENCODE = "gencode"
-ID_TYPE_SEQUENCE_NAME_GENBANK_ACCN = "sequenceNameGenbankAccn"
+class IdType(SymEnum):
+    "types of identifiers"
+    sequenceName = auto()
+    genBankAccn = auto()
+    refSeqAccn = auto()
+    ucscStyleName = auto()
+    gencode = auto()
+    sequenceNameGenbankAccn = auto()
 
-ID_TYPES = (ID_TYPE_SEQUENCE_NAME, ID_TYPE_GENBANK_ACCN, ID_TYPE_REFSEQ_ACCN, ID_TYPE_UCSC_STYLE_NAME, ID_TYPE_GENCODE, ID_TYPE_SEQUENCE_NAME_GENBANK_ACCN)
+class OutputType(SymEnum):
+    "type of output file"
+    lift = auto()
+    psl = auto()
+    sizes = auto()
+    idmap = auto()
 
-OUTPUT_LIFT = "lift"
-OUTPUT_SIZES = "sizes"
-OUTPUT_IDMAP = "idmap"
-
-INCLUDE_MAIN_CHROMS = "mainChroms"
-INCLUDE_MAIN_ASM = "mainAsm"
+class OutputFilter(SymEnum):
+    "what to include in the output"
+    mainChroms = auto()
+    mainAsm = auto()
 
 
 def parseArgs():
@@ -40,31 +46,31 @@ Special id types:
       accession for other sequences.
 """
     parser = argparse.ArgumentParser(description=usage)
-    parser.add_argument('--fromIdType', type=str, choices=ID_TYPES,
+    parser.add_argument('--fromIdType', type=IdType, choices=IdType,
                         help="from sequence id type, also id type for sizes")
-    parser.add_argument('--toIdType', type=str, choices=ID_TYPES,
+    parser.add_argument('--toIdType', type=IdType, choices=IdType,
                         help="map to sequence id type")
-    parser.add_argument('--include', type=str, choices=(INCLUDE_MAIN_CHROMS, INCLUDE_MAIN_ASM),
+    parser.add_argument('--include', type=OutputFilter, choices=OutputFilter,
                         help="only include sequence of this type")
     parser.add_argument('--verbose', action="store_true",
                         help="verbose tracing")
     parser.add_argument('--skipUnmapped', action="store_true",
                         help="skipUnmapped sequences")
-    parser.add_argument('outputType', type=str, choices=(OUTPUT_LIFT, OUTPUT_SIZES, OUTPUT_IDMAP),
+    parser.add_argument('outputType', type=OutputType, choices=OutputType,
                         help="type of output to create; one of lift, sizes, or idmap")
     parser.add_argument('assemblyReport', type=str,
                         help="NCBI assembly report file")
     parser.add_argument('outFile', type=str,
                         help="output of the specified type")
     args = parser.parse_args()
-    if (args.outputType == OUTPUT_LIFT) or (args.outputType == OUTPUT_IDMAP):
+    if (args.outputType == OutputType.lift) or (args.outputType == OutputType.idmap):
         if (args.fromIdType is None) or (args.toIdType is None):
-            parser.error("output of " + OUTPUT_LIFT + " requires --fromIdType and --toIdType")
-    elif args.outputType == OUTPUT_SIZES:
+            parser.error(f"output of {OutputType.lift} or {OutputType.idmap} requires --fromIdType and --toIdType")
+    elif args.outputType == OutputType.sizes:
         if args.fromIdType is None:
-            parser.error("output of " + OUTPUT_SIZES + " requires --fromIdType")
+            parser.error(f"output of {OutputType.sizes} requires --fromIdType")
         if args.toIdType is not None:
-            parser.error("--toIdType not valid with output of " + OUTPUT_SIZES)
+            parser.error("--toIdType not valid with output of {OutputType.sizes}")
     return args
 
 
@@ -81,12 +87,12 @@ def emptyIfNone(val):
 
 def getId(seq, idType):
     "get the from a sequence record, given the type of id desired, or None if not defined"
-    if idType == ID_TYPE_GENCODE:
+    if idType == IdType.gencode:
         return seq.gencodeName
-    elif idType == ID_TYPE_SEQUENCE_NAME_GENBANK_ACCN:
+    elif idType == IdType.sequenceNameGenbankAccn:
         return seq.sequenceNameGenbankAccn
     else:
-        return getattr(seq, idType)
+        return getattr(seq, str(idType))
 
 
 def createLiftRec(seq, fromIdType, toIdType, cnvInfo, outFh):
@@ -147,14 +153,14 @@ class IncludeFilter(object):
     def __init__(self, include):
         if include is None:
             self.keep = None  # don't assume values
-        elif include == INCLUDE_MAIN_CHROMS:
+        elif include == OutputFilter.mainChroms:
             self.keep = frozenset(["assembled-molecule"])
-        elif INCLUDE_MAIN_ASM:
+        elif include == OutputFilter.mainAsm:
             self.keep = frozenset(["assembled-molecule",
                                    "unlocalized-scaffold",
                                    "unplaced-scaffold"])
         else:
-            raise PycbioException("logic error, invalid include: {}".format(include))
+            raise PycbioException(f"logic error, invalid include: {include}")
 
     def __call__(self, seq):
         if self.keep is None:
@@ -169,11 +175,11 @@ def main(args):
     # if skipping, print only if verbose
     cnvInfo = CnvInfo(args.verbose or not args.skipUnmapped)
     with open(args.outFile, "w") as outFh:
-        if args.outputType == OUTPUT_LIFT:
+        if args.outputType == OutputType.lift:
             createLift(asmReport, filterFn, args.fromIdType, args.toIdType, cnvInfo, outFh)
-        elif args.outputType == OUTPUT_SIZES:
+        elif args.outputType == OutputType.sizes:
             createSizes(asmReport, filterFn, args.fromIdType, cnvInfo, outFh)
-        elif args.outputType == OUTPUT_IDMAP:
+        elif args.outputType == OutputType.idmap:
             createIdmap(asmReport, filterFn, args.fromIdType, args.toIdType, cnvInfo, outFh)
     if cnvInfo.skipCnt > 0:
         print("{}: {} sequences skip due to no mapping".format("Warning" if args.skipUnmapped else "Error",

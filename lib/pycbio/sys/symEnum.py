@@ -140,6 +140,9 @@ class SymEnum(SymEnumMixin, Enum, metaclass=(SymEnumMeta)):
     value:
        SymEnum(strName)
        SymEnum(intVal)
+
+    To use as an argument type in argparser
+       type=Color, choices=Color
     """
 
     def __str__(self):
