@@ -10,6 +10,8 @@ from pycbio.ncbi.assembly import AssemblyReport
 from pycbio.sys import PycbioException
 from pycbio.sys import fileOps
 from pycbio.sys.symEnum import SymEnum, auto
+from pycbio.hgdata.psl import Psl, PslBlock
+
 
 class IdType(SymEnum):
     "types of identifiers"
@@ -57,7 +59,7 @@ Special id types:
     parser.add_argument('--skipUnmapped', action="store_true",
                         help="skipUnmapped sequences")
     parser.add_argument('outputType', type=OutputType, choices=OutputType,
-                        help="type of output to create; one of lift, sizes, or idmap")
+                        help="type of output to create; one of ")
     parser.add_argument('assemblyReport', type=str,
                         help="NCBI assembly report file")
     parser.add_argument('outFile', type=str,
@@ -94,6 +96,16 @@ def getId(seq, idType):
     else:
         return getattr(seq, str(idType))
 
+def recordSkipFromIdToId(seq, fromIdType, fromId, toIdType, toId, cnvInfo):
+    cnvInfo.skipCnt += 1
+    if cnvInfo.prSkipped:
+        print(f"drop sequenceName: {seq.sequenceName} {fromIdType}: {fromId} {toIdType}: {toId}", file=sys.stderr)
+
+def recordSkipFromId(seq, fromIdType, fromId, cnvInfo):
+    cnvInfo.skipCnt += 1
+    if cnvInfo.prSkipped:
+        print(f"drop sequenceName: {seq.sequenceName} {fromIdType}: {fromId}", file=sys.stderr)
+
 
 def createLiftRec(seq, fromIdType, toIdType, cnvInfo, outFh):
     fromId = getId(seq, fromIdType)
@@ -101,9 +113,7 @@ def createLiftRec(seq, fromIdType, toIdType, cnvInfo, outFh):
     if (fromId is not None) and (toId is not None):
         fileOps.prRowv(outFh, 0, fromId, seq.sequenceLength, toId, seq.sequenceLength)
     else:
-        cnvInfo.skipCnt += 1
-        if cnvInfo.prSkipped:
-            print(f"drop sequenceName: {seq.sequenceName} {fromIdType}: {fromId} {toIdType}: {toId}", file=sys.stderr)
+        recordSkipFromIdToId(seq, fromIdType, fromId, toIdType, toId, cnvInfo)
 
 
 def createLift(asmReport, filterFn, fromIdType, toIdType, cnvInfo, outFh):
@@ -112,15 +122,35 @@ def createLift(asmReport, filterFn, fromIdType, toIdType, cnvInfo, outFh):
         if filterFn(seq):
             createLiftRec(seq, fromIdType, toIdType, cnvInfo, outFh)
 
+def makePsl(seq, qName, tName):
+    psl = Psl.create(qName, seq.sequenceLength, 0, seq.sequenceLength,
+                     tName, seq.sequenceLength, 0, seq.sequenceLength, '+')
+    psl.addBlock(PslBlock(0, 0, seq.sequenceLength))
+    psl.match = seq.sequenceLength
+    return psl
+
+def createPslRec(seq, fromIdType, toIdType, cnvInfo, outFh):
+    fromId = getId(seq, fromIdType)
+    toId = getId(seq, toIdType)
+    if (fromId is not None) and (toId is not None):
+        makePsl(seq, fromId, toId).write(outFh)
+    else:
+        recordSkipFromIdToId(seq, fromIdType, fromId, toIdType, toId, cnvInfo)
+
+
+def createPsl(asmReport, filterFn, fromIdType, toIdType, cnvInfo, outFh):
+    "create a PSL file for map between two id types"
+    for seq in asmReport.seqs:
+        if filterFn(seq):
+            createPslRec(seq, fromIdType, toIdType, cnvInfo, outFh)
+
 
 def createSizeRec(seq, fromIdType, cnvInfo, outFh):
     fromId = getId(seq, fromIdType)
     if fromId is not None:
         fileOps.prRowv(outFh, fromId, seq.sequenceLength)
     else:
-        cnvInfo.skipCnt += 1
-        if cnvInfo.prSkipped:
-            print(f"drop sequenceName: {seq.sequenceName} {fromIdType}: {fromId}", file=sys.stderr)
+        recordSkipFromId(seq, fromIdType, fromId, cnvInfo)
 
 
 def createSizes(asmReport, filterFn, fromIdType, cnvInfo, outFh):
@@ -135,9 +165,7 @@ def createIdmapRec(seq, fromIdType, toIdType, cnvInfo, outFh):
     if fromId is not None:
         fileOps.prRowv(outFh, getId(seq, fromIdType), getId(seq, toIdType))
     else:
-        cnvInfo.skipCnt += 1
-        if cnvInfo.prSkipped:
-            print(f"drop sequenceName: {seq.sequenceName} {fromIdType}: {fromId}", file=sys.stderr)
+        recordSkipFromId(seq, fromIdType, fromId, cnvInfo)
 
 
 def createIdmap(asmReport, filterFn, fromIdType, toIdType, cnvInfo, outFh):
@@ -177,6 +205,8 @@ def main(args):
     with open(args.outFile, "w") as outFh:
         if args.outputType == OutputType.lift:
             createLift(asmReport, filterFn, args.fromIdType, args.toIdType, cnvInfo, outFh)
+        if args.outputType == OutputType.psl:
+            createPsl(asmReport, filterFn, args.fromIdType, args.toIdType, cnvInfo, outFh)
         elif args.outputType == OutputType.sizes:
             createSizes(asmReport, filterFn, args.fromIdType, cnvInfo, outFh)
         elif args.outputType == OutputType.idmap:

@@ -22,7 +22,8 @@ endif
 
 test: fetchTests asmReportCnvTests agpToPslTests
 
-fetchTests: gbffFetchTest faFetchTest
+fetchTests: \
+	gbffFetchTest faFetchTest
 
 gbffFetchTest: mkdirs
 	${ncbiGbFetch} ${email} --out=output/$@.gbff ${testAccver}
@@ -32,9 +33,11 @@ faFetchTest: mkdirs
 	${ncbiGbFetch} ${email} --fasta --out=output/$@.fa ${testAccver}
 	${diff} expected/$@.fa output/$@.fa
 
-asmReportCnvTests: asmSeqNameUcscLiftTest asmRefSeqGencodeLiftTest asmSeqNameSizesTest \
-	asmGencodeNameSizesMainChromsTest asmGencodeNameSizesMainAsmTest \
-	asmIdmapTest asmIdmapMainAsmTest asmIdmapMixedAsmTest asmUmappedErrTest
+asmReportCnvTests: \
+	asmSeqNameUcscLiftTest asmRefSeqGencodeLiftTest \
+	asmSeqNameUcscPslTest asmRefSeqGencodePslTest \
+	asmSeqNameSizesTest asmGencodeNameSizesMainChromsTest asmGencodeNameSizesMainAsmTest \
+	asmIdmapTest asmIdmapMainAsmTest asmIdmapMixedAsmTest asmUmappedErrTest \
 
 asmReportTestFile = ${ncbiTestInputDir}/GCF_000001405.28.assembly.txt
 
@@ -46,6 +49,17 @@ asmSeqNameUcscLiftTest: mkdirs
 asmRefSeqGencodeLiftTest: mkdirs
 	${ncbiAssemblyReportConvert} --fromIdType=refSeqAccn --toIdType=gencode lift ${asmReportTestFile} output/$@.lift
 	${diff} expected/$@.lift output/$@.lift
+
+asmSeqNameUcscPslTest: mkdirs
+	${ncbiAssemblyReportConvert} --skipUnmapped --fromIdType=sequenceName --toIdType=ucscStyleName psl ${asmReportTestFile} output/$@.psl 2>output/$@.err
+	pslCheck -verbose=0 output/$@.psl
+	${diff} expected/$@.psl output/$@.psl
+	${diff} expected/$@.err output/$@.err
+
+asmRefSeqGencodePslTest: mkdirs
+	${ncbiAssemblyReportConvert} --fromIdType=refSeqAccn --toIdType=gencode psl ${asmReportTestFile} output/$@.psl
+	pslCheck -verbose=0 output/$@.psl
+	${diff} expected/$@.psl output/$@.psl
 
 asmSeqNameSizesTest: mkdirs
 	${ncbiAssemblyReportConvert} --fromIdType=sequenceName sizes ${asmReportTestFile} output/$@.sizes
