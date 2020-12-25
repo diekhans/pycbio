@@ -3,9 +3,6 @@
 Storage of genePred data from sqlite for use in cluster jobs and other
 random access uses.
 """
-from __future__ import print_function
-from future.standard_library import install_aliases
-install_aliases()
 from pycbio.db import sqliteOps
 from pycbio.hgdata.hgSqlite import HgSqliteTable
 from pycbio.hgdata.genePred import GenePred
