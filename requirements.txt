@@ -1,4 +1,4 @@
-pipettor>=0.4.0
+pipettor>=0.5.0
 numpy
 biopython
 enum-compat
