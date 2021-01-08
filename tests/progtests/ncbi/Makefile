@@ -6,6 +6,7 @@ export PYTHONPATH
 ncbiGbFetch = ${binDir}/ncbiGbFetch
 ncbiAssemblyReportConvert = ${binDir}/ncbiAssemblyReportConvert
 agpToPsl = ${binDir}/agpToPsl
+runPslCheck = ../../bin/runPslCheck
 
 ncbiTestInputDir = ../../libtests/pycbio/ncbi/input
 
@@ -15,7 +16,9 @@ testAccver = NM_013266.3 AK289756.1 BG187649.1 U14680.1
 diff = diff -u
 
 # if there is no domain configured, we need to for an email address for ncbiGbFetch
-ifeq ($(findstring .,$(shell hostname -f)),)
+# don't be fooled by *.local
+hostname = $(shell hostname -f)
+ifneq ($(and $(if $(findstring .,${hostname}), true), $(if $(findstring .local,${hostname}), false)),)
    email = --email=markd@ucsc.edu
 endif
 
@@ -52,13 +55,13 @@ asmRefSeqGencodeLiftTest: mkdirs
 
 asmSeqNameUcscPslTest: mkdirs
 	${ncbiAssemblyReportConvert} --skipUnmapped --fromIdType=sequenceName --toIdType=ucscStyleName psl ${asmReportTestFile} output/$@.psl 2>output/$@.err
-	pslCheck -verbose=0 output/$@.psl
+	${runPslCheck} -verbose=0 output/$@.psl
 	${diff} expected/$@.psl output/$@.psl
 	${diff} expected/$@.err output/$@.err
 
 asmRefSeqGencodePslTest: mkdirs
 	${ncbiAssemblyReportConvert} --fromIdType=refSeqAccn --toIdType=gencode psl ${asmReportTestFile} output/$@.psl
-	pslCheck -verbose=0 output/$@.psl
+	${runPslCheck} -verbose=0 output/$@.psl
 	${diff} expected/$@.psl output/$@.psl
 
 asmSeqNameSizesTest: mkdirs
@@ -97,23 +100,23 @@ agpToPslTests: agpToPslBasicTest agpToPslLocalCompTest agpToPslSkipTest agpToPsl
 
 agpToPslBasicTest: mkdirs
 	${agpToPsl} ${clintChimpAgp} output/$@.psl
-	pslCheck output/$@.psl
+	${runPslCheck} output/$@.psl
 	${diff} expected/$@.psl output/$@.psl
 
 agpToPslLocalCompTest: mkdirs
 	${agpToPsl} --componentSizes=input/Clint_Chimp.chroms --componentLocalId2Acc=input/Clint_Chimp.component_localID2acc ${clintChimpAgp} output/$@.psl
-	pslCheck output/$@.psl
+	${runPslCheck} output/$@.psl
 	${diff} expected/$@.psl output/$@.psl
 
 agpToPslSkipTest: mkdirs
 	${agpToPsl} --skipUnmappable --componentSizes=input/Clint_Chimp.skip.chroms --componentLocalId2Acc=input/Clint_Chimp.skip.component_localID2acc ${clintChimpAgp} output/$@.psl >output/$@.out 2>&1
-	pslCheck output/$@.psl
+	${runPslCheck} output/$@.psl
 	${diff} expected/$@.psl output/$@.psl
 	${diff} expected/$@.out output/$@.out
 
 agpToPslGapsTest: mkdirs
 	${agpToPsl} ${grch38Agp} output/$@.psl
-	pslCheck output/$@.psl
+	${runPslCheck} output/$@.psl
 	${diff} expected/$@.psl output/$@.psl
 
 mkdirs:

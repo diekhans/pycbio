@@ -1,0 +1,11 @@
+#!/bin/bash
+# check if pslCheck exists, if so, run it on arguments, if not
+# warn but don't fail test
+
+set -beEu -o pipefail
+
+if which -s pslCheck ; then
+    exec pslCheck "$@"
+else
+    echo "Warning: pslCheck not found, test output not validated" >&2
+fi
