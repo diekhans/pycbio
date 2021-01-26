@@ -8,7 +8,9 @@ from pycbio.sys import PycbioException
 
 
 # FIXME range and exon overlap functions are inconsistent.  exon should inherit from range.
+# FIXME: ExonFeatures should use Range
 # FIXME needs many more tests
+# FIXME: should use from pycbio.hgdata.frame import Frame
 
 
 class CdsStat(SymEnum):
@@ -109,7 +111,7 @@ class Exon(object):
             return Range(cdsSt, cdsEnd)
 
     def featureSplit(self):
-        """split exon into a length-3 tuple in the form (utr5, cds, utr3)
+        """split exon into an object with the fields (utr5, cds, utr3)
 `        where each element is either None, or (start, end).  utr5 is 5' UTR
         in the exon, utr3, is 3'UTR, and cds is coding sequence of the exon."""
         feats = ExonFeatures()
