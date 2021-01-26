@@ -1,10 +1,11 @@
 # Copyright 2006-2012 Mark Diekhans
 import re
 import colorsys
+import math
 from collections import namedtuple
 
 # FIXME: add optional alpha.
-# FIXME: do we really need to store both RGB and HSV?
+# FIXME: do we really need to store both RGB and HSV?, maybe cache HSV converson
 
 
 class Color(namedtuple("Color", ("red", "green", "blue",
@@ -175,3 +176,9 @@ class Color(namedtuple("Color", ("red", "green", "blue",
         if not mat:
             raise ValueError("invalid HTML color: {}".format(hcolor))
         return Color.fromPackRgb8(int(mat.group(1), base=16))
+
+    def distance(self, other):
+        "calculate euclidean distance between two colors"
+        return math.sqrt(pow(self.red - other.red, 2) +
+                         pow(self.green - other.green, 2) +
+                         pow(self.blue - other.blue, 2))

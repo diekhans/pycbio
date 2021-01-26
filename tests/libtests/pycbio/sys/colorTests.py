@@ -65,6 +65,13 @@ class ColorTests(TestCaseBase):
         with self.assertRaises(AttributeError):
             c.red = 0
 
+    def testDistance(self):
+        c1 = Color.fromRgb(0.5, 0.3, 0.4)
+        c2 = Color.fromRgb(0.9, 0.5, 0.1)
+        self.assertEqual(c1.distance(c1), 0.0)
+        self.assertAlmostEqual(c1.distance(c2), 0.5385164807)
+
+
 
 class SvgColorsTests(TestCaseBase):
     def testAliceBlue(self):
