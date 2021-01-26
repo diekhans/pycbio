@@ -4,6 +4,8 @@ from collections import defaultdict
 from pycbio.tsv import TsvReader
 from pycbio.sys.symEnum import SymEnum
 
+# FIXME: make a reader object
+
 # align is:
 #  #qName	qSize	tName	tStart	tEnd	ident	qCover	repMatch	tCover
 # query is:
