@@ -72,7 +72,6 @@ class ColorTests(TestCaseBase):
         self.assertAlmostEqual(c1.distance(c2), 0.5385164807)
 
 
-
 class SvgColorsTests(TestCaseBase):
     def testAliceBlue(self):
         self.assertEqual(SvgColors.aliceblue, Color.fromRgb8(0xf0, 0xf8, 0xff))
@@ -86,6 +85,19 @@ class SvgColorsTests(TestCaseBase):
     def testLookupBad(self):
         with self.assertRaises(AttributeError):
             SvgColors.lookup("evil")
+
+    def testGetColors(self):
+        self.assertTrue("whitesmoke" in SvgColors.getNames())
+        self.assertTrue("skyblue" in SvgColors.getNames())
+
+    def testClosest(self):
+        self.assertEqual(SvgColors.getClosestName(SvgColors.skyblue), "skyblue")
+        self.assertEqual(SvgColors.getClosestColor(SvgColors.skyblue), SvgColors.skyblue)
+
+        # skyblue is 0x87ceeb
+        near = Color.fromPackRgb8(0x87ceed)
+        self.assertEqual(SvgColors.getClosestName(near), "skyblue")
+        self.assertEqual(SvgColors.getClosestColor(near), SvgColors.skyblue)
 
 # FIXME: many more tests needed
 

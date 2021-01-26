@@ -166,4 +166,36 @@ class SvgColors(object):
 
     @classmethod
     def lookup(cls, name):
+        "convert name to color"
         return getattr(cls, name.lower())
+
+    @classmethod
+    def _nameGen(cls):
+        for n in vars(cls).keys():
+            if isinstance(getattr(cls, n), Color):
+                yield n
+
+    @classmethod
+    def getNames(cls):
+        "get all color names"
+        return [n for n in cls._nameGen()]
+
+    @classmethod
+    def getClosestName(cls, color):
+        "get the closet SVG name"
+        minName = "white"
+        minColor = cls.lookup(minName)
+        minDist = color.distance(minColor)
+        for n in cls._nameGen():
+            c = SvgColors.lookup(n)
+            d = color.distance(c)
+            if d < minDist:
+                minName = n
+                minColor = c
+                minDist = d
+        return minName
+
+    @classmethod
+    def getClosestColor(cls, color):
+        "get the closet SVG name"
+        return cls.lookup(cls.getClosestName(color))
