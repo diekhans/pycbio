@@ -10,7 +10,6 @@ is this even a useful format?
     ouch, this happens with subprocess.call_check too
     does this happen in pipettor?
 
-* drop RDB support in TSV
 * document generators:
   http://codespeak.net/~mwh/pydoctor/ - discussion of others
 
@@ -30,8 +29,6 @@ see unittest/case.py: # store exception, without traceback, for later retrieval
 * GenePred, etc should have abstraction around from dbColIdxMap, could be good
 switch to dictcursors
 * also custom cursors that work off of namedtuples would be great, especially to unify the sqlite/mysql interface stuff.
-* tests use obsolete makeSuite
-* WARNING: mysql pslMySqlTests tests don't work on python3
 * sqlite wrapper classes really are not that useful, they could just be functions instead.
 * rename getRow() functions to toRow()
 * hglite-split spliting up hglite stuff
