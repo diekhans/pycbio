@@ -156,6 +156,21 @@ class Color(namedtuple("Color", ("red", "green", "blue",
         return Color.fromRgb(Color._int8ToReal(r), Color._int8ToReal(g), Color._int8ToReal(b))
 
     @staticmethod
+    def fromRgb8Str(rgb8str):
+        "construct from 8-bit int RGB values in a comma separate string ("
+        try:
+            parts = rgb8str.split(',')
+            if len(parts) != 3:
+                raise ValueError("expected three comma separated integers: {}".format(rgb8str))
+            for i in range(3):
+                parts[i] = int(parts[i])
+                if not (0 <= parts[i] <= 255):
+                    raise ValueError("color must be in the range 0..255: {}", parts[i])
+            return Color.fromRgb8(*parts)
+        except ValueError as ex:
+            raise ValueError("invalid RGB8 color string: {}".format(rgb8str)) from ex
+
+    @staticmethod
     def fromHsv(h, s, v):
         "construct from real HSV values"
         assert (0.0 <= h <= 1.0)

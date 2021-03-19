@@ -45,6 +45,13 @@ class ColorTests(TestCaseBase):
         c = Color.fromHtmlColor("#804c66")
         self.assertEqual(c.toHtmlColor(), "#804c66")
 
+    def testRgb8Str(self):
+        self.assertEqual(Color.fromRgb8Str("255,182,3"), Color.fromRgb8(255, 182, 3))
+        with self.assertRaisesRegex(ValueError, "invalid RGB8 color string: 255,182"):
+            Color.fromRgb8Str("255,182")
+        with self.assertRaisesRegex(ValueError, "invalid RGB8 color string: 255,182"):
+            Color.fromRgb8Str("255,182,399")
+
     def testPackRgb8(self):
         self.assertEqual(Color.fromPackRgb8(0x008000), Color.fromRgb8(0x00, 0x80, 0x00))
         self.assertEqual(Color.fromPackRgb8(0xFFA510), Color.fromRgb8(0xFF, 0xA5, 0x10))
