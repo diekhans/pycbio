@@ -77,13 +77,6 @@ def makeInSeqArg(vals):
     values.  Use this for 'SELECT ... WHERE foo in ?'."""
     return "({})".format(','.join(apsw.format_sql_value(v) for v in vals))
 
-def run(conn, sql, args=None):
-    "Run an SQL query on a connection that does create transaction or return rows"
-    cur = conn.cursor()
-    try:
-        cur.execute(sql, args)
-    finally:
-        cur.close()
 
 def execute(conn, sql, args=None):
     "Run an SQL query on a connection that does not return rows"
