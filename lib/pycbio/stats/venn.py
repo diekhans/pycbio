@@ -4,7 +4,11 @@
 from pycbio.stats.subsets import Subsets
 from pycbio.sys import fileOps
 
-# FIXME: setName vs items can get confusing, more doc.
+# FIXME: confusing terminolog
+#  setName vs items can
+#  venn, vs subsets
+#  id vs name
+#
 
 
 class SetDict(dict):
@@ -44,14 +48,14 @@ class Venn(object):
         self.itemToNames = SetDict()
 
         # Venn table, dict index by name, of items (lazy build)
-        self.venn = None
+        self._venn = None
 
     def addItem(self, setName, item):
         "add a single item from a named set"
         self.subsets.add(setName)
         self.nameToItems.add(setName, item)
         self.itemToNames.add(item, setName)
-        self.venn = None
+        self._venn = None
 
     def addItems(self, setName, items):
         "add items from a named set"
@@ -59,31 +63,31 @@ class Venn(object):
         for item in items:
             self.nameToItems.add(setName, item)
             self.itemToNames.add(item, setName)
-        self.venn = None
+        self._venn = None
 
     def getNumItems(self):
         return len(self.itemToNames)
 
     def _buildVenn(self):
         "build Venn table"
-        self.venn = SetDict(self.subsets.getSubsets())
+        self._venn = SetDict(self.subsets.getSubsets())
 
         for item in list(self.itemToNames.keys()):
             nameSet = frozenset(self.itemToNames[item])
-            self.venn.add(nameSet, item)
+            self._venn.add(nameSet, item)
 
     def _buildInclusive(self):
         "build as inclusive subsets"
-        self.venn = SetDict(self.subsets.getSubsets())
+        self._venn = SetDict(self.subsets.getSubsets())
 
         for item in list(self.itemToNames.keys()):
             setName = frozenset(self.itemToNames[item])
             for iss in self.subsets.getInclusiveSubsets(setName):
-                self.venn.add(iss, item)
+                self._venn.add(iss, item)
 
     def _update(self):
         "build venn or inclusive venn, if it doesn't exists"
-        if self.venn is None:
+        if self._venn is None:
             if self.isInclusive:
                 self._buildInclusive()
             else:
@@ -92,7 +96,7 @@ class Venn(object):
     def getSubsetIds(self, subset):
         "get ids for the specified subset"
         self._update()
-        ids = self.venn.get(subset)
+        ids = self._venn.get(subset)
         if ids is None:
             ids = []
         return ids
@@ -120,6 +124,18 @@ class Venn(object):
 
     def writeSets(self, fh, subsetNameSeparator=" ", setNameFormatter=str):
         "write TSV of subsets and ids to an open file"
+        # FIXME: same code as above
         fileOps.prRowv(fh, "subset", "ids")
         for subset in self.subsets.getSubsets():
             fileOps.prRowv(fh, self.formatSubsetName(subset, subsetNameSeparator, setNameFormatter), self.getSubsetCounts(subset))
+
+    def _getCountRow(self, setNames, subset, count, setNameFormatter):
+        return [1 if sn in subset else 0
+                for sn in setNames] + [count]
+
+    def writeCountMatrix(self, fh, setNameFormatter=str, countColumn="count"):
+        "write matrix TSV, which each set being a column, along with count column"
+        setNames = sorted(self.nameToItems.keys())
+        fileOps.prRow(fh, [setNameFormatter(sn) for sn in setNames] + [countColumn])
+        for subset in self.subsets.getSubsets():
+            fileOps.prRow(fh, self._getCountRow(setNames, subset, self.getSubsetCounts(subset), setNameFormatter))

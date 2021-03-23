@@ -1,9 +1,10 @@
 # Copyright 2006-2012 Mark Diekhans
 from pycbio.sys import PycbioException
 
+# FIXME: distinction between subsets, subset, and elements not clear
 
 class Subsets(object):
-    "Generate possible subsets for a set of elements"
+    "Generate and store possible subsets for a set of elements."
 
     def __init__(self, elements=None):
         """initialize set, optionally defining elements from a list or set of elements"""
@@ -13,7 +14,7 @@ class Subsets(object):
             self.elements = set()
 
         # lazy cache of subsets
-        self.subsets = None
+        self._subsets = None
 
         # dict of inclusive subsets for each subset, built in a lazy manner
         self.inclusiveSubsets = None
@@ -21,7 +22,7 @@ class Subsets(object):
     def add(self, element):
         "Add an element to the set, ignore ones that already exist"
         self.elements.add(element)
-        self.subsets = None
+        self._subsets = None
         self.inclusiveSubsets = None
 
     @staticmethod
@@ -59,15 +60,15 @@ class Subsets(object):
 
     def getSubsets(self):
         "get the subsets, building if needed"
-        if self.subsets is None:
-            self.subsets = self._makeSubsets(self.elements)
-        return self.subsets
+        if self._subsets is None:
+            self._subsets = self._makeSubsets(self.elements)
+        return self._subsets
 
     def getSubset(self, wantSet):
         "search for the specified subset object, error if it doesn't exist"
-        if self.subsets is None:
-            self.subsets = self._makeSubsets(self.elements)
-        for ss in self.subsets:
+        if self._subsets is None:
+            self._subsets = self._makeSubsets(self.elements)
+        for ss in self._subsets:
             if ss == wantSet:
                 return ss
         raise PycbioException("not a valid subset: " + str(wantSet))
