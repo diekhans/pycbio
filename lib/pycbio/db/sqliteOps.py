@@ -43,7 +43,7 @@ def setSynchronous(conn, mode):
         mode = "OFF"
     elif mode is True:
         mode = "NORMAL"
-    run(conn, "PRAGMA synchronous={}".format(mode))
+    execute(conn, "PRAGMA synchronous={}".format(mode))
 
 def objDictRowFactory(cur, row):
     """Row factory to return a ObjDict of the result.  Note that non-unique
@@ -117,4 +117,4 @@ fastLoadPragmas = (
 
 def setFastLoadPragmas(conn):
     """setup pragmas for faster bulk loading"""
-    run(conn, fastLoadPragmas)
+    execute(conn, fastLoadPragmas)
