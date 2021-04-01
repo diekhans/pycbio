@@ -119,10 +119,7 @@ class Bed(object):
         return blocks
 
     @classmethod
-    def parse(cls, row, numStdCols=None):
-        """Parse bed string columns into a bed object.  If self.numStdCols
-        is specified, only those columns are parse and the remained goes
-        to extraCols."""
+    def _parse(cls, row, numStdCols=None):
         assert((numStdCols is None) or (3 <= numStdCols <= 12))
         if numStdCols is None:
             numStdCols = min(len(row), 12)
@@ -164,6 +161,16 @@ class Bed(object):
         return cls(chrom, chromStart, chromEnd, name=name, score=score, strand=strand,
                    thickStart=thickStart, thickEnd=thickEnd, itemRgb=itemRgb, blocks=blocks,
                    extraCols=extraCols, numStdCols=numStdCols)
+
+    @classmethod
+    def parse(cls, row, numStdCols=None):
+        """Parse bed string columns into a bed object.  If self.numStdCols
+        is specified, only those columns are parse and the remained goes
+        to extraCols."""
+        try:
+            return cls._parse(row, numStdCols=numStdCols)
+        except Exception as ex:
+            raise PycbioException(f"parsing of BED row failed: {row}") from ex
 
     def __str__(self):
         "return BED as a tab-separated string"

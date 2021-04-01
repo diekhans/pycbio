@@ -116,26 +116,31 @@ class Venn(object):
     def formatSubsetName(subset, subsetNameSeparator=" ", setNameFormatter=str):
         return subsetNameSeparator.join(sorted([setNameFormatter(s) for s in subset]))
 
-    def writeCounts(self, fh, subsetNameSeparator=" ", setNameFormatter=str):
+    def writeCounts(self, fh, *, subsetNameSeparator=" ", setNameFormatter=str, excludeEmpty=False):
         "write TSV of subset counts to an open file"
         fileOps.prRowv(fh, "subset", "count")
         for subset in self.subsets.getSubsets():
-            fileOps.prRowv(fh, self.formatSubsetName(subset, subsetNameSeparator, setNameFormatter), self.getSubsetCounts(subset))
+            cnt = self.getSubsetCounts(subset)
+            if (cnt > 0) or (not excludeEmpty):
+                fileOps.prRowv(fh, self.formatSubsetName(subset, subsetNameSeparator, setNameFormatter), cnt)
 
-    def writeSets(self, fh, subsetNameSeparator=" ", setNameFormatter=str):
+    def writeSets(self, fh, *, subsetNameSeparator=" ", setNameFormatter=str, excludeEmpty=False):
         "write TSV of subsets and ids to an open file"
         # FIXME: same code as above
         fileOps.prRowv(fh, "subset", "ids")
         for subset in self.subsets.getSubsets():
-            fileOps.prRowv(fh, self.formatSubsetName(subset, subsetNameSeparator, setNameFormatter), self.getSubsetCounts(subset))
+            cnt = self.getSubsetCounts(subset)
+            if (cnt > 0) or (not excludeEmpty):
+                fileOps.prRowv(fh, self.formatSubsetName(subset, subsetNameSeparator, setNameFormatter), cnt)
 
     def _getCountRow(self, setNames, subset, count, setNameFormatter):
-        return [1 if sn in subset else 0
-                for sn in setNames] + [count]
+        return [1 if sn in subset else 0 for sn in setNames] + [count]
 
-    def writeCountMatrix(self, fh, setNameFormatter=str, countColumn="count"):
+    def writeCountMatrix(self, fh, *, setNameFormatter=str, countColumn="count", excludeEmpty=False):
         "write matrix TSV, which each set being a column, along with count column"
         setNames = sorted(self.nameToItems.keys())
         fileOps.prRow(fh, [setNameFormatter(sn) for sn in setNames] + [countColumn])
         for subset in self.subsets.getSubsets():
-            fileOps.prRow(fh, self._getCountRow(setNames, subset, self.getSubsetCounts(subset), setNameFormatter))
+            cnt = self.getSubsetCounts(subset)
+            if (cnt > 0) or (not excludeEmpty):
+                fileOps.prRow(fh, self._getCountRow(setNames, subset, cnt, setNameFormatter))
