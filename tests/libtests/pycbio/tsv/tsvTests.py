@@ -143,7 +143,7 @@ class ReadTests(TestCaseBase):
         self.diffExpected(".tsv")
 
     def readMRna1(self, inFile):
-        "routine to verify TsvReader on a mrna1.tsv derived file"
+        "verify TsvReader on a mrna1.tsv derived file"
         rowCnt = 0
         for row in TsvReader(inFile):
             self.assertEqual(len(row), 22)

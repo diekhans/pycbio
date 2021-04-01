@@ -5,6 +5,8 @@ if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.tsv import TabFile, TabFileReader
 from pycbio.sys.testCaseBase import TestCaseBase
+from pycbio.hgdata.autoSql import intArrayType
+import pipettor
 
 
 class TabFileTests(TestCaseBase):
@@ -32,10 +34,14 @@ class TabFileTests(TestCaseBase):
             rows.append(row)
         self.checkRowsCols(rows, self.typesNumRows, self.typesNumCols)
 
+    def testReaderGzip(self):
+        tsvGz = self.getOutputFile("tsv.gz")
+        pipettor.run(["gzip", "-c", self.getInputFile("types.tsv")], stdout=tsvGz)
+        rows = [row for row in TabFileReader(tsvGz)]
+        self.checkRowsCols(rows, self.typesNumRows, self.typesNumCols)
+
     def testReaderComments(self):
-        rows = []
-        for row in TabFileReader(self.getInputFile("typesComment.tsv"), hashAreComments=True):
-            rows.append(row)
+        rows = [row for row in TabFileReader(self.getInputFile("typesComment.tsv"), hashAreComments=True)]
         self.checkRowsCols(rows, self.typesNumRows - 1, self.typesNumCols)
 
 

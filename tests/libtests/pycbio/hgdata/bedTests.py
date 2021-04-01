@@ -5,7 +5,7 @@ if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.hgdata.bed import Bed, BedTable, BedReader
-
+import pipettor
 
 class BedGame(Bed):
     "example derived BED4+3 that adds columns"
@@ -67,6 +67,15 @@ class BedTests(TestCaseBase):
         outBedFile = self.getOutputFile(".bed")
         with open(outBedFile, "w") as outFh:
             for bed in BedReader(self.getInputFile("bed6extra.bed"), numStdCols=6):
+                bed.write(outFh)
+        self.diffFiles(self.getInputFile("bed6extra.bed"), outBedFile)
+
+    def testBed6ExtraGzip(self):
+        inBedGz = self.getOutputFile(".bed.gz")
+        pipettor.run(["gzip", "-c", self.getInputFile("bed6extra.bed")], stdout=inBedGz)
+        outBedFile = self.getOutputFile(".bed")
+        with open(outBedFile, "w") as outFh:
+            for bed in BedReader(inBedGz, numStdCols=6):
                 bed.write(outFh)
         self.diffFiles(self.getInputFile("bed6extra.bed"), outBedFile)
 
