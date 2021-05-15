@@ -5,7 +5,6 @@ if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.tsv import TabFile, TabFileReader
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.hgdata.autoSql import intArrayType
 import pipettor
 
 

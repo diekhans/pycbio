@@ -4,7 +4,7 @@ import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.gencode import biotypes
+from pycbio.gencode import biotypes, gencodeTags  # noqa:F401
 
 class GencodeTests(TestCaseBase):
     # asserts in biotypes test a lot, should move into here

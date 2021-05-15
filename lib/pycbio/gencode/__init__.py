@@ -1,0 +1,2 @@
+class GencodeGenesException(Exception):
+    pass

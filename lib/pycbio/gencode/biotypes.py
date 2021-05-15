@@ -4,9 +4,7 @@ all biotypes are can be mapped to a reduced set for coloring and
 selection in the browser.
 """
 from pycbio.sys.symEnum import SymEnum, SymEnumValue, auto
-
-class GencodeGenesException(Exception):
-    pass
+from pycbio.gencode import GencodeGenesException
 
 class BioType(SymEnum):
     overlapping_ncRNA_3prime = SymEnumValue(auto(), "3prime_overlapping_ncRNA")
@@ -83,6 +81,7 @@ class GnecodeGeneCategory(SymEnum):
     smallRNA = auto()
     pseudoGene = auto()
     immunoSegment = auto()
+
 
 bioTypesTranscriptOnly = frozenset([BioType.nonsense_mediated_decay,
                                     BioType.non_stop_decay,
