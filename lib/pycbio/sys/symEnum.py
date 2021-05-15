@@ -117,7 +117,7 @@ class SymEnumMixin(object):
         return self.__class__, (self.value, )
 
 
-class SymEnum(SymEnumMixin, Enum, metaclass=(SymEnumMeta)):
+class SymEnum(SymEnumMixin, Enum, metaclass=SymEnumMeta):
     """
     Metaclass for symbolic enumerations.  These are easily converted between
     string values and Enum objects.  This support construction from string
