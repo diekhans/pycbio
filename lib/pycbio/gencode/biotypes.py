@@ -5,8 +5,6 @@ selection in the browser.
 """
 from pycbio.sys.symEnum import SymEnum, SymEnumValue, auto
 
-# FIXME: splt into GeneBioType and TransBioType
-
 class GencodeGenesException(Exception):
     pass
 
@@ -33,14 +31,14 @@ class BioType(SymEnum):
     Mt_rRNA = auto()
     Mt_tRNA = auto()
     non_coding = auto()
-    nonsense_mediated_decay = auto()
-    non_stop_decay = auto()
+    nonsense_mediated_decay = auto()  # transcripts only
+    non_stop_decay = auto()  # transcripts only
     polymorphic_pseudogene = auto()
     processed_pseudogene = auto()
     processed_transcript = auto()
     protein_coding = auto()
     pseudogene = auto()
-    retained_intron = auto()
+    retained_intron = auto()  # transcripts only
     ribozyme = auto()
     rRNA = auto()
     rRNA_pseudogene = auto()
@@ -85,6 +83,10 @@ class GnecodeGeneCategory(SymEnum):
     smallRNA = auto()
     pseudoGene = auto()
     immunoSegment = auto()
+
+bioTypesTranscriptOnly = frozenset([BioType.nonsense_mediated_decay,
+                                    BioType.non_stop_decay,
+                                    BioType.retained_intron])
 
 bioTypesCoding = frozenset([BioType.IG_C_gene,
                             BioType.IG_D_gene,
