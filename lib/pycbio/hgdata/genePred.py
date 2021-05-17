@@ -50,7 +50,7 @@ class Range(namedtuple("Range", ("start", "end"))):
         return (self.start < other.end) and (self.end > other.start)
 
     def __str__(self):
-        return str(self.start) + ".." + str(self.end)
+        return str(self.start) + "-" + str(self.end)
 
     def reverse(self, chromSize):
         "get a range on the opposite strand"
