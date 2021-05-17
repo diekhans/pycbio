@@ -1,3 +1,4 @@
+* switch to pip install mysql-connector-python (has named tuple cursor, uses to kznf TE project)
 * venn doesn't document what inclusive really is
 * pycbio.stats.venn writeSets and writeCounts are the same
 is this even a useful format?

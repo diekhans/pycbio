@@ -1,6 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
 import copy
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from pycbio.tsv.tabFile import TabFileReader
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin
 from pycbio.sys.symEnum import SymEnum, SymEnumValue
@@ -24,14 +24,10 @@ genePredColumns = ("name", "chrom", "strand", "txStart", "txEnd", "cdsStart", "c
 genePredExtColumns = ("name", "chrom", "strand", "txStart", "txEnd", "cdsStart", "cdsEnd", "exonCount", "exonStarts", "exonEnds")
 
 
-class Range(object):
+class Range(namedtuple("Range", ("start", "end"))):
     "start and end coordinates"
-    __slots__ = ("start", "end")
+    __slots__ = ()
     # FIXME: maybe base class for coords?
-
-    def __init__(self, start, end):
-        self.start = start
-        self.end = end
 
     def __eq__(self, other):
         return (other is not None) and (self.start == other.start) and (self.end == other.end)
