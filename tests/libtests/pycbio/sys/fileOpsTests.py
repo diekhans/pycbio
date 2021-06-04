@@ -63,26 +63,6 @@ class FileOpsTests(TestCaseBase):
         pipettor.run(("bunzip2", "-c", outfBz2), stdout=outf)
         self.diffFiles(inf, outf)
 
-    def DISABLED_testOpengzDevStdout(self):
-        # FIXME: decide that putting special handling of /dev/stdout
-        # to append was wrong and should be done more explicitly.  However
-        # that isn't implemented yet, so leaving test.
-
-        # make sure stdout appends
-        outf = self.getOutputFile(".out")
-        # pick up updated python path
-        env = dict(os.environ)
-        env["PYTHONPATH"] = ":".join(sys.path)
-
-        # if special handling of /dev/stdout works, file will contain all lines
-        with open(outf, "w") as outFh:
-            for cnt in range(4):
-                cmd = [sys.executable, os.path.join(self.getTestDir(), "devStdoutWrite.py"), "step{}".format(cnt)]
-                stat = subprocess.Popen(cmd, stdout=outFh, env=env).wait()
-                if stat != 0:
-                    raise Exception("command failed: {}".format(" ".join(cmd)))
-        self.diffFiles(self.getExpectedFile(".out"), outf)
-
     def testAtomicInstall(self):
         inf = self.getInputFile("simple1.txt")
         outf = self.getOutputFile(".out")
