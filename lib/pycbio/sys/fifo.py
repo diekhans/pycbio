@@ -3,7 +3,7 @@ import os
 import errno
 import socket
 import fcntl
-from pycbio.sys import PycbioException
+from pycbio import PycbioException
 
 
 class _Fifo(object):

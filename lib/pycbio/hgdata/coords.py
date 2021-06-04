@@ -2,7 +2,7 @@
 "browser coordinates object"
 
 from collections import namedtuple
-from pycbio.sys import PycbioException
+from pycbio import PycbioException
 
 
 class CoordsError(PycbioException):

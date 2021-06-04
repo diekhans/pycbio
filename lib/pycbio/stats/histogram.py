@@ -1,6 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
 from pycbio.sys.fileOps import prLine, iterRows
-from pycbio.sys import PycbioException
+from pycbio import PycbioException
 
 # FIXME: computed histo should be an object, not just a list
 # FIXME: binnins doesn't work for values in the range [-1.0, 1.0]

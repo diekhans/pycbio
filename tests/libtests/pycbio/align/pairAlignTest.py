@@ -6,7 +6,7 @@ if __name__ == '__main__':
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.sys.fileOps import prRowv
 from pycbio.align.pairAlign import loadPslFile
-from pycbio.sys import PycbioException
+from pycbio import PycbioException
 
 
 class WithSrcCds(object):

@@ -1,8 +1,9 @@
 # Copyright 2018-2018 Mark Diekhans
 """Parsing of NCBI AGP files.
 """
+from pycbio import PycbioException
 from pycbio.hgdata.coords import Coords
-from pycbio.sys import fileOps, PycbioException
+from pycbio.sys import fileOps
 
 
 class AgpException(PycbioException):

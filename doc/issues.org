@@ -13,9 +13,7 @@ is this even a useful format?
 * document generators:
   http://codespeak.net/~mwh/pydoctor/ - discussion of others
 
-* rename pycbio.sys, it prevent moving PycbioException up one level, since PycbioException imports
-  standard sys. Specifying absolute import still breaks pipeline because pickle of exceptions doesn't
-  work.
+* rename pycbio.sys, has caused problems with relative imports
 
 * reverse asserts so order is expect, got (corresponds to diff outout, see pslMapTests)
 

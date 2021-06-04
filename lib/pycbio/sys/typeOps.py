@@ -1,7 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 """Miscellaneous type operations"""
 # FIXME: move to other modules or move set in here.
-from pycbio.sys import PycbioException
+from pycbio import PycbioException
 
 
 def isListLike(v):

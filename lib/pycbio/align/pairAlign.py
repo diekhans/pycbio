@@ -7,7 +7,7 @@ import copy
 import re
 from pycbio.hgdata.psl import PslReader
 from pycbio.sys.fileOps import prLine, iterLines
-from pycbio.sys import PycbioException
+from pycbio import PycbioException
 
 # FIXME: need range/overlap operators
 

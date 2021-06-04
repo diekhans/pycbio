@@ -2,7 +2,7 @@
 """classes for interacting with parasol batch system"""
 import shlex
 import os.path
-from pycbio.sys import PycbioException
+from pycbio import PycbioException
 from pycbio.sys import fileOps
 import pipettor
 

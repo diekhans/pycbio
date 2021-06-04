@@ -10,7 +10,7 @@ import urllib.error
 import copy
 import re
 import collections
-from pycbio.sys import PycbioException
+from pycbio import PycbioException
 from pycbio.sys import fileOps
 
 GFF3_HEADER = "##gff-version 3"

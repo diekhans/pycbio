@@ -5,7 +5,7 @@ random access uses.
 """
 from pycbio.hgdata.hgSqlite import HgSqliteTable
 from collections import namedtuple
-from pycbio.sys import PycbioException
+from pycbio import PycbioException
 from Bio import SeqIO
 
 

@@ -3,7 +3,7 @@ import unittest
 import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
-from pycbio.sys import PycbioException, pycbioExFormat
+from pycbio import PycbioException, pycbioExFormat
 from pycbio.sys.testCaseBase import TestCaseBase
 
 

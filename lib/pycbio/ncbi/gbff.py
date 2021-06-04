@@ -2,7 +2,7 @@
 
 # this module is tested by pycbio/src/progs/gbff/gbffGenesToGenePred
 
-from pycbio.sys import PycbioException
+from pycbio import PycbioException
 from Bio import SeqFeature
 
 

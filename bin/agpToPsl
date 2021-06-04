@@ -7,7 +7,7 @@ import argparse
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.ncbi.agp import Agp
-from pycbio.sys import PycbioException
+from pycbio import PycbioException
 from pycbio.sys import fileOps
 from pycbio.tsv.tabFile import TabFileReader
 from pycbio.hgdata.psl import Psl, PslBlock

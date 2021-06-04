@@ -1,5 +1,5 @@
 # Copyright 2006-2012 Mark Diekhans
-from pycbio.sys import PycbioException
+from pycbio import PycbioException
 
 # FIXME: distinction between subsets, subset, and elements not clear
 

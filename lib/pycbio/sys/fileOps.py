@@ -9,7 +9,7 @@ import socket
 import tempfile
 import pipettor
 from contextlib import contextmanager
-from pycbio.sys import PycbioException
+from pycbio import PycbioException
 
 # FIXME: normalize file line read routines to all take fh or name, remove redundant code.
 

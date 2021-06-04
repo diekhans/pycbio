@@ -3,7 +3,7 @@ Configuration files written as python programs.
 """
 import os
 from types import FunctionType, ModuleType
-from pycbio.sys import PycbioException
+from pycbio import PycbioException
 
 # FIXME: getFuncArgs could be handled by functools.partial much more elegantly
 

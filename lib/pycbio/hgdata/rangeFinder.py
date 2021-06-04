@@ -17,7 +17,7 @@ generating SQL where clauses to restrict by bin."""
 # will fit in.
 
 from collections import namedtuple
-from pycbio.sys import PycbioException
+from pycbio import PycbioException
 
 
 def RemoveValueError(ValueError):

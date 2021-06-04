@@ -6,7 +6,7 @@ if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.configInPy import evalConfigFunc, evalConfigFile
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.sys import PycbioException
+from pycbio import PycbioException
 
 
 class ConfigInPyTests(TestCaseBase):

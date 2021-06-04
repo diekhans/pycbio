@@ -1,6 +1,6 @@
 # Copyright 2006-2012 Mark Diekhans
 import copy
-from pycbio.sys import PycbioException
+from pycbio import PycbioException
 from pycbio.tsv.tabFile import TabFile, TabFileReader
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin
 from collections import defaultdict, namedtuple

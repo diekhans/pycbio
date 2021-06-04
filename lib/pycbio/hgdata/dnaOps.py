@@ -1,7 +1,7 @@
 """
 Operations on strings of DNA sequences
 """
-from pycbio.sys import PycbioException
+from pycbio import PycbioException
 
 
 ##

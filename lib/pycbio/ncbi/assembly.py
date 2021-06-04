@@ -1,7 +1,8 @@
 # Copyright 2015-2015 Mark Diekhans
 """Parsing of NCBI assembly information files.
 """
-from pycbio.sys import fileOps, PycbioException
+from pycbio import PycbioException
+from pycbio.sys import fileOps
 
 
 def _noneIfNa(name):

@@ -5,7 +5,7 @@ other random access uses.
 """
 from collections import namedtuple
 from pycbio.db import sqliteOps
-from pycbio.sys import PycbioException
+from pycbio import PycbioException
 from pycbio.hgdata.hgSqlite import HgSqliteTable, noneIfEmpty
 from pycbio.hgdata.rangeFinder import Binner
 from pycbio.tsv import TsvReader

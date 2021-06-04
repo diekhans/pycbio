@@ -3,7 +3,7 @@ import cProfile
 import signal
 import argparse
 import sys
-from pycbio.sys import PycbioException
+from pycbio import PycbioException
 
 
 class Profile(object):

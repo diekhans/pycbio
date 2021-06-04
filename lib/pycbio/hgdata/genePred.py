@@ -4,7 +4,7 @@ from collections import defaultdict, namedtuple
 from pycbio.tsv.tabFile import TabFileReader
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin
 from pycbio.sys.symEnum import SymEnum, SymEnumValue
-from pycbio.sys import PycbioException
+from pycbio import PycbioException
 
 
 # FIXME range and exon overlap functions are inconsistent.  exon should inherit from range.
