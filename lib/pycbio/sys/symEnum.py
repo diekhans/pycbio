@@ -1,5 +1,4 @@
 # Copyright 2006-2014 Mark Diekhans
-# for python2, requires enum34: https://pypi.python.org/pypi/enum34
 
 from enum import Enum, EnumMeta
 from functools import total_ordering

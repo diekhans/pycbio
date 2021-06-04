@@ -29,7 +29,7 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
     """Immutable sequence coordinates
     Fields:
        name, start, end - start/end maybe None to indicate a full sequence
-       strand - Strand, if it is None.
+       strand - optional strand
        size - optional size of sequence
     """
     __slots__ = ()
