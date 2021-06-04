@@ -9,6 +9,7 @@ from pycbio.sys.testCaseBase import TestCaseBase
 
 class SubsetsTests(TestCaseBase):
     testSet = frozenset(("A", "B", "C"))
+    testSet2 = frozenset(("A", "B", "C", "D"))
 
     def testGetSubsets(self):
         expectSet = ((frozenset(("A",)),
@@ -29,6 +30,18 @@ class SubsetsTests(TestCaseBase):
                       frozenset(("A", "C",))))
         subsets = Subsets(SubsetsTests.testSet)
         iss = subsets.getInclusiveSubsets(frozenset(("A", "C",)))
+        self.assertEqual(iss, expectSet)
+
+    def testGetInclusizeSubsets2(self):
+        expectSet = (frozenset(('A',)),
+                     frozenset(('C',)),
+                     frozenset(('D',)),
+                     frozenset(('A', 'C')),
+                     frozenset(('A', 'D')),
+                     frozenset(('C', 'D')),
+                     frozenset(('A', 'C', 'D')))
+        subsets = Subsets(SubsetsTests.testSet)
+        iss = subsets.getInclusiveSubsets(frozenset(("A", "C", "D")))
         self.assertEqual(iss, expectSet)
 
 
