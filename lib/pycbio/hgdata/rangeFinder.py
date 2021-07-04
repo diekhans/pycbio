@@ -20,7 +20,7 @@ from collections import namedtuple
 from pycbio import PycbioException
 
 
-def RemoveValueError(ValueError):
+class RemoveValueError(ValueError):
     "error when removed not found"
     def __init__(self, start, end):
         super(RemoveValueError, self).__init__("range {}-{} with specified value not found".format(start, end))
