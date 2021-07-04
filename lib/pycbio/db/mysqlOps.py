@@ -14,8 +14,9 @@ def mySqlSetErrorOnWarn():
     global _mySqlErrorOnWarnDone
     if not _mySqlErrorOnWarnDone:
         warnings.filterwarnings('error', category=MySQLdb.Warning)
-        warnings.filterwarnings("ignore", "Unknown table '.*'")
-        warnings.filterwarnings("ignore", "Can't drop database '.*'; database doesn't exist")
+        warnings.filterwarnings("ignore", message="Unknown table '.*'")
+        warnings.filterwarnings("ignore", message="Can't drop database '.*'; database doesn't exist")
+        warnings.filterwarnings("ignore", message="PY_SSIZE_T_CLEAN will be required for '#' formats")
         _mySqlErrorOnWarnDone = True
 
 
