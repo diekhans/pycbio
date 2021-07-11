@@ -164,38 +164,58 @@ class SvgColors(object):
     yellow = _mkcolor(0xffff00)
     yellowgreen = _mkcolor(0x9acd32)
 
-    @classmethod
-    def lookup(cls, name):
-        "convert name to color"
-        return getattr(cls, name.lower())
+    # Parallel arrays with names and colors, sorted by name.
+    # Built in a lazy manner
+    _names = None
+    _colors = None
 
     @classmethod
-    def _nameGen(cls):
-        for n in vars(cls).keys():
-            if isinstance(getattr(cls, n), Color):
-                yield n
+    def _initColors(cls):
+        names = []
+        colors = []
+        for n in sorted(vars(cls).keys()):
+            c = getattr(cls, n)
+            if isinstance(c, Color):
+                names.append(n)
+                colors.append(c)
+        cls._names = tuple(names)
+        cls._colors = tuple(colors)
+
+    @classmethod
+    def lookup(cls, name):
+        "convert case-insensitive name to color"
+        return getattr(cls, name.lower())
 
     @classmethod
     def getNames(cls):
         "get all color names"
-        return [n for n in cls._nameGen()]
+        if cls._names is None:
+            cls._initColors()
+        return cls._names
+
+    @classmethod
+    def _findClosestIdx(cls, color):
+        if cls._names is None:
+            cls._initColors()
+        minIdx = 0
+        minColor = cls._colors[minIdx]
+        minDist = color.distance(minColor)
+        for i in range(1, len(cls._colors)):
+            d = color.distance(cls._colors[i])
+            if d < minDist:
+                minIdx = i
+                minColor = cls._colors[i]
+                minDist = d
+        return minIdx
 
     @classmethod
     def getClosestName(cls, color):
         "get the closet SVG name"
-        minName = "white"
-        minColor = cls.lookup(minName)
-        minDist = color.distance(minColor)
-        for n in cls._nameGen():
-            c = SvgColors.lookup(n)
-            d = color.distance(c)
-            if d < minDist:
-                minName = n
-                minColor = c
-                minDist = d
-        return minName
+        i = cls._findClosestIdx(color)
+        return cls._names[i]
 
     @classmethod
     def getClosestColor(cls, color):
         "get the closet SVG name"
-        return cls.lookup(cls.getClosestName(color))
+        i = cls._findClosestIdx(color)
+        return cls._colors[i]
