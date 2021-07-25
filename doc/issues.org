@@ -1,3 +1,7 @@
+* ObjDict not recursively intialized when passed a dict ObjDict(someDict)
+* way to determine primary assembly in a consistent way.
+including ungaped sizes
+see ~/compbio/kznf/projs/te-insertions/TEInsertions/bin/getRepGenomeCover
 * switch to pip install mysql-connector-python (has named tuple cursor, uses to kznf TE project)
 * venn doesn't document what inclusive really is
 * pycbio.stats.venn writeSets and writeCounts are the same
