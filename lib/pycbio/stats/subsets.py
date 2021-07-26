@@ -25,6 +25,12 @@ class Subsets(object):
         self._subsets = None
         self.inclusiveSubsets = None
 
+    def adds(self, elements):
+        "Add an elements to the set, ignore ones that already exist"
+        self.elements |= set(elements)
+        self._subsets = None
+        self.inclusiveSubsets = None
+
     @staticmethod
     def _subListSortKey(sub):
         "compare two subsets for sorting, first by length, then lexcelly"
