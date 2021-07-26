@@ -2,6 +2,13 @@
 * way to determine primary assembly in a consistent way.
 including ungaped sizes
 see ~/compbio/kznf/projs/te-insertions/TEInsertions/bin/getRepGenomeCover
+=======
+* venn: add ability to output upset plot format
+gencode/meetings/2021/2021-03-30-gencode/ucsc/bin/plotGeneSetIntersections
+gencode/meetings/2021/2021-03-30-gencode/ucsc/data/hprc/gene-missing-venn.tsv
+* venn: easier to collect counts, although maybe existing this would have worked fine:
+~/compbio/gencode/projs/nrcseq/response/bin/makeVennSets
+* if Bed is created without a score and with a strand, zero score is output and no strand
 * switch to pip install mysql-connector-python (has named tuple cursor, uses to kznf TE project)
 * venn doesn't document what inclusive really is
 * pycbio.stats.venn writeSets and writeCounts are the same
