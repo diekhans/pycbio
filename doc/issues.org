@@ -1,3 +1,16 @@
+* logger:
+** use more complete logging for non-stderr logs
+** need to think it through a bit more; need to better understand how to configure propagation, handles
+see ~/compbio/gencode/projs/lrgasp/src/lrgasp-submissions/bin/lrgasp-synapse-download
+* add dynamic mixing function to typeOps
+https://stackoverflow.com/questions/8544983/dynamically-mixin-a-base-class-to-an-instance-in-python
+def add_mixing(obj, cls):
+    """Apply mixins to a class instance after creation"""
+    base_cls = obj.__class__
+    base_cls_name = obj.__class__.__name__
+    obj.__class__ = type(base_cls_name, (cls, base_cls), {})
+but how does an existing instance get added?
+
 * ObjDict not recursively intialized when passed a dict ObjDict(someDict)
 * way to determine primary assembly in a consistent way.
 including ungaped sizes
