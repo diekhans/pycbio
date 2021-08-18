@@ -101,6 +101,25 @@ class CoordsTests(TestCaseBase):
         cid = c1p.intersect(c2d)
         self.assertEqual(cid, Coords("chr22", 50000000, 55000000, strand='+', size=50818468))
 
+    def testCoordsCmpNoStrand(self):
+        # identical entry got:
+        # TypeError: '<' not supported between instances of 'NoneType' and 'NoneType'
+        clsort = [Coords("chr1", 90200, 990000),
+                  Coords("chr22", 10000, 10000),
+                  Coords("chr22", 10000, 20000),
+                  Coords("chr22", 10200, 20000)]
+        clresort = sorted(reversed(clsort))
+        self.assertEqual(clsort, clresort)
+
+    def testCoordsCmpStrand(self):
+        clsort = [Coords("chr1", 90200, 990000, '+'),
+                  Coords("chr22", 10000, 10000, '-'),
+                  Coords("chr22", 10200, 20000, '+'),
+                  Coords("chr22", 10200, 20000, '-'),
+                  Coords("chr22", 10400, 20000, '-')]
+        clresort = sorted(reversed(clsort))
+        self.assertEqual(clsort, clresort)
+
 
 def suite():
     ts = unittest.TestSuite()

@@ -126,6 +126,12 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
             return True
         elif self.end < other.end:
             return True
+        elif (self.strand is None) or (other.strand is None):
+            # one or both strand None requires special handles
+            if (self.strand is not None) and (other.strand is None):
+                return True  # no strand sorts low
+            else:
+                return False  # other or both None
         elif self.strand < other.strand:
             return True
         else:
