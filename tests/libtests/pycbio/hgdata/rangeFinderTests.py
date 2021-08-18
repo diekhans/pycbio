@@ -118,6 +118,13 @@ class RangeTests(TestCaseBase):
         self.doQueries(rf, queries2, True)
         self.doQueries(rf, queries2, False)
 
+    def testValues(self):
+        "test listing all values"
+        rf = self.mkRangeFinder(data1, True)
+        vals = sorted(rf.values())
+        self.assertEqual(['val1.1', 'val1.2', 'val1.3', 'val1.4', 'val1.5', 'val1.6'],
+                         vals)
+
     def testRemoveNoStrand(self):
         "exact range matches"
         rf = self.mkRangeFinder(data1, False)

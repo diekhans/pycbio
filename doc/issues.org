@@ -11,6 +11,13 @@ def add_mixing(obj, cls):
     obj.__class__ = type(base_cls_name, (cls, base_cls), {})
 but how does an existing instance get added?
 
+=======
+* create clustering library, see:
+t2t-chm13-gene-analysis/bin/geneBoundsLib.py
+* convert to use:
+import mysql.connector  # pip install mysql-connector-python
+* rangeFinder:
+need items() to get keys and values() for when values don't include range
 * ObjDict not recursively intialized when passed a dict ObjDict(someDict)
 * way to determine primary assembly in a consistent way.
 including ungaped sizes

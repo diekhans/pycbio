@@ -158,11 +158,11 @@ class RangeBins(object):
         except ValueError:
             return False
 
-    def values(self):
-        "generator over all values"
+    def entries(self):
+        "generator over all entries"
         for bin in list(self.buckets.values()):
             for entry in bin:
-                yield entry.value
+                yield entry
 
     def dump(self, fh):
         "print contents for debugging purposes"
@@ -262,8 +262,8 @@ class RangeFinder(object):
     def values(self):
         "generator over all values"
         for bins in self.seqBins.values():
-            for value in list(bins.values()):
-                yield value
+            for entry in bins.entries():
+                yield entry.value
 
     def dump(self, fh):
         "print contents for debugging purposes"

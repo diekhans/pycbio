@@ -184,7 +184,7 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
             return Coords(self.name, self.start, self.end)
 
     def intersect(self, other):
-        """Intersection range, or non if not on same chromosome."""
+        """Intersection range, or None if not on same chromosome."""
         # FIXME: need to define for different strand
         self._checkCmpType(other)
         if self.name != other.name:
