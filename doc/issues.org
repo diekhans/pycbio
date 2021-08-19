@@ -1,3 +1,6 @@
+* coords rich comparison not working
+see disabled tests in
+tests/libtests/pycbio/hgdata/coordsTests.py
 * logger:
 ** use more complete logging for non-stderr logs
 ** need to think it through a bit more; need to better understand how to configure propagation, handles

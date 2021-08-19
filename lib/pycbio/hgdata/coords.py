@@ -2,6 +2,7 @@
 "browser coordinates object"
 
 from collections import namedtuple
+from functools import total_ordering
 from pycbio import PycbioException
 
 
@@ -25,6 +26,7 @@ def _intOrNone(v):
     return v if v is None else int(v)
 
 
+@total_ordering
 class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
     """Immutable sequence coordinates
     Fields:
@@ -122,16 +124,22 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         self._checkCmpType(other)
         if self.name < other.name:
             return True
+        elif self.name > other.name:
+            return False
         elif self.start < other.start:
             return True
+        elif self.start > other.start:
+            return False
         elif self.end < other.end:
             return True
-        elif (self.strand is None) or (other.strand is None):
-            # one or both strand None requires special handles
-            if (self.strand is not None) and (other.strand is None):
-                return True  # no strand sorts low
-            else:
-                return False  # other or both None
+        elif self.end > other.end:
+            return False
+        elif (self.strand is None) and (other.strand is None):
+            return False
+        elif (self.strand is None) and (other.strand is not None):
+            return True  # no strand sorts low
+        elif (self.strand is not None) and (other.strand is None):
+            return False
         elif self.strand < other.strand:
             return True
         else:
