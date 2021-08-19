@@ -6,8 +6,6 @@ import os
 import sys
 from logging.handlers import SysLogHandler
 
-def getLrgaspLogger():
-    return _lrgasp_logger
 
 def getFacilityNames():
     return tuple(SysLogHandler.facility_names.keys())
@@ -161,3 +159,23 @@ def setupFromCmd(opts, *, logger=None, prog=None):
     if opts.logConfFile is not None:
         logging.config.fileConfig(opts.logConfFile)
     return logger
+
+
+class StreamToLogger(object):
+    """
+    File-like stream object that redirects writes to a logger instance.
+    """
+    # taken from
+    # https://stackoverflow.com/questions/19425736/how-to-redirect-stdout-and-stderr-to-logger-in-python
+
+    def __init__(self, logger, level):
+        self.logger = logger
+        self.level = level
+        self.linebuf = ''
+
+    def write(self, buf):
+        for line in buf.rstrip().splitlines():
+            self.logger.log(self.level, line.rstrip())
+
+    def flush(self):
+        pass

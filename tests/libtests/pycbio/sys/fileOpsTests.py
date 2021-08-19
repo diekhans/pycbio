@@ -3,7 +3,6 @@ import unittest
 import os
 import sys
 import shutil
-import subprocess
 from contextlib import contextmanager
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
