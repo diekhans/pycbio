@@ -4,7 +4,7 @@
 
 set -beEu -o pipefail
 
-if which -s pslCheck ; then
+if which pslCheck 1>/dev/null 2>&1 ; then
     exec pslCheck "$@"
 else
     echo "Warning: pslCheck not found, test output not validated" >&2

@@ -93,7 +93,7 @@ asmUmappedErrTest: mkdirs
 	${ncbiAssemblyReportConvert} --fromIdType=ucscStyleName --toIdType=sequenceNameGenbankAccn idmap ${asmReportTestFile} output/$@.idmap 2>output/$@.err || true
 	${diff} expected/$@.err output/$@.err
 
-clintChimpAgp = input/GCA_002880755.3.chr10.comp.agp$
+clintChimpAgp = input/GCA_002880755.3.chr10.comp.agp
 grch38Agp = ${ncbiTestInputDir}/GCA_000001305.2.chr22.agp
 
 agpToPslTests: agpToPslBasicTest agpToPslLocalCompTest agpToPslSkipTest agpToPslGapsTest

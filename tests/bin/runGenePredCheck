@@ -4,7 +4,7 @@
 
 set -beEu -o pipefail
 
-if which -s genePredCheck ; then
+if which genePredCheck 1>/dev/null 2>&1 ; then
     exec genePredCheck "$@"
 else
     echo "Warning: genePredCheck not found, test output not validated" >&2
