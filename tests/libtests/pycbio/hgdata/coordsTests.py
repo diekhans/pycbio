@@ -155,8 +155,7 @@ class CoordsTests(TestCaseBase):
               Coords(name='chr1', start=67521298, end=67532612),
               Coords(name='chr1', start=1698941, end=1701782),
               Coords(name='chr1', start=922922, end=944575),
-              Coords(name='chr5', start=270669, end=438291)
-        ]
+              Coords(name='chr5', start=270669, end=438291)]
         self.assertEqual(sorted(cs, key=lambda c: (c.name, c.start, c.end, c.strand)),
                          sorted(cs))
 

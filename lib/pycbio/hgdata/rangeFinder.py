@@ -16,6 +16,7 @@ generating SQL where clauses to restrict by bin."""
 # four result bins on the second level. A range goes into the smallest bin it
 # will fit in.
 
+import sys
 from collections import namedtuple
 from pycbio import PycbioException
 
@@ -122,11 +123,13 @@ class RangeBins(object):
     """Range indexed container for a single sequence.  This using a binning
     scheme that implements spacial indexing. Based on UCSC hg browser binRange
     C module.  """
-    __slots__ = ("seqId", "strand", "buckets")
+    __slots__ = ("seqId", "strand", "minStart", "maxEnd", "buckets")
 
     def __init__(self, seqId, strand):
         self.seqId = seqId
         self.strand = strand
+        self.minStart = sys.maxsize
+        self.maxEnd = 0
         self.buckets = {}  # indexed by bin, each bucket is a list
 
     def add(self, start, end, value):
@@ -135,6 +138,10 @@ class RangeBins(object):
         if entries is None:
             self.buckets[bin] = entries = []
         entries.append(Entry(start, end, value))
+        if start < self.minStart:
+            self.minStart = start
+        if end > self.maxEnd:
+            self.maxEnd = end
 
     def overlapping(self, start, end):
         "generator over values overlapping the specified range"
@@ -188,6 +195,14 @@ class RangeFinder(object):
         if strand not in (None, "+", "-"):
             raise PycbioException("invalid strand: {}".format(strand))
 
+    @staticmethod
+    def _binKey(seqId, strand):
+        return (seqId, strand)
+
+    def _getBin(self, seqId, strand):
+        "return None if no bin for seq+strand"
+        return self.seqBins.get(self._binKey(seqId, strand))
+
     def add(self, seqId, start, end, value, strand=None):
         "add an entry for a sequence and range, and optional strand"
         self._checkStrand(strand)
@@ -195,7 +210,7 @@ class RangeFinder(object):
             self.haveStrand = (strand is not None)
         elif self.haveStrand != (strand is not None):
             raise PycbioException("all RangeFinder entries must either have strand or not have strand")
-        key = (seqId, strand)
+        key = self._binKey(seqId, strand)
         bins = self.seqBins.get(key)
         if bins is None:
             self.seqBins[key] = bins = RangeBins(seqId, strand)
@@ -264,6 +279,34 @@ class RangeFinder(object):
         for bins in self.seqBins.values():
             for entry in bins.entries():
                 yield entry.value
+
+    def getSeqs(self):
+        """get set of sequences"""
+        return frozenset([k[0] for k in self.seqBins.keys()])
+
+    def getSeqRange(self, seqId, strand=None):
+        """Return the minimum start and maximum end for a given sequence.  Useful for
+        look for closest entry by checking range.  If strand is not None and
+        we have strands in bins, return just for that strand, otherwise for
+        sequence regardless of strand.  Returns (None, None) if sequence is not
+        present"""
+
+        def _getRange(seqId, keyStrand):
+            bins = self._getBin(seqId, keyStrand)
+            if bins is None:
+                return None, None
+            else:
+                return bins.minStart, bins.maxEnd
+
+        self._checkStrand(strand)
+        if not self.haveStrand:
+            return _getRange(seqId, None)
+        elif strand is None:
+            r1 = _getRange(seqId, '+')
+            r2 = _getRange(seqId, '-')
+            return (min(r1[0], r2[0]), max(r1[1], r2[1]))
+        else:
+            return _getRange(seqId, strand)
 
     def dump(self, fh):
         "print contents for debugging purposes"

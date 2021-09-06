@@ -143,6 +143,24 @@ class RangeTests(TestCaseBase):
         expect = ['val1.1', 'val1.3', 'val1.4', 'val1.5', 'val1.6']
         self.assertEqual(left, expect)
 
+    def testGetSeqsStrand(self):
+        rf = self.mkRangeFinder(data1, True)
+        self.assertEqual(rf.getSeqs(), frozenset([d.seqId for d in data1]))
+
+    def testGetSeqsNoStrand(self):
+        rf = self.mkRangeFinder(data1, False)
+        self.assertEqual(rf.getSeqs(), frozenset([d.seqId for d in data1]))
+
+    def testGetSeqRangeStrand(self):
+        rf = self.mkRangeFinder(data1, True)
+        self.assertEqual(rf.getSeqRange("chr12"), (100, 10000))  # both strands
+        self.assertEqual(rf.getSeqRange("chr12", '-'), (100, 500))  # this strand
+
+    def testGetSeqRangeNoStrand(self):
+        rf = self.mkRangeFinder(data1, False)
+        self.assertEqual(rf.getSeqRange("chr12"), (100, 10000))  # both strands
+        self.assertEqual(rf.getSeqRange("chr12", '-'), (100, 10000))  # also for both
+
 
 def suite():
     ts = unittest.TestSuite()
