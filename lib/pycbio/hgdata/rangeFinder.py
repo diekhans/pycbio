@@ -303,6 +303,8 @@ class RangeFinder(object):
             return _getRange(seqId, None)
         elif strand is None:
             r1 = _getRange(seqId, '+')
+            if r1[0] is None:
+                return None, None  # don't have seqId
             r2 = _getRange(seqId, '-')
             return (min(r1[0], r2[0]), max(r1[1], r2[1]))
         else:

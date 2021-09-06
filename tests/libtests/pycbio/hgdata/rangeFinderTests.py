@@ -155,11 +155,15 @@ class RangeTests(TestCaseBase):
         rf = self.mkRangeFinder(data1, True)
         self.assertEqual(rf.getSeqRange("chr12"), (100, 10000))  # both strands
         self.assertEqual(rf.getSeqRange("chr12", '-'), (100, 500))  # this strand
+        self.assertEqual(rf.getSeqRange("chr55"), (None, None))
+        self.assertEqual(rf.getSeqRange("chr55", '-'), (None, None))
 
     def testGetSeqRangeNoStrand(self):
         rf = self.mkRangeFinder(data1, False)
         self.assertEqual(rf.getSeqRange("chr12"), (100, 10000))  # both strands
         self.assertEqual(rf.getSeqRange("chr12", '-'), (100, 10000))  # also for both
+        self.assertEqual(rf.getSeqRange("chr55"), (None, None))
+        self.assertEqual(rf.getSeqRange("chr55", '-'), (None, None))
 
 
 def suite():
