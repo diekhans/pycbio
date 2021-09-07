@@ -199,7 +199,7 @@ class Bed(object):
     def coverage(self):
         """number of bases covered"""
         if self.blocks is None:
-            return self.span()
+            return self.span
         else:
             return sum([len(b) for b in self.blocks])
 
