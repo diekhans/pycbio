@@ -1,9 +1,12 @@
 # Copyright 2006-2012 Mark Diekhans
 
-# FIXME: danger of bdump, etc, methods conflicting with columns.  maybe
+# FIXME: danger of dump, etc, methods conflicting with columns.  maybe
 # a better convention to avoid collisions or make these functions rather
 # than methods
 # FIXME: need accessor functions for columns
+# FIXME: need way to get raw row with Nones for sql
+# FIXME: this could actually be a dict-like object since py3
+
 from pycbio.tsv import TsvError
 
 

@@ -6,6 +6,7 @@ import apsw
 from pycbio.sys.objDict import ObjDict
 
 # FIXME: no tests
+# FIXME: need logging of sql
 # FIXME: add options to do logging, both of exceptions (apsw handler) and queries
 # FIXME  gets Obj of rows:
 
@@ -101,10 +102,6 @@ def haveTable(conn, table):
         return row[0] > 0
 
 
-# FIXME:
-#  this results in
-#    Error: there are still remaining sql statements to execute
-#  might want to write a load contact to wrap all of this
 fastLoadPragmas = (
     "PRAGMA cache_size = 1000000;"
     "PRAGMA synchronous = OFF;"
@@ -117,4 +114,9 @@ fastLoadPragmas = (
 
 def setFastLoadPragmas(conn):
     """setup pragmas for faster bulk loading"""
-    execute(conn, fastLoadPragmas)
+    # can't have a transaction open
+    cur = conn.cursor()
+    try:
+        cur.execute(fastLoadPragmas).fetchall()
+    finally:
+        cur.close()
