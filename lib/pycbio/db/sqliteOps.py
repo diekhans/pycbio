@@ -120,3 +120,8 @@ def setFastLoadPragmas(conn):
         cur.execute(fastLoadPragmas).fetchall()
     finally:
         cur.close()
+
+def loadExtension(conn, lib):
+    "load a sqlite3 extension"
+    conn.enableloadextension(True)
+    conn.loadextension(lib)
