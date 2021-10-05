@@ -196,26 +196,18 @@ def prStrs(fh, *objs):
 
 def prRow(fh, row):
     """Print a row (list or tupe) to a tab file.
-    Does string conversion on each columns"""
-    first = True
-    for col in row:
-        if not first:
+    Does string conversion on each columns, None is written as empty"""
+    for i in range(len(row)):
+        if i > 0:
             fh.write("\t")
-        fh.write(str(col))
-        first = False
+        fh.write(str(row[i]) if row[i] is not None else '')
     fh.write("\n")
 
 
 def prRowv(fh, *objs):
     """Print a row from each argument to a tab file.
-    Does string conversion on each columns"""
-    first = True
-    for col in objs:
-        if not first:
-            fh.write("\t")
-        fh.write(str(col))
-        first = False
-    fh.write("\n")
+    Does string conversion on each columns,   None is written as empty"""
+    prRow(fh, objs)
 
 
 class FileAccessor(object):
