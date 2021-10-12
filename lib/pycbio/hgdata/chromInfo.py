@@ -4,7 +4,8 @@ sources.
 """
 # Copyright 2006-2012 Mark Diekhans
 from collections import namedtuple
-from pycbio.tsv import TabFile
+from pycbio.sys import fileOps
+import pipettor
 
 class ChromInfo(namedtuple("chromInfo",
                            ("chrom", "size"))):
@@ -24,7 +25,7 @@ class ChromInfoTbl(dict):
     def loadFile(chromSizes):
         "Load from chrom.sizes file"
         chroms = ChromInfoTbl()
-        for row in TabFile(chromSizes):
+        for row in fileOps.iterRows(chromSizes):
             chroms._addRow(row[0], int(row[1]))
         return chroms
 
@@ -39,4 +40,13 @@ class ChromInfoTbl(dict):
                 chroms._addRow(row[0], int(row[1]))
         finally:
             cur.close()
+        return chroms
+
+    @staticmethod
+    def loadTwoBit(twoBitFile):
+        "Load from twoBit file"
+        chroms = ChromInfoTbl()
+        with pipettor.Popen(["twoBitInfo", twoBitFile, "/dev/stdout"]) as fh:
+            for row in fileOps.iterRows(fh):
+                chroms._addRow(row[0], int(row[1]))
         return chroms

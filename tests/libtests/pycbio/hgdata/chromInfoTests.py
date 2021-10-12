@@ -1,6 +1,7 @@
 # Copyright 2006-2014 Mark Diekhans
 import unittest
 import sys
+import os.path as osp
 
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
@@ -32,17 +33,24 @@ class ChromInfoTests(TestCaseBase):
         self._checkChroms(chroms)
 
     def testLoadDb(self):
-        if not self.haveHgConf():
-            return
         hgdb = "hg38"
-        try:
-            conn = connect(hgdb)
-        except OperationalError as ex:
-            msg = f"Warning: skipping {self.id()}, can not connect to {hgdb}: {ex}"
-            print(msg, file=sys.stderr)
-            self.skipTest(msg)
-        chroms = ChromInfoTbl.loadDb(conn)
-        self._checkChroms(chroms)
+        if self.haveHgConf():
+            try:
+                conn = connect(hgdb)
+            except OperationalError as ex:
+                self.skipWarnTest(f"can not connect to {hgdb}: {ex}")
+            else:
+                chroms = ChromInfoTbl.loadDb(conn)
+                self._checkChroms(chroms)
+                conn.close()
+
+    def testLoadTwoBit(self):
+        hg38TwoBit = "/hive/data/genomes/hg38/hg38.2bit"
+        if not osp.exists(hg38TwoBit):
+            self.skipWarnTest(f"hg38 genome twoBit not found: {hg38TwoBit}")
+        else:
+            chroms = ChromInfoTbl.loadTwoBit(hg38TwoBit)
+            self._checkChroms(chroms)
 
 
 def suite():
