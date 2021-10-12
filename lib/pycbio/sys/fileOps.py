@@ -8,6 +8,7 @@ import re
 import socket
 import tempfile
 import pipettor
+from shutil import which
 from contextlib import contextmanager
 from pycbio import PycbioException
 
@@ -63,17 +64,20 @@ def isCompressed(path):
     return path.endswith(".gz") or path.endswith(".bz2") or path.endswith(".Z")
 
 
-def compressCmd(path, default="cat"):
+def compressCmd(path):
     """return the command to compress the path, or default if not compressed, which defaults
     to the `cat' command, so that it just gets written through"""
     if path.endswith(".Z"):
         raise PycbioException("writing compress .Z files not supported")
     elif path.endswith(".gz"):
-        return "gzip"
+        if which("pigz"):
+            return ["pigz"]
+        else:
+            return ["gzip"]
     elif path.endswith(".bz2"):
-        return "bzip2"
+        return ["bzip2"]
     else:
-        return default
+        return ["cat"]
 
 
 def compressBaseName(path):
@@ -84,15 +88,17 @@ def compressBaseName(path):
         return path
 
 
-def decompressCmd(path, default="cat"):
+def decompressCmd(path):
     """"return the command to decompress the file to stdout, or default if not compressed, which defaults
     to the `cat' command, so that it just gets written through"""
-    if path.endswith(".Z") or path.endswith(".gz"):
-        return "zcat"
+    if path.endswith(".gz") and which("unpigz"):
+        return ["unpigz", "-c"]
+    elif path.endswith(".Z") or path.endswith(".gz"):
+        return ["zcat"]
     elif path.endswith(".bz2"):
-        return "bzcat"
+        return ["bzcat"]
     else:
-        return default
+        return ["cat"]
 
 
 def opengz(fileName, mode="r", buffering=-1, encoding=None, errors=None):
@@ -101,10 +107,10 @@ def opengz(fileName, mode="r", buffering=-1, encoding=None, errors=None):
     if isCompressed(fileName):
         if mode.startswith("r"):
             cmd = decompressCmd(fileName)
-            return pipettor.Popen([cmd, fileName], mode=mode, buffering=buffering, encoding=encoding, errors=errors)
+            return pipettor.Popen(cmd + [fileName], mode=mode, buffering=buffering, encoding=encoding, errors=errors)
         elif mode.startswith("w"):
             cmd = compressCmd(fileName)
-            return pipettor.Popen([cmd], mode=mode, stdout=fileName, buffering=buffering, encoding=encoding, errors=errors)
+            return pipettor.Popen(cmd, mode=mode, stdout=fileName, buffering=buffering, encoding=encoding, errors=errors)
         else:
             raise PycbioException("mode {} not support with compression for {}".format(mode, fileName))
     else:
@@ -273,6 +279,19 @@ def readLine(fh):
         line = line[:-1]
     return line
 
+def writeLines(fspec, lines):
+    "write each line, followed by a newline"
+    with FileAccessor(fspec, 'w') as fh:
+        for l in lines:
+            fh.write(l)
+            fh.write('\n')
+
+def writeRows(fspec, rows):
+    "write each row, joined by tabs, followed by a newline"
+    with FileAccessor(fspec, 'w') as fh:
+        for r in rows:
+            fh.write('\t'.join([str(c) for c in r]))
+            fh.write('\n')
 
 def findTmpDir(tmpDir=None):
     """find the temporary directory to use, if tmpDir is not None, it is use"""
