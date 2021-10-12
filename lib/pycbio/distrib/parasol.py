@@ -137,8 +137,13 @@ class Para(object):
         return BatchStats(lines)
 
     def free(self):
-        "free the batch"
-        self._para("freeBatch")
+        "free the batch, no-op if it doesn't exist"
+        try:
+            self._para("freeBatch")
+        except pipettor.exceptions.ProcessException as ex:
+            if ex.stderr.find("Batch not found") < 0:
+                raise
+
 
     def time(self):
         "run para check and return statistics as a list of lines"
