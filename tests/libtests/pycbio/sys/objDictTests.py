@@ -23,8 +23,37 @@ class ObjDictDerived(ObjDict):
     __slots__ = ()
     pass
 
+
+simpleJson = """
+[
+    {
+        "one": "value 1",
+        "two": "value 2",
+        "three": "value 3"
+    },
+    {
+        "four": "value 4",
+        "five": "value 5",
+        "six": "value 6"
+    }
+]
+"""
+
+nestedJson = """
+{
+    "fldA":
+    {
+       "fldB":
+       {
+            "first": "Fred",
+            "last": "Flintstone"
+       }
+    }
+}
+"""
+
 def editJsonPicklePath(inJson, outJson):
-    "edit py/object entry in json file so it is independent on how this files  file is loaded"
+    "edit py/object entry in json file so it is independent on how this file is loaded"
     # "py/object": "libtests.pycbio.sys.objDictTests.ObjDictDerived",
     # or
     # "py/object": "__main__.ObjDictDerived",
@@ -101,14 +130,24 @@ class ObjDictTests(TestCaseBase, TestMixin):
             self._runJsonPickleTest(ObjDictDerived())
 
     def testJsonLoad(self):
-        with open(self.getInputFile("simpleObjs.json")) as fh:
-            objs = json.load(fh, object_pairs_hook=ObjDict)
+        objs = json.loads(simpleJson, object_pairs_hook=ObjDict)
         self.assertTrue(isinstance(objs, list))
         self.assertEqual(2, len(objs))
         obj = objs[0]
         self.assertTrue(isinstance(obj, ObjDict))
         self.assertEqual('value 1', obj['one'])
         self.assertEqual('value 2', obj.two)
+
+    def testRecursiveObjDict(self):
+        # ObjDict with dict sub objects being turned into ObjDicts
+        obj = json.loads(nestedJson, object_pairs_hook=ObjDict)
+        self.assertTrue(isinstance(obj, ObjDict))
+        self.assertTrue(isinstance(obj.fldA, ObjDict))
+        self.assertTrue(isinstance(obj.fldA.fldB, ObjDict))
+        fldB = obj.fldA.fldB
+        self.assertEqual(fldB.first, "Fred")
+        self.assertEqual(fldB.last, "Flintstone")
+
 
 class DefaultObjDictTests(TestCaseBase, TestMixin):
     def _initObjDict(self, od):
@@ -147,9 +186,8 @@ class DefaultObjDictTests(TestCaseBase, TestMixin):
         self.assertTrue(isinstance(od2, DefaultObjDict))
         self._checkObjDict(od2)
 
-    # FIXME: pickle of DefaultObjDict doesn't work
-    def X_testPickle(self):
-        self._runPickleTest(ObjDict())
+    def testPickle(self):
+        self._runPickleTest(DefaultObjDict(list))
 
     def _runJsonPickleTest(self, od):
         self._initObjDict(od)
@@ -164,15 +202,12 @@ class DefaultObjDictTests(TestCaseBase, TestMixin):
         self.assertTrue(isinstance(od2, DefaultObjDict))
         self._checkObjDict(od2)
 
-    # FIXME: pickle of DefaultObjDict doesn't work
-    def X_testJsonPickle(self):
+    def testJsonPickle(self):
         if haveJsonPickle:
             self._runJsonPickleTest(DefaultObjDict(list))
 
-    # FIXME: doesn't work
-    def X_testJsonLoad(self):
-        with open(self.getInputFile("simpleObjs.json")) as fh:
-            objs = json.load(fh, object_pairs_hook=DefaultObjDict)
+    def testJsonLoad(self):
+        objs = json.loads(simpleJson, object_pairs_hook=DefaultObjDict.jsonHook(list))
         self.assertTrue(isinstance(objs, list))
         self.assertEqual(2, len(objs))
         obj = objs[0]

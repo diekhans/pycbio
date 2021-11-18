@@ -1,3 +1,6 @@
+#+STARTUP: nologdone
+#+TODO: TODO ACTIVE PAUSED | DONE CANCELED
+
 * coords rich comparison not working
 see disabled tests in
 tests/libtests/pycbio/hgdata/coordsTests.py
@@ -21,7 +24,6 @@ t2t-chm13-gene-analysis/bin/geneBoundsLib.py
 import mysql.connector  # pip install mysql-connector-python
 * rangeFinder:
 need items() to get keys and values() for when values don't include range
-* ObjDict not recursively intialized when passed a dict ObjDict(someDict)
 * way to determine primary assembly in a consistent way.
 including ungaped sizes
 see ~/compbio/kznf/projs/te-insertions/TEInsertions/bin/getRepGenomeCover
@@ -38,7 +40,8 @@ gencode/meetings/2021/2021-03-30-gencode/ucsc/data/hprc/gene-missing-venn.tsv
 is this even a useful format?
 * support psl sqlite stuff to build query bin ranges
 * modify lib/pycbio/hgdata/gff3 to use gencode gtf/gff paradigm
-* DefaultObjDict pickle doesn't work (see disabled in oobjDictTests.py)
+* DefaultObjDict jsonpickle doesn't work (see disabled in objDictTests.py)
+* objDict.py remove dup code with a mixin?
 * drop enumeration
 * nasty BUG:  calling pipeline in a loop agaisnt an open file truncates it each exec
     ouch, this happens with subprocess.call_check too

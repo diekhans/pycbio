@@ -144,7 +144,6 @@ class Para(object):
             if ex.stderr.find("Batch not found") < 0:
                 raise
 
-
     def time(self):
         "run para check and return statistics as a list of lines"
         return self._para("time")
