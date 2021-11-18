@@ -41,12 +41,14 @@ is this even a useful format?
 * support psl sqlite stuff to build query bin ranges
 * modify lib/pycbio/hgdata/gff3 to use gencode gtf/gff paradigm
 * DefaultObjDict jsonpickle doesn't work (see disabled in objDictTests.py)
+this is hard because one needs to be pickle default_factory, which can be
+a class or function.
+seems like you can: https://medium.com/@emlynoregan/serialising-all-the-functions-in-python-cd880a63b591
 * objDict.py remove dup code with a mixin?
 * drop enumeration
 * nasty BUG:  calling pipeline in a loop agaisnt an open file truncates it each exec
     ouch, this happens with subprocess.call_check too
     does this happen in pipettor?
-
 * document generators:
   http://codespeak.net/~mwh/pydoctor/ - discussion of others
 
