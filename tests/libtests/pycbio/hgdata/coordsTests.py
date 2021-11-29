@@ -101,6 +101,11 @@ class CoordsTests(TestCaseBase):
         cid = c1p.intersect(c2d)
         self.assertEqual(cid, Coords("chr22", 50000000, 55000000, strand='+', size=50818468))
 
+    def testCoordsGetAbs(self):
+        cpos = Coords("chr22", 50000000, 60000000, strand='+', size=50818468)
+        cneg = cpos.reverse()
+        self.assertEqual((cneg.absStart, cneg.absEnd), (cpos.start, cpos.end))
+
     def FIXME_testCoordsCmpNoStrand(self):
         # strand None comparison must be handled carefully, can't do None < None
         cs = [Coords("chr22", 10200, 20000),

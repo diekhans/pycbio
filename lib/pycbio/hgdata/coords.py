@@ -184,6 +184,16 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         else:
             return self
 
+    @property
+    def absStart(self):
+        "get start of positive strand"
+        return self.start if self.strand == '+' else self.size - self.end
+
+    @property
+    def absEnd(self):
+        "get end of positive strand"
+        return self.end if self.strand == '+' else self.size - self.start
+
     def adjust(self, **kwargs):
         "return version with any field update via keyword arguments"
         fields = {k: getattr(self, k) for k in self._fields}

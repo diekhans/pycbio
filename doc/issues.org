@@ -1,6 +1,8 @@
 #+STARTUP: nologdone
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
+* create some common genome mapping functions related to
+isoseq-xspecies/bin/mappedAlignToAnnot
 * coords rich comparison not working
 see disabled tests in
 tests/libtests/pycbio/hgdata/coordsTests.py
