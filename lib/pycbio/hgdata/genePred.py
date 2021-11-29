@@ -154,6 +154,10 @@ class Exon(object):
         "size of the exon"
         return self.end - self.start
 
+    def __len__(self):
+        "size of the exon"
+        return self.end - self.start
+
     def getRelCoords(self, chromSize):
         "get a range object of strand-relative coordinates"
         if self.gene.inDirectionOfTranscription():
