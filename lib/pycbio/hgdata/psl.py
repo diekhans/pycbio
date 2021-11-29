@@ -106,18 +106,18 @@ class PslBlock(object):
         "compare for equality of alignment."
         return (other is not None) and (self.qStart == other.qStart) and (self.tStart == other.tStart) and (self.size == other.size) and (self.qSeq == other.qSeq) and (self.tSeq == other.tSeq)
 
-    def reverseComplement(self, newPsl):
+    def reverseComplement(self):
         "construct a block that is the reverse complement of this block"
         return PslBlock(self.psl.qSize - self.qEnd,
-                        self.psl.tSize - self.tEnd, self.size,
-                        (dnaOps.reverseComplement(self.qSeq) if (self.qSeq is not None) else None),
-                        (dnaOps.reverseComplement(self.tSeq) if (self.tSeq is not None) else None))
+                       self.psl.tSize - self.tEnd, self.size,
+                       (dnaOps.reverseComplement(self.qSeq) if (self.qSeq is not None) else None),
+                       (dnaOps.reverseComplement(self.tSeq) if (self.tSeq is not None) else None))
 
-    def swapSides(self, newPsl):
+    def swapSides(self):
         "construct a block with query and target swapped "
         return PslBlock(self.tStart, self.qStart, self.size, self.tSeq, self.qSeq)
 
-    def swapSidesReverseComplement(self, newPsl):
+    def swapSidesReverseComplement(self):
         "construct a block with query and target swapped and reverse complemented "
         return PslBlock(self.psl.tSize - self.tEnd,
                         self.psl.qSize - self.qEnd, self.size,
@@ -435,7 +435,7 @@ class Psl(object):
         rc.tNumInsert = self.tNumInsert
         rc.tBaseInsert = self.tBaseInsert
         for i in range(self.blockCount - 1, -1, -1):
-            rc.addBlock(self.blocks[i].reverseComplement(rc))
+            rc.addBlock(self.blocks[i].reverseComplement())
         return rc
 
     def _swapStrand(self, keepTStrandImplicit, doRc):
@@ -476,10 +476,10 @@ class Psl(object):
 
         if doRc:
             for i in range(self.blockCount - 1, -1, -1):
-                swap.addBlock(self.blocks[i].swapSidesReverseComplement(swap))
+                swap.addBlock(self.blocks[i].swapSidesReverseComplement())
         else:
             for i in range(self.blockCount):
-                swap.addBlock(self.blocks[i].swapSides(swap))
+                swap.addBlock(self.blocks[i].swapSides())
         return swap
 
 
