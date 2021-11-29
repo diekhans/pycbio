@@ -44,7 +44,7 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         cparts = coordsStr.split(":")
         name = cparts[0]
         if len(cparts) > 2:
-            raise CoordsError("invalid start-end")
+            raise CoordsError(f"invalid start-end: '{coordsStr}'")
         if len(cparts) == 1:
             if size is None:
                 return name, None, None
@@ -61,11 +61,11 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         will be None..None, with a size it will be 0..size"""
         try:
             if strand not in ('+', '-', None):
-                raise CoordsError("invalid strand")
+                raise CoordsError(f"invalid strand: '{strand}'")
             name, start, end = cls._parse_parts(coordsStr, size)
             return Coords(name, start, end, strand, size)
         except Exception as ex:
-            raise CoordsError("invalid coordinates: \"{}\": {}".format(coordsStr, ex))
+            raise CoordsError(f"invalid coordinates: '{coords}': {ex}")
 
     def subrange(self, start, end, strand=None):
         """Construct a Coords object that is a subrange of this one.  If strand is provided,
