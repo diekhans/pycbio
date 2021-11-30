@@ -20,10 +20,15 @@ class Frame(int):
 
     @staticmethod
     def fromPhase(phase):
-        """construct a Frame from a GFF/GTF like phase, which maybe an int or str"""
+        """construct a Frame from a GFF/GTF like phase, which maybe an int or str
+        '.' or < 0 results in None."""
         if isinstance(phase, str):
+            if phase == '.':
+                return None
             phase = int(phase)
-        if phase == 0:
+        if phase < 0:
+            return None
+        elif phase == 0:
             return Frame(0)
         elif phase == 1:
             return Frame(2)
@@ -41,6 +46,21 @@ class Frame(int):
             return 2
         else:
             return 1
+
+    @staticmethod
+    def fromFrame(frame):
+        """convert from an integer or a string, < 0, '.', or None
+        results None.  A Frame object returns itself."""
+        if isinstance(frame, Frame) or (frame is None):
+            return frame
+        if isinstance(frame, str):
+            if frame == '.':
+                return None
+            frame = int(frame)
+        if frame < 0:
+            return None
+        else:
+            return Frame(frame)
 
     def incr(self, amt):
         """increment frame by positive or negative amount, returning a new

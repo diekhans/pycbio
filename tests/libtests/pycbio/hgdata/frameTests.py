@@ -27,10 +27,19 @@ class FrameTests(TestCaseBase):
         self.assertEqual(Frame.fromPhase(0), Frame(0))
         self.assertEqual(Frame.fromPhase(1), Frame(2))
         self.assertEqual(Frame.fromPhase(2), Frame(1))
+        self.assertEqual(Frame.fromPhase('1'), Frame(2))
+        self.assertEqual(Frame.fromPhase('.'), None)
+        self.assertEqual(Frame.fromPhase(-1), None)
         self.assertEqual(Frame(0).toPhase(), 0)
         self.assertEqual(Frame(1).toPhase(), 2)
         self.assertEqual(Frame(2).toPhase(), 1)
 
+    def testFromFrame(self):
+        self.assertEqual(Frame.fromFrame(1), Frame(1))
+        self.assertEqual(Frame.fromFrame("1"), Frame(1))
+        self.assertEqual(Frame.fromFrame("-1"), None)
+        self.assertEqual(Frame.fromFrame("."), None)
+        self.assertEqual(Frame.fromFrame(-1), None)
 
 def suite():
     ts = unittest.TestSuite()
