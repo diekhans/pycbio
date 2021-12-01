@@ -16,29 +16,11 @@ class CoordsTests(TestCaseBase):
         self.assertEqual(c.start, 10000)
         self.assertEqual(c.end, 20000)
 
-    def testCoordsParseNameOnly(self):
-        c = Coords.parse("chr22")
-        self.assertEqual(c.name, "chr22")
-        self.assertEqual(c.start, None)
-        self.assertEqual(c.end, None)
-
-    def testCoordsParseNameOnlySize(self):
-        c = Coords.parse("chr22", size=50818468)
-        self.assertEqual(c.name, "chr22")
-        self.assertEqual(c.start, 0)
-        self.assertEqual(c.end, 50818468)
-
     def testCoordsSimple(self):
         c = Coords("chr22", 10000, 20000)
         self.assertEqual(c.name, "chr22")
         self.assertEqual(c.start, 10000)
         self.assertEqual(c.end, 20000)
-
-    def testCoordsNone(self):
-        c = Coords("chr22", None, None)
-        self.assertEqual(c.name, "chr22")
-        self.assertEqual(c.start, None)
-        self.assertEqual(c.end, None)
 
     def testCoordsParseExtra(self):
         c = Coords.parse("chr22:10000-20000", strand='-', size=50818468)
@@ -67,8 +49,8 @@ class CoordsTests(TestCaseBase):
 
     def testOverlaps(self):
         # strand-specific
-        c1 = Coords("chr22", 50000000, 60000000, strand='-', size=50818468)
-        c2 = Coords("chr22", 45000000, 55000000, strand='-', size=50818468)
+        c1 = Coords("chr22", 40000000, 50000000, strand='-', size=50818468)
+        c2 = Coords("chr22", 35000000, 45000000, strand='-', size=50818468)
         self.assertTrue(c1.overlaps(c2))
         self.assertTrue(c2.overlaps(c1))
         self.assertTrue(c1.reverse().overlaps(c2.reverse()))
@@ -77,10 +59,10 @@ class CoordsTests(TestCaseBase):
         self.assertFalse(c1.overlaps(c2.reverse()))
         self.assertFalse(c1.reverse().overlaps(c2))
         # overlap coords, different strand
-        c3 = Coords("chr22", 45000000, 55000000, strand='+', size=50818468)
+        c3 = Coords("chr22", 35000000, 45000000, strand='+', size=50818468)
         self.assertFalse(c1.overlaps(c3))
         # overlap with None strand (overlaps either strand)
-        c4 = Coords("chr22", 50000000, 60000000, strand=None, size=50818468)
+        c4 = Coords("chr22", 40000000, 50000000, strand=None, size=50818468)
         self.assertTrue(c3.overlaps(c4))
         self.assertTrue(c4.overlaps(c3))
         self.assertTrue(c1.overlaps(c4))
@@ -88,21 +70,21 @@ class CoordsTests(TestCaseBase):
 
     def testIntersect(self):
         # strand-specific
-        c1 = Coords("chr22", 50000000, 60000000, strand='-', size=50818468)
-        c2 = Coords("chr22", 45000000, 55000000, strand='-', size=50818468)
+        c1 = Coords("chr22", 40000000, 50000000, strand='-', size=50818468)
+        c2 = Coords("chr22", 35000000, 45000000, strand='-', size=50818468)
         ci = c1.intersect(c2)
-        self.assertEqual(ci, Coords("chr22", 50000000, 55000000, strand='-', size=50818468))
+        self.assertEqual(ci, Coords("chr22", 40000000, 45000000, strand='-', size=50818468))
         c1p = c1.adjust(strand='+')
         c2p = c2.adjust(strand='+')
         cip = c1p.intersect(c2p)
-        self.assertEqual(cip, Coords("chr22", 50000000, 55000000, strand='+', size=50818468))
+        self.assertEqual(cip, Coords("chr22", 40000000, 45000000, strand='+', size=50818468))
         # defaulted strand
         c2d = c2.adjust(strand=None)
         cid = c1p.intersect(c2d)
-        self.assertEqual(cid, Coords("chr22", 50000000, 55000000, strand='+', size=50818468))
+        self.assertEqual(cid, Coords("chr22", 40000000, 45000000, strand='+', size=50818468))
 
     def testCoordsGetAbs(self):
-        cpos = Coords("chr22", 50000000, 60000000, strand='+', size=50818468)
+        cpos = Coords("chr22", 40000000, 40000000, strand='+', size=50818468)
         cneg = cpos.reverse()
         self.assertEqual((cneg.absStart, cneg.absEnd), (cpos.start, cpos.end))
 

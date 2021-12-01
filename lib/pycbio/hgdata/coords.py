@@ -30,29 +30,26 @@ def _intOrNone(v):
 class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
     """Immutable sequence coordinates
     Fields:
-       name, start, end - start/end maybe None to indicate a full sequence
+       name - sequence name
+       start, end - zero-based, half-open range
        strand - optional strand
        size - optional size of sequence
     """
     __slots__ = ()
 
     def __new__(cls, name, start, end, strand=None, size=None):
+        assert (start <= end) and (start >= 0), f"invalid range: {start} {end}"
+        assert (size is None) or (end <= size), f"range: {start} {end} exceeds size {size}"
         return super(Coords, cls).__new__(cls, name, _intOrNone(start), _intOrNone(end), strand, _intOrNone(size))
 
     @classmethod
     def _parse_parts(cls, coordsStr, size):
         cparts = coordsStr.split(":")
         name = cparts[0]
-        if len(cparts) > 2:
-            raise CoordsError(f"invalid start-end: '{coordsStr}'")
-        if len(cparts) == 1:
-            if size is None:
-                return name, None, None
-            else:
-                return name, 0, size
-        else:
-            rparts = cparts[1].split("-")
-            return name, int(rparts[0]), int(rparts[1])
+        if len(cparts) != 2:
+            raise CoordsError(f"range missing, expect chr:start-end")
+        rparts = cparts[1].split("-")
+        return name, int(rparts[0]), int(rparts[1])
 
     @classmethod
     def parse(cls, coordsStr, strand=None, size=None):
@@ -65,7 +62,7 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
             name, start, end = cls._parse_parts(coordsStr, size)
             return Coords(name, start, end, strand, size)
         except Exception as ex:
-            raise CoordsError(f"invalid coordinates: '{coords}': {ex}")
+            raise CoordsError(f"invalid coordinates: '{coordsStr}'") from ex
 
     def subrange(self, start, end, strand=None):
         """Construct a Coords object that is a subrange of this one.  If strand is provided,

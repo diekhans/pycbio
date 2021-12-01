@@ -1,6 +1,12 @@
 #+STARTUP: nologdone
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
+* coords
+- add intersect function
+- add Region with just start, end
+- construction looks at object type and takes fields that make 
+  sense, so can make a Region from Coords.
+- should there be a type (abs vs strand)
 * create some common genome mapping functions related to
 isoseq-xspecies/bin/mappedAlignToAnnot
 * coords rich comparison not working
