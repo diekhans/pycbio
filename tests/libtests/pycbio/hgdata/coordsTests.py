@@ -35,6 +35,8 @@ class CoordsTests(TestCaseBase):
         cr = Coords("chr22", 50798468, 50808468, strand='+', size=50818468)
         self.assertEqual(c.reverse(), cr)
         self.assertEqual(c, cr.reverse())
+        c = Coords("chr22", 10000, 20000, size=50818468)
+        cr = Coords("chr22", 50798468, 50808468, size=50818468)
 
     def testAbs(self):
         c = Coords("chr22", 50798468, 50808468, strand='-', size=50818468)

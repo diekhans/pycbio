@@ -18,8 +18,10 @@ def reverseRange(start, end, size):
 
 
 def reverseStrand(strand):
-    "None is assumed as +"
-    return '+' if strand == '-' else '-'
+    if strand == None:
+        return None
+    else:
+        return '+' if strand == '-' else '-'
 
 
 def _intOrNone(v):
