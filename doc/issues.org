@@ -2,12 +2,19 @@
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
 * coords
+- write a conceptual model; strand coordinate vs strand, different?
+  see isoseq-xspecies/bin/mappedAlignToAnnot got very confused by putting query strand
+  on target coordinates
 - add intersect function
 - add Region with just start, end
 - construction looks at object type and takes fields that make 
   sense, so can make a Region from Coords.
-- should there be a type (abs vs strand)
+- should there be a type (abs vs strand) see isoseq-xspecies/bin/mappedAlignToAnnot
+  negative strand coordinates is not the same as negative strand
+  confusion arrived because strand in t-coords not t-strand in psl for blocks,
+  tstrand gets revsered for block
 - Coords.adjust is a horrible name
+- method to map frame
 * create some common genome mapping functions related to
 isoseq-xspecies/bin/mappedAlignToAnnot
 * coords rich comparison not working
