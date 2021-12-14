@@ -511,6 +511,7 @@ class PslTbl(list):
         for psl in self:
             n = dropQueryUniq(psl.qName) if qUniqDrop else psl.qName
             self.qNameMap[n].append(psl)
+        self.qNameMap.default_factory = None
 
     def _mkTNameIdx(self):
         self.tNameMap = defaultdict(list)
