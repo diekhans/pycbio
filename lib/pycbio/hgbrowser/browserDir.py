@@ -13,6 +13,7 @@ from pycbio.sys import fileOps
 # FIXME: cellClasses is also a pain, a Cell object would be
 # FIXME: subrows is a hack, having full object model can make this go away
 # FIXME add altcounter thing form gencode/projs/mm39/mus-grch39-eval/bin/browserDirBuild
+# FIXME: numColumns is weird
 
 
 defaultStyle = """
@@ -146,9 +147,10 @@ class BrowserDir(object):
     genome browsers.
     """
 
-    def __init__(self, browserUrl, defaultDb, colNames=None, pageSize=50,
+    def __init__(self, browserUrl, defaultDb, *, colNames=None, pageSize=50,
                  title=None, dirPercent=15, below=False, pageDesc=None,
-                 tracks={}, initTracks={}, style=defaultStyle, numColumns=1, customTrackUrl=None):
+                 tracks={}, initTracks={}, style=defaultStyle, numColumns=1, customTrackUrl=None,
+                 hubUrl=None):
         """The tracks arg is a dict of track name to setting, it is added to
         each URL and the initial setting of the frame. The initTracks arg is
         similar, however its only set in the initial frame and not added to
@@ -174,12 +176,15 @@ class BrowserDir(object):
         self.initTrackArgs = initTracks.copy()
         if customTrackUrl is not None:
             self.trackArgs["hgt.customText"] = self.customTrackUrl
+        if hubUrl is not None:
+            self.trackArgs["hubUrl"] = self.hubUrl
 
     def mkUrl(self, coords, db=None, extra=None):
         """extract is a dict, the track arguments are added on if db defaultDb or None"""
         if db is None:
             db = self.defaultDb
         args = {"db": db,
+                "genome": db,
                 "position": str(coords)}
         if db == self.defaultDb:
             args.update(self.trackArgs)

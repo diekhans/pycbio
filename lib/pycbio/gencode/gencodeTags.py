@@ -79,3 +79,9 @@ class GencodeTag(SymEnum):
     TAGENE = auto()
     stop_codon_readthrough = auto()
     Ensembl_canonical = auto()
+
+gencodeTagNotFullCds = frozenset([GencodeTag.cds_start_NF,
+                                  GencodeTag.cds_end_NF])
+gencodeTagNotFullMRna = frozenset([GencodeTag.mRNA_start_NF,
+                                   GencodeTag.mRNA_end_NF])
+gencodeTagNotFull = frozenset(gencodeTagNotFullCds | gencodeTagNotFullMRna)

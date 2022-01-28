@@ -1,7 +1,12 @@
 #+STARTUP: nologdone
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
+* build clustering module based on:
+t2t-chm13/gene-annotation/t2t-chm13-gene-analysis/bin/geneBoundsLib.py
+kznf-gene-homology/bin/paralogClassify
+* psl.tOverlap should consider strand?? how?
 * coords
+- look at biocantor
 - write a conceptual model; strand coordinate vs strand, different?
   see isoseq-xspecies/bin/mappedAlignToAnnot got very confused by putting query strand
   on target coordinates
