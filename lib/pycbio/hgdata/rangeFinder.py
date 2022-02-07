@@ -231,7 +231,7 @@ class RangeFinder(object):
             yield value
 
     def overlapping(self, seqId, start, end, strand=None):
-        "generator over values overlaping the specified range on seqId, optional strand"
+        "generator over values overlapping the specified range on seqId, optional strand"
         self._checkStrand(strand)
         if self.haveStrand and (strand is None):
             # must check on both strands
@@ -241,6 +241,10 @@ class RangeFinder(object):
             if not self.haveStrand:
                 strand = None  # no strand to check
             return self._overlappingSpecificStrand(seqId, start, end, strand)
+
+    def overlappingByCoords(self, coords):
+        "generator over values overlapping using a Coords object"
+        return self.overlapping(coords.name, coords.start, coords.end, coords.strand)
 
     def _removeIfExists(self, seqId, start, end, value, strand):
         removed = False
