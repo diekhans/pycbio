@@ -109,9 +109,9 @@ class PslBlock(object):
     def reverseComplement(self):
         "construct a block that is the reverse complement of this block"
         return PslBlock(self.psl.qSize - self.qEnd,
-                       self.psl.tSize - self.tEnd, self.size,
-                       (dnaOps.reverseComplement(self.qSeq) if (self.qSeq is not None) else None),
-                       (dnaOps.reverseComplement(self.tSeq) if (self.tSeq is not None) else None))
+                        self.psl.tSize - self.tEnd, self.size,
+                        (dnaOps.reverseComplement(self.qSeq) if (self.qSeq is not None) else None),
+                        (dnaOps.reverseComplement(self.tSeq) if (self.tSeq is not None) else None))
 
     def swapSides(self):
         "construct a block with query and target swapped "

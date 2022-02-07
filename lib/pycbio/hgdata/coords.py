@@ -18,7 +18,7 @@ def reverseRange(start, end, size):
 
 
 def reverseStrand(strand):
-    if strand == None:
+    if strand is None:
         return None
     else:
         return '+' if strand == '-' else '-'
@@ -49,7 +49,7 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         cparts = coordsStr.split(":")
         name = cparts[0]
         if len(cparts) != 2:
-            raise CoordsError(f"range missing, expect chr:start-end")
+            raise CoordsError(f"range missing, expect chr:start-end: '{coordsStr}'")
         rparts = cparts[1].split("-")
         return name, int(rparts[0]), int(rparts[1])
 
