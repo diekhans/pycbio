@@ -11,7 +11,7 @@ def parseArgs():
     desc = """Convert a EMBL files to FASTA"""
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument("--idNM", action='store_true',
-                        help="use NM record (Dfam) for sequence id")
+                        help="use NM record (Dfam) for sequence id.  records without NM fields are dropped")
     parser.add_argument("inEmbl",
                         help="input EMBL, maybe compressed")
     parser.add_argument("outFasta",
@@ -97,9 +97,13 @@ def writeFastaRec(rec, idNM, faFh):
     for line in [seq[i:i + seqWidth] for i in range(0, len(seq), seqWidth)]:
         print(line, file=faFh)
 
+def useRec(idNM, rec):
+    return (not idNM) or (rec.NM is not None)
+
 def emblToFasta(idNM, emblFh, faFh):
     for rec in emblParser(emblFh):
-        writeFastaRec(rec, idNM, faFh)
+        if useRec(idNM, rec):
+            writeFastaRec(rec, idNM, faFh)
 
 def main(opts):
     with fileOps.opengz(opts.inEmbl) as emblFh:
