@@ -1,0 +1,482 @@
+CC   Dfam - A database of transposable element (TE) sequence alignments and HMMs
+CC   Copyright (C) 2021 The Dfam consortium.
+CC   
+CC   Release: Dfam_3.5
+CC   Date   : 2021-10-08
+CC   
+CC   This database is free; you can redistribute it and/or modify it
+CC   as you wish, under the terms of the CC0 1.0 license, a
+CC   'no copyright' license:
+CC   
+CC   The Dfam consortium has dedicated the work to the public domain, waiving
+CC   all rights to the work worldwide under copyright law, including all related
+CC   and neighboring rights, to the extent allowed by law.
+CC   
+CC   You can copy, modify, distribute and perform the work, even for
+CC   commercial purposes, all without asking permission.
+CC   See Other Information below.
+CC   
+CC   
+CC   Other Information
+CC   
+CC   o In no way are the patent or trademark rights of any person affected by
+CC     CC0, nor are the rights that other persons may have in the work or in how
+CC     the work is used, such as publicity or privacy rights.
+CC   o Makes no warranties about the work, and disclaims liability for all uses of the
+CC     work, to the fullest extent permitted by applicable law.
+CC   o When using or citing the work, you should not imply endorsement by the Dfam consortium.
+CC   
+CC   You may also obtain a copy of the CC0 license here:
+CC   http://creativecommons.org/publicdomain/zero/1.0/legalcode
+CC   
+ID   DF0000001; SV 4; linear; DNA; STD; UNC; 262 BP.
+NM   MIR
+XX
+AC   DF0000001;
+XX
+DE   MIR (Mammalian-wide Interspersed Repeat)
+XX
+DR   Repbase; MIR.
+XX
+KW   SINE/MIR.
+XX
+OS   Mammalia
+OC   cellular organisms; Eukaryota; Opisthokonta; Metazoa; Eumetazoa;
+OC   Bilateria; Deuterostomia; Chordata; Craniata <chordates>; Vertebrata
+OC   <vertebrates>; Gnathostomata <vertebrates>; Teleostomi; Euteleostomi;
+OC   Sarcopterygii; Dipnotetrapodomorpha; Tetrapoda; Amniota.
+XX
+RN   [1] (bases 1 to 262)
+RA   Degen SJ, Davie EW;
+RT   Nucleotide sequence of the gene for human prothrombin.
+RL   Biochemistry 1987;26:6165-6177
+XX
+RN   [2] (bases 1 to 262)
+RA   Donehower LA, Slagle BL, Wilde M, Darlington G, Butel JS;
+RT   Identification of a conserved sequence in the noncoding regions of many
+RT   human genes.
+RL   Nucleic Acids Res 1989;17:699-710
+XX
+RN   [3] (bases 1 to 262)
+RA   Jurka J, Zietkiewicz E, Labuda D;
+RT   Ubiquitous mammalian-wide interspersed repeats (MIRs) are molecular
+RT   fossils from the mesozoic era.
+RL   Nucleic Acids Res 1995;23:170-175
+XX
+RN   [4] (bases 1 to 262)
+RA   Smit AF, Riggs AD;
+RT   MIRs are classic, tRNA-derived SINEs that amplified before the mammalian
+RT   radiation.
+RL   Nucleic Acids Res 1995;23:98-102
+XX
+RN   [5] (bases 1 to 262)
+RA   Gilbert N, Labuda D;
+RT   Evolutionary inventions and continuity of CORE-SINEs in mammals.
+RL   J Mol Biol 2000;298:365-377
+XX
+CC   MIR is a pan-mammalian SINE with a 5' end derived from a tRNA, a central
+CC   deeply-conserved CORE region [5], and a 3' terminal ~55bp related to an
+CC   L2 LINE.
+CC
+CC   RepeatMasker Annotations:
+CC        Type: SINE
+CC        SubType: MIR
+CC        Species: Mammalia
+CC        SearchStages: 40,60,65
+CC        BufferStages: 50[1-262]
+XX
+SQ   Sequence 262 BP; 70 A; 54 C; 62 G; 76 T; 0 other;
+     acagtatagc atagtggtta agagcacggg ctctggagcc agactgcctg ggttcgaatc  60
+     ccggctctgc cacttactag ctgtgtgacc ttgggcaagt tacttaacct ctctgtgcct  120
+     cagtttcctc atctgtaaaa tggggataat aatagtacct acctcatagg gttgttgtga  180
+     ggattaaatg agttaataca tgtaaagcgc ttagaacagt gcctggcaca tagtaagcgc  240
+     tcaataaatg ttagctatta tt                                           262
+//
+ID   DF0000002; SV 4; linear; DNA; STD; UNC; 311 BP.
+NM   AluY
+XX
+AC   DF0000002;
+XX
+DE   AluY subfamily
+XX
+DR   Repbase; AluY.
+XX
+KW   SINE/Alu.
+XX
+OS   Primates
+OC   cellular organisms; Eukaryota; Opisthokonta; Metazoa; Eumetazoa;
+OC   Bilateria; Deuterostomia; Chordata; Craniata <chordates>; Vertebrata
+OC   <vertebrates>; Gnathostomata <vertebrates>; Teleostomi; Euteleostomi;
+OC   Sarcopterygii; Dipnotetrapodomorpha; Tetrapoda; Amniota; Mammalia;
+OC   Theria <mammals>; Eutheria; Boreoeutheria; Euarchontoglires.
+XX
+RN   [1] (bases 1 to 311)
+RA   Willard C, Nguyen HT, Schmid CW;
+RT   Existence of at least three distinct Alu subfamilies.
+RL   J Mol Evol 1987;26:180-186
+XX
+RN   [2] (bases 1 to 311)
+RA   Jurka J, Smith T;
+RT   A fundamental division in the Alu family of repeated sequences.
+RL   Proc Natl Acad Sci U S A 1988;85:4775-4778
+XX
+RN   [3] (bases 1 to 311)
+RA   Batzer MA, Kilroy GE, Richard PE, Shaikh TH, Desselle TD, Hoppens CL,
+RA   Deininger PL;
+RT   Structure and variability of recently inserted Alu family members.
+RL   Nucleic Acids Res 1990;18:6793-6798
+XX
+CC   Alu elements derive from a pair of internally-deleted 7SL RNA monomers
+CC   that are joined by an A-rich linker.
+CC
+CC   RepeatMasker Annotations:
+CC        Type: SINE
+CC        SubType: Alu
+CC        Species: Primates
+CC        SearchStages: 35,85
+CC        BufferStages: 
+CC        Refineable
+XX
+SQ   Sequence 311 BP; 91 A; 80 C; 98 G; 42 T; 0 other;
+     ggccgggcgc ggtggctcac gcctgtaatc ccagcacttt gggaggccga ggcgggcgga  60
+     tcacgaggtc aggagatcga gaccatcctg gctaacacgg tgaaaccccg tctctactaa  120
+     aaatacaaaa aattagccgg gcgtggtggc gggcgcctgt agtcccagct actcgggagg  180
+     ctgaggcagg agaatggcgt gaacccggga ggcggagctt gcagtgagcc gagatcgcgc  240
+     cactgcactc cagcctgggc gacagagcga gactccgtct caaaaaaaaa aaaaaaaaaa  300
+     aaaaaaaaaa a                                                       311
+//
+ID   DF0000003; SV 4; linear; DNA; STD; UNC; 309 BP.
+NM   AluSc
+XX
+AC   DF0000003;
+XX
+DE   AluSc subfamily
+XX
+DR   Repbase; AluSc.
+XX
+KW   SINE/Alu.
+XX
+OS   Primates
+OC   cellular organisms; Eukaryota; Opisthokonta; Metazoa; Eumetazoa;
+OC   Bilateria; Deuterostomia; Chordata; Craniata <chordates>; Vertebrata
+OC   <vertebrates>; Gnathostomata <vertebrates>; Teleostomi; Euteleostomi;
+OC   Sarcopterygii; Dipnotetrapodomorpha; Tetrapoda; Amniota; Mammalia;
+OC   Theria <mammals>; Eutheria; Boreoeutheria; Euarchontoglires.
+XX
+RN   [1] (bases 1 to 309)
+RA   Jurka J, Smith T;
+RT   A fundamental division in the Alu family of repeated sequences.
+RL   Proc Natl Acad Sci U S A 1988;85:4775-4778
+XX
+CC   Alu elements derive from a pair of internally-deleted 7SL RNA monomers
+CC   that are joined by an A-rich linker.
+CC
+CC   RepeatMasker Annotations:
+CC        Type: SINE
+CC        SubType: Alu
+CC        Species: Primates
+CC        SearchStages: 85
+CC        BufferStages: 
+XX
+SQ   Sequence 309 BP; 91 A; 80 C; 94 G; 44 T; 0 other;
+     ggccgggcgc ggtggctcac gcctgtaatc ccagcacttt gggaggccga ggcgggcgga  60
+     tcacgaggtc aagagatcga gaccatcctg gccaacatgg tgaaaccccg tctctactaa  120
+     aaatacaaaa attagctggg cgtggtggcg cgcgcctgta gtcccagcta ctcgggaggc  180
+     tgaggcagga gaatcgcttg aacccgggag gcggaggttg cagtgagccg agatcgcgcc  240
+     actgcactcc agcctggcga cagagcgaga ctccgtctca aaaaaaaaaa aaaaaaaaaa  300
+     aaaaaaaaa                                                          309
+//
+ID   DF0000004; SV 4; linear; DNA; STD; UNC; 348 BP.
+NM   Tigger3a
+XX
+AC   DF0000004;
+XX
+DE   TcMar-Tigger DNA transposon, Tigger3a subfamily
+XX
+DR   Repbase; GOLEM_A.
+XX
+KW   DNA/TcMar-Tigger.
+XX
+OS   Primates
+OC   cellular organisms; Eukaryota; Opisthokonta; Metazoa; Eumetazoa;
+OC   Bilateria; Deuterostomia; Chordata; Craniata <chordates>; Vertebrata
+OC   <vertebrates>; Gnathostomata <vertebrates>; Teleostomi; Euteleostomi;
+OC   Sarcopterygii; Dipnotetrapodomorpha; Tetrapoda; Amniota; Mammalia;
+OC   Theria <mammals>; Eutheria; Boreoeutheria; Euarchontoglires.
+XX
+RN   [1] (bases 1 to 348)
+RA   Drinkwater RD, Burgoyne LA, Skinner JD;
+RT   Two human repetitive DNA elements: a new interspersed repeat found in
+RT   the factor IX gene, and a satellite 11 tandem repeat sequence.
+RL   Nucleic Acids Res 1986;14:9541-9541
+XX
+RN   [2] (bases 1 to 348)
+RA   Kaplan DJ, Duncan CH;
+RT   Novel short interspersed repeat in human DNA.
+RL   Nucleic Acids Res 1990;18:192-192
+XX
+RN   [3] (bases 1 to 348)
+RA   Smit AF, Riggs AD;
+RT   Tiggers and DNA transposon fossils in the human genome.
+RL   Proc Natl Acad Sci U S A 1996;93:1443-1448
+XX
+CC   Modified from its former identity as  GOLEM_A (two indels, a few bp
+CC   substitutions). Differences from Tigger3 (formerly GOLEM) and Tigger3b
+CC   (formerly GOLEM_B) also include internal deletions. 23 bp TIR; TA target
+CC   site. Tigger3a was originally a subset of MER7A, but the orientation was
+CC   reversed based on the reconstruction of Tigger3 (or GOLEM) internal
+CC   sequence.
+CC
+CC   RepeatMasker Annotations:
+CC        Type: DNA
+CC        SubType: TcMar-Tigger
+CC        Species: Primates
+CC        SearchStages: 40,50
+CC        BufferStages: 
+XX
+SQ   Sequence 348 BP; 97 A; 78 C; 71 G; 102 T; 0 other;
+     cagtcatgcg ccgcataacg acgtttcggt caacgacgga ccgcatatac gacggtggtc  60
+     ccataagatt ataataccgt atttttactg taccttttct atgtttagat atgtttagat  120
+     acacaaatac ttaccattgt gttacaattg cctacagtat tcagtacagt aacatgctgt  180
+     acaggtttgt agcctaggag caataggcta taccatatag cctaggtgtg tagtaggcta  240
+     taccatctag gtttgtgtaa gtacactcta tgatgttcgc acaacgacga aatcgcctaa  300
+     cgacgcattt ctcagaacgt atccccgtcg ttaagcgacg catgactg               348
+//
+ID   DF0000005; SV 4; linear; DNA; STD; UNC; 355 BP.
+NM   THE1A
+XX
+AC   DF0000005;
+XX
+DE   Long terminal repeat (THE1A subfamily)
+XX
+DR   Repbase; THE1A.
+XX
+KW   Long terminal repeat of retrovirus-like element; THE1A.
+XX
+OS   Simiiformes
+OC   cellular organisms; Eukaryota; Opisthokonta; Metazoa; Eumetazoa;
+OC   Bilateria; Deuterostomia; Chordata; Craniata <chordates>; Vertebrata
+OC   <vertebrates>; Gnathostomata <vertebrates>; Teleostomi; Euteleostomi;
+OC   Sarcopterygii; Dipnotetrapodomorpha; Tetrapoda; Amniota; Mammalia;
+OC   Theria <mammals>; Eutheria; Boreoeutheria; Euarchontoglires; Primates;
+OC   Haplorrhini.
+XX
+RN   [1] (bases 1 to 355)
+RA   Sun L, Paulson KE, Schmid CW, Kadyk L, Leinwand L;
+RT   Non-Alu family interspersed repeats in human DNA and their
+RT   transcriptional activity.
+RL   Nucleic Acids Res 1984;12:2669-2690
+XX
+RN   [2] (bases 1 to 355)
+RA   Paulson KE, Deka N, Schmid CW, Misra R, Schindler CW, Rush MG, Kadyk L,
+RA   Leinwand L;
+RT   A transposon-like element in human DNA.
+RL   Nature 1985;316:359-361
+XX
+RN   [3] (bases 1 to 355)
+RA   Smit AF;
+RT   Identification of a new, abundant superfamily of mammalian LTR-
+RT   transposons.
+RL   Nucleic Acids Res 1993;21:1863-1872
+XX
+CC   The LTR of THE1A retrovirus-like MaLR element. Has 5bp TSDs. This entry
+CC   shows ~90% full-length similarity to THE1B.
+CC
+CC   RepeatMasker Annotations:
+CC        Type: LTR
+CC        SubType: ERVL-MaLR
+CC        Species: Simiiformes
+CC        SearchStages: 40,50
+CC        BufferStages: 
+XX
+SQ   Sequence 355 BP; 71 A; 92 C; 83 G; 109 T; 0 other;
+     tgatatggtt tggctgtgtc cccacccaaa tctcaacttg aattgtatct cccagaattc  60
+     ccacgtgttg tgggagggac ccagggggag gtaattgaat catgggggcc ggtctttccc  120
+     gtgctattct cgtgatagtg aataagtctc acgagatctg atgggtttat caggggtttc  180
+     cgcttttgct tcttcctcat tttcctcttg ccgccgccat gtaagaagtg cctttcgcct  240
+     cccgccatga ttctgaggcc tccccagcca tgtggaactg taagtccaat taaacctctt  300
+     tttcttccca gtctcgggta tgtctttatc agcagcgtga aaacggacta ataca       355
+//
+ID   DF0000006; SV 4; linear; DNA; STD; UNC; 1062 BP.
+NM   Helitron1Na_Mam
+XX
+AC   DF0000006;
+XX
+DE   Helitron DNA transposon, Helitron1Na_Mam subfamily
+XX
+KW   RC/Helitron.
+XX
+OS   Eutheria
+OC   cellular organisms; Eukaryota; Opisthokonta; Metazoa; Eumetazoa;
+OC   Bilateria; Deuterostomia; Chordata; Craniata <chordates>; Vertebrata
+OC   <vertebrates>; Gnathostomata <vertebrates>; Teleostomi; Euteleostomi;
+OC   Sarcopterygii; Dipnotetrapodomorpha; Tetrapoda; Amniota; Mammalia;
+OC   Theria <mammals>.
+XX
+RN   [1] (bases 1 to 1062)
+RA   Kapitonov VV, Jurka J;
+RT   Helitrons on a roll: eukaryotic rolling-circle transposons.
+RL   Trends Genet 2007;23:521-529
+XX
+CC   Helitrons are thought to transpose with a rolling circle mechanism, and
+CC   represent a distinct class of DNA transposon. Helitron1Na_Mam represents
+CC   a non-autonomous helitron fossil found broadly in mammals.
+CC   Helitron1Na_Mam is identical to Helitron1Na_Mam except over the region
+CC   696-859 in "1Na" and 696-913 in "1Nb", where they are unrelated.
+CC
+CC   RepeatMasker Annotations:
+CC        Type: RC
+CC        SubType: Helitron
+CC        Species: Eutheria
+CC        SearchStages: 50
+CC        BufferStages: 
+XX
+SQ   Sequence 1062 BP; 367 A; 177 C; 206 G; 311 T; 1 other;
+     tctatctata taaaatgctt aggtatgttt ccccaaggtt cagctgggcg tggttttcac  60
+     gtgatcactc cagccaatga acgcgcaagc atccagtgat cacgtgaaaa ccacgcctgt  120
+     taatttataa atgttgacac tgacaggtga caggtaggta gtgactgttt ataagaattg  180
+     tatgcgtttc tgagcattta tttacttaat ctttttgaaa ttaancttag aatttctaca  240
+     acgtgtaacg ttaaacacgt gtcacctatt ttgaacttaa tacagtgcat aaaagtgttt  300
+     ataagaattg tatgcgtttc tgagcgttta tttacttaat caaaaatttt atgcgttttg  360
+     agcatttatt tacttaatca aaggtttaaa agttttaaga agtgtaaaaa tggctgaacc  420
+     gtgtgtaaga actctgagaa accgtagaag aaatgctaat gaaacattag aggagagatc  480
+     aaatagacta cgagaccgaa atgaaactct acgacgacga agacggacag agaacattga  540
+     agaaagagaa gaacgattgg aaatgagaag aaaaagagcg aaacgcctag gactaatcaa  600
+     atagaagtac cggatgcgaa taatcaacaa gctgtaatca actgtggaag agcataacat  660
+     aggaaatatg tgttacaact gtgagcactg caatgaactt ggatactgtt ctcataccgc  720
+     gcatacctct cattccatct gatacaaata tgcctttcat attcaaaaga agacagtttc  780
+     ctatacgttt agccttttca atgaccatca acaagtcaca gggacagact tttgacagaa  840
+     tctgcttata ccttccgaaa cctgtattta gtcacggaca actatatgtt gctctctcaa  900
+     gagttcgatc attggactca ttaagtgttg tatctgagaa gaacgagatt gttaattgtg  960
+     tttacaatga aatatatgaa taaataaata aaatgcgtta atattttatt aataactatt  1020
+     aagatctgct agaacggcgt atgttacgcc gggtacagct ag                     1062
+//
+ID   DF0000007; SV 4; linear; DNA; STD; UNC; 312 BP.
+NM   AluJb
+XX
+AC   DF0000007;
+XX
+DE   AluJb subfamily
+XX
+DR   Repbase; AluJb.
+XX
+KW   SINE/Alu.
+XX
+OS   Primates
+OC   cellular organisms; Eukaryota; Opisthokonta; Metazoa; Eumetazoa;
+OC   Bilateria; Deuterostomia; Chordata; Craniata <chordates>; Vertebrata
+OC   <vertebrates>; Gnathostomata <vertebrates>; Teleostomi; Euteleostomi;
+OC   Sarcopterygii; Dipnotetrapodomorpha; Tetrapoda; Amniota; Mammalia;
+OC   Theria <mammals>; Eutheria; Boreoeutheria; Euarchontoglires.
+XX
+CC   Alu elements derive from a pair of internally-deleted 7SL RNA monomers
+CC   that are joined by an A-rich linker. This element is described in
+CC   "Origin and evolution of Alu repetitive  elements", by Jurka J., in
+CC   Molecular Biology Intelligence Unit: The  impact of short interspersed
+CC   elements (SINEs) on the host genome (ed. Richard J. Maraia), R.G.Landes
+CC   Company, Austin, pp.25-41 (1995).
+CC
+CC   RepeatMasker Annotations:
+CC        Type: SINE
+CC        SubType: Alu
+CC        Species: Primates
+CC        SearchStages: 35,85
+CC        BufferStages: 
+CC        Refineable
+XX
+SQ   Sequence 312 BP; 85 A; 83 C; 100 G; 43 T; 1 other;
+     ggccgggcgc ggtggctcac gcctgtaatc ccagcacttt gggaggccga ggcgggngga  60
+     tcgcttgagc ccaggagttc gagaccagcc tgggcaacat ggcgaaaccc cgtctctaca  120
+     aaaaatacaa aaattagccg ggcgtggtgg cgcgcgcctg tagtcccagc tactcgggag  180
+     gctgaggcgg gaggatcgct tgagcccggg aggtcgaggc tgcagtgagc cgtgatcgcg  240
+     ccactgcact ccagcctggg cgacagagcg agaccctgtc tcaaaaaaaa aaaaaaaaaa  300
+     aaaaaaaaaa aa                                                      312
+//
+ID   DF0000008; SV 4; linear; DNA; STD; UNC; 3294 BP.
+NM   L1M5_orf2
+XX
+AC   DF0000008;
+XX
+DE   ORF2 from L1 retrotransposon, L1M5_orf2 subfamily
+XX
+KW   LINE/L1.
+XX
+OS   Metatheria
+OC   cellular organisms; Eukaryota; Opisthokonta; Metazoa; Eumetazoa;
+OC   Bilateria; Deuterostomia; Chordata; Craniata <chordates>; Vertebrata
+OC   <vertebrates>; Gnathostomata <vertebrates>; Teleostomi; Euteleostomi;
+OC   Sarcopterygii; Dipnotetrapodomorpha; Tetrapoda; Amniota; Mammalia;
+OC   Theria <mammals>.
+OS   Eutheria
+OC   cellular organisms; Eukaryota; Opisthokonta; Metazoa; Eumetazoa;
+OC   Bilateria; Deuterostomia; Chordata; Craniata <chordates>; Vertebrata
+OC   <vertebrates>; Gnathostomata <vertebrates>; Teleostomi; Euteleostomi;
+OC   Sarcopterygii; Dipnotetrapodomorpha; Tetrapoda; Amniota; Mammalia;
+OC   Theria <mammals>.
+XX
+CC   Present in eutherians.
+CC
+CC   RepeatMasker Annotations:
+CC        Type: LINE
+CC        SubType: L1
+CC        Species: Metatheria, Eutheria
+CC        SearchStages: 55,75
+CC        BufferStages: 
+XX
+SQ   Sequence 3294 BP; 1458 A; 551 C; 512 G; 713 T; 60 other;
+     atggtagatt taaacccaan catatcaata attacattaa atgtaaatgg nctaaacact  60
+     ccaattaaaa ggcagagatt gtcagactgg ataaaaaaac aagacccaac tatatgctgt  120
+     ctacaagaga cgcactttaa atataaagac acaganaggt tgaaagtaaa aggatggaaa  180
+     aagatatacc atgcaaacac taancaaaag aaagctggng tggctatatt aatatcagac  240
+     aaagtagact tcaaggcaag aaatattacc agagataaag agggacattt cataatgata  300
+     aaagggtcaa ttcatcaaga agacataaca atcctaaatg tgtatgcacc taataacaga  360
+     gcttcaaaat acatgaagca aaaactgaca gaactaaaag gagaaataga caaatccaca  420
+     attatagtng gagattttaa cacncctctc tcagtaattg atagaacaag tagacaaaaa  480
+     atcagtaagg atatagaaga tttgaacaac actatcaacc aacttgacct aattgacatt  540
+     tatagaacac tncacccaac aacngcagaa tacacattct tttcaagtgc acatggaaca  600
+     tttaccaaga tagaccatat nctgggccat aaaacaagtc tcaataaatt tnaaaggatt  660
+     gaaatcatac agagtatgtt ctctgaccac aatggaatta aattagaaat caataacaaa  720
+     aagatancta gaaaatcccc aaatatttgg aaattaaaca acacacttct aaataaccca  780
+     tgggtcaaag aagaaatcac aanggaaatt agaaaatatt ttgaactgaa tganaatgaa  840
+     aatacaacat atcaaaattt gtgggatgca gctaaagcag tgcttagagg gaaatttata  900
+     gcnttaaatg cntatattag aaaagaagaa aggcttaaaa tcaatgatct aagcttccac  960
+     cttaagaagc tagaaaaaga agagcaaatt aaacccaaag naagtagaag gaaggaaata  1020
+     ataaagataa gagcagaaat caatgaaata gaaaacaaan anacaataga gaaaatcaac  1080
+     gaagccaaaa gctggttctt tgaaaagatc aataaaattg ataaacctct agcnagactg  1140
+     atcaagaaaa aaagagagaa gacacaaatt accaatatca ggaatgaaaa aggagacatc  1200
+     actacagatc ctacagacat taaaaggata ataagagaat attatgaaca actttatgcc  1260
+     aataaatttg anaacttaga tgaaatggac aaattccttg aaaaacacaa nttaccaaaa  1320
+     ctgacncaag aagaaataga aaatctgaat agccctatat ctattaaaga aattgaattt  1380
+     gtaattaaaa accttcccac aaagaaaact ccaggcccag atggcttcac tggtgaattc  1440
+     taccaaacat ttaaggaaga aataatacca atcttacaca aactcttcca gaaaatagaa  1500
+     aaagagggaa cacttcccaa ctcattttat gaggccagca tnaccctgat accaaaaccn  1560
+     gacaaagaca ttacaagaaa agaaaattac agaccaatat ccctcatgaa catagatgca  1620
+     aaaatcctna acaaaatatt agcaaatcga atccagcaat atataaaaag gataatacat  1680
+     catgaccaag tggggtttat cccaggaatg caaggttggt ttaacattcg aaaatcaatc  1740
+     aatgtaattc accatattaa cagaataaag gagaaaaatc atatgatcat ctcaatagat  1800
+     gcagaaaaag catttgacaa aattcaacac ccattcatga taaaaactct cagcaaacta  1860
+     ggaatagaag ggaacttcct caacctgata aagggcatct acgaaaaacc tacagcnaac  1920
+     atcatactta atggtgaaan actgaangct ttccccctaa gatcgggaac aagacaagga  1980
+     tgtccgctnt caccacttct attcaacatt gtactggagg tcctagccag tgcaataagg  2040
+     caagaaaaag aaataaaagg cataaagatt ggaaaggaag aaataaaact gtcnttattc  2100
+     gcagatgaca tgattgtnta cgtagaaaat ccnaaagaat ctacaaanaa actactagaa  2160
+     ctaataagtg aatttagcaa ggtcgcngga tacaaggtca atatacaaaa atcaattgta  2220
+     tttctatata ctagcaacaa acaattggaa aatgaaattt naaaaacaat accatttaca  2280
+     atagcatcaa aaaacatnaa atacttagga ataaatctaa caaaanatgt gcaagacctn  2340
+     tacactgaaa actacaaaac attgctgaga gaaattaaag aagacctaaa taaatggaga  2400
+     gatataccat gttcatggat tggaagactc aatattgtna agatgtcaat tctccccaaa  2460
+     ttgatctata gattcaatgc aatcccaatc aaaatcccag caggtttttt tgtagaaatt  2520
+     gacaagctga ttctaaaatt tatatggaaa tgcaaaggac cnagaatagc caaaacaatc  2580
+     ttgaaaaaga agaacaaagt tggaggactt acactaccng atntcaagac ttattataaa  2640
+     gctacagtaa tcaagacagt gtggtattgg cgtaaggata gacaaataga tcaatggaac  2700
+     agaatagaga gtccagaaat agacccacac atatatggnc anttgatttt tgacaaaggt  2760
+     gccaangcaa ttcagtgggg aaaggatagt cttttcaaca aatggtgctg gaacaattgg  2820
+     atatccatat ggaaaaaaat gaanctcgac ccctacctca caccatacac aaaaattaat  2880
+     tcnagatgga tcatagacct aaatgtaaaa gntaaaacta taaaacttct agaagaaaac  2940
+     ataggagaat atcttcgtga ccttgggnta ggcaaagatt tcttaaacag gacacaaaaa  3000
+     gcacnaacca taaaagaaaa aattgataaa ttggactnca tcaaaattaa aaacttctgc  3060
+     tcntcaaaag acaccgttaa gaaaatgaaa aggcaagcca cagantggga gaaaatattt  3120
+     gcaanacata tatctgacaa aggactcgta tccagaatat ataaagaact cctacaantc  3180
+     aataanaaaa agacaaacaa cccaatanaa aaatgggcaa aagacttgaa cagacacttc  3240
+     acaaaagaag atatncaaat ggccaataag cacatgaaaa gatgctcaac ntca        3294
+//

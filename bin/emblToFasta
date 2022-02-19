@@ -1,0 +1,110 @@
+#!/usr/bin/env python3
+
+import sys
+from os import path as osp
+import re
+import argparse
+sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
+from pycbio.sys import fileOps
+
+def parseArgs():
+    desc = """Convert a EMBL files to FASTA"""
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("--idNM", action='store_true',
+                        help="use NM record (Dfam) for sequence id")
+    parser.add_argument("inEmbl",
+                        help="input EMBL, maybe compressed")
+    parser.add_argument("outFasta",
+                        help="output FASTA, may have compression extensions")
+    return parser.parse_args()
+
+# Crude EMBL parser, Neither BioPython EMBL, scikit-bio, or anything else
+# found allow access to all of the record types, which is essential to parse
+# Dfam.  Hence another stupid roll-your-own
+
+class EmblRecord:
+    "minimal features from one EMBL records"
+    def __init__(self):
+        self.ID = self.NM = self.DE = None
+        self.seqLines = []
+
+    def __str__(self):
+        return f"ID: '{self.ID}' NM: '{self.NM}' DE: '{self.DE}' seq: {self.seqLines}"
+
+def _emblParseLine(line, rec):
+    if line[0] == ' ':
+        rec.seqLines.append(line)
+    else:
+        m = re.search("(^[A-Z][A-Z])( +(.*))?$", line)
+        if m is None:
+            raise Exception(f"can't parse EMBL line: '{line}'")
+        if m.group(1) in ("ID", "NM", "DE"):
+            setattr(rec, m.group(1), m.group(3))
+
+def _emblNextRecord(emblFh):
+    "this is not general and only tested on Dfam"
+    rec = EmblRecord()
+    while True:
+        line = emblFh.readline()[0:-1]
+        if len(line) == 0:
+            return None
+        if line == '//':
+            break
+        _emblParseLine(line, rec)
+    return rec
+
+def emblParser(emblFh):
+    """very crude EMBL parser"""
+    while True:
+        rec = _emblNextRecord(emblFh)
+        if rec is None:
+            break
+        yield rec
+
+def emblGetAccVersion(rec):
+    # DF0000001; SV 4; linear; DNA; STD; UNC; 262 BP.
+    m = re.search("^([^;]+); SV ([0-9]+);", rec.ID)
+    if m is None:
+        raise Exception(f"can't parse EMBL ID record: '{rec.ID}")
+    return m.group(1) + '.' + m.group(2)
+
+def emblAccHeader(rec):
+    "fasta header with acc.version as id"
+    header = emblGetAccVersion(rec)
+    if rec.DE is not None:
+        header += " " + rec.DE
+    return header
+
+def emblNameHeader(rec):
+    "fasta header with NM as id"
+    header = rec.NM + " " + emblGetAccVersion(rec)
+    if rec.DE is not None:
+        header += " " + rec.DE
+    return header
+
+def emblGetSeq(rec):
+    return "".join([m.group() for sl in rec.seqLines
+                    for m in re.finditer("(([A-Za-z]+){1,})", sl)])
+
+def writeFastaRec(rec, idNM, faFh):
+    seqWidth = 60
+    if idNM:
+        header = emblNameHeader(rec)
+    else:
+        header = emblAccHeader(rec)
+    seq = emblGetSeq(rec)
+    print('>', header, sep='', file=faFh)
+    for line in [seq[i:i + seqWidth] for i in range(0, len(seq), seqWidth)]:
+        print(line, file=faFh)
+
+def emblToFasta(idNM, emblFh, faFh):
+    for rec in emblParser(emblFh):
+        writeFastaRec(rec, idNM, faFh)
+
+def main(opts):
+    with fileOps.opengz(opts.inEmbl) as emblFh:
+        with fileOps.opengz(opts.outFasta, "w") as faFh:
+            emblToFasta(opts.idNM, emblFh, faFh)
+
+
+main(parseArgs())

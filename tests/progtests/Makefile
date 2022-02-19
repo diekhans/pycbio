@@ -1,7 +1,7 @@
 root = ../..
 include ${root}/defs.mk
 
-subdirs = gbff geneCheck ncbi csvToTsv bedToCdsBed pslLoadSqlLite
+subdirs = gbff geneCheck ncbi csvToTsv bedToCdsBed pslLoadSqlLite conversion
 # FIXME: not done: vennChart
 
 all:
