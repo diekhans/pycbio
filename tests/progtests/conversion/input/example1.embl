@@ -11,3 +11,10 @@ SQ Sequence 237 BP; 41 A; 77 C; 67 G; 52 T; 0 other;
    ccccccgggc ccgtgcccgc cggagacccc aacacgaaca ctgtctgaaa gcgtgcagtc 180
    tgagttgatt gaatgcaatc agttaaaact ttcaacaatg gatctcttgg ttccggc 237
 //
+ID   (AAAATAACG)n     repeatmasker; DNA;  ???;  117 BP.
+CC   consensus - See RepBase for additional annotations.
+XX
+SQ   Sequence 117 BP; 78 A; 13 C; 13 G; 13 T; 0 other;
+     aaaataacga aaataacgaa aataacgaaa ataacgaaaa taacgaaaat aacgaaaata   60
+     acgaaaataa cgaaaataac gaaaataacg aaaataacga aaataacgaa aataacg      117
+//

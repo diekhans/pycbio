@@ -72,6 +72,11 @@ def emblGetId(rec):
     if m is not None:
         return m.group(1)
 
+    # (AAAATAACG)n     repeatmasker; DNA;  ???;  117 BP.
+    m = re.search("^([^\\s;]+).+$", rec.ID)
+    if m is not None:
+        return m.group(1)
+
     raise Exception(f"can't parse EMBL ID record: '{rec.ID}")
 
 def emblAccHeader(rec):
