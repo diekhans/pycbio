@@ -1,0 +1,13 @@
+ID AA03518 standard; DNA; FUN; 237 BP.
+XX
+AC U03518;
+XX
+DE Aspergillus awamori internal transcribed spacer 1 (ITS1) and 18S
+DE rRNA and 5.8S rRNA genes, partial sequence.
+XX
+SQ Sequence 237 BP; 41 A; 77 C; 67 G; 52 T; 0 other;
+   aacctgcgga aggatcatta ccgagtgcgg gtcctttggg cccaacctcc catccgtgtc 60
+   tattgtaccc tgttgcttcg gcgggcccgc cgcttgtcgg ccgccggggg ggcgcctctg 120 
+   ccccccgggc ccgtgcccgc cggagacccc aacacgaaca ctgtctgaaa gcgtgcagtc 180
+   tgagttgatt gaatgcaatc agttaaaact ttcaacaatg gatctcttgg ttccggc 237
+//

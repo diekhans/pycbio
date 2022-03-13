@@ -61,23 +61,29 @@ def emblParser(emblFh):
             break
         yield rec
 
-def emblGetAccVersion(rec):
+def emblGetId(rec):
     # DF0000001; SV 4; linear; DNA; STD; UNC; 262 BP.
     m = re.search("^([^;]+); SV ([0-9]+);", rec.ID)
-    if m is None:
-        raise Exception(f"can't parse EMBL ID record: '{rec.ID}")
-    return m.group(1) + '.' + m.group(2)
+    if m is not None:
+        return m.group(1) + '.' + m.group(2)
+
+    # AA03518 standard; DNA; FUN; 237 BP.
+    m = re.search("^(\w+).+$", rec.ID)
+    if m is not None:
+        return m.group(1)
+
+    raise Exception(f"can't parse EMBL ID record: '{rec.ID}")
 
 def emblAccHeader(rec):
     "fasta header with acc.version as id"
-    header = emblGetAccVersion(rec)
+    header = emblGetId(rec)
     if rec.DE is not None:
         header += " " + rec.DE
     return header
 
 def emblNameHeader(rec):
     "fasta header with NM as id"
-    header = rec.NM + " " + emblGetAccVersion(rec)
+    header = rec.NM + " " + emblGetId(rec)
     if rec.DE is not None:
         header += " " + rec.DE
     return header
