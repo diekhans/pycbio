@@ -68,7 +68,7 @@ def emblGetId(rec):
         return m.group(1) + '.' + m.group(2)
 
     # AA03518 standard; DNA; FUN; 237 BP.
-    m = re.search("^(\w+).+$", rec.ID)
+    m = re.search("^(\\w+).+$", rec.ID)
     if m is not None:
         return m.group(1)
 

@@ -45,24 +45,28 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         return super(Coords, cls).__new__(cls, name, _intOrNone(start), _intOrNone(end), strand, _intOrNone(size))
 
     @classmethod
-    def _parse_parts(cls, coordsStr, size):
+    def _parse_parts(cls, coordsStr, size, oneBased):
         cparts = coordsStr.split(":")
         name = cparts[0]
         if len(cparts) != 2:
             raise CoordsError(f"range missing, expect chr:start-end: '{coordsStr}'")
-        start, end = cparts[1].split("-")
-        return name, int(start.replace(',', '')), int(end.replace(',', ''))
+        startStr, endStr = cparts[1].split("-")
+        start = int(startStr.replace(',', ''))
+        if oneBased:
+            start -= 1
+        end = int(endStr.replace(',', ''))
+        return name, start, end
 
     @classmethod
-    def parse(cls, coordsStr, strand=None, size=None):
+    def parse(cls, coordsStr, strand=None, size=None, oneBased=False):
         """Construct an object from genome browser 'name:start-end' or 'name".
         If only a simple names is specified without a size, the range
         will be None..None, with a size it will be 0..size.  Commas in numbers
-        are removed."""
+        are removed. If one-based is True, it the value be convert zero-base, 1/2 open"""
         try:
             if strand not in ('+', '-', None):
                 raise CoordsError(f"invalid strand: '{strand}'")
-            name, start, end = cls._parse_parts(coordsStr, size)
+            name, start, end = cls._parse_parts(coordsStr, size, oneBased)
             return Coords(name, start, end, strand, size)
         except Exception as ex:
             raise CoordsError(f"invalid coordinates: '{coordsStr}'") from ex
