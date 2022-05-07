@@ -50,14 +50,15 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         name = cparts[0]
         if len(cparts) != 2:
             raise CoordsError(f"range missing, expect chr:start-end: '{coordsStr}'")
-        rparts = cparts[1].split("-")
-        return name, int(rparts[0]), int(rparts[1])
+        start, end = cparts[1].split("-")
+        return name, int(start.replace(',', '')), int(end.replace(',', ''))
 
     @classmethod
     def parse(cls, coordsStr, strand=None, size=None):
         """Construct an object from genome browser 'name:start-end' or 'name".
         If only a simple names is specified without a size, the range
-        will be None..None, with a size it will be 0..size"""
+        will be None..None, with a size it will be 0..size.  Commas in numbers
+        are removed."""
         try:
             if strand not in ('+', '-', None):
                 raise CoordsError(f"invalid strand: '{strand}'")

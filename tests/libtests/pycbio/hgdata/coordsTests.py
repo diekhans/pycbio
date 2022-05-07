@@ -16,6 +16,11 @@ class CoordsTests(TestCaseBase):
         self.assertEqual(c.start, 10000)
         self.assertEqual(c.end, 20000)
 
+        c = Coords.parse("chr22:10,000-20,000")
+        self.assertEqual(c.name, "chr22")
+        self.assertEqual(c.start, 10000)
+        self.assertEqual(c.end, 20000)
+
     def testCoordsSimple(self):
         c = Coords("chr22", 10000, 20000)
         self.assertEqual(c.name, "chr22")
