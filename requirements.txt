@@ -1,7 +1,6 @@
 pipettor>=0.5.0
 numpy
 biopython
-enum-compat
 mysqlclient
 apsw
 deprecation
