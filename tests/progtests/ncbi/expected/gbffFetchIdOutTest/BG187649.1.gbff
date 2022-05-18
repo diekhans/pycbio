@@ -1,0 +1,58 @@
+LOCUS       BG187649                 790 bp    mRNA    linear   EST 29-JAN-2011
+DEFINITION  RST6530 Athersys RAGE Library Homo sapiens cDNA, mRNA sequence.
+ACCESSION   BG187649
+VERSION     BG187649.1
+DBLINK      BioSample: SAMN00163181
+KEYWORDS    EST.
+SOURCE      Homo sapiens (human)
+  ORGANISM  Homo sapiens
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+            Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini;
+            Catarrhini; Hominidae; Homo.
+REFERENCE   1  (bases 1 to 790)
+  AUTHORS   Harrington,J.J., Sherf,B., Rundlett,S., Jackson,P.D., Perry,R.,
+            Cain,S., Leventhal,C., Thornton,M., Ramachandran,R.,
+            Whittington,J., Lerner,L., Costanzo,D., McElligott,K., Boozer,S.,
+            Mays,R., Smith,E., Veloso,N., Klika,A., Hess,J., Cothren,K., Lo,K.,
+            Offenbacher,J., Danzig,J. and Ducar,M.
+  TITLE     Creation of genome-wide protein expression libraries using random
+            activation of gene expression
+  JOURNAL   Nat. Biotechnol. 19 (5), 440-445 (2001)
+   PUBMED   11329013
+COMMENT     Contact: Scott J. Cain
+            Athersys, Inc.
+            3201 Carnegie Ave, Cleveland, OH 44115, USA
+            Tel: 216 431 9900
+            Fax: 216 361 9596
+            Email: scain@athersys.com
+            High quality sequence stop: 403.
+FEATURES             Location/Qualifiers
+     source          1..790
+                     /organism="Homo sapiens"
+                     /mol_type="mRNA"
+                     /db_xref="taxon:9606"
+                     /cell_line="HT1080"
+                     /clone_lib="SAMN00163181 Athersys RAGE Library"
+                     /note="See 'Creation of Genome-wide Protein Expression
+                     Libraries using Random Activation of Gene Expression',
+                     Nature Biotechnology, in press. Note that even though the
+                     cell type indicated is HT1080, since a random activation
+                     method was used, these sequence tags are not necessarily
+                     expressed in HT1080 under normal circumstances."
+ORIGIN      
+        1 tgcccagatc catcttgtaa acaggacttg ttggcctacc tggaacagat taagttctac
+       61 tcccaccaac tgaaaatctg cagtcaagtt aaagctgaga tccagaacct gggaggagag
+      121 ctcatcatgt cagctttgga cagtgtcaca tccctgatcc aagcagccaa aaatttaatg
+      181 aatgctgtag tgcaaacagt gaaaatgtct tacattgcct caaccaagat catccgaatc
+      241 cagagtcctg ctgggccccg gcacccagtt gtgatgtgga gaatgaaggc tcctgcaaaa
+      301 aaacccttga ttaaaagaga gaagccagag gaaacgtgtg cagctgtcag acgaggctca
+      361 gcaaagaaaa aaatccatcc attgcaagtc atgagtgaat ttagaggaag acaaatctac
+      421 tgaaaccact attctacata tagtgcctat atgacaaaat cctgcctaac cacactgctt
+      481 tattttacac ttaagaagtt ctgtaatttc actgagtttt ggtgtttaac tcacaaataa
+      541 cataaaatat tgggcgctaa atcaacaaaa gcaatatata tttgggatca tatcactgtc
+      601 atttctgtat ggtcagcacc ctatagttaa ggaatatttg cttgttgaat gaatgaaatt
+      661 atcacgtgtt attcaccgtt tcccataata gagattatct actattcgtt accaaataaa
+      721 cacaggagat ggcagagagt ccggtttatc tggaatcttc atgtacctta taatccttac
+      781 ttgaattaan
+//
+

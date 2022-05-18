@@ -1,0 +1,519 @@
+LOCUS       NM_013266              10710 bp    mRNA    linear   PRI 21-OCT-2018
+DEFINITION  Homo sapiens catenin alpha 3 (CTNNA3), transcript variant 1, mRNA.
+ACCESSION   NM_013266
+VERSION     NM_013266.3
+KEYWORDS    RefSeq.
+SOURCE      Homo sapiens (human)
+  ORGANISM  Homo sapiens
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+            Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini;
+            Catarrhini; Hominidae; Homo.
+REFERENCE   1  (bases 1 to 10710)
+  AUTHORS   De Bortoli M, Calore C, Lorenzon A, Calore M, Poloni G, Mazzotti E,
+            Rigato I, Marra MP, Melacini P, Iliceto S, Thiene G, Basso C,
+            Daliento L, Corrado D, Rampazzo A and Bauce B.
+  TITLE     Co-inheritance of mutations associated with arrhythmogenic
+            cardiomyopathy and hypertrophic cardiomyopathy
+  JOURNAL   Eur. J. Hum. Genet. 25 (10), 1165-1169 (2017)
+   PUBMED   28699631
+  REMARK    GeneRIF: Double MYH7 CTTNA3 heterozygotes showed a variable
+            clinical expression of arrhythmogenic cardiomyopathy and
+            hypertrophic cardiomyopathy.  One carrier of double mutations in
+            CTTNA3 and MYH7 genes did not fulfill the current diagnostic
+            criteria for cardiomyopathy.
+REFERENCE   2  (bases 1 to 10710)
+  AUTHORS   Muller SH, Girard SL, Hopfner F, Merner ND, Bourassa CV, Lorenz D,
+            Clark LN, Tittmann L, Soto-Ortolaza AI, Klebe S, Hallett M,
+            Schneider SA, Hodgkinson CA, Lieb W, Wszolek ZK, Pendziwiat M,
+            Lorenzo-Betancor O, Poewe W, Ortega-Cubero S, Seppi K, Rajput A,
+            Hussl A, Rajput AH, Berg D, Dion PA, Wurster I, Shulman JM,
+            Srulijes K, Haubenberger D, Pastor P, Vilarino-Guell C, Postuma RB,
+            Bernard G, Ladwig KH, Dupre N, Jankovic J, Strauch K, Panisset M,
+            Winkelmann J, Testa CM, Reischl E, Zeuner KE, Ross OA, Arzberger T,
+            Chouinard S, Deuschl G, Louis ED, Kuhlenbaumer G and Rouleau GA.
+  TITLE     Genome-wide association study in essential tremor identifies three
+            new loci
+  JOURNAL   Brain 139 (Pt 12), 3163-3169 (2016)
+   PUBMED   27797806
+  REMARK    GeneRIF: CTNNA3 association with essential tremor.
+REFERENCE   3  (bases 1 to 10710)
+  AUTHORS   Stahn V, Nagel I, Fischer-Huchzermeyer S, Oyen F, Schneppenheim R,
+            Gesk S, Bohring A, Chikobava L, Young P, Gess B, Werner M, Senner V
+            and Harder A.
+  TITLE     Molecular Analysis of Hybrid Neurofibroma/Schwannoma Identifies
+            Common Monosomy 22 and alpha-T-Catenin/CTNNA3 as a Novel Candidate
+            Tumor Suppressor
+  JOURNAL   Am. J. Pathol. 186 (12), 3285-3296 (2016)
+   PUBMED   27765635
+  REMARK    GeneRIF: The functional investigations might indicate involvement
+            of alpha-T-catenin/CTNNA3 in the biology of peripheral nerve sheath
+            tumors.
+REFERENCE   4  (bases 1 to 10710)
+  AUTHORS   Gao L, Zhang Y, Deng J, Yu W and Yu Y.
+  TITLE     Polymorphisms of CHAT but not TFAM or VR22 are Associated with
+            Alzheimer Disease Risk
+  JOURNAL   Med. Sci. Monit. 22, 1924-1935 (2016)
+   PUBMED   27272392
+  REMARK    GeneRIF: We conducted a meta-analysis of studies involving CHAT,
+            TFAM, and VR22 polymorphisms and Alzheimer disease susceptibility.
+            For TFAM and VR22, no significant association was detected in
+            studied single-nucleotide polymorphisms (SNPs). Rs10997691 and
+            rs7070570 of VR22 are not significantly associated with AD risk.
+            Publication Status: Online-Only
+REFERENCE   5  (bases 1 to 10710)
+  AUTHORS   van Hengel J, Calore M, Bauce B, Dazzo E, Mazzotti E, De Bortoli M,
+            Lorenzon A, Li Mura IE, Beffagna G, Rigato I, Vleeschouwers M,
+            Tyberghein K, Hulpiau P, van Hamme E, Zaglia T, Corrado D, Basso C,
+            Thiene G, Daliento L, Nava A, van Roy F and Rampazzo A.
+  TITLE     Mutations in the area composita protein alphaT-catenin are
+            associated with arrhythmogenic right ventricular cardiomyopathy
+  JOURNAL   Eur. Heart J. 34 (3), 201-210 (2013)
+   PUBMED   23136403
+  REMARK    GeneRIF: Results suggest a causal relationship between CTNNA3
+            mutations and arrhythmogenic right ventricular cardiomyopathy
+REFERENCE   6  (bases 1 to 10710)
+  AUTHORS   Vanpoucke G, Goossens S, De Craene B, Gilbert B, van Roy F and Berx
+            G.
+  TITLE     GATA-4 and MEF2C transcription factors control the tissue-specific
+            expression of the alphaT-catenin gene CTNNA3
+  JOURNAL   Nucleic Acids Res. 32 (14), 4155-4165 (2004)
+   PUBMED   15302915
+  REMARK    GeneRIF: GATA-4 and MEF2C transcription factors transactivate the
+            alphaT-catenin gene CTNNA3 in a tissue-specific manner.
+            Publication Status: Online-Only
+REFERENCE   7  (bases 1 to 10710)
+  AUTHORS   Busby V, Goossens S, Nowotny P, Hamilton G, Smemo S, Harold D,
+            Turic D, Jehu L, Myers A, Womick M, Woo D, Compton D, Doil LM,
+            Tacey KM, Lau KF, Al-Saraj S, Killick R, Pickering-Brown S, Moore
+            P, Hollingworth P, Archer N, Foy C, Walter S, Lendon C, Iwatsubo T,
+            Morris JC, Norton J, Mann D, Janssens B, Hardy J, O'Donovan M,
+            Jones L, Williams J, Holmans P, Owen MJ, Grupe A, Powell J, van
+            Hengel J, Goate A, Van Roy F and Lovestone S.
+  TITLE     Alpha-T-catenin is expressed in human brain and interacts with the
+            Wnt signaling pathway but is not responsible for linkage to
+            chromosome 10 in Alzheimer's disease
+  JOURNAL   Neuromolecular Med. 5 (2), 133-146 (2004)
+   PUBMED   15075440
+  REMARK    GeneRIF: We found no association between CTNNA3 and Alzheimer
+            disease in subjects showing linkage to chromosome 10, nor were
+            these SNPs associated with Abeta deposition in brain. CTNNA3 is
+            unlikely to account for the susceptibility locus on chromosome 10
+REFERENCE   8  (bases 1 to 10710)
+  AUTHORS   Ertekin-Taner N, Ronald J, Asahara H, Younkin L, Hella M, Jain S,
+            Gnida E, Younkin S, Fadale D, Ohyagi Y, Singleton A, Scanlin L, de
+            Andrade M, Petersen R, Graff-Radford N, Hutton M and Younkin S.
+  TITLE     Fine mapping of the alpha-T catenin gene to a quantitative trait
+            locus on chromosome 10 in late-onset Alzheimer's disease pedigrees
+  JOURNAL   Hum. Mol. Genet. 12 (23), 3133-3143 (2003)
+   PUBMED   14559775
+  REMARK    GeneRIF: Alpha-T catenin gene has variants which influence Abeta42
+            and contribute to the previously reported linkage for plasma
+            Abeta42 in late-onset Alzheimer's disease families.
+REFERENCE   9  (bases 1 to 10710)
+  AUTHORS   Janssens B, Mohapatra B, Vatta M, Goossens S, Vanpoucke G, Kools P,
+            Montoye T, van Hengel J, Bowles NE, van Roy F and Towbin JA.
+  TITLE     Assessment of the CTNNA3 gene encoding human alpha T-catenin
+            regarding its involvement in dilated cardiomyopathy
+  JOURNAL   Hum. Genet. 112 (3), 227-236 (2003)
+   PUBMED   12596047
+  REMARK    GeneRIF: gene localized on chromosome 10q21 and is 1,776 kb in
+            length; mutation screening of all 18 exons of the CTNNA3 gene in a
+            family showing dilated cardiomyopathy (DCM)linkage to the 10q21-q23
+            locus, however, has not detected any DCM-linked CTNNA3 mutations
+REFERENCE   10 (bases 1 to 10710)
+  AUTHORS   Janssens B, Goossens S, Staes K, Gilbert B, van Hengel J, Colpaert
+            C, Bruyneel E, Mareel M and van Roy F.
+  TITLE     alphaT-catenin: a novel tissue-specific beta-catenin-binding
+            protein mediating strong cell-cell adhesion
+  JOURNAL   J. Cell. Sci. 114 (Pt 17), 3177-3188 (2001)
+   PUBMED   11590244
+COMMENT     REVIEWED REFSEQ: This record has been curated by NCBI staff. The
+            reference sequence was derived from AK313882.1, AF091606.1,
+            AC018979.9 and BX103986.1.
+            This sequence is a reference standard in the RefSeqGene project.
+            [WARNING] On Nov 22, 2018 this sequence was replaced by
+            NM_013266.4.
+            On Mar 27, 2014 this sequence version replaced NM_013266.2.
+            
+            Summary: This gene encodes a protein that belongs to the
+            vinculin/alpha-catenin family. The encoded protein plays a role in
+            cell-cell adhesion in muscle cells. Mutations in this gene are
+            associated with arrhythmogenic right ventricular dysplasia,
+            familial 13. Alternative splicing results in multiple transcript
+            variants. [provided by RefSeq, Mar 2014].
+            
+            Transcript Variant: This variant (1) represents the longest
+            transcript and encodes the longer isoform (a). Variants 1 and 2
+            encode the same protein.
+            
+            Sequence Note: This RefSeq record was created from transcript and
+            genomic sequence data to make the sequence consistent with the
+            reference genome assembly. The genomic coordinates used for the
+            transcript record were based on transcript alignments.
+            
+            Publication Note:  This RefSeq record includes a subset of the
+            publications that are available for this gene. Please see the Gene
+            record to access additional publications.
+            
+            ##Evidence-Data-START##
+            Transcript exon combination :: AF091606.1, AK313882.1 [ECO:0000332]
+            RNAseq introns              :: mixed/partial sample support
+                                           SAMEA1966682, SAMEA1968540
+                                           [ECO:0000350]
+            ##Evidence-Data-END##
+            COMPLETENESS: complete on the 3' end.
+PRIMARY     REFSEQ_SPAN         PRIMARY_IDENTIFIER PRIMARY_SPAN        COMP
+            1-22                AK313882.1         3-24
+            23-674              AF091606.1         1-652
+            675-731             AK313882.1         678-734
+            732-3042            AF091606.1         710-3020
+            3043-10254          AC018979.9         144071-151282       c
+            10255-10710         BX103986.1         1-456               c
+FEATURES             Location/Qualifiers
+     source          1..10710
+                     /organism="Homo sapiens"
+                     /mol_type="mRNA"
+                     /db_xref="taxon:9606"
+                     /chromosome="10"
+                     /map="10q21.3"
+     gene            1..10710
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /note="catenin alpha 3"
+                     /db_xref="GeneID:29119"
+                     /db_xref="HGNC:HGNC:2511"
+                     /db_xref="MIM:607667"
+     exon            1..192
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:2.1.0"
+     misc_feature    159..161
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /note="upstream in-frame stop codon"
+     exon            193..296
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:2.1.0"
+     CDS             198..2885
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /note="isoform a is encoded by transcript variant 1;
+                     alpha-catenin-like protein; alpha-T-catenin; catenin
+                     (cadherin-associated protein), alpha 3"
+                     /codon_start=1
+                     /product="catenin alpha-3 isoform a"
+                     /protein_id="NP_037398.2"
+                     /db_xref="CCDS:CCDS7269.1"
+                     /db_xref="GeneID:29119"
+                     /db_xref="HGNC:HGNC:2511"
+                     /db_xref="MIM:607667"
+                     /translation="MSAETPITLNIDPQDLQVQTFTVEKLLEPLIIQVTTLVNCPQNP
+                     SSRKKGRSKRASVLLASVEEATWNLLDKGEKIAQEATVLKDELTASLEEVRKESEALK
+                     VSAERFTDDPCFLPKREAVVQAARALLAAVTRLLILADMIDVMCLLQHVSAFQRTFES
+                     LKNVANKSDLQKTYQKLGKELENLDYLAFKRQQDLKSPNQRDEIAGARASLKENSPLL
+                     HSICSACLEHSDVASLKASKDTVCEEIQNALNVISNASQGIQNMTTPPEPQAATLGSA
+                     LDELENLIVLNPLTVTEEEIRPSLEKRLEAIISGAALLADSSCTRDLHRERIIAECNA
+                     IRQALQDLLSEYMNNAGKKERSNTLNIALDNMCKKTRDLRRQLRKAIIDHVSDSFLDT
+                     TVPLLVLIEAAKNGREKEIKEYAAIFHEHTSRLVEVANLACSMSTNEDGIKIVKIAAN
+                     HLETLCPQIINAALALAARPKSQAVKNTMEMYKRTWENHIHVLTEAVDDITSIDDFLA
+                     VSESHILEDVNKCIIALRDQDADNLDRAAGAIRGRAARVAHIVTGEMDSYEPGAYTEG
+                     VMRNVNFLTSTVIPEFVTQVNVALEALSKSSLNVLDDNQFVDISKKIYDTIHDIRCSV
+                     MMIRTPEELEDVSDLEEEHEVRSHTSIQTEGKTDRAKMTQLPEAEKEKIAEQVADFKK
+                     VKSKLDAEIEIWDDTSNDIIVLAKNMCMIMMEMTDFTRGKGPLKHTTDVIYAAKMISE
+                     SGSRMDVLARQIANQCPDPSCKQDLLAYLEQIKFYSHQLKICSQVKAEIQNLGGELIM
+                     SALDSVTSLIQAAKNLMNAVVQTVKMSYIASTKIIRIQSPAGPRHPVVMWRMKAPAKK
+                     PLIKREKPEETCAAVRRGSAKKKIHPLQVMSEFRGRQIY"
+     misc_feature    363..365
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /experiment="experimental evidence, no additional details
+                     recorded"
+                     /note="Phosphoserine. {ECO:0000244|PubMed:24275569};
+                     propagated from UniProtKB/Swiss-Prot (Q9UI47.2); other
+                     site"
+     misc_feature    675..677
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /experiment="experimental evidence, no additional details
+                     recorded"
+                     /note="Phosphoserine. {ECO:0000250|UniProtKB:Q65CL1};
+                     propagated from UniProtKB/Swiss-Prot (Q9UI47.2); other
+                     site"
+     misc_feature    2106..2108
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /experiment="experimental evidence, no additional details
+                     recorded"
+                     /note="Phosphoserine. {ECO:0000244|PubMed:18318008,
+                     ECO:0000244|PubMed:24275569}; propagated from
+                     UniProtKB/Swiss-Prot (Q9UI47.2); other site"
+     misc_feature    2136..2138
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /experiment="experimental evidence, no additional details
+                     recorded"
+                     /note="Phosphoserine. {ECO:0000250|UniProtKB:Q65CL1};
+                     propagated from UniProtKB/Swiss-Prot (Q9UI47.2); other
+                     site"
+     misc_feature    2142..2144
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /experiment="experimental evidence, no additional details
+                     recorded"
+                     /note="Phosphothreonine. {ECO:0000250|UniProtKB:Q65CL1};
+                     propagated from UniProtKB/Swiss-Prot (Q9UI47.2); other
+                     site"
+     exon            297..489
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:2.1.0"
+     exon            490..656
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:2.1.0"
+     exon            657..776
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:2.1.0"
+     exon            777..1040
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:2.1.0"
+     exon            1041..1244
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:2.1.0"
+     exon            1245..1325
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:2.1.0"
+     exon            1326..1478
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:2.1.0"
+     exon            1479..1571
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:2.1.0"
+     exon            1572..1728
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:2.1.0"
+     exon            1729..1929
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:2.1.0"
+     exon            1930..2081
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2082..2174
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2175..2356
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2357..2462
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2463..2597
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:2.1.0"
+     exon            2598..10697
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+                     /inference="alignment:Splign:2.1.0"
+     regulatory      10666..10671
+                     /regulatory_class="polyA_signal_sequence"
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+     polyA_site      10697
+                     /gene="CTNNA3"
+                     /gene_synonym="ARVD13; VR22"
+ORIGIN      
+        1 tttctttctt atcctgggtg aacaacgctc agcgaaattg actgccccac tgtcatctgc
+       61 ctctcaattt ggtactctgt aactctgtga ccaccaagaa gcctttttcc gtcccccaca
+      121 aagctctttt tggaaaattc cctacgggag ctgaatttta agcccattta ctttatagga
+      181 agaaacagaa aggcagcatg tcagctgaaa caccaatcac attgaatatc gatcctcagg
+      241 atctgcaggt ccaaacattc accgtggaga agctactgga gcctctcata atccaggtta
+      301 ccacacttgt aaactgtccc cagaaccctt ccagcaggaa aaaaggacgt tcgaaaagag
+      361 ccagtgtcct tctagcttct gtggaggaag caacttggaa tttattagac aagggagaga
+      421 agattgccca ggaagctaca gttttaaagg atgagcttac ggcttcactt gaggaagttc
+      481 gcaaagaaag tgaagctctg aaagtatcag ctgagagatt tacagatgac ccctgttttc
+      541 tcccaaaaag ggaggctgtg gttcaagctg cccgtgcctt gctggctgcg gtgacgagac
+      601 tccttatcct tgcggacatg attgatgtca tgtgcctctt gcaacatgtg tcagcttttc
+      661 aaaggacatt tgagtctctc aaaaatgttg ccaacaaatc tgacctccag aaaacctacc
+      721 agaagcttgg gaaggagctg gaaaatttgg attatttagc cttcaaacgt cagcaggact
+      781 taaaatctcc aaatcagaga gatgaaattg caggagcccg agcttcactg aaggagaact
+      841 ctcccctctt gcattcaatt tgttcagctt gtttggagca ttctgatgtt gcttccctca
+      901 aagcaagcaa ggacacagtt tgtgaagaaa ttcagaatgc tctcaatgta atttcaaatg
+      961 cttcacaagg gatccagaat atgacaaccc caccagaacc tcaggcagca accctgggaa
+     1021 gtgcccttga tgagctggag aatttaattg tcctgaatcc actcacagta actgaggagg
+     1081 aaatacgacc atcactagag aaacgccttg aagccattat cagtggggct gctctgctgg
+     1141 cggattcttc atgtacgagg gacttacacc gagagcggat tatcgcagaa tgcaacgcca
+     1201 ttcgccaggc tcttcaggat ctgctttcag agtacatgaa caacgctgga aaaaaagaaa
+     1261 ggagtaatac cctgaatatt gctttagaca acatgtgtaa gaagacaaga gaccttcgca
+     1321 gacagctccg caaggctatt atagatcatg tgtcagactc tttcctggat acgacagtcc
+     1381 ctcttttggt tctcattgaa gctgctaaga atggccggga aaaggaaata aaagaatatg
+     1441 ctgcgatatt tcatgaacac accagcaggc ttgtagaggt ggcaaatctt gcttgttcca
+     1501 tgtcaacaaa tgaagatgga attaaaattg tcaaaattgc agccaatcat ttggaaacct
+     1561 tgtgtccaca gattattaat gctgcacttg ctttggctgc aagacccaaa agtcaagcgg
+     1621 tcaaaaacac catggaaatg tacaagcgta catgggagaa tcatatacat gtcctcactg
+     1681 aagccgtaga tgacattaca agcattgatg acttccttgc tgtatctgaa agccatatct
+     1741 tggaagatgt caacaagtgt atcatagcct taagagacca ggatgctgat aatttagacc
+     1801 gtgctgcggg tgctatcaga ggccgggcag caagagttgc tcacatcgtc acgggtgaaa
+     1861 tggacagtta cgagccaggg gcttacacgg aaggtgtaat gagaaatgtt aacttcctta
+     1921 caagtactgt aattcctgaa tttgtaacac aagtgaatgt tgccttggaa gccttaagca
+     1981 aaagctcatt gaatgtgttg gatgataatc aatttgtgga catctcaaag aagatctatg
+     2041 atacaattca tgatatcaga tgttcagtca tgatgattcg gaccccagag gaactggagg
+     2101 atgtttctga ccttgaagag gaacacgagg tccgcagtca caccagcatt cagaccgaag
+     2161 ggaaaactga tagggctaag atgactcaac tgcctgaggc agaaaaagaa aagattgctg
+     2221 agcaagttgc tgatttcaag aaagtaaaga gtaagctgga tgctgagatt gagatatggg
+     2281 atgatacaag caacgacatc attgttctgg ccaagaacat gtgtatgatc atgatggaga
+     2341 tgacagactt cactaggggc aaaggaccac taaagcatac aactgatgtg atctatgcag
+     2401 cgaaaatgat atcagaatca ggatcaagga tggatgtcct tgctcggcag attgctaatc
+     2461 agtgcccaga tccatcttgt aaacaggact tgttggccta cctggaacag attaagttct
+     2521 actcccacca actgaaaatc tgcagtcaag ttaaagctga gatccagaac ctgggaggag
+     2581 agctcatcat gtcagctttg gacagtgtca catccctgat ccaagcagcc aaaaatttaa
+     2641 tgaatgctgt agtgcaaaca gtgaaaatgt cttacattgc ctcaaccaag atcatccgaa
+     2701 tccagagtcc tgctgggccc cggcacccag ttgtgatgtg gagaatgaag gctcctgcaa
+     2761 aaaaaccctt gattaaaaga gagaagccag aggaaacgtg tgcagctgtc agacgaggct
+     2821 cagcaaagaa aaaaatccat ccattgcaag tcatgagtga atttagagga agacaaatct
+     2881 actgaaacca ctattctaca tatagtgcct atatgacaaa atcctgccta accacactgc
+     2941 tttattttac acttaagaag ttctgtaatt tcactaagtt ttggtgttta actcacaaat
+     3001 aacataaaat attgggcgct aaatcaacaa aagcaatata tatttgggat catatcactg
+     3061 tcatttctgt atggtcagca cctaatagtt aaggaatatt tgcttgttga atgaatgaaa
+     3121 ttatcacgtg tcattcagcg tttcccatca tagagattat ctactattcg ttaccaaata
+     3181 aacacaggag aggccagaga gtcctgttta tctgtaatac ttcatgtaca cttatcatcc
+     3241 ttatcttgaa ttaaaacact aacatgagct cctaacttgg ttttttaata gaaacaaaag
+     3301 acttttataa aatattttcc catttaatct ccatgctttc tttatctgat ctaacctggc
+     3361 acctaaccag gcagaaatgt atgattcctg ccatagcaaa aaaaccacct tttaatctct
+     3421 agatagctgt actcattgtc aacttattag gctaatatcc attataaact aatcaaattt
+     3481 gaatagttag gctacttgct ggattttgaa ggtcaacctt gtttattaat aaaatgcttt
+     3541 cttaacatta taaaggttac aatgagttct gatgccacat actcaccttt tgggtttcca
+     3601 atgtgttaga gagttctgta cttttgagtg ttaggcctat ccgaatacat atgtgaaaga
+     3661 agagttatca cccattggga aaatgagaca acaaactata tcccaaagtg agttatatta
+     3721 ataataacag aagtgtaagt tctgtatgac cctattttta caaacataaa aatacatttt
+     3781 tatcagcttg caattgtaat taaaaggaaa atggcagttt gaaaaatctt ttgacgttga
+     3841 gtaaaatata actgcatgaa ctgtaccatt gaactatgaa gcagttaatg gcaatgaagc
+     3901 tggagtgatt ttaataacgt tcttttaaat aaaagtcact ggggtcattt tacaactcca
+     3961 gtcactgtgt tcattcctag ttgagttcat aatggacttc ataatagtct tagagtctag
+     4021 tgtacctctc tctgtcattc tctctctctt tttctctccc ctgatgacct gcctctctct
+     4081 gtctttcaaa aatgtcctta acagaaactc tttggaggcc ataagttttg ttttcatttt
+     4141 ttctcattca tagagttctg attcacagac tttaaaaaac attttctatt ctacattatc
+     4201 ataatagtat tatattgtac ctttttactt ctaaaacatt gccattgatg agaggcgtct
+     4261 cagcaacgat gtaaccttag attgatgaga aaaaaattta cacatacaat accagttgat
+     4321 attaggagaa ccagtttggg taaaaggatg catgaaacat agaaaagcat aaagattgac
+     4381 agtacgatat gtgtggaatc ttaagcataa tggtatggga aaagaaggat ctatttaata
+     4441 ggtcattatt aattatgcag gaaatgttaa atttcttgta atgaattatt tcaatcttcc
+     4501 aagtagctgg attgcctgag ctcagtgtaa aacttcctag gaggtgaagg caataaactc
+     4561 ctccctgttt tgcaccatag actggcctac aataactatt ctgaacagaa tgcactgccc
+     4621 agaagaaaag gcagtgaaga agggaattag ggaattcaga tgactctgtt tttcagaatt
+     4681 atctagatga ttgaggcaaa tagagatttt cttttattga aatgctgcca tcattttctg
+     4741 ctctaagtgt agatgttgca cgagtgacat ctgtggtata tccttcttcc agatagaagt
+     4801 ataaatttat aatttagtgg ggagaggaat tttcttttaa tcaccaaact accagctgta
+     4861 tagaaaattt ttttgaaatc accaaactag cagttgtgta tcttagctcc taaagccaca
+     4921 ttcacaagaa tcataagcat ctcatttaga aaatctaatg tccaccggac ccaacatcat
+     4981 ctttccacat gttggagttt agaacatgca gtattggaca ccaaaagaac agaaataact
+     5041 tgaaattata caattaccaa ataacctcca tctctttgat aaaaatgact ttttacccaa
+     5101 agtgagatgt gaacaagttc tcctctttaa cccaggcaga ttttcagctt agctcaaagc
+     5161 aaactataat taaataaaac aataaaaatt ttaactcaat gaatatccta ggagttaatc
+     5221 tgctgtggta atcgatagtg acataaaaac aagatgcata gagctgaaaa aggcatctgt
+     5281 ccacctgagt gaattcctgt agtaggcagc atttcaagat ttagtttgat tcaaacctgc
+     5341 tgataaaaca aatgcttata tgcaagaaaa actagcagca agatatgaat aaatctcccc
+     5401 attatgttaa aaactaatca gcatgacaca tttatattta ggtatttctt ctgcagagga
+     5461 ttgccagaaa tttcttaatg agagtgataa tttggtgatc cacctatgta ccttttgatg
+     5521 tctcatcaca gagattagtg cttcctctga taatacattt gcttgatcct gctaataaga
+     5581 actcaccttt ctttttaacg aaatcaattt gtgttaattt acatagggaa aaacgttcct
+     5641 tgagagggag gagaggggtg tttaccaccc acaggagcag ttccatccct ggttacccac
+     5701 cagtatccct gccagatgtt agactggaat tagaatgaaa atttaaaaaa aaacgaaata
+     5761 ataatccact aaatggcctt ctaattagag aaatttgaag atttctatca aatataaaaa
+     5821 gtgagaaata gaaatcattc cctttaattt atgacaaatt aaaattattg aagtaaaatg
+     5881 tttctaagtc agtttctgga tagttcttga atgagtcaag aaaaaactca aacactaaat
+     5941 ttctaagcta atttgttcat tattcctttc tgtttattat ttattatatg agtgcaaatt
+     6001 gcaaatgtat tagaaaagac aatatagcct tcacattcac aagtgtgcct tctggccttt
+     6061 gaaatctttt aacataagat caatataaca tatttgttcc ccataaaaat ctcttatgta
+     6121 cagggaataa ggtcctccat agctacacag agacacccat tcttgcagtc tggcattctt
+     6181 aacaccttta gcttcaaagg cagtcggttt caatttcaag ctaaaattgt gaatatacaa
+     6241 ttaagtgcgc aacttgggcc ttcagaccaa ataattaatg ctcctcaaat taaataatga
+     6301 gtggctgaaa agcctaatgt gtaacaacag agtaagtgac ttcaacggct tcctgaacct
+     6361 tcattttgag ggtgttctca tctcacccac ctctgggcta ggtatcctct gttaattgct
+     6421 aacaatttcc taccaaaata gtgcaatcag gactgcccat cacagcaaat tactccaatt
+     6481 aatgcccttt cctcttctgt gaaccaaaaa tatctctctc ctgtctctca tctctatccc
+     6541 aggtataaat tgactaataa attttacaga gttttagtca aaattatgaa ttttaatttc
+     6601 cagcaacatt attcctttag tctttctatt ccccaaaaca ttcttaaatt ttggtatcaa
+     6661 atgttcattt ctgtcctaga gattgtggtt cccatggcta cagatttttg tatagtggta
+     6721 gtatgagtgg aataagatct gagacttttc ctggtgatat ccaccattct cttgtgaact
+     6781 cattgcagaa taaacagcct ctttcacttt cattgtaagt agttctttag gttggcaaag
+     6841 caggcaccag aatctgaatt tgaatgaaat ctgtactttc ttttgttggc ctattttttg
+     6901 ccaagacagc ctgcctattg tatatttagg aatcaaatat tcattttttc tgtttgtaaa
+     6961 gccagaaata tttcagttaa aaagaatata attttatatt attttaataa ttctttttaa
+     7021 gtaaagtagg aaaatttctg ccacctgaga tgttactgtt tttatttata tgaaaattcc
+     7081 atttttttct ttatgactct tttcccatac cattatgata tgttcagcat tagtattttc
+     7141 cattttacca ctaaacaaat aagccaggac taataacaat agcagtttga gagtttttat
+     7201 tttggcattt tggttttaat taggaaagaa aacatggatg ctattaaaac tagttgtagt
+     7261 taaaaatgtt ttgaatgagg ctactaacgc tatcttagtc atctcaaaga gaaagagaag
+     7321 aagtaaaatt ttaaatacct ttttggcatt tttaaccaat tcatatgaac aaaaacatat
+     7381 attctattaa agcaaaataa agaatagttt aaaacactag tcttcttgca tgtgaatatt
+     7441 ttccccctaa cagacaagat agaatccatt tctggacact ctaaaagaaa gtaatgttaa
+     7501 ttgagagagc tgtctccaaa tggaactcaa cctgaccaga atcccatccg caggcaagag
+     7561 atgggctgtg gggccgacca taagttttat tctgagacga gatgctttat ggctgctggc
+     7621 tgcattatgg catctagcag tccccactgg tttgtgggaa caaaacacat ggattgatat
+     7681 tcaatatgag tttggtaagt tggagaaaaa tggagacgat acggagtagt ctaaaggcac
+     7741 aacaaataag aaggtgccag aggtagggaa gggtctgaga ggggtagttg cagaagcatt
+     7801 tagctttcat agatgagggg agagtttttt ggttttatga agattaggca gccctcctga
+     7861 ggaaagtatt aaggatagaa tgagacactt gtcttggtgg tttggtgaag tcgtgtcgaa
+     7921 ggcaaaagga tgaactacac atattttgag catgatttag taatattgtt tgcaagttga
+     7981 gaaacagaaa ttcagccatt ctcctgactg atggtaggtg aaattcttcc caatattaga
+     8041 gccaatctgg gttaccatac gttcatatat ttaacagcta tttgttaaac aactgtgatg
+     8101 ttccaggcac tgttctaggt tcttaggata caccatataa caaaacaaat agtgatcctt
+     8161 gccctcatgt gccagctctg tgttaaatgc taactattat cttattcaat cctccaaata
+     8221 accctatagg atatatatca ttccacagac aaggaagctg agggttaaat gggataagaa
+     8281 tcttgctcaa agtctcactg gctttaaaat attaatatat attttacatc attcaagaca
+     8341 gatatataat tagctgaata ttctcacctc tattaactga atgtagagtg tcaggtacat
+     8401 gggaagtaag ttatttacgt gatctgaaat aagaggacaa cctttgccaa attactttta
+     8461 ttaccatgga gaagaaagct tcaatgaaat gcctgtttca gcccatcttc agtattggtt
+     8521 ggttaatacc atttgttaac accaatcctt tcctctttta ctgctaacat gtgactgtgt
+     8581 ttaaaattat agattgcagc agagtgttgg ccaaggatta ttgtagtagg ataaagtttc
+     8641 cctgtatttg aaatttaccc aaactgtagc aaatacatct ttccttcttt atggaggtca
+     8701 cacgtgtgca tagtatgtgc ctgaatacag gtaaactttg tgttttaaaa ttacatggcc
+     8761 ttttttagag tcgactgaag gctagactct tcttgcccat gttgctggat aggctttcaa
+     8821 atctcaggcc ttggagagtt aaatgacttt ctgatatttc ttacggtgga gccacataag
+     8881 aaatacacac attcctagtt tgagcaatgg atgtgtatat tggggatctt cacttttatg
+     8941 tatctggtag tcatgatggt gcctattccc aactgtagga aaggaaagcc ctcaaggaga
+     9001 aaattctctt tcaaaaaggc tcagatttct aacaattatg tctaaatgtt tcttcaattt
+     9061 agaacatgta caaaagctac ttaatattag cagagtagtt cttgtgtttt catttcaaat
+     9121 gaaatattcc cagttccaaa gtttatttcc ttggcatttt caagaaggat ggttattttt
+     9181 agttctggtt atttggtgtt ggaggtctgt gacacttcct tatacattta aagccccctt
+     9241 tgaatagttg tatcaatagt tcaaaagcct gtagatatct tgcttttcta ttctgacagc
+     9301 ccagcttctg cagactcagg ccaaccttag gtatgtcaca tcagttcccc atctgtgtaa
+     9361 attacctgaa cctctctgtg gtattcactg agagttgagc ttctactaag ggatttcctt
+     9421 gacctgggct tttaacacca gatttgtagt ggagtgttta ttagtaaagc aaaggagtaa
+     9481 gtcagagatg ctagcccctg ctctcagtta aacagaacta tcctccttcc tgaatattta
+     9541 aacataaaat taattttaaa ctactataaa aatcatgttc cattgcttgc caaatcttat
+     9601 accattataa tgctgtattt ttacatgtta gtatacattg tgtccatagg gatataaata
+     9661 tgagaatttc agcaactgtc ttgcagggtt aagatgtgct atttgttgat tttgcaaatt
+     9721 tttctcatgt ggtacagtcc ctccaaagaa aatttcctta gacctaaatg gtagcataat
+     9781 aatttctcct ccatatccgt gactaacaag ttcctgaaaa cagaagtaga catattttat
+     9841 gcccaattta gtacctaata attgaggctt aaaacaaaat tttcttgggc aagttgggtg
+     9901 attaaatatg aattaaaact tctagagaaa gatttccaga tgcccctgtt ttccattttg
+     9961 attatggttt tagtttcata gcaacttggg ggaaaaaaat catttacttt atgtcgtatt
+    10021 acaacaacaa ctttgacagc ttaaatgtag tgacctctct gaaggtaata tgcacattat
+    10081 aatttaggat gaaagcagat ttaaactaag actttctgag atgaaataaa agtaaccaat
+    10141 tcataatagt catgtttatt gcagcaatat cttgggaact taagtttagt ggcgtttgag
+    10201 gtgtttctga ctatcttgct tgttcatttc accctgctct gcagagacag aatatgattg
+    10261 aatgaactgc ccattatatt aatgaccagt tcaaagcagt tttgtgcttt ggctatagat
+    10321 aaaatttggc aaaaatactg taggcctttc tggtccatat ttatccttaa agtatttttg
+    10381 ccaatcaata aaaatgaaat atttatccag aaatagaaaa agctctttcc tatgacattg
+    10441 acatagaagc ccaaatactc cttgtttgag accctgcatg tcttttgtgt ttaactgaat
+    10501 caatgatttt ttttagttgt gctcttaatt gcattatttc acatatgtaa cactgggttt
+    10561 gttttggtta tatagtatta ttttacttta ttctaatttc aactcatgtc actctgtagc
+    10621 tcattaagaa tttgttcaac tgaaaattaa aatgtgtgtt aaagcaataa aaatgaaaag
+    10681 attggctatg cattttaaaa aaaaaaaaaa
+//
+

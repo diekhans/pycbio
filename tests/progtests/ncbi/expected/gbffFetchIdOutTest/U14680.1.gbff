@@ -1,0 +1,252 @@
+LOCUS       HSU14680                5711 bp    mRNA    linear   PRI 10-JUN-2002
+DEFINITION  Homo sapiens breast and ovarian cancer susceptibility (BRCA1) mRNA,
+            complete cds.
+ACCESSION   U14680
+VERSION     U14680.1
+KEYWORDS    .
+SOURCE      Homo sapiens (human)
+  ORGANISM  Homo sapiens
+            Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi;
+            Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini;
+            Catarrhini; Hominidae; Homo.
+REFERENCE   1  (bases 1 to 5711)
+  AUTHORS   Miki,Y., Swensen,J., Shattuck-Eidens,D., Futreal,P.A., Harshman,K.,
+            Tavtigian,S., Liu,Q., Cochran,C., Bennett,L.M., Ding,W., Bell,R.,
+            Rosenthal,J., Hussey,C., Tran,T., McClure,M., Frye,C., Hattier,T.,
+            Phelps,R., Haugen-Strano,A., Katcher,H., Yakumo,K., Gholami,Z.,
+            Shaffer,D., Stone,S., Bayer,S., Wray,C., Bogden,R., Dayananth,P.,
+            Ward,J., Tonin,P., Narod,S., Bristow,P.K., Norris,F.H.,
+            Helvering,L., Morrison,P., Rosteck,P., Lai,M., Barrett,J.C.,
+            Lewis,C., Neuhausen,S., Cannon-Albright,L., Goldgar,D., Wiseman,R.,
+            Kamb,A. and Skolnick,M.H.
+  TITLE     A strong candidate for the breast and ovarian cancer susceptibility
+            gene BRCA1
+  JOURNAL   Science 266 (5182), 66-71 (1994)
+   PUBMED   7545954
+REFERENCE   2  (bases 1 to 5711)
+  AUTHORS   Skolnick,M.H.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (14-SEP-1994) Mark H. Skolnick, Myriad Genetics Inc. and
+            the University of Utah, 421 Wakara Way, Suite 201, Salt Lake City,
+            UT 84108, USA
+FEATURES             Location/Qualifiers
+     source          1..5711
+                     /organism="Homo sapiens"
+                     /mol_type="mRNA"
+                     /db_xref="taxon:9606"
+                     /chromosome="17"
+                     /map="17q21; spans D17S855"
+                     /note="For sequence of alternatively spliced exon 4, see
+                     GenBank Accession Number U15595"
+     gene            1..5711
+                     /gene="BRCA1"
+     5'UTR           1..119
+                     /gene="BRCA1"
+     exon            1..100
+                     /gene="BRCA1"
+                     /number=1
+     exon            101..199
+                     /gene="BRCA1"
+                     /number=2
+     CDS             120..5711
+                     /gene="BRCA1"
+                     /note="influences susceptibility to breast and ovarian
+                     cancer"
+                     /codon_start=1
+                     /product="breast and ovarian cancer susceptibility"
+                     /protein_id="AAA73985.1"
+                     /translation="MDLSALRVEEVQNVINAMQKILECPICLELIKEPVSTKCDHIFC
+                     KFCMLKLLNQKKGPSQCPLCKNDITKRSLQESTRFSQLVEELLKIICAFQLDTGLEYA
+                     NSYNFAKKENNSPEHLKDEVSIIQSMGYRNRAKRLLQSEPENPSLQETSLSVQLSNLG
+                     TVRTLRTKQRIQPQKTSVYIELGSDSSEDTVNKATYCSVGDQELLQITPQGTRDEISL
+                     DSAKKAACEFSETDVTNTEHHQPSNNDLNTTEKRAAERHPEKYQGSSVSNLHVEPCGT
+                     NTHASSLQHENSSLLLTKDRMNVEKAEFCNKSKQPGLARSQHNRWAGSKETCNDRRTP
+                     STEKKVDLNADPLCERKEWNKQKLPCSENPRDTEDVPWITLNSSIQKVNEWFSRSDEL
+                     LGSDDSHDGESESNAKVADVLDVLNEVDEYSGSSEKIDLLASDPHEALICKSERVHSK
+                     SVESNIEDKIFGKTYRKKASLPNLSHVTENLIIGAFVTEPQIIQERPLTNKLKRKRRP
+                     TSGLHPEDFIKKADLAVQKTPEMINQGTNQTEQNGQVMNITNSGHENKTKGDSIQNEK
+                     NPNPIESLEKESAFKTKAEPISSSISNMELELNIHNSKAPKKNRLRRKSSTRHIHALE
+                     LVVSRNLSPPNCTELQIDSCSSSEEIKKKKYNQMPVRHSRNLQLMEGKEPATGAKKSN
+                     KPNEQTSKRHDSDTFPELKLTNAPGSFTKCSNTSELKEFVNPSLPREEKEEKLETVKV
+                     SNNAEDPKDLMLSGERVLQTERSVESSSISLVPGTDYGTQESISLLEVSTLGKAKTEP
+                     NKCVSQCAAFENPKGLIHGCSKDNRNDTEGFKYPLGHEVNHSRETSIEMEESELDAQY
+                     LQNTFKVSKRQSFAPFSNPGNAEEECATFSAHSGSLKKQSPKVTFECEQKEENQGKNE
+                     SNIKPVQTVNITAGFPVVGQKDKPVDNAKCSIKGGSRFCLSSQFRGNETGLITPNKHG
+                     LLQNPYRIPPLFPIKSFVKTKCKKNLLEENFEEHSMSPEREMGNENIPSTVSTISRNN
+                     IRENVFKEASSSNINEVGSSTNEVGSSINEIGSSDENIQAELGRNRGPKLNAMLRLGV
+                     LQPEVYKQSLPGSNCKHPEIKKQEYEEVVQTVNTDFSPYLISDNLEQPMGSSHASQVC
+                     SETPDDLLDDGEIKEDTSFAENDIKESSAVFSKSVQKGELSRSPSPFTHTHLAQGYRR
+                     GAKKLESSEENLSSEDEELPCFQHLLFGKVNNIPSQSTRHSTVATECLSKNTEENLLS
+                     LKNSLNDCSNQVILAKASQEHHLSEETKCSASLFSSQCSELEDLTANTNTQDPFLIGS
+                     SKQMRHQSESQGVGLSDKELVSDDEERGTGLEENNQEEQSMDSNLGEAASGCESETSV
+                     SEDCSGLSSQSDILTTQQRDTMQHNLIKLQQEMAELEAVLEQHGSQPSNSYPSIISDS
+                     SALEDLRNPEQSTSEKAVLTSQKSSEYPISQNPEGLSADKFEVSADSSTSKNKEPGVE
+                     RSSPSKCPSLDDRWYMHSCSGSLQNRNYPSQEELIKVVDVEEQQLEESGPHDLTETSY
+                     LPRQDLEGTPYLESGISLFSDDPESDPSEDRAPESARVGNIPSSTSALKVPQLKVAES
+                     AQSPAAAHTTDTAGYNAMEESVSREKPELTASTERVNKRMSMVVSGLTPEEFMLVYKF
+                     ARKHHITLTNLITEETTHVVMKTDAEFVCERTLKYFLGIAGGKWVVSYFWVTQSIKER
+                     KMLNEHDFEVRGDVVNGRNHQGPKRARESQDRKIFRGLEICCYGPFTNMPTDQLEWMV
+                     QLCGASVVKELSSFTLGTGVHPIVVVQPDAWTEDNGFHAIGQMCEAPVVTREWVLDSV
+                     ALYQCQELDTYLIPQIPHSHY"
+     exon            200..253
+                     /gene="BRCA1"
+                     /number=3
+     exon            254..331
+                     /gene="BRCA1"
+                     /number=5
+     exon            332..420
+                     /gene="BRCA1"
+                     /number=6
+     exon            421..560
+                     /gene="BRCA1"
+                     /number=7
+     exon            561..665
+                     /gene="BRCA1"
+                     /number=8
+     exon            666..712
+                     /gene="BRCA1"
+                     /number=9
+     exon            713..788
+                     /gene="BRCA1"
+                     /number=10
+     exon            789..4215
+                     /gene="BRCA1"
+                     /number=11
+     exon            4216..4302
+                     /gene="BRCA1"
+                     /number=12
+     exon            4303..4476
+                     /gene="BRCA1"
+                     /number=13
+     exon            4477..4603
+                     /gene="BRCA1"
+                     /number=14
+     exon            4604..4794
+                     /gene="BRCA1"
+                     /number=15
+     exon            4795..5105
+                     /gene="BRCA1"
+                     /number=16
+     exon            5106..5193
+                     /gene="BRCA1"
+                     /number=17
+     exon            5194..5273
+                     /gene="BRCA1"
+                     /number=18
+     exon            5274..5310
+                     /gene="BRCA1"
+                     /number=19
+     exon            5311..5396
+                     /gene="BRCA1"
+                     /number=20
+     exon            5397..5451
+                     /gene="BRCA1"
+                     /number=21
+     exon            5452..5526
+                     /gene="BRCA1"
+                     /number=22
+     exon            5527..5586
+                     /gene="BRCA1"
+                     /number=23
+     exon            5587..5711
+                     /gene="BRCA1"
+                     /number=24
+ORIGIN      
+        1 agctcgctga gacttcctgg accccgcacc aggctgtggg gtttctcaga taactgggcc
+       61 cctgcgctca ggaggccttc accctctgct ctgggtaaag ttcattggaa cagaaagaaa
+      121 tggatttatc tgctcttcgc gttgaagaag tacaaaatgt cattaatgct atgcagaaaa
+      181 tcttagagtg tcccatctgt ctggagttga tcaaggaacc tgtctccaca aagtgtgacc
+      241 acatattttg caaattttgc atgctgaaac ttctcaacca gaagaaaggg ccttcacagt
+      301 gtcctttatg taagaatgat ataaccaaaa ggagcctaca agaaagtacg agatttagtc
+      361 aacttgttga agagctattg aaaatcattt gtgcttttca gcttgacaca ggtttggagt
+      421 atgcaaacag ctataatttt gcaaaaaagg aaaataactc tcctgaacat ctaaaagatg
+      481 aagtttctat catccaaagt atgggctaca gaaaccgtgc caaaagactt ctacagagtg
+      541 aacccgaaaa tccttccttg caggaaacca gtctcagtgt ccaactctct aaccttggaa
+      601 ctgtgagaac tctgaggaca aagcagcgga tacaacctca aaagacgtct gtctacattg
+      661 aattgggatc tgattcttct gaagataccg ttaataaggc aacttattgc agtgtgggag
+      721 atcaagaatt gttacaaatc acccctcaag gaaccaggga tgaaatcagt ttggattctg
+      781 caaaaaaggc tgcttgtgaa ttttctgaga cggatgtaac aaatactgaa catcatcaac
+      841 ccagtaataa tgatttgaac accactgaga agcgtgcagc tgagaggcat ccagaaaagt
+      901 atcagggtag ttctgtttca aacttgcatg tggagccatg tggcacaaat actcatgcca
+      961 gctcattaca gcatgagaac agcagtttat tactcactaa agacagaatg aatgtagaaa
+     1021 aggctgaatt ctgtaataaa agcaaacagc ctggcttagc aaggagccaa cataacagat
+     1081 gggctggaag taaggaaaca tgtaatgata ggcggactcc cagcacagaa aaaaaggtag
+     1141 atctgaatgc tgatcccctg tgtgagagaa aagaatggaa taagcagaaa ctgccatgct
+     1201 cagagaatcc tagagatact gaagatgttc cttggataac actaaatagc agcattcaga
+     1261 aagttaatga gtggttttcc agaagtgatg aactgttagg ttctgatgac tcacatgatg
+     1321 gggagtctga atcaaatgcc aaagtagctg atgtattgga cgttctaaat gaggtagatg
+     1381 aatattctgg ttcttcagag aaaatagact tactggccag tgatcctcat gaggctttaa
+     1441 tatgtaaaag tgaaagagtt cactccaaat cagtagagag taatattgaa gacaaaatat
+     1501 ttgggaaaac ctatcggaag aaggcaagcc tccccaactt aagccatgta actgaaaatc
+     1561 taattatagg agcatttgtt actgagccac agataataca agagcgtccc ctcacaaata
+     1621 aattaaagcg taaaaggaga cctacatcag gccttcatcc tgaggatttt atcaagaaag
+     1681 cagatttggc agttcaaaag actcctgaaa tgataaatca gggaactaac caaacggagc
+     1741 agaatggtca agtgatgaat attactaata gtggtcatga gaataaaaca aaaggtgatt
+     1801 ctattcagaa tgagaaaaat cctaacccaa tagaatcact cgaaaaagaa tctgctttca
+     1861 aaacgaaagc tgaacctata agcagcagta taagcaatat ggaactcgaa ttaaatatcc
+     1921 acaattcaaa agcacctaaa aagaataggc tgaggaggaa gtcttctacc aggcatattc
+     1981 atgcgcttga actagtagtc agtagaaatc taagcccacc taattgtact gaattgcaaa
+     2041 ttgatagttg ttctagcagt gaagagataa agaaaaaaaa gtacaaccaa atgccagtca
+     2101 ggcacagcag aaacctacaa ctcatggaag gtaaagaacc tgcaactgga gccaagaaga
+     2161 gtaacaagcc aaatgaacag acaagtaaaa gacatgacag cgatactttc ccagagctga
+     2221 agttaacaaa tgcacctggt tcttttacta agtgttcaaa taccagtgaa cttaaagaat
+     2281 ttgtcaatcc tagccttcca agagaagaaa aagaagagaa actagaaaca gttaaagtgt
+     2341 ctaataatgc tgaagacccc aaagatctca tgttaagtgg agaaagggtt ttgcaaactg
+     2401 aaagatctgt agagagtagc agtatttcat tggtacctgg tactgattat ggcactcagg
+     2461 aaagtatctc gttactggaa gttagcactc tagggaaggc aaaaacagaa ccaaataaat
+     2521 gtgtgagtca gtgtgcagca tttgaaaacc ccaagggact aattcatggt tgttccaaag
+     2581 ataatagaaa tgacacagaa ggctttaagt atccattggg acatgaagtt aaccacagtc
+     2641 gggaaacaag catagaaatg gaagaaagtg aacttgatgc tcagtatttg cagaatacat
+     2701 tcaaggtttc aaagcgccag tcatttgctc cgttttcaaa tccaggaaat gcagaagagg
+     2761 aatgtgcaac attctctgcc cactctgggt ccttaaagaa acaaagtcca aaagtcactt
+     2821 ttgaatgtga acaaaaggaa gaaaatcaag gaaagaatga gtctaatatc aagcctgtac
+     2881 agacagttaa tatcactgca ggctttcctg tggttggtca gaaagataag ccagttgata
+     2941 atgccaaatg tagtatcaaa ggaggctcta ggttttgtct atcatctcag ttcagaggca
+     3001 acgaaactgg actcattact ccaaataaac atggactttt acaaaaccca tatcgtatac
+     3061 caccactttt tcccatcaag tcatttgtta aaactaaatg taagaaaaat ctgctagagg
+     3121 aaaactttga ggaacattca atgtcacctg aaagagaaat gggaaatgag aacattccaa
+     3181 gtacagtgag cacaattagc cgtaataaca ttagagaaaa tgtttttaaa gaagccagct
+     3241 caagcaatat taatgaagta ggttccagta ctaatgaagt gggctccagt attaatgaaa
+     3301 taggttccag tgatgaaaac attcaagcag aactaggtag aaacagaggg ccaaaattga
+     3361 atgctatgct tagattaggg gttttgcaac ctgaggtcta taaacaaagt cttcctggaa
+     3421 gtaattgtaa gcatcctgaa ataaaaaagc aagaatatga agaagtagtt cagactgtta
+     3481 atacagattt ctctccatat ctgatttcag ataacttaga acagcctatg ggaagtagtc
+     3541 atgcatctca ggtttgttct gagacacctg atgacctgtt agatgatggt gaaataaagg
+     3601 aagatactag ttttgctgaa aatgacatta aggaaagttc tgctgttttt agcaaaagcg
+     3661 tccagaaagg agagcttagc aggagtccta gccctttcac ccatacacat ttggctcagg
+     3721 gttaccgaag aggggccaag aaattagagt cctcagaaga gaacttatct agtgaggatg
+     3781 aagagcttcc ctgcttccaa cacttgttat ttggtaaagt aaacaatata ccttctcagt
+     3841 ctactaggca tagcaccgtt gctaccgagt gtctgtctaa gaacacagag gagaatttat
+     3901 tatcattgaa gaatagctta aatgactgca gtaaccaggt aatattggca aaggcatctc
+     3961 aggaacatca ccttagtgag gaaacaaaat gttctgctag cttgttttct tcacagtgca
+     4021 gtgaattgga agacttgact gcaaatacaa acacccagga tcctttcttg attggttctt
+     4081 ccaaacaaat gaggcatcag tctgaaagcc agggagttgg tctgagtgac aaggaattgg
+     4141 tttcagatga tgaagaaaga ggaacgggct tggaagaaaa taatcaagaa gagcaaagca
+     4201 tggattcaaa cttaggtgaa gcagcatctg ggtgtgagag tgaaacaagc gtctctgaag
+     4261 actgctcagg gctatcctct cagagtgaca ttttaaccac tcagcagagg gataccatgc
+     4321 aacataacct gataaagctc cagcaggaaa tggctgaact agaagctgtg ttagaacagc
+     4381 atgggagcca gccttctaac agctaccctt ccatcataag tgactcttct gcccttgagg
+     4441 acctgcgaaa tccagaacaa agcacatcag aaaaagcagt attaacttca cagaaaagta
+     4501 gtgaataccc tataagccag aatccagaag gcctttctgc tgacaagttt gaggtgtctg
+     4561 cagatagttc taccagtaaa aataaagaac caggagtgga aaggtcatcc ccttctaaat
+     4621 gcccatcatt agatgatagg tggtacatgc acagttgctc tgggagtctt cagaatagaa
+     4681 actacccatc tcaagaggag ctcattaagg ttgttgatgt ggaggagcaa cagctggaag
+     4741 agtctgggcc acacgatttg acggaaacat cttacttgcc aaggcaagat ctagagggaa
+     4801 ccccttacct ggaatctgga atcagcctct tctctgatga ccctgaatct gatccttctg
+     4861 aagacagagc cccagagtca gctcgtgttg gcaacatacc atcttcaacc tctgcattga
+     4921 aagttcccca attgaaagtt gcagaatctg cccagagtcc agctgctgct catactactg
+     4981 atactgctgg gtataatgca atggaagaaa gtgtgagcag ggagaagcca gaattgacag
+     5041 cttcaacaga aagggtcaac aaaagaatgt ccatggtggt gtctggcctg accccagaag
+     5101 aatttatgct cgtgtacaag tttgccagaa aacaccacat cactttaact aatctaatta
+     5161 ctgaagagac tactcatgtt gttatgaaaa cagatgctga gtttgtgtgt gaacggacac
+     5221 tgaaatattt tctaggaatt gcgggaggaa aatgggtagt tagctatttc tgggtgaccc
+     5281 agtctattaa agaaagaaaa atgctgaatg agcatgattt tgaagtcaga ggagatgtgg
+     5341 tcaatggaag aaaccaccaa ggtccaaagc gagcaagaga atcccaggac agaaagatct
+     5401 tcagggggct agaaatctgt tgctatgggc ccttcaccaa catgcccaca gatcaactgg
+     5461 aatggatggt acagctgtgt ggtgcttctg tggtgaagga gctttcatca ttcacccttg
+     5521 gcacaggtgt ccacccaatt gtggttgtgc agccagatgc ctggacagag gacaatggct
+     5581 tccatgcaat tgggcagatg tgtgaggcac ctgtggtgac ccgagagtgg gtgttggaca
+     5641 gtgtagcact ctaccagtgc caggagctgg acacctacct gataccccag atcccccaca
+     5701 gccactactg a
+//
+

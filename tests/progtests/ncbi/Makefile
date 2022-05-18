@@ -26,15 +26,25 @@ endif
 test: fetchTests asmReportCnvTests agpToPslTests
 
 fetchTests: \
-	gbffFetchTest faFetchTest
+	gbffFetchTest gbffFetchIdOutTest faFetchTest faFetchIdOutTest
 
 gbffFetchTest: mkdirs
 	${ncbiGbFetch} ${email} --out=output/$@.gbff ${testAccver}
 	${diff} expected/$@.gbff output/$@.gbff
 
+gbffFetchIdOutTest: mkdirs
+	@rm -rf output/$@ && mkdir -p output/$@
+	${ncbiGbFetch} ${email} --outDir=output/$@ ${testAccver}
+	for acc in ${testAccver}; do ${diff} expected/$@/$${acc}.gbff output/$@/$${acc}.gbff ; done
+
 faFetchTest: mkdirs
 	${ncbiGbFetch} ${email} --fasta --out=output/$@.fa ${testAccver}
 	${diff} expected/$@.fa output/$@.fa
+
+faFetchIdOutTest: mkdirs
+	@rm -rf output/$@ && mkdir -p output/$@
+	${ncbiGbFetch} ${email} --fasta --outDir=output/$@ ${testAccver}
+	for acc in ${testAccver}; do ${diff} expected/$@/$${acc}.fa output/$@/$${acc}.fa ; done
 
 asmReportCnvTests: \
 	asmSeqNameUcscLiftTest asmRefSeqGencodeLiftTest \

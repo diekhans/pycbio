@@ -12,53 +12,41 @@ from Bio import Entrez
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio import PycbioException
+from pycbio.sys import fileOps
 
 host = "eutils.ncbi.nlm.nih.gov"
-
 
 def parseArgs():
     desc = """Retrieve genbank records or sequences from NCBI nucleotide
     (GenBank/RefSeq), give accessions or other ids understood by efetch server."""
     parser = argparse.ArgumentParser(description=desc)
-    parser.add_argument("--idFile", dest="idFiles", action="append", default=[],
+    parser.add_argument("--idFile", dest="idFiles", action="append",
                         help="file containing ids, can be specified multiple times.")
-    parser.add_argument("--out", "-o", dest="out", action="store", default=None,
-                        help="output to this file instead of stdout")
-    parser.add_argument("--fasta", "-f", dest="fasta", action="store_true", default=False,
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--out", "-o", default='/dev/stdout',
+                       help="output to this file instead of stdout")
+    group.add_argument("--outDir", "-O", default=None,
+                       help="output each entry as files the directory named in the for id.gbff or id.fa")
+    parser.add_argument("--fasta", "-f", action="store_true", default=False,
                         help="retrieve sequences in fasta format")
-    parser.add_argument("--verbose", "-v", dest="verbose", action="store_true", default=False,
+    parser.add_argument("--verbose", "-v", action="store_true", default=False,
                         help="verbose tracing")
-    parser.add_argument("--debug", dest="debug", action="store", type=int, default=None,
+    parser.add_argument("--debug", type=int, default=None,
                         help="set HTTP debug level to this value")
-    parser.add_argument("--email", dest="email", action="store", default=None,
+    parser.add_argument("--email", default=None,
                         help="override defaulting of email address")
     parser.add_argument("ids", nargs="*", default=[],
                         help="explicit list of ids to fetch")
     opts = parser.parse_args()
-    loadIdFiles(opts)
-    if len(opts.ids) == 0:
-        parser.error("no ids specified on command line or with --idFile")
-    opts.ids = frozenset(opts.ids)
     if opts.email is None:
         opts.email = getEmail()
     return opts
 
-
-def loadIdFiles(opts):
-    for idFile in opts.idFiles:
-        opts.ids.extend(loadIdFile(idFile))
-
-
-def loadIdFile(idFile):
-    fh = open(idFile)
+def loadIdFiles(idFiles):
     ids = []
-    for line in fh:
-        line = line.strip()
-        if (len(line) > 0) and (line[0] != '#'):
-            ids.append(line)
-    fh.close()
+    for idFile in idFiles:
+        ids.extend(fileOps.readNonCommentLines(idFile))
     return ids
-
 
 def getEmail():
     try:
@@ -66,13 +54,12 @@ def getEmail():
     except Exception as ex:
         raise PycbioException("unable to obtain email address, specify on command line") from ex
 
-
-def efetchRetried(opts, gbid, fmt):
+def efetchRetried(email, gbid, fmt):
     "efetch, with sleeping and retry to deal with NCBI rate limit"
     triesLeft = 3
     while True:
         try:
-            return Entrez.efetch(db="nucleotide", id=gbid, rettype=fmt, retmode="text", email=opts.email)
+            return Entrez.efetch(db="nucleotide", id=gbid, rettype=fmt, retmode="text", email=email)
         except HTTPError as err:
             if (429 <= err.code <= 599) and (triesLeft > 0):
                 time.sleep(15)
@@ -80,23 +67,41 @@ def efetchRetried(opts, gbid, fmt):
                 raise
         triesLeft -= 1
 
-def efetch(opts, gbid, outFh):
+def efetch(email, fastaFmt, gbid, outFh):
     "fetch a genbank entry or fasta"
-    fmt = "fasta" if opts.fasta else "gbwithparts"
-    resp = efetchRetried(opts, gbid, fmt)
+    fmt = "fasta" if fastaFmt else "gbwithparts"
+    resp = efetchRetried(email, gbid, fmt)
     ent = resp.read()
     if len(ent) <= 1:
         raise PycbioException("no entry found for \"{}\"".format(id))
     outFh.write(ent)
 
+def doFetchOutToFile(email, fastaFmt, ids, outFile):
+    with fileOps.opengz(outFile, "w") as outFh:
+        for gbid in sorted(ids):
+            efetch(email, fastaFmt, gbid, outFh)
 
-def doFetch(opts, outFh):
-    for gbid in sorted(opts.ids):
-        efetch(opts, gbid, outFh)
+def doFetchOneToFile(email, fastaFmt, gbid, outDir):
+    outFile = osp.join(outDir, gbid + (".fa" if fastaFmt else ".gbff"))
+    with fileOps.opengz(outFile, "w") as outFh:
+        efetch(email, fastaFmt, gbid, outFh)
+
+def doFetchOutToDir(email, fastaFmt, ids, outDir):
+    for gbid in sorted(ids):
+        doFetchOneToFile(email, fastaFmt, gbid, outDir)
+
+def ncbiGbFetch(opts):
+    ids = opts.ids
+    if opts.idFiles is not None:
+        ids.extend(loadIdFiles(opts.idFiles))
+    ids = frozenset(ids)
+    if len(ids) == 0:
+        raise PycbioException("no ids specified on command line or with --idFile")
+    email = opts.email if opts.email is not None else getEmail()
+    if opts.outDir is not None:
+        doFetchOutToDir(email, opts.fasta, ids, opts.outDir)
+    else:
+        doFetchOutToFile(email, opts.fasta, ids, opts.out)
 
 
-opts = parseArgs()
-outFh = open(opts.out, "w") if opts.out is not None else sys.stdout
-doFetch(opts, outFh)
-if outFh != sys.stdout:
-    outFh.close()
+ncbiGbFetch(parseArgs())
