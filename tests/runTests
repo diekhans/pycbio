@@ -75,6 +75,7 @@ def buildTests():
     dt.add("libtests.pycbio.hgdata.cigarTests")
     dt.add("libtests.pycbio.hgdata.clusterGenesTests")
     dt.add("libtests.pycbio.hgdata.coordsTests")
+    dt.add("libtests.pycbio.hgdata.dnaOpsTests")
     dt.add("libtests.pycbio.hgdata.frameTests")
     dt.add("libtests.pycbio.hgdata.geneCheckTests")
     dt.add("libtests.pycbio.hgdata.genePredTests")
