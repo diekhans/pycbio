@@ -98,7 +98,7 @@ class TsvReader(object):
                 col = self.columnNameMapper(col)
             self.columns.append(col)
             if col in self.colMap:
-                raise TsvError("Duplicate column name: {}".format(col))
+                raise TsvError("Duplicate column name: '{}'".format(col))
             self.colMap[col] = i
             i += 1
 

@@ -55,7 +55,6 @@ def evalConfigFunc(configPyFile, getFuncName="getConfig", getFuncArgs=[], getFun
     try:
         return configFunc(*getFuncArgs, **getFuncKwargs)
     except Exception as ex:
-        # FIXME really need traceback here
         raise PycbioException("Error from configuration function {}(): {}".format(getFuncName, configPyFile)) from ex
 
 
@@ -79,10 +78,12 @@ def evalConfigFile(configPyFile, extraEnv=None):
     defaults.
 
     A function `include_config(inclPyFile, conflocals)' will be defined in the
-    environment.  The conflocals argument should be specified as locals().
-    If inclPyFile is not absolute, it will found relative to configPyFile.
-    The configPyFile variable is set to the absolute path to the included
-    file while it is being evaluated.
+    environment. This is used to include other files by name rather than
+    import.  The conflocals argument should be specified as locals().  If
+    inclPyFile is not absolute, it will found relative to configPyFile.  The
+    configPyFile variable is set to the absolute path to the included file
+    while it is being evaluated.
+
     """
     configEnv = _evalConfigFile(configPyFile, configEnv=dict(), extraEnv=extraEnv)
     # construct object excluding some
