@@ -166,7 +166,7 @@ class ReadTests(TestCaseBase):
     def testDupColumn(self):
         with self.assertRaises(TsvError) as cm:
             TsvTable(self.getInputFile("dupCol.tsv"))
-        self.assertEqual(str(cm.exception), "Duplicate column name: col1")
+        self.assertEqual(str(cm.exception), "Duplicate column name: 'col1'")
 
     def testAllowEmptyReader(self):
         cnt = 0
