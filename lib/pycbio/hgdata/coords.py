@@ -81,6 +81,13 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
             raise CoordsError("invalid subrange: {}-{} of {}".format(start, end, self))
         return Coords(self.name, start, end, self.strand, self.size)
 
+    def format(self, *, oneBased=False, commas=False):
+        if self.start is None:
+            return self.name
+        else:
+            fmt = "{}:{}-{}" if not commas else "{}:{:,}-{:,}"
+            return fmt.format(self.name, self.start + (1 if oneBased else 0), self.end)
+
     def __str__(self):
         if self.start is None:
             return self.name

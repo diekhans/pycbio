@@ -90,9 +90,16 @@ class CoordsTests(TestCaseBase):
         self.assertEqual(cid, Coords("chr22", 40000000, 45000000, strand='+', size=50818468))
 
     def testCoordsGetAbs(self):
-        cpos = Coords("chr22", 40000000, 40000000, strand='+', size=50818468)
+        cpos = Coords("chr22", 40000000, 45000000, strand='+', size=50818468)
         cneg = cpos.reverse()
         self.assertEqual((cneg.absStart, cneg.absEnd), (cpos.start, cpos.end))
+
+    def testFormat(self):
+        pos = Coords("chr22", 40000000, 45000000, strand='+', size=50818468)
+        self.assertEqual(pos.format(), "chr22:40000000-45000000")
+        self.assertEqual(pos.format(oneBased=True), "chr22:40000001-45000000")
+        self.assertEqual(pos.format(commas=True), "chr22:40,000,000-45,000,000")
+        self.assertEqual(pos.format(oneBased=True, commas=True), "chr22:40,000,001-45,000,000")
 
     def FIXME_testCoordsCmpNoStrand(self):
         # strand None comparison must be handled carefully, can't do None < None
