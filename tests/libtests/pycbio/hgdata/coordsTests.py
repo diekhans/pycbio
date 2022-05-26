@@ -89,6 +89,21 @@ class CoordsTests(TestCaseBase):
         cid = c1p.intersect(c2d)
         self.assertEqual(cid, Coords("chr22", 40000000, 45000000, strand='+', size=50818468))
 
+    def testSubrangeNoStrand(self):
+        c1 = Coords("chr22", 40000000, 50000000, strand='+', size=50818468)
+        c2 = c1.subrange(41000000, 49000000)
+        self.assertEqual(c2, Coords("chr22", 41000000, 49000000, strand='+', size=50818468))
+
+    def testSubrangeStrandSwap(self):
+        c1 = Coords("chr22", 40000000, 50000000, strand='+', size=50818468)
+        c2 = c1.subrange(1818468, 9818468, strand='-')
+        self.assertEqual(c2, Coords("chr22", 41000000, 49000000, strand='+', size=50818468))
+
+    def testAdjrange(self):
+        c1 = Coords("chr22", 400000, 500000, strand='+', size=50818468)
+        c2 = c1.adjrange(41000000, 49000000)
+        self.assertEqual(c2, Coords("chr22", 41000000, 49000000, strand='+', size=50818468))
+
     def testCoordsGetAbs(self):
         cpos = Coords("chr22", 40000000, 45000000, strand='+', size=50818468)
         cneg = cpos.reverse()

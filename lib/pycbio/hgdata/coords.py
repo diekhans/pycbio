@@ -40,8 +40,10 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
     __slots__ = ()
 
     def __new__(cls, name, start, end, strand=None, size=None):
-        assert (start <= end) and (start >= 0), f"invalid range: {start} {end}"
-        assert (size is None) or (end <= size), f"range: {start} {end} exceeds size {size}"
+        if not ((start <= end) and (start >= 0)):
+            raise CoordsError(f"invalid range: {start}..{end}")
+        if not ((size is None) or (end <= size)):
+            raise CoordsError(f"range: {start}..{end} exceeds size {size}")
         return super(Coords, cls).__new__(cls, name, _intOrNone(start), _intOrNone(end), strand, _intOrNone(size))
 
     @classmethod
@@ -80,6 +82,13 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         if (start > end) or (start < self.start) or (end > self.end):
             raise CoordsError("invalid subrange: {}-{} of {}".format(start, end, self))
         return Coords(self.name, start, end, self.strand, self.size)
+
+    def adjrange(self, start, end):
+        """Construct a Coords object that has an adjust range on the same sequence
+        and strand.
+        """
+        return Coords(self.name, start, end, self.strand, self.size)
+
 
     def format(self, *, oneBased=False, commas=False):
         if self.start is None:
