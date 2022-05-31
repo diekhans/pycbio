@@ -1,6 +1,8 @@
 #+STARTUP: nologdone
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
+* __eq__ should return NotImplemented rather than raise?
+* should ObjDict be a types.SimpleNamespace ? 
 * build clustering module based on:
 t2t-chm13/gene-annotation/t2t-chm13-gene-analysis/bin/geneBoundsLib.py
 kznf-gene-homology/bin/paralogClassify

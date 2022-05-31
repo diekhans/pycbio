@@ -13,16 +13,18 @@ _bytesComplements = bytes.maketrans(b'acgtrymkbdhvACGTRYMKBDHV',
                                     b'tgcayrkmvhdbTGCAYRKMVHDB')
 
 
-def reverseComplement(dna):
-    "reverse complement a str of bytes of DNA sequences"
-    if dna is None:
-        return None
-    elif isinstance(dna, str):
-        return dna.translate(_strComplements)[::-1]
+def complement(dna):
+    if isinstance(dna, str):
+        return dna.translate(_strComplements)
     elif isinstance(dna, bytes):
-        return dna.translate(_bytesComplements)[::-1]
+        return dna.translate(_bytesComplements)
     else:
         raise TypeError(f"DNA sequence must be str or bytes, got {type(dna)}")
+
+
+def reverseComplement(dna):
+    "reverse complement a str of bytes of DNA sequences"
+    return complement(dna)[::-1]
 
 def reverseCoords(start, end, size):
     "reverse coordinate pair"
