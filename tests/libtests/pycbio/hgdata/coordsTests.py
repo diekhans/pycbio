@@ -89,6 +89,13 @@ class CoordsTests(TestCaseBase):
         cid = c1p.intersect(c2d)
         self.assertEqual(cid, Coords("chr22", 40000000, 45000000, strand='+', size=50818468))
 
+    def testContains(self):
+        c1 = Coords("chr22", 40000000, 50000000)
+        self.assertFalse(c1.contains(Coords("chr22", 35000000, 45000000)))
+        self.assertFalse(c1.contains(Coords("chr22", 35000000, 36000000)))
+        self.assertTrue(c1.contains(Coords("chr22", 40000000, 50000000)))
+        self.assertTrue(c1.contains(Coords("chr22", 45000000, 49000000)))
+
     def testSubrangeNoStrand(self):
         c1 = Coords("chr22", 40000000, 50000000, strand='+', size=50818468)
         c2 = c1.subrange(41000000, 49000000)

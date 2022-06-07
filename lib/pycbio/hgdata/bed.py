@@ -68,6 +68,17 @@ class Bed(object):
                 numStdCols += 3
         self.numStdCols = numStdCols
 
+    def addBlock(self, start, end):
+        """add a new block"""
+        assert start < end
+        assert start >= self.chromStart
+        assert end <= self.chromEnd
+        blk = Bed.Block(start, end)
+        if self.blocks is None:
+            self.blocks = []
+        self.blocks.append(blk)
+        return blk
+
     @property
     def numColumns(self):
         """Returns the number of columns in the BED when formatted as a row."""
@@ -208,6 +219,9 @@ class Bed(object):
         fh.write(str(self))
         fh.write('\n')
 
+    @staticmethod
+    def genome_sort_key(bed):
+        return bed.chrom, bed.chromStart
 
 def BedReader(fspec, numStdCols=None, bedClass=Bed):
     """Generator to read BED objects loaded from a tab-file or file-like

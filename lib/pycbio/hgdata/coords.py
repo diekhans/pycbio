@@ -89,7 +89,6 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         """
         return Coords(self.name, start, end, self.strand, self.size)
 
-
     def format(self, *, oneBased=False, commas=False):
         if self.start is None:
             return self.name
@@ -228,8 +227,9 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
             return Coords(self.name, self.start, self.end)
 
     def intersect(self, other):
-        """Intersection range, or None if not on same chromosome."""
+        """Intersection range, or None if not on same chromosome, zero length if not intersected"""
         # FIXME: need to define for different strand
+        # FIXME: should this return zero-length if on different chrom?
         self._checkCmpType(other)
         if self.name != other.name:
             return None
@@ -239,3 +239,8 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
             if start > end:
                 start = end
             return Coords(self.name, start, end, self.strand, self.size)
+
+    def contains(self, other):
+        "is other fully contained in this object, ignoring strand"
+        self._checkCmpType(other)
+        return (other.name == self.name) and (other.start >= self.start) and (other.end <= other.end)

@@ -1,6 +1,8 @@
 #+STARTUP: nologdone
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
+* paired coordinates features for genome/transcript is really useful:
+PrimerS-JuJu/lib/primersjuju/target_transcripts.py
 * __eq__ should return NotImplemented rather than raise?
 * should ObjDict be a types.SimpleNamespace ? 
 * build clustering module based on:
