@@ -3,6 +3,7 @@
 """
 from pycbio import PycbioException
 from pycbio.sys import fileOps
+from pycbio.sys.objDict import ObjDict
 
 
 def _noneIfNa(name):
@@ -57,7 +58,7 @@ class AssemblyReport(object):
     expectedHeader = "# Sequence-Name	Sequence-Role	Assigned-Molecule	Assigned-Molecule-Location/Type	GenBank-Accn	Relationship	RefSeq-Accn	Assembly-Unit	Sequence-Length	UCSC-style-name"
 
     def __init__(self, asmReport):
-        self.metaData = dict()  # main headers at start
+        self.metaData = ObjDict()  # main headers at start, as fields, with ' ', converted to '_"
         self.seqs = []
         self.bySequenceName = dict()
         self.byGenBankAccn = dict()
@@ -81,7 +82,9 @@ class AssemblyReport(object):
         colon = line.find(":")
         if colon < 0:
             raise PycbioException("invalid metaData line: " + line)
-        self.metaData[line[2:colon]] = line[colon + 1:].strip()
+        name = line[2:colon].replace(' ', '_')
+        value = line[colon + 1:].strip()
+        self.metaData[name] = value
 
     def _skipToSeqTable(self, fh):
         "skip past header line before sequence records"
@@ -108,14 +111,49 @@ class AssemblyReport(object):
         if rec.ucscStyleName is not None:
             self.byUcscStyleName[rec.ucscStyleName] = rec
 
-    def ucscNameToSeqName(self, ucscName):
+    @property
+    def assemblyName(self):
+        return self.metaData.Assembly_Name
+
+    def getBySequenceName(self, seqName):
         try:
-            return self.byUcscStyleName[ucscName].sequenceName
+            return self.bySequenceName[seqName]
         except KeyError:
-            raise ValueError("unknown UCSC chromosome name: '{}'".format(ucscName))
+            raise PycbioException(f"unknown '{self.assemblyName}' sequence name: '{seqName}'")
+
+    def getByGenBankAccn(self, genBankAccn):
+        try:
+            return self.byGenBankAccn[genBankAccn]
+        except KeyError:
+            raise PycbioException(f"unknown '{self.assemblyName}'  a GenBank accession: '{genBankAccn}'")
+
+    def getByRefSeqAccn(self, refSeqAccn):
+        try:
+            return self.byRefSeqAccn[refSeqAccn]
+        except KeyError:
+            raise PycbioException(f"unknown '{self.assemblyName}' RefSeq accession: '{refSeqAccn}'")
+
+    def getByUcscStyleName(self, ucscStyleName):
+        try:
+            return self.byUcscStyleName[ucscStyleName]
+        except KeyError:
+            raise PycbioException(f"unknown '{self.assemblyName}' UCSC-style name: '{ucscStyleName}'")
+
+    def getByName(self, name):
+        """try all of the various sequence names to find a record"""
+        rec = self.bySequenceName.get(name)
+        if rec is None:
+            rec = self.byGenBankAccn.get(name)
+        if rec is None:
+            rec = self.byRefSeqAccn.get(name)
+        if rec is None:
+            rec = self.byUcscStyleName.get(name)
+        if rec is None:
+            raise PycbioException(f"unknown '{self.assemblyName}' sequence: '{name}'")
+        return rec
+
+    def ucscNameToSeqName(self, ucscName):
+        return self.getByUcscStyleName[ucscName].sequenceName
 
     def seqNameToUcscName(self, seqName):
-        try:
-            return self.bySequenceName[seqName].ucscStyleName
-        except KeyError:
-            raise ValueError("unknown chromosome name: '{}'".format(seqName))
+        return self.getBySequenceName[seqName].ucscStyleName

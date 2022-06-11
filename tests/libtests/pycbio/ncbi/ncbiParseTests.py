@@ -27,26 +27,30 @@ class NcbiParseTests(TestCaseBase):
                           'MT\tassembled-molecule\tMT\tMitochondrion\tJ01415.2\t=\tNC_012920.1\tnon-nuclear\t16569\tchrM'])
 
         expectLine = 'HSCHR19KIR_T7526_BDEL_HAP_CTG3_1\talt-scaffold\t19\tChromosome\tKI270916.1\t=\tNT_187670.1\tALT_REF_LOCI_22\t184516\tchr19_KI270916v1_alt'
-        self.assertEqual(str(asmReport.bySequenceName['HSCHR19KIR_T7526_BDEL_HAP_CTG3_1']), expectLine)
-        self.assertEqual(str(asmReport.byGenBankAccn['KI270916.1']), expectLine)
-        self.assertEqual(str(asmReport.byRefSeqAccn['NT_187670.1']), expectLine)
-        self.assertEqual(str(asmReport.byUcscStyleName['chr19_KI270916v1_alt']), expectLine)
+        self.assertEqual(str(asmReport.getBySequenceName('HSCHR19KIR_T7526_BDEL_HAP_CTG3_1')), expectLine)
+        self.assertEqual(str(asmReport.getByGenBankAccn('KI270916.1')), expectLine)
+        self.assertEqual(str(asmReport.getByRefSeqAccn('NT_187670.1')), expectLine)
+        self.assertEqual(str(asmReport.getByUcscStyleName('chr19_KI270916v1_alt')), expectLine)
+
+        for name in ('HSCHR19KIR_T7526_BDEL_HAP_CTG3_1', 'KI270916.1', 'NT_187670.1', 'chr19_KI270916v1_alt'):
+            self.assertEqual(str(asmReport.getByName(name)), expectLine)
 
         metaData = [(name, asmReport.metaData[name]) for name in sorted(asmReport.metaData.keys())]
         self.assertEqual(metaData,
-                         [('Assembly Name', 'GRCh38.p2'),
-                          ('Assembly level', 'Chromosome'),
-                          ('Assembly type', 'haploid-with-alt-loci'),
+                         [('Assembly_Name', 'GRCh38.p2'),
+                          ('Assembly_level', 'Chromosome'),
+                          ('Assembly_type', 'haploid-with-alt-loci'),
                           ('Date', '2014-12-5'),
                           ('Description', 'Genome Reference Consortium Human Build 38 patch release 2 (GRCh38.p2)'),
-                          ('GenBank Assembly Accession', 'GCA_000001405.17 (replaced)'),
-                          ('Genome representation', 'full'),
-                          ('Organism name', 'Homo sapiens'),
-                          ('RefSeq Assembly Accession', 'GCF_000001405.28 (species-representative replaced)'),
-                          ('RefSeq Assembly and GenBank Assemblies Identical', 'yes'),
-                          ('Release type', 'patch'),
+                          ('GenBank_Assembly_Accession', 'GCA_000001405.17 (replaced)'),
+                          ('Genome_representation', 'full'),
+                          ('Organism_name', 'Homo sapiens'),
+                          ('RefSeq_Assembly_Accession', 'GCF_000001405.28 (species-representative replaced)'),
+                          ('RefSeq_Assembly_and_GenBank_Assemblies_Identical', 'yes'),
+                          ('Release_type', 'patch'),
                           ('Submitter', 'Genome Reference Consortium'),
                           ('Taxid', '9606')])
+        self.assertEqual(asmReport.assemblyName, 'GRCh38.p2')
 
     def testAgpGrch38(self):
         agp = Agp(self.getInputFile("GCA_000001305.2.chr22.agp"))
