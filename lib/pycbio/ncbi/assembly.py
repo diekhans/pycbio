@@ -1,6 +1,8 @@
 # Copyright 2015-2015 Mark Diekhans
 """Parsing of NCBI assembly information files.
 """
+from collections import namedtuple
+
 from pycbio import PycbioException
 from pycbio.sys import fileOps
 from pycbio.sys.objDict import ObjDict
@@ -14,24 +16,16 @@ def _naIfNone(name):
     return "na" if name is None else name
 
 
-class AssemblyReport(object):
+class AssemblyReport:
     """Parse assembly reports files, e.g.
       ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_assembly_report.txt
     Sequence ids of 'na' are converted to None.
     """
 
-    class Record(object):
-        def __init__(self, sequenceName, sequenceRole, assignedMolecule, locationType, genBankAccn, relationship, refSeqAccn, assemblyUnit, sequenceLength, ucscStyleName):
-            self.sequenceName = sequenceName
-            self.sequenceRole = sequenceRole
-            self.assignedMolecule = assignedMolecule
-            self.locationType = locationType
-            self.genBankAccn = _noneIfNa(genBankAccn)
-            self.relationship = relationship
-            self.refSeqAccn = _noneIfNa(refSeqAccn)
-            self.assemblyUnit = assemblyUnit
-            self.sequenceLength = sequenceLength
-            self.ucscStyleName = _noneIfNa(ucscStyleName)
+    class Record(namedtuple("Record",
+                            ("sequenceName", "sequenceRole", "assignedMolecule", "locationType", "genBankAccn",
+                             "relationship", "refSeqAccn", "assemblyUnit", "sequenceLength", "ucscStyleName"))):
+        """Sequence record"""
 
         @property
         def gencodeName(self):
@@ -101,7 +95,16 @@ class AssemblyReport(object):
         row = line.split('\t')
         if len(row) != 10:
             raise PycbioException("expected 10 columns in assemble report record, found " + str(len(row)) + " in " + fh.name)
-        rec = self.Record(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], int(row[8]), row[9])
+        rec = self.Record(sequenceName=row[0],
+                          sequenceRole=row[1],
+                          assignedMolecule=row[2],
+                          locationType=row[3],
+                          genBankAccn=_noneIfNa(row[4]),
+                          relationship=row[5],
+                          refSeqAccn=_noneIfNa(row[6]),
+                          assemblyUnit=row[7],
+                          sequenceLength=int(row[8]),
+                          ucscStyleName=_noneIfNa(row[9]))
         self.seqs.append(rec)
         self.bySequenceName[rec.sequenceName] = rec
         if rec.genBankAccn is not None:
