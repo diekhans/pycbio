@@ -57,7 +57,7 @@ class AssemblyReport(object):
     expectedHeader = "# Sequence-Name	Sequence-Role	Assigned-Molecule	Assigned-Molecule-Location/Type	GenBank-Accn	Relationship	RefSeq-Accn	Assembly-Unit	Sequence-Length	UCSC-style-name"
 
     def __init__(self, asmReport):
-        self.metaData = dict()  # main headers at started
+        self.metaData = dict()  # main headers at start
         self.seqs = []
         self.bySequenceName = dict()
         self.byGenBankAccn = dict()
