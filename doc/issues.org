@@ -1,10 +1,13 @@
 #+STARTUP: nologdone
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
+* configInPy is not very elegant and hard to use
+should also handle config hierarchy (cmdline -> config file -> defaults)
 * paired coordinates features for genome/transcript is really useful:
 PrimerS-JuJu/lib/primersjuju/target_transcripts.py
 * __eq__ should return NotImplemented rather than raise?
-* should ObjDict be a types.SimpleNamespace ? 
+* could ObjDict be a types.SimpleNamespace ?
+* vars doesn't work with ObjDict
 * build clustering module based on:
 t2t-chm13/gene-annotation/t2t-chm13-gene-analysis/bin/geneBoundsLib.py
 kznf-gene-homology/bin/paralogClassify
@@ -24,6 +27,7 @@ kznf-gene-homology/bin/paralogClassify
   confusion arrived because strand in t-coords not t-strand in psl for blocks,
   tstrand gets revsered for block
 - Coords.adjust is a horrible name
+- pair coords (Feature, see primers juju)
 - method to map frame
 * create some common genome mapping functions related to
 isoseq-xspecies/bin/mappedAlignToAnnot
