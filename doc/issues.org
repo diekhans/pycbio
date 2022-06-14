@@ -1,6 +1,9 @@
 #+STARTUP: nologdone
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
+* configInPy.py _evalConfigFile doesn't give file name in errors:
+caused by: invalid syntax. Perhaps you forgot a comma? (<string>, line 22)
+
 * configInPy is not very elegant and hard to use
 should also handle config hierarchy (cmdline -> config file -> defaults)
 * paired coordinates features for genome/transcript is really useful:
