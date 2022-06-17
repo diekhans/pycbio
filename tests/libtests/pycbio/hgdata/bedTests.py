@@ -1,6 +1,7 @@
 # Copyright 2006-2012 Mark Diekhans
 import unittest
 import sys
+import pickle
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
@@ -89,6 +90,14 @@ class BedTests(TestCaseBase):
         outRow = b1.toRow()
         self.assertEqual(testRow, outRow)
 
+    def testPickle(self):
+        beds = BedTable(self.getInputFile("bed12extra.bed"))
+        bed0 = beds[0]
+        bedp = pickle.loads(pickle.dumps(bed0))
+        self.assertEqual(bedp.chrom, bed0.chrom)
+        self.assertEqual(bedp.chromStart, bed0.chromStart)
+        for b0, bp in zip(bed0.blocks, bedp.blocks):
+            self.assertEqual(bp, b0)
 
 def suite():
     ts = unittest.TestSuite()

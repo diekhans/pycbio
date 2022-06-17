@@ -1,6 +1,7 @@
 #+STARTUP: nologdone
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
+* make most classes pickle-friendly
 * configInPy.py _evalConfigFile doesn't give file name in errors:
 caused by: invalid syntax. Perhaps you forgot a comma? (<string>, line 22)
 

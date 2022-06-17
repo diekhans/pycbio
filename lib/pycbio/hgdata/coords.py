@@ -46,6 +46,9 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
             raise CoordsError(f"range: {start}..{end} exceeds size {size}")
         return super(Coords, cls).__new__(cls, name, _intOrNone(start), _intOrNone(end), strand, _intOrNone(size))
 
+    def __getnewargs_ex__(self):
+        return ((self.name, self.start, self.end, self.strand, self.size), {})
+
     @classmethod
     def _parse_parts(cls, coordsStr, size, oneBased):
         cparts = coordsStr.split(":")

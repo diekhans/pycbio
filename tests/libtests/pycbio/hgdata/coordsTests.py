@@ -1,6 +1,7 @@
 # Copyright 2006-2014 Mark Diekhans
 import unittest
 import sys
+import pickle
 
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
@@ -122,6 +123,12 @@ class CoordsTests(TestCaseBase):
         self.assertEqual(pos.format(oneBased=True), "chr22:40000001-45000000")
         self.assertEqual(pos.format(commas=True), "chr22:40,000,000-45,000,000")
         self.assertEqual(pos.format(oneBased=True, commas=True), "chr22:40,000,001-45,000,000")
+
+    def test_pickle(self):
+        c1 = Coords("chr22", 40000000, 50000000, strand='+', size=50818468)
+        c2 = pickle.loads(pickle.dumps(c1))
+        assert c2 == c1
+
 
     def FIXME_testCoordsCmpNoStrand(self):
         # strand None comparison must be handled carefully, can't do None < None
