@@ -50,7 +50,7 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         return ((self.name, self.start, self.end, self.strand, self.size), {})
 
     @classmethod
-    def _parse_parts(cls, coordsStr, size, oneBased):
+    def _parse_parts(cls, coordsStr, oneBased):
         cparts = coordsStr.split(":")
         name = cparts[0]
         if len(cparts) != 2:
@@ -71,7 +71,7 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         try:
             if strand not in ('+', '-', None):
                 raise CoordsError(f"invalid strand: '{strand}'")
-            name, start, end = cls._parse_parts(coordsStr, size, oneBased)
+            name, start, end = cls._parse_parts(coordsStr, oneBased)
             return Coords(name, start, end, strand, size)
         except Exception as ex:
             raise CoordsError(f"invalid coordinates: '{coordsStr}'") from ex
