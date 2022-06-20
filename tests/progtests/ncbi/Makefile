@@ -17,8 +17,8 @@ diff = diff -u
 
 # if there is no domain configured, we need to for an email address for ncbiGbFetch
 # don't be fooled by *.local
-hostname = $(shell hostname -f)
-ifneq ($(and $(if $(findstring .,${hostname}), true), $(if $(findstring .local,${hostname}), false)),)
+hostname = $(patsubst %.local,,$(shell hostname -f))
+ifeq ($(findstring .,${hostname}),)
    email = --email=markd@ucsc.edu
 endif
 
