@@ -338,6 +338,10 @@ class Psl(object):
         "return psl as a tab-separated string"
         return "\t".join(self.toRow())
 
+    def __repr__(self):
+        # less than idea, the PslBlock object needs to have back-reference removed
+        return f"Psl.fromRow({repr(self.toRow())})"
+
     def write(self, fh):
         """write psl to a tab-seperated file"""
         fh.write(str(self))
