@@ -41,9 +41,9 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
 
     def __new__(cls, name, start, end, strand=None, size=None):
         if not ((start <= end) and (start >= 0)):
-            raise CoordsError(f"invalid range: {start}..{end}")
+            raise CoordsError(f"invalid range {start}..{end} for {name}")
         if not ((size is None) or (end <= size)):
-            raise CoordsError(f"range: {start}..{end} exceeds size {size}")
+            raise CoordsError(f"range {start}..{end} exceeds size {size} for {name}")
         return super(Coords, cls).__new__(cls, name, _intOrNone(start), _intOrNone(end), strand, _intOrNone(size))
 
     def __getnewargs_ex__(self):
