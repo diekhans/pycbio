@@ -16,6 +16,8 @@ from pycbio.sys import fileOps
 
 host = "eutils.ncbi.nlm.nih.gov"
 
+verbose = False
+
 def parseArgs():
     desc = """Retrieve genbank records or sequences from NCBI nucleotide
     (GenBank/RefSeq), give accessions or other ids understood by efetch server."""
@@ -40,6 +42,8 @@ def parseArgs():
     opts = parser.parse_args()
     if opts.email is None:
         opts.email = getEmail()
+    global verbose
+    verbose = opts.verbose
     return opts
 
 def loadIdFiles(idFiles):
@@ -57,11 +61,15 @@ def getEmail():
 def efetchRetried(email, gbid, fmt):
     "efetch, with sleeping and retry to deal with NCBI rate limit"
     triesLeft = 3
+    if verbose:
+        print(f"fetching: {gbid}", file=sys.stderr)
     while True:
         try:
             return Entrez.efetch(db="nucleotide", id=gbid, rettype=fmt, retmode="text", email=email)
         except HTTPError as err:
             if (429 <= err.code <= 599) and (triesLeft > 0):
+                if verbose:
+                    print("retry: ", err, file=sys.stderr)
                 time.sleep(15)
             else:
                 raise

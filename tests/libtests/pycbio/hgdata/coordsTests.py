@@ -129,7 +129,6 @@ class CoordsTests(TestCaseBase):
         c2 = pickle.loads(pickle.dumps(c1))
         assert c2 == c1
 
-
     def FIXME_testCoordsCmpNoStrand(self):
         # strand None comparison must be handled carefully, can't do None < None
         cs = [Coords("chr22", 10200, 20000),
