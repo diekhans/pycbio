@@ -112,6 +112,16 @@ class CoordsTests(TestCaseBase):
         c2 = c1.adjrange(41000000, 49000000)
         self.assertEqual(c2, Coords("chr22", 41000000, 49000000, strand='+', size=50818468))
 
+    def testAdjrangeStart(self):
+        c1 = Coords("chr22", 400000, 500000, strand='+', size=50818468)
+        c2 = c1.adjrange(1000, None)
+        self.assertEqual(c2, Coords("chr22", 1000, 500000, strand='+', size=50818468))
+
+    def testAdjrangeEnd(self):
+        c1 = Coords("chr22", 400000, 500000, strand='+', size=50818468)
+        c2 = c1.adjrange(None, 49000000)
+        self.assertEqual(c2, Coords("chr22", 400000, 49000000, strand='+', size=50818468))
+
     def testCoordsGetAbs(self):
         cpos = Coords("chr22", 40000000, 45000000, strand='+', size=50818468)
         cneg = cpos.reverse()

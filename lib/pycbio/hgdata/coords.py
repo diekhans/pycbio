@@ -88,9 +88,12 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
 
     def adjrange(self, start, end):
         """Construct a Coords object that has an adjust range on the same sequence
-        and strand.
+        and strand.  If either start or end is None, that coordinate is unchanged.
         """
-        return Coords(self.name, start, end, self.strand, self.size)
+        return Coords(self.name,
+                      start if start is not None else self.start,
+                      end if end is not None else self.end,
+                      self.strand, self.size)
 
     def format(self, *, oneBased=False, commas=False):
         if self.start is None:
