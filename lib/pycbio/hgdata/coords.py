@@ -174,19 +174,21 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         return self.end - self.start
 
     def overlaps(self, other):
-        "overlap regardless of strand"
+        """Overlap regardless of strand.  If both strands are None, then compare ranges.
+        Error in one strand is None and other is not None.  Error if strands different and
+        sizes are not specified.
+        """
         self._checkCmpType(other)
         if self.name != other.name:
             return False
-        elif (self.strand == other.strand) or (self.strand is None) or (other.strand is None):
+        if (self.strand == other.strand):  # will include both None
             return (self.start < other.end) and (self.end > other.start)
-        elif (self.strand is None) and (other.strand == '-'):
-            return (self.start < (other.size - other.start)) and (self.end > (other.size - other.end))
-        elif (self.strand == '-') and (other.strand is None):
-            return ((self.size - self.end) < other.end) and ((self.size - self.start) > other.start)
-        else:
-            assert self.strand != other.strand
-            return False
+        if (self.strand is not None) != (other.strand is not None):
+            raise ValueError(f"overlap comparison when one has a strand of None and the other has a specified strand: {repr(self)}.overlaps({repr(other)}")
+        # at this point, we have different, specified strands
+        if (self.size is None) or (other.size is None):
+            raise ValueError(f"overlap comparison when different strands and without size: {repr(self)}.overlaps({repr(other)}")
+        return (self.start < (other.size - other.start)) and (self.end > (other.size - other.end))
 
     def overlapsStrand(self, other):
         self._checkCmpType(other)

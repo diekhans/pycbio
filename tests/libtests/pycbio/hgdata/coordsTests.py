@@ -62,18 +62,37 @@ class CoordsTests(TestCaseBase):
         self.assertTrue(c2.overlaps(c1))
         self.assertTrue(c1.reverse().overlaps(c2.reverse()))
         self.assertTrue(c1.abs().overlaps(c1.abs()))
-        # reversing, strand does not match
-        self.assertFalse(c1.overlaps(c2.reverse()))
-        self.assertFalse(c1.reverse().overlaps(c2))
+
+        # reversing, overlap with different strand
+        self.assertTrue(c1.overlaps(c2.reverse()))
+        self.assertTrue(c1.reverse().overlaps(c2))
+
         # overlap coords, different strand
         c3 = Coords("chr22", 35000000, 45000000, strand='+', size=50818468)
         self.assertFalse(c1.overlaps(c3))
-        # overlap with None strand (overlaps either strand)
+
+        # overlap with None strand, is an error
         c4 = Coords("chr22", 40000000, 50000000, strand=None, size=50818468)
-        self.assertTrue(c3.overlaps(c4))
-        self.assertTrue(c4.overlaps(c3))
-        self.assertTrue(c1.overlaps(c4))
-        self.assertTrue(c4.overlaps(c1))
+        with self.assertRaises(ValueError) as context:
+            c3.overlaps(c4)
+        self.assertEqual(str(context.exception),
+                         "overlap comparison when one has a strand of None and the other has a specified strand: Coords(name='chr22', start=35000000, end=45000000, strand='+', size=50818468).overlaps(Coords(name='chr22', start=40000000, end=50000000, strand=None, size=50818468)")
+        with self.assertRaises(ValueError) as context:
+            c4.overlaps(c2)
+        self.assertEqual(str(context.exception),
+                         "overlap comparison when one has a strand of None and the other has a specified strand: Coords(name='chr22', start=40000000, end=50000000, strand=None, size=50818468).overlaps(Coords(name='chr22', start=35000000, end=45000000, strand='-', size=50818468)")
+
+        # same-strand comparison without sizes works
+        c5 = Coords("chr22", 40000000, 50000000, strand='-')
+        c6 = Coords("chr22", 35000000, 45000000, strand='-')
+        self.assertTrue(c5, c6)
+
+        # different-strand comparison without sizes is an error
+        c7 = Coords("chr22", 35000000, 45000000, strand='-')
+        with self.assertRaises(ValueError) as context:
+            c3.overlaps(c7)
+        self.assertEqual(str(context.exception),
+                         "overlap comparison when different strands and without size: Coords(name='chr22', start=35000000, end=45000000, strand='+', size=50818468).overlaps(Coords(name='chr22', start=35000000, end=45000000, strand='-', size=None)")
 
     def testIntersect(self):
         # strand-specific
