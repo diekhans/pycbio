@@ -143,6 +143,8 @@ def setupFromCmd(opts, *, logger=None, prog=None):
     syslog program name. If prog is not specified, it is obtained from sys.arg.
     Logger maybe a logger, logger name, or None for default logger, returns the logger.
 
+    Will log to stderr if not other login option is specified.
+
     N.B: logging must be initialized after daemonization
     """
     if opts.logDebug:
