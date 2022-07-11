@@ -116,7 +116,7 @@ class Bed(object):
             row.append(str(len(self.blocks)))
             row.extend(self._getBlockColumns())
         if self.extraCols is not None:
-            row.extend([str(defaultIfNone(c)) for c in self.extraCols])
+            row.extend([defaultIfNone(c) for c in self.extraCols])
         return row
 
     @staticmethod
