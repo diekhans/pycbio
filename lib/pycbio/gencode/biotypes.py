@@ -63,7 +63,9 @@ class BioType(SymEnum):
     unprocessed_pseudogene = auto()
     vaultRNA = auto()
     vault_RNA = auto()
-
+    protein_coding_LoF = auto()
+    artifact = auto()
+    artifactual_duplication = auto()
 
 class GencodeFunction(SymEnum):
     """category used to color UCSC browser tracks"""
@@ -93,6 +95,7 @@ bioTypesCoding = frozenset([BioType.IG_C_gene,
                             BioType.IG_V_gene,
                             BioType.IG_LV_gene,
                             BioType.polymorphic_pseudogene,
+                            BioType.protein_coding_LoF,
                             BioType.protein_coding,
                             BioType.nonsense_mediated_decay,
                             BioType.TR_C_gene,
@@ -124,7 +127,9 @@ bioTypesNonCoding = frozenset([BioType.antisense,
                                BioType.vault_RNA,
                                BioType.bidirectional_promoter_lncRNA])
 bioTypesOther = frozenset([BioType.retained_intron,
-                           BioType.TEC])
+                           BioType.TEC,
+                           BioType.artifact,
+                           BioType.artifactual_duplication])
 bioTypesPseudo = frozenset([BioType.IG_J_pseudogene,
                             BioType.IG_pseudogene,
                             BioType.IG_V_pseudogene,
