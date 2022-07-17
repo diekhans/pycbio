@@ -5,7 +5,7 @@ random access uses.
 """
 from pycbio.db import sqliteOps
 from pycbio.hgdata.hgSqlite import HgSqliteTable
-from pycbio.hgdata.genePred import GenePred
+from pycbio.hgdata.genePred import GenePred, genePredFromRow
 from pycbio.hgdata.rangeFinder import Binner
 from pycbio.tsv import TabFileReader
 
@@ -77,7 +77,7 @@ class GenePredSqliteTable(HgSqliteTable):
 
     @staticmethod
     def _getRowFactory(raw):
-        return None if raw else lambda cur, row: GenePred(row)
+        return None if raw else lambda cur, row: genePredFromRow(row)
 
     def getAll(self, raw=False):
         """Generator for all genePreds in a table. Don't convert to GenePred

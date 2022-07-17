@@ -4,7 +4,8 @@ import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.hgdata.genePred import GenePredTbl
+from pycbio.sys import fileOps
+from pycbio.hgdata.genePred import GenePredTbl, genePredFromBigGenePred
 
 # lists defining expected results from exon features.
 # they are in the form (utr5 cds utr3)
@@ -119,8 +120,14 @@ class ReadTests(TestCaseBase):
         r = r.getStrandRelative(chromSizes[r.chrom])
         self.assertTrue(r.strandRel)
         self.assertEqual(r.name, "NM_000066.1")
-
         self.chkFeatures(r, featureExpectedSwap(featsNM_000066, chromSizes[r.chrom]))
+
+    def testFromBigGenePred(self):
+        with open(self.getOutputFile(".gp"), "w") as outFh:
+            for row in fileOps.iterRows(self.getInputFile("cat-consensus.bonobo.bigGenePred.txt")):
+                if not row[0].startswith('#'):
+                    genePredFromBigGenePred(row).write(outFh)
+        self.diffExpected(".gp")
 
 
 def suite():

@@ -169,151 +169,49 @@ class Exon(object):
 class GenePred(object):
     """Object wrapper for a genePred"""
 
-    def _buildExons(self, exonStarts, exonEnds, exonFrames):
-        "build array of exon objects"
+    def __init__(self, name=None, chrom=None, strand=None, txStart=None, txEnd=None, cdsStart=None, cdsEnd=None):
+        self.name = name
+        self.chrom = chrom
+        self.strand = strand
+        self.txStart = txStart
+        self.txEnd = txEnd
+        self.cdsStart = cdsStart
+        self.cdsEnd = cdsEnd
         self.exons = []
-        frame = None
-        self.cdsStartIExon = None
-        self.cdsEndIExon = None
-        for i in range(len(exonStarts)):
-            if exonFrames is not None:
-                frame = exonFrames[i]
-            self.addExon(exonStarts[i], exonEnds[i], frame)
-
-    def _initParse(self, row):
-        self.name = row[0]
-        self.chrom = row[1]
-        self.strand = row[2]
-        self.strandRel = False    # are these strand-relative coordinates
-        self.txStart = int(row[3])
-        self.txEnd = int(row[4])
-        self.cdsStart = int(row[5])
-        self.cdsEnd = int(row[6])
-        exonStarts = intArraySplit(row[8])
-        exonEnds = intArraySplit(row[9])
-        iCol = 10
-        numCols = len(row)
-        self.score = None
-        if iCol < numCols:  # 10
-            self.score = int(row[iCol])
-            iCol = iCol + 1
-        self.name2 = None
-        if iCol < numCols:  # 11
-            self.name2 = row[iCol]
-            iCol = iCol + 1
-        self.cdsStartStat = None
-        self.cdsEndStat = None
-        if iCol < numCols:  # 12,13
-            self.cdsStartStat = CdsStat(row[iCol])
-            self.cdsEndStat = CdsStat(row[iCol + 1])
-            iCol = iCol + 2
-        exonFrames = None
-        self.hasExonFrames = False
-        if iCol < numCols:  # 14
-            exonFrames = intArraySplit(row[iCol])
-            iCol = iCol + 1
-            self.hasExonFrames = True
-        self._buildExons(exonStarts, exonEnds, exonFrames)
-
-    @staticmethod
-    def _colOrNone(row, dbColIdxMap, colName, typeCnv):
-        idx = dbColIdxMap.get(colName)
-        return None if (idx is None) else typeCnv(row[idx])
-
-    def _initDb(self, row, dbColIdxMap):
-        self.name = row[dbColIdxMap["name"]]
-        self.chrom = row[dbColIdxMap["chrom"]]
-        self.strand = row[dbColIdxMap["strand"]]
-        self.strandRel = False    # are these strand-relative coordinates
-        self.txStart = int(row[dbColIdxMap["txStart"]])
-        self.txEnd = int(row[dbColIdxMap["txEnd"]])
-        self.cdsStart = int(row[dbColIdxMap["cdsStart"]])
-        self.cdsEnd = int(row[dbColIdxMap["cdsEnd"]])
-        exonStarts = intArraySplit(row[dbColIdxMap["exonStarts"]])
-        exonEnds = intArraySplit(row[dbColIdxMap["exonEnds"]])
-        self.score = self._colOrNone(row, dbColIdxMap, "score", int)
-        self.name2 = self._colOrNone(row, dbColIdxMap, "name2", str)
-        self.cdsStartStat = self._colOrNone(row, dbColIdxMap, "cdsStartStat", CdsStat)
-        self.cdsEndStat = self._colOrNone(row, dbColIdxMap, "cdsEndStat", CdsStat)
-        exonFrames = self._colOrNone(row, dbColIdxMap, "exonFrames", intArraySplit)
-        self.hasExonFrames = (exonFrames is not None)
-        self._buildExons(exonStarts, exonEnds, exonFrames)
-
-    def _initEmpty(self):
-        self.name = None
-        self.chrom = None
-        self.strand = None
-        self.strandRel = False    # are these strand-relative coordinates
-        self.txStart = None
-        self.txEnd = None
-        self.cdsStart = None
-        self.cdsEnd = None
         self.score = None
         self.name2 = None
         self.cdsStartStat = None
         self.cdsEndStat = None
         self.hasExonFrames = False
-        self.exons = []
         self.cdsStartIExon = None
         self.cdsEndIExon = None
+        self.strandRel = False    # are these strand-relative coordinates?
 
-    def _initClone(self, gp):
-        self.name = gp.name
-        self.chrom = gp.chrom
-        self.strand = gp.strand
-        self.strandRel = gp.strandRel
-        self.txStart = gp.txStart
-        self.txEnd = gp.txEnd
-        self.cdsStart = gp.cdsStart
-        self.cdsEnd = gp.cdsEnd
-        self.score = gp.score
-        self.name2 = gp.name2
-        self.cdsStartStat = gp.cdsStartStat
-        self.cdsEndStat = gp.cdsEndStat
-        self.hasExonFrames = gp.hasExonFrames
-        self.exons = copy.deepcopy(gp.exons)
-        self.cdsStartIExon = gp.cdsStartIExon
-        self.cdsEndIExon = gp.cdsEndIExon
+    def clone(self):
+        "name a copy"
+        return copy.deepcopy(self)
 
-    def _initSwapToOtherStrand(self, gp, chromSize):
+    def _cloneToOtherStrand(self, chromSize):
         "swap coordinates to other strand"
-        self.name = gp.name
-        self.chrom = gp.chrom
-        self.strand = gp.strand
-        self.strandRel = True
-        self.txStart = chromSize - gp.txEnd
-        self.txEnd = chromSize - gp.txStart
-        self.cdsStart = chromSize - gp.cdsEnd
-        self.cdsEnd = chromSize - gp.cdsStart
-        self.score = gp.score
-        self.name2 = gp.name2
-        self.cdsStartStat = gp.cdsEndStat
-        self.cdsEndStat = gp.cdsStartStat
-        self.hasExonFrames = gp.hasExonFrames
-        self.exons = []
-        self.cdsStartIExon = None
-        self.cdsEndIExon = None
-        for exon in reversed(gp.exons):
-            self.addExon(chromSize - exon.end, chromSize - exon.start, exon.frame)
-
-    def __init__(self, row=None, dbColIdxMap=None, noInitialize=False):
-        "If row is not None, parse a row, otherwise initialize to empty state"
-        if dbColIdxMap is not None:
-            self._initDb(row, dbColIdxMap)
-        elif row is not None:
-            self._initParse(row)
-        elif not noInitialize:
-            self._initEmpty()
+        gp = copy.copy(self)
+        gp.txStart = chromSize - self.txEnd
+        gp.txEnd = chromSize - self.txStart
+        gp.cdsStart = chromSize - self.cdsEnd
+        gp.cdsEnd = chromSize - self.cdsStart
+        gp.cdsStartIExon = gp.cdsEndIExon = None
+        gp.exons = []
+        for exon in reversed(self.exons):
+            gp.addExon(chromSize - exon.end, chromSize - exon.start, exon.frame)
+        return gp
 
     def getStrandRelative(self, chromSize):
         """create a copy of this GenePred object that has strand relative
         coordinates."""
-        gp = GenePred(noInitialize=True)
         if self.inDirectionOfTranscription():
-            gp._initClone(self)
-            gp.strandRel = True
+            gp = self.clone()
         else:
-            gp._initSwapToOtherStrand(self, chromSize)
+            gp = self._cloneToOtherStrand(chromSize)
+        gp.strandRel = True
         return gp
 
     def inDirectionOfTranscription(self):
@@ -331,6 +229,7 @@ class GenePred(object):
             if self.cdsStartIExon is None:
                 self.cdsStartIExon = i
             self.cdsEndIExon = i
+        return self.exons[-1]
 
     def assignFrames(self):
         "set frames on exons, assuming no frame shift"
@@ -556,6 +455,86 @@ class GenePred(object):
         fh.write(str(self))
         fh.write("\n")
 
+def _buildExons(gp, exonStarts, exonEnds, exonFrames):
+    "build array of exon objects"
+    frame = None
+    gp.cdsStartIExon = None
+    gp.cdsEndIExon = None
+    for i in range(len(exonStarts)):
+        if exonFrames is not None:
+            frame = exonFrames[i]
+        gp.addExon(exonStarts[i], exonEnds[i], frame)
+
+def genePredFromRow(row):
+    "create a GenePred object from a row in a genePred file"
+    gp = GenePred(row[0], row[1], row[2], int(row[3]), int(row[4]), int(row[5]), int(row[6]))
+    exonStarts = intArraySplit(row[8])
+    exonEnds = intArraySplit(row[9])
+    iCol = 10
+    numCols = len(row)
+    gp.score = None
+    if iCol < numCols:  # 10
+        gp.score = int(row[iCol])
+        iCol = iCol + 1
+    gp.name2 = None
+    if iCol < numCols:  # 11
+        gp.name2 = row[iCol]
+        iCol = iCol + 1
+    gp.cdsStartStat = None
+    gp.cdsEndStat = None
+    if iCol < numCols:  # 12,13
+        gp.cdsStartStat = CdsStat(row[iCol])
+        gp.cdsEndStat = CdsStat(row[iCol + 1])
+        iCol = iCol + 2
+    exonFrames = None
+    gp.hasExonFrames = False
+    if iCol < numCols:  # 14
+        exonFrames = intArraySplit(row[iCol])
+        iCol = iCol + 1
+        gp.hasExonFrames = True
+    _buildExons(gp, exonStarts, exonEnds, exonFrames)
+    return gp
+
+def _colOrNone(row, dbColIdxMap, colName, typeCnv):
+    idx = dbColIdxMap.get(colName)
+    return None if (idx is None) else typeCnv(row[idx])
+
+def genePredFromDbRow(row, dbColIdxMap):
+    "create a GenePred object from a row in a database query"
+    gp = GenePred(row[dbColIdxMap["name"]], row[dbColIdxMap["chrom"]], row[dbColIdxMap["strand"]],
+                  int(row[dbColIdxMap["txStart"]]), int(row[dbColIdxMap["txEnd"]]),
+                  int(row[dbColIdxMap["cdsStart"]]), int(row[dbColIdxMap["cdsEnd"]]))
+    exonStarts = intArraySplit(row[dbColIdxMap["exonStarts"]])
+    exonEnds = intArraySplit(row[dbColIdxMap["exonEnds"]])
+    gp.score = _colOrNone(row, dbColIdxMap, "score", int)
+    gp.name2 = _colOrNone(row, dbColIdxMap, "name2", str)
+    gp.cdsStartStat = _colOrNone(row, dbColIdxMap, "cdsStartStat", CdsStat)
+    gp.cdsEndStat = _colOrNone(row, dbColIdxMap, "cdsEndStat", CdsStat)
+    exonFrames = _colOrNone(row, dbColIdxMap, "exonFrames", intArraySplit)
+    gp.hasExonFrames = (exonFrames is not None)
+    _buildExons(gp, exonStarts, exonEnds, exonFrames)
+    return gp
+
+def genePredFromBigGenePred(row):
+    """Reimplementation of kent/src/hg/lib/genePred.c to convert bigGenePred row to genePred.
+    This simplifies readings, as bigGenePredToGenePred doesn't return extra columns that are
+    needed.
+    """
+    # chrom	chromStart	chromEnd	name	score	strand	thickStart	thickEnd	reserved	blockCount	blockSizes	chromStarts	name2	cdsStartStat	cdsEndStat	exonFrames
+    gp = GenePred(row[3], row[0], row[5], int(row[1]), int(row[2]), int(row[6]), int(row[7]))
+    blockSizes = intArraySplit(row[10])
+    blockStarts = intArraySplit(row[11])
+    gp.name2 = row[12]
+    gp.cdsStartStat = row[13]
+    gp.cdsEndStat = row[14]
+    exonFrames = intArraySplit(row[15])
+    gp.hasExonFrames = (exonFrames is not None)
+    chromStart = gp.txStart
+    for i in range(len(blockSizes)):
+        start = blockStarts[i] + chromStart
+        gp.addExon(start, start + blockSizes[i], exonFrames[i])
+    return gp
+
 
 class GenePredTbl(list):
     """Table of GenePred objects loaded from a tab-file"""
@@ -595,5 +574,6 @@ class GenePredTbl(list):
 def GenePredReader(fspec):
     """Read genePreds from a tab file which maybe specified as
     a file name or a file-like object"""
-    for gp in TabFileReader(fspec, rowClass=GenePred, hashAreComments=True, skipBlankLines=True):
+    for gp in TabFileReader(fspec, rowClass=lambda row: genePredFromRow(row),
+                            hashAreComments=True, skipBlankLines=True):
         yield gp

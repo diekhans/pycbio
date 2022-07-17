@@ -16,7 +16,7 @@ from pycbio.hgdata.gencodeSqlite import GencodeAttrs, GencodeAttrsSqliteTable, G
 from pycbio.hgdata.gencodeSqlite import GencodeTranscriptionSupportLevel, GencodeTranscriptionSupportLevelSqliteTable
 from pycbio.hgdata.gencodeSqlite import GencodeToGeneSymbol, GencodeToGeneSymbolSqliteTable
 from pycbio.hgdata.psl import Psl
-from pycbio.hgdata.genePred import GenePred
+from pycbio.hgdata.genePred import genePredFromRow
 
 
 class SequenceTests(TestCaseBase):
@@ -229,7 +229,7 @@ class GenePredSqliteTableTests(TestCaseBase):
         conn = sqliteOps.connect(None)
         try:
             gpDb = GenePredSqliteTable(conn, "refGene", True)
-            gpDb.loads([GenePred(r) for r in self.testData])
+            gpDb.loads([genePredFromRow(r) for r in self.testData])
             gpDb.index()
             coords = self._makeObjCoords(gpDb.getByName("NM_000017.1"))
             self.assertEqual(coords, [("NM_000017.1", "chr12", 119575618, 119589763, '+')])

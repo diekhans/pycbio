@@ -1,6 +1,7 @@
 #+STARTUP: nologdone
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
+* convert genePred.py genePredFromDb to use dict cursor
 * add common program error handler
 * make most classes pickle-friendly
 * configInPy.py _evalConfigFile doesn't give file name in errors:
