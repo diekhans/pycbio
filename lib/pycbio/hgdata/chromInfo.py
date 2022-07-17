@@ -37,7 +37,7 @@ class ChromInfoTbl(dict):
         try:
             cur.execute("SELECT chrom, size FROM chromInfo")
             for row in cur:
-                chroms._addRow(row[0], int(row[1]))
+                chroms._addRow(row['chrom'], int(row['size']))
         finally:
             cur.close()
         return chroms

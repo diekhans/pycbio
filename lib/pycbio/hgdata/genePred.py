@@ -495,22 +495,22 @@ def genePredFromRow(row):
     _buildExons(gp, exonStarts, exonEnds, exonFrames)
     return gp
 
-def _colOrNone(row, dbColIdxMap, colName, typeCnv):
-    idx = dbColIdxMap.get(colName)
-    return None if (idx is None) else typeCnv(row[idx])
+def _colOrNone(row, colName, typeCnv):
+    val = row.get(colName)
+    return None if (val is None) else typeCnv(val)
 
-def genePredFromDbRow(row, dbColIdxMap):
-    "create a GenePred object from a row in a database query"
-    gp = GenePred(row[dbColIdxMap["name"]], row[dbColIdxMap["chrom"]], row[dbColIdxMap["strand"]],
-                  int(row[dbColIdxMap["txStart"]]), int(row[dbColIdxMap["txEnd"]]),
-                  int(row[dbColIdxMap["cdsStart"]]), int(row[dbColIdxMap["cdsEnd"]]))
-    exonStarts = intArraySplit(row[dbColIdxMap["exonStarts"]])
-    exonEnds = intArraySplit(row[dbColIdxMap["exonEnds"]])
-    gp.score = _colOrNone(row, dbColIdxMap, "score", int)
-    gp.name2 = _colOrNone(row, dbColIdxMap, "name2", str)
-    gp.cdsStartStat = _colOrNone(row, dbColIdxMap, "cdsStartStat", CdsStat)
-    gp.cdsEndStat = _colOrNone(row, dbColIdxMap, "cdsEndStat", CdsStat)
-    exonFrames = _colOrNone(row, dbColIdxMap, "exonFrames", intArraySplit)
+def genePredFromDictRow(row):
+    "create a GenePred object from a row that is a dictionary, often from a database"
+    gp = GenePred(row["name"], row["chrom"], row["strand"],
+                  int(row["txStart"]), int(row["txEnd"]),
+                  int(row["cdsStart"]), int(row["cdsEnd"]))
+    exonStarts = intArraySplit(row["exonStarts"])
+    exonEnds = intArraySplit(row["exonEnds"])
+    gp.score = _colOrNone(row, "score", int)
+    gp.name2 = _colOrNone(row, "name2", str)
+    gp.cdsStartStat = _colOrNone(row, "cdsStartStat", CdsStat)
+    gp.cdsEndStat = _colOrNone(row, "cdsEndStat", CdsStat)
+    exonFrames = _colOrNone(row, "exonFrames", intArraySplit)
     gp.hasExonFrames = (exonFrames is not None)
     _buildExons(gp, exonStarts, exonEnds, exonFrames)
     return gp

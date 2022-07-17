@@ -126,6 +126,8 @@ bioTypesNonCoding = frozenset([BioType.antisense,
                                BioType.vaultRNA,
                                BioType.vault_RNA,
                                BioType.bidirectional_promoter_lncRNA])
+bioTypesLncRna = frozenset([BioType.lincRNA,
+                            BioType.lncRNA])
 bioTypesOther = frozenset([BioType.retained_intron,
                            BioType.TEC,
                            BioType.artifact,

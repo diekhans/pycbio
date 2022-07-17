@@ -1,7 +1,8 @@
 #+STARTUP: nologdone
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
-* convert genePred.py genePredFromDb to use dict cursor
+* do away with sqlite weird interface. 
+* changes Psl, ChromInfo to have parse functions instead of methods, as with genePred.
 * add common program error handler
 * make most classes pickle-friendly
 * configInPy.py _evalConfigFile doesn't give file name in errors:

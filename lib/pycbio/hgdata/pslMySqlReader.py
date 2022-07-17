@@ -1,7 +1,6 @@
 """
 Read PSL from mysql queries.
 """
-from pycbio.db import mysqlOps
 from pycbio.hgdata.psl import Psl
 from pycbio.hgdata.rangeFinder import Binner
 
@@ -19,14 +18,11 @@ class PslMySqlReader(object):
         self.queryArgs = queryArgs
 
     def __iter__(self):
-        # FIXME: this cursorColIdxMap stuff is too complex, just use dict cursor or maybe assume order
-        # since we constructed select.
         cur = self.conn.cursor()
         try:
             cur.execute(self.query, self.queryArgs)
-            colIdxMap = mysqlOps.cursorColIdxMap(cur)
             for row in cur:
-                yield Psl.fromDbRow(row, dbColIdxMap=colIdxMap)
+                yield Psl.fromDictRow(row)
         finally:
             cur.close()
 

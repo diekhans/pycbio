@@ -3,9 +3,9 @@
 import warnings
 import MySQLdb   # mysqlclient is required for python 3
 import MySQLdb.cursors
+import MySQLdb.converters
 
 _mySqlErrorOnWarnDone = False
-
 
 def mySqlSetErrorOnWarn():
     """Turn most warnings into errors except for those that are Notes from
@@ -20,20 +20,18 @@ def mySqlSetErrorOnWarn():
         _mySqlErrorOnWarnDone = True
 
 
-def connect(host, port, user, password, db="", dictCursor=False):
+def connect(*, host=None, port=None, user=None, passwd=None, db=None, cursorclass=MySQLdb.cursors.DictCursor,
+            conv=None):
     """Connect to genome mysql server, using explict parameters.
     """
-    cursorclass = MySQLdb.cursors.DictCursor if dictCursor else MySQLdb.cursors.Cursor
-    return MySQLdb.Connect(host=host, port=port, user=user, passwd=password, db=db, cursorclass=cursorclass)
-
-
-def cursorColIdxMap(cur):
-    """generate a hash of column name to row index given a cursor that has had
-    a select executed"""
-    m = {}
-    for i in range(len(cur.description)):
-        m[cur.description[i][0]] = i
-    return m
+    if not _mySqlErrorOnWarnDone:
+        mySqlSetErrorOnWarn()
+    kwargs = {}
+    loc = locals()
+    for arg in ("host", "port", "user", "passwd", "db", "cursorclass", "conv"):
+        if loc[arg] is not None:
+            kwargs[arg] = loc[arg]
+    return MySQLdb.Connect(**kwargs)
 
 
 def execute(conn, sql, args=None):

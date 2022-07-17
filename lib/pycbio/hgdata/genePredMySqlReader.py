@@ -2,8 +2,7 @@
 """
 Read genePreds from mysql queries.
 """
-from pycbio.db import mysqlOps
-from pycbio.hgdata.genePred import genePredFromDbRow
+from pycbio.hgdata.genePred import genePredFromDictRow
 
 
 class GenePredMySqlReader(object):
@@ -17,8 +16,7 @@ class GenePredMySqlReader(object):
         cur = self.conn.cursor()
         try:
             cur.execute(self.query, self.queryArgs)
-            colIdxMap = mysqlOps.cursorColIdxMap(cur)
             for row in cur:
-                yield genePredFromDbRow(row, dbColIdxMap=colIdxMap)
+                yield genePredFromDictRow(row)
         finally:
             cur.close()

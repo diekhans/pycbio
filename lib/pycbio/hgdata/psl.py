@@ -190,32 +190,31 @@ class Psl(object):
         return psl
 
     @classmethod
-    def fromDbRow(cls, row, dbColIdxMap):
-        """"Create PSL from a database row"""
-        # FIXME: change to use DictCursor
-        psl = Psl(qName=row[dbColIdxMap["qName"]],
-                  qSize=row[dbColIdxMap["qSize"]],
-                  qStart=row[dbColIdxMap["qStart"]],
-                  qEnd=row[dbColIdxMap["qEnd"]],
-                  tName=row[dbColIdxMap["tName"]],
-                  tSize=row[dbColIdxMap["tSize"]],
-                  tStart=row[dbColIdxMap["tStart"]],
-                  tEnd=row[dbColIdxMap["tEnd"]],
-                  strand=row[dbColIdxMap["strand"]],)
-        psl.match = row[dbColIdxMap["matches"]]
-        psl.misMatch = row[dbColIdxMap["misMatches"]]
-        psl.repMatch = row[dbColIdxMap["repMatches"]]
-        psl.nCount = row[dbColIdxMap["nCount"]]
-        psl.qNumInsert = row[dbColIdxMap["qNumInsert"]]
-        psl.qBaseInsert = row[dbColIdxMap["qBaseInsert"]]
-        psl.tNumInsert = row[dbColIdxMap["tNumInsert"]]
-        psl.tBaseInsert = row[dbColIdxMap["tBaseInsert"]]
-        blockCount = row[dbColIdxMap["blockCount"]]
-        haveSeqs = "qSeqs" in dbColIdxMap
-        cls._parseBlocks(psl, blockCount, row[dbColIdxMap["blockSizes"]],
-                         row[dbColIdxMap["qStarts"]], row[dbColIdxMap["tStarts"]],
-                         (row[dbColIdxMap["qSeqs"]] if haveSeqs else None),
-                         (row[dbColIdxMap["tSeqs"]] if haveSeqs else None))
+    def fromDictRow(cls, row):
+        """"Create PSL from diction, such as a database row"""
+        psl = Psl(qName=row["qName"],
+                  qSize=row["qSize"],
+                  qStart=row["qStart"],
+                  qEnd=row["qEnd"],
+                  tName=row["tName"],
+                  tSize=row["tSize"],
+                  tStart=row["tStart"],
+                  tEnd=row["tEnd"],
+                  strand=row["strand"],)
+        psl.match = row["matches"]
+        psl.misMatch = row["misMatches"]
+        psl.repMatch = row["repMatches"]
+        psl.nCount = row["nCount"]
+        psl.qNumInsert = row["qNumInsert"]
+        psl.qBaseInsert = row["qBaseInsert"]
+        psl.tNumInsert = row["tNumInsert"]
+        psl.tBaseInsert = row["tBaseInsert"]
+        blockCount = row["blockCount"]
+        haveSeqs = "qSeqs" in row
+        cls._parseBlocks(psl, blockCount, row["blockSizes"],
+                         row["qStarts"], row["tStarts"],
+                         (row["qSeqs"] if haveSeqs else None),
+                         (row["tSeqs"] if haveSeqs else None))
         return psl
 
     @classmethod
