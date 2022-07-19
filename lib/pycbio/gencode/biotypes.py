@@ -150,8 +150,7 @@ bioTypesPseudo = frozenset([BioType.IG_J_pseudogene,
                             BioType.translated_processed_pseudogene,
                             BioType.translated_unprocessed_pseudogene,
                             ])
-bioTypesTranscribedPseudo = frozenset([BioType.polymorphic_pseudogene,
-                                       BioType.transcribed_processed_pseudogene,
+bioTypesTranscribedPseudo = frozenset([BioType.transcribed_processed_pseudogene,
                                        BioType.transcribed_unprocessed_pseudogene,
                                        BioType.transcribed_unitary_pseudogene])
 
