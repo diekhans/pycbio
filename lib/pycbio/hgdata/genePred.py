@@ -20,8 +20,9 @@ class CdsStat(SymEnum):
     complete = SymEnumValue("complete", "cmpl")        # CDS is complete at this end
 
 
-genePredColumns = ("name", "chrom", "strand", "txStart", "txEnd", "cdsStart", "cdsEnd", "exonCount", "exonStarts", "exonEnds", "score", "name2", "cdsStartStat", "cdsEndStat", "exonFrames")
-genePredExtColumns = ("name", "chrom", "strand", "txStart", "txEnd", "cdsStart", "cdsEnd", "exonCount", "exonStarts", "exonEnds")
+genePredColumns = ("name", "chrom", "strand", "txStart", "txEnd", "cdsStart", "cdsEnd", "exonCount", "exonStarts", "exonEnds")
+genePredExtColumns = genePredColumns + ("score", "name2", "cdsStartStat", "cdsEndStat", "exonFrames")
+genePredExt2Columns = genePredExtColumns + ("type", "geneName", "geneName2", "geneType")
 
 
 class Range(namedtuple("Range", ("start", "end"))):
