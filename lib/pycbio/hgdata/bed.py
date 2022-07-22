@@ -9,6 +9,11 @@ from collections import defaultdict, namedtuple
 # FIXME: not complete, needs tests
 # FIXME: really need a better way to deal with derived classes than extraArgs
 
+
+bed12Columns = ("chrom", "chromStart", "chromEnd", "name", "score", "strand", "thickStart",
+                "thickEnd", "blockCount", "blockSizes", "chromStarts")
+
+
 def defaultIfNone(v, dflt=""):
     # also converts to a string
     return str(v) if v is not None else str(dflt)

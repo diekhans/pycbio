@@ -19,10 +19,13 @@ class CdsStat(SymEnum):
     incomplete = SymEnumValue("incomplete", "incmpl")  # CDS is not complete at this end
     complete = SymEnumValue("complete", "cmpl")        # CDS is complete at this end
 
-
+# these are ordered for accessing tab files
 genePredColumns = ("name", "chrom", "strand", "txStart", "txEnd", "cdsStart", "cdsEnd", "exonCount", "exonStarts", "exonEnds")
 genePredExtColumns = genePredColumns + ("score", "name2", "cdsStartStat", "cdsEndStat", "exonFrames")
 genePredExt2Columns = genePredExtColumns + ("type", "geneName", "geneName2", "geneType")
+bigGenePredColumns = ("chrom", "chromStart", "chromEnd", "name", "score", "strand", "thickStart",
+                      "thickEnd", "reserved", "blockCount", "blockSizes", "chromStarts", "name2",
+                      "cdsStartStat", "cdsEndStat", "exonFrames", "type", "geneName", "geneName2", "geneType",)
 
 
 class Range(namedtuple("Range", ("start", "end"))):
@@ -496,22 +499,24 @@ def genePredFromRow(row):
     _buildExons(gp, exonStarts, exonEnds, exonFrames)
     return gp
 
-def _colOrNone(row, colName, typeCnv):
-    val = row.get(colName)
+def _colOrNone(rec, colName, typeCnv):
+    val = rec.get(colName)
     return None if (val is None) else typeCnv(val)
 
-def genePredFromDictRow(row):
-    "create a GenePred object from a row that is a dictionary, often from a database"
-    gp = GenePred(row["name"], row["chrom"], row["strand"],
-                  int(row["txStart"]), int(row["txEnd"]),
-                  int(row["cdsStart"]), int(row["cdsEnd"]))
-    exonStarts = intArraySplit(row["exonStarts"])
-    exonEnds = intArraySplit(row["exonEnds"])
-    gp.score = _colOrNone(row, "score", int)
-    gp.name2 = _colOrNone(row, "name2", str)
-    gp.cdsStartStat = _colOrNone(row, "cdsStartStat", CdsStat)
-    gp.cdsEndStat = _colOrNone(row, "cdsEndStat", CdsStat)
-    exonFrames = _colOrNone(row, "exonFrames", intArraySplit)
+def genePredFromDict(rec):
+    "create a GenePred object from a rec that is a dictionary, often from a database"
+    gp = GenePred(rec["name"], rec["chrom"], rec["strand"],
+                  int(rec["txStart"]), int(rec["txEnd"]),
+                  int(rec["cdsStart"]), int(rec["cdsEnd"]))
+    exonStarts = intArraySplit(rec["exonStarts"])
+    exonEnds = intArraySplit(rec["exonEnds"])
+
+    # this are genePredExt columns
+    gp.score = _colOrNone(rec, "score", int)
+    gp.name2 = _colOrNone(rec, "name2", str)
+    gp.cdsStartStat = _colOrNone(rec, "cdsStartStat", CdsStat)
+    gp.cdsEndStat = _colOrNone(rec, "cdsEndStat", CdsStat)
+    exonFrames = _colOrNone(rec, "exonFrames", intArraySplit)
     gp.hasExonFrames = (exonFrames is not None)
     _buildExons(gp, exonStarts, exonEnds, exonFrames)
     return gp

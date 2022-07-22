@@ -20,11 +20,17 @@ def connect(db="", *, confFile=None, host=None, hgConf=None,
     return mysqlOps.connect(host=host, user=hgConf["db.user"], passwd=hgConf["db.password"], db=db,
                             cursorclass=cursorclass, conv=conv)
 
+def _binaryDecode(v):
+    print(_binaryDecode(v))
+    return v.decode()
 
 def getAutoSqlConverter():
     """get a MySQLdb that handles text in blobs"""
     conv = copy.copy(MySQLdb.converters.conversions)
     fts = MySQLdb.constants.FIELD_TYPE
-    for ft in (fts.TINY_BLOB, fts.MEDIUM_BLOB, fts.LONG_BLOB, fts.BLOB):
-        conv[ft] = [(MySQLdb.constants.FLAG.BINARY, lambda v: v.decode())]
+    # these are all listed as conversion to bytes in MySQLdb.converters.conversions
+    # FIXME: test could be done by looking up fields rathering listing
+    for ft in (fts.VARCHAR, fts.JSON, fts.STRING, fts.VAR_STRING,
+               fts.TINY_BLOB, fts.MEDIUM_BLOB, fts.LONG_BLOB, fts.BLOB):
+        conv[ft] = _binaryDecode
     return conv

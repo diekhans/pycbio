@@ -1,6 +1,9 @@
 #+STARTUP: nologdone
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
+* blob conversion doesn't work:
+see kznf-gene-homology/bin/refseqBuildGeneSet
+could it be dictionary cursor?
 * do away with sqlite weird interface. 
 * changes Psl, ChromInfo to have parse functions instead of methods, as with genePred.
 * add common program error handler
