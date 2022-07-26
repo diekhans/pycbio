@@ -72,6 +72,9 @@ class SqliteCursor(object):
         self.cur.close()
         return self.trans.__exit__(*args)
 
+def formatValue(val):
+    "generate a value that is safe to use directly in a SELECT"
+    return apsw.format_sql_value(val)
 
 def makeInSeqArg(vals):
     """generate the IN operator sequence, including parentheses for a set of
@@ -83,6 +86,12 @@ def execute(conn, sql, args=None):
     "Run an SQL query on a connection that does not return rows"
     with SqliteCursor(conn) as cur:
         cur.execute(sql, args)
+
+
+def executeMany(conn, sql, args=None):
+    "Run multiple SQL queries on a connection that does not return rows"
+    with SqliteCursor(conn) as cur:
+        cur.executemany(sql, args)
 
 
 def query(conn, sql, args=None, rowFactory=None):

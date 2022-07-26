@@ -11,7 +11,7 @@ from collections import defaultdict, namedtuple
 
 
 bed12Columns = ("chrom", "chromStart", "chromEnd", "name", "score", "strand", "thickStart",
-                "thickEnd", "blockCount", "blockSizes", "chromStarts")
+                "thickEnd", "reserved", "blockCount", "blockSizes", "chromStarts")
 
 
 def defaultIfNone(v, dflt=""):

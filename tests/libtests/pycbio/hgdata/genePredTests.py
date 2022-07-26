@@ -5,7 +5,7 @@ if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.sys import fileOps
-from pycbio.hgdata.genePred import GenePredTbl, genePredFromBigGenePred
+from pycbio.hgdata.genePred import GenePredTbl, genePredFromBigGenePred, GenePredReader
 
 # lists defining expected results from exon features.
 # they are in the form (utr5 cds utr3)
@@ -129,6 +129,13 @@ class ReadTests(TestCaseBase):
                     genePredFromBigGenePred(row).write(outFh)
         self.diffExpected(".gp")
 
+    def testReadWrite(self):
+        inFile = self.getInputFile("fileFrameStatTest.gp")
+        outFile = self.getOutputFile(".gp")
+        with open(outFile, "w") as outFh:
+            for gp in GenePredReader(inFile):
+                gp.write(outFh)
+        self.diffFiles(inFile, outFile)
 
 def suite():
     ts = unittest.TestSuite()
