@@ -1,6 +1,8 @@
 #+STARTUP: nologdone
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
+* TsvReader could create named tuples.
+what about the name?  Doesn't seem to matter, as there 
 * blob conversion doesn't work:
 see kznf-gene-homology/bin/refseqBuildGeneSet
 could it be dictionary cursor?
