@@ -154,7 +154,7 @@ bioTypesTranscribedPseudo = frozenset([BioType.transcribed_processed_pseudogene,
                                        BioType.transcribed_unprocessed_pseudogene,
                                        BioType.transcribed_unitary_pseudogene])
 
-assert((len(bioTypesCoding) + len(bioTypesNonCoding) + len(bioTypesOther) + len(bioTypesPseudo)) == len(list(BioType)))
+assert (len(bioTypesCoding) + len(bioTypesNonCoding) + len(bioTypesOther) + len(bioTypesPseudo)) == len(list(BioType))
 
 bioTypesTR = frozenset((BioType.TR_C_gene,
                         BioType.TR_D_gene,

@@ -119,8 +119,7 @@ def buildPsls(agp, objectSizeMap, componentSizeMap, componentLocalIdMap, skipUnm
     return psls
 
 
-def main():
-    args = parseArgs()
+def main(args):
     agp = Agp(args.agpFile)
     if args.componentLocalId2Acc is not None:
         componentLocalIdMap = loadComponentLocalIdMap(args.componentLocalId2Acc)
@@ -137,4 +136,4 @@ def main():
             print("\t".join(psl.toRow()), file=fh)
 
 
-main()
+main(parseArgs())

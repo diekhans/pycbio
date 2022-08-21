@@ -13,7 +13,7 @@ test:
 	cd tests && ${MAKE} test
 
 lint:
-	${FLAKE8} lib/pycbio tests/libtests ${pyprogs}
+	${FLAKE8} --color=never lib/pycbio tests/libtests ${pyprogs}
 
 clean:
 	(cd tests && ${MAKE} clean)

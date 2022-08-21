@@ -73,7 +73,7 @@ class _LinuxFifo(_Fifo):
     @staticmethod
     def _mkFdPath(fd):
         "get linux /proc path for an fd"
-        assert(fd is not None)
+        assert fd is not None
         p = "/proc/" + str(os.getpid()) + "/fd/" + str(fd)
         if not os.path.exists(p):
             raise IOError(errno.ENOENT, os.strerror(errno.ENOENT), p)

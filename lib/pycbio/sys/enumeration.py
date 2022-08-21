@@ -153,7 +153,7 @@ class Enumeration(object):
     def _defListValue(self, valueClass, valueDef, numValue):
         if (len(valueDef) > 3) and (valueDef[3] is not None):
             numValue = valueDef[3]
-            assert(isinstance(numValue, int))
+            assert isinstance(numValue, int)
         val = self._createValue(valueClass, valueDef[0], numValue, valueDef[1])
         if (len(valueDef) > 2) and (valueDef[2] is not None):
             if not isListLike(valueDef[2]):

@@ -50,7 +50,7 @@ class Trace(object):
 
     def enable(self):
         """enable logging on all threads. """
-        assert(self.fh is not None)
+        assert self.fh is not None
         sys.settrace(self._callback)
         threading.settrace(self._callback)
 

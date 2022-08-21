@@ -146,7 +146,7 @@ class Coords(list):
         super(Coords, self).__init__()
         if init is not None:
             self.extend(init)
-        assert((len(self) == 0) or isinstance(self[0], Coord))
+        assert (len(self) == 0) or isinstance(self[0], Coord)
 
     def __str__(self):
         strs = []

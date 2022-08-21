@@ -22,8 +22,8 @@ class EnumMatrix(EnumArray):
     """matrix indexed by Enumerations."""
 
     def __init__(self, rowEnum, colEnum, initVal=None):
-        assert(isinstance(rowEnum, Enumeration))
-        assert(isinstance(colEnum, Enumeration))
+        assert isinstance(rowEnum, Enumeration)
+        assert isinstance(colEnum, Enumeration)
         super(EnumMatrix, self).__init__(rowEnum)
         self.rowEnum = rowEnum
         self.colEnum = colEnum

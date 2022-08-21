@@ -105,13 +105,13 @@ class Histogram(object):
 
     def addFile(self, fname, type=int, valCol=0):
         "add from a tab separated file of values of the specfied type"
-        assert(not self.isTupleData)
+        assert not self.isTupleData
         for row in iterRows(fname):
             self.data.append(type(row[valCol]))
 
     def addTupleFile(self, fname, type=int, valCol=0, cntCol=1):
         "add from a tab separated file of values of the specfied type and counts"
-        assert(self.isTupleData)
+        assert self.isTupleData
         for row in iterRows(fname):
             self.data.append((type(row[valCol]), int(row[cntCol])))
 

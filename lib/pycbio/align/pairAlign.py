@@ -20,8 +20,8 @@ class Coord(object):
     __slots__ = ("seqId", "start", "end", "size", "strand", "isAbs")
 
     def __init__(self, seqId, start, end, size, strand, isAbs):
-        assert((start <= end) and (start <= size) and (end <= size))
-        assert(strand in ("+", "-"))
+        assert (start <= end) and (start <= size) and (end <= size)
+        assert strand in ("+", "-")
         self.seqId = seqId
         self.start = start
         self.end = end
@@ -83,11 +83,11 @@ class Coord(object):
             # both relative
             return (self.strand == coord.strand) and self.overlaps(coord.start, coord.end)
         elif self.isAbs:
-            assert(not coord.isAbs)
+            assert not coord.isAbs
             coord = coord.toAbs()
             return (self.strand == coord.strand) and self.overlaps(coord.start, coord.end)
         else:
-            assert(not self.isAbs)
+            assert not self.isAbs
             aself = self.toAbs()
             return (aself.strand == coord.strand) and aself.overlaps(coord.start, coord.end)
 
@@ -105,7 +105,7 @@ class Seq(Coord):
         return (super(Seq, self).__getstate__(), self.cds)
 
     def __setstate__(self, st):
-        assert(len(st) == 2)
+        assert len(st) == 2
         super(Seq, self).__setstate__(st[0])
         self.cds = st[1]
 
@@ -115,7 +115,7 @@ class Seq(Coord):
 
     def mkSubSeq(self, start, end):
         "create a subsequence"
-        assert((start >= self.start) and (end <= self.end))
+        assert (start >= self.start) and (end <= self.end)
         ss = SubSeq(self, start, end)
         if self.cds is not None:
             st = max(self.cds.start, ss.start)
@@ -250,7 +250,7 @@ class Cds(object):
     __slots__ = ("start", "end")
 
     def __init__(self, start, end):
-        assert(start < end)
+        assert start < end
         self.start = start
         self.end = end
 
@@ -278,7 +278,7 @@ class Block(object):
     __slots__ = ("aln", "q", "t", "prev", "next")
 
     def __init__(self, aln, q, t):
-        assert((q is None) or (t is None) or (len(q) == len(t)))
+        assert (q is None) or (t is None) or (len(q) == len(t))
         self.aln = aln
         self.q = q
         self.t = t
@@ -407,7 +407,7 @@ class PairAlign(list):
     @staticmethod
     def _projectCds(srcSubSeqs, destSubSeqs, contained):
         "project CDS from one alignment side to the other"
-        assert(srcSubSeqs.seq.cds is not None)
+        assert srcSubSeqs.seq.cds is not None
         destSubSeqs.clearCds()
         for i in range(srcSubSeqs.findFirstCdsIdx(), srcSubSeqs.findLastCdsIdx() + 1, 1):
             PairAlign._projectBlkCds(srcSubSeqs[i], destSubSeqs[i], contained)
@@ -479,9 +479,9 @@ class PairAlign(list):
         """map CDS from one alignment to this one via a comman sequence.
         If contained is True, assign CDS to subseqs between beginning and
         end of mapped CDS"""
-        assert(srcSeq.cds is not None)
-        assert((destSeq == self.qSeq) or (destSeq == self.tSeq))
-        assert((srcSeq.seqId == destSeq.seqId) and (srcSeq.strand == destSeq.strand))
+        assert srcSeq.cds is not None
+        assert (destSeq == self.qSeq) or (destSeq == self.tSeq)
+        assert (srcSeq.seqId == destSeq.seqId) and (srcSeq.strand == destSeq.strand)
         srcSubSeqs = srcAln.getSubseq(srcSeq)
         destSubSeqs = self.getSubseq(destSeq)
         destSubSeqs.clearCds()

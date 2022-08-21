@@ -455,7 +455,7 @@ class GeneFeatures(object):
     def addExon(self, exonFt):
         # should always get the default transcript
         trans = self._getFtTrans(exonFt, required=False)
-        assert(trans.transId is None)
+        assert trans.transId is None
         trans.addExon(exonFt)
         self._flagIfPseudoFt(exonFt)
 
@@ -624,7 +624,7 @@ class GenePredBuilder(object):
 
     def setCds(self, coord):
         "CDS coords is Coord object"
-        assert(len(self.gp.exons) > 0)
+        assert len(self.gp.exons) > 0
         if not ((coord.start < self.gp.txEnd) and (coord.end > self.gp.txStart)):
             prWarn("CDS doesn't overlap transcript:", self.gp.name)
         else:
@@ -632,7 +632,7 @@ class GenePredBuilder(object):
             self.gp.cdsEnd = coord.end
 
     def _addExon(self, coord, prevStart, prevEnd):
-        assert(coord.start < coord.end)
+        assert coord.start < coord.end
         # adjust tx range to contain exon
         if self.gp.txStart is None:
             self.gp.txStart = coord.start

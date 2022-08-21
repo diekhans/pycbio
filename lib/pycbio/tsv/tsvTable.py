@@ -121,7 +121,7 @@ class TsvTable(list):
 
         self.colMap[colName] = len(self.columns)
         if colType:
-            assert(self.colTypes)
+            assert self.colTypes
             self.colTypes.append(colType)
         elif self.colTypes:
             self.colTypes.append(None)

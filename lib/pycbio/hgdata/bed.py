@@ -136,7 +136,7 @@ class Bed(object):
 
     @classmethod
     def _parse(cls, row, numStdCols=None):
-        assert((numStdCols is None) or (3 <= numStdCols <= 12))
+        assert (numStdCols is None) or (3 <= numStdCols <= 12)
         if numStdCols is None:
             numStdCols = min(len(row), 12)
         if len(row) < numStdCols:

@@ -82,7 +82,7 @@ class PslMap(object):
         gapTEnd = nextBlk.tStart
         if tRngNext >= gapTEnd:
             return tRngNext, None  # gap before range
-        assert(tRngNext >= gapTStart)
+        assert tRngNext >= gapTStart
         tRngNextNext = tRngEnd if (tRngEnd < gapTEnd) else gapTEnd
         pmr = handler(self.mapPsl, prevBlk.qEnd, None, None, nextBlk.qStart, qStrand,
                       None, tRngNext, tRngNextNext, None, tStrand)
@@ -92,7 +92,7 @@ class PslMap(object):
         """Analyze next block overlapping range.  Return updated tRngNext"""
         if tRngNext >= blk.tEnd:
             return tRngNext, None  # block before range
-        assert(tRngNext >= blk.tStart)
+        assert tRngNext >= blk.tStart
 
         # in this block, find corresponding query range
         qRngNext = blk.qStart + (tRngNext - blk.tStart)
@@ -152,7 +152,7 @@ class PslMap(object):
         gapQEnd = nextBlk.qStart
         if qRngNext >= gapQEnd:
             return qRngNext, None  # gap before range
-        assert(qRngNext >= gapQStart)
+        assert qRngNext >= gapQStart
         qRngNextNext = qRngEnd if (qRngEnd < gapQEnd) else gapQEnd
         pmr = handler(self.mapPsl, None, qRngNext, qRngNextNext, None, qStrand,
                       prevBlk.tEnd, None, None, nextBlk.tStart, tStrand)
@@ -162,7 +162,7 @@ class PslMap(object):
         """Analyze next block overlapping range.  Return updated qRngNext"""
         if qRngNext >= blk.qEnd:
             return qRngNext, None  # block before range
-        assert(qRngNext >= blk.qStart)
+        assert qRngNext >= blk.qStart
 
         # in this block, find corresponding target range
         tRngNext = blk.tStart + (qRngNext - blk.qStart)

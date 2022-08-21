@@ -35,7 +35,7 @@ class SubRows(object):
         self.rows = []
 
     def addRow(self, row):
-        assert(len(row) == self.numCols)
+        assert len(row) == self.numCols
         self.rows.append(row)
 
     def getNumRows(self):
@@ -72,8 +72,8 @@ class Entry(object):
                 self.subRowGroups = [subRows]
             else:
                 self.subRowGroups = subRows
-        assert((self.cssCellClasses is None) or (len(self.cssCellClasses) == len(row)))
-        assert((self.cssCellClasses is None) or (self.subRowGroups is None))  # can't have both yet
+        assert (self.cssCellClasses is None) or (len(self.cssCellClasses) == len(row))
+        assert (self.cssCellClasses is None) or (self.subRowGroups is None)  # can't have both yet
 
     def _numSubRowGroupCols(self):
         n = 0
