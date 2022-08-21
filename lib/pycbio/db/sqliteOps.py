@@ -17,11 +17,11 @@ def objDictRowFactory(cur, row):
     name winning.  In sane cases, these will have the same value"""
     return ObjDict(zip((t[0] for t in cur.description), row))
 
-def connect(sqliteDb, create=False, readonly=True, timeout=None, synchronous=None, rowFactory=objDictRowFactory):
+def connect(sqliteDb, create=False, readonly=True, timeout=None, synchronous=None, rowFactory=None):
     """Connect to an sqlite3 database.  If create is specified, then database
     is created if it doesn't exist.  If sqliteDb is None, and in-memory data
     is created with create and readonly flags being ignored. If create is True,
-    readonly is set to False.  Set rowFactory to None to get default tuple row factory."""
+    readonly is set to False.  Set rowFactory=objDictRowFactory to get objects for rows."""
     if create:
         readonly = False
     if sqliteDb is None:
