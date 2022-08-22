@@ -5,6 +5,7 @@ sources.
 # Copyright 2006-2012 Mark Diekhans
 from collections import namedtuple
 from pycbio.sys import fileOps
+from pycbio.db import mysqlOps
 import pipettor
 
 class ChromInfo(namedtuple("chromInfo",
@@ -33,7 +34,7 @@ class ChromInfoTbl(dict):
     def loadDb(conn):
         "Load from chromoInfo table"
         chroms = ChromInfoTbl()
-        cur = conn.cursor()
+        cur = conn.cursor(cursorclass=mysqlOps.DictCursor)
         try:
             cur.execute("SELECT chrom, size FROM chromInfo")
             for row in cur:

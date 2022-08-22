@@ -3,6 +3,7 @@
 Functions and classes for working with Sqlite 3 databases.
 """
 import apsw
+
 from pycbio.sys.objDict import ObjDict
 
 # FIXME: no tests

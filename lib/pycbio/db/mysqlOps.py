@@ -2,7 +2,7 @@
 """Operations for accessing mysql"""
 import warnings
 import MySQLdb   # mysqlclient is required for python 3
-import MySQLdb.cursors
+from MySQLdb.cursors import DictCursor  # noqa: F401
 import MySQLdb.converters
 
 _mySqlErrorOnWarnDone = False
@@ -20,9 +20,10 @@ def mySqlSetErrorOnWarn():
         _mySqlErrorOnWarnDone = True
 
 
-def connect(*, host=None, port=None, user=None, passwd=None, db=None, cursorclass=MySQLdb.cursors.DictCursor,
+def connect(*, host=None, port=None, user=None, passwd=None, db=None, cursorclass=None,
             conv=None):
     """Connect to genome mysql server, using explict parameters.
+    Use cursorclass=mysqlOps.DictCursor to get dictionary results
     """
     if not _mySqlErrorOnWarnDone:
         mySqlSetErrorOnWarn()
@@ -57,7 +58,7 @@ def query(conn, sql, args=None):
 def getTablesLike(conn, pattern, db=None):
     frm = "" if db is None else "from " + db
     sql = "show tables {} like \"{}\"".format(frm, pattern)
-    cur = conn.cursor(cursorclass=MySQLdb.cursors.Cursor)
+    cur = conn.cursor()
     try:
         cur.execute(sql)
         return [row[0] for row in cur]

@@ -3,6 +3,7 @@ Read PSL from mysql queries.
 """
 from pycbio.hgdata.psl import Psl
 from pycbio.hgdata.rangeFinder import Binner
+from pycbio.db import mysqlOps
 
 
 class PslMySqlReader(object):
@@ -18,7 +19,7 @@ class PslMySqlReader(object):
         self.queryArgs = queryArgs
 
     def __iter__(self):
-        cur = self.conn.cursor()
+        cur = self.conn.cursor(cursorclass=mysqlOps.DictCursor)
         try:
             cur.execute(self.query, self.queryArgs)
             for row in cur:

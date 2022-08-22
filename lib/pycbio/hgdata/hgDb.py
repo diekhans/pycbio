@@ -8,10 +8,12 @@ import MySQLdb.converters
 import copy
 
 def connect(db="", *, confFile=None, host=None, hgConf=None,
-            useAutoSqlConv=True, cursorclass=MySQLdb.cursors.DictCursor):
+            useAutoSqlConv=True, cursorclass=None):
     """Connect to genome mysql server, using confFile( default is ~/.hg.conf),
     or pre-parsed HgConf. If useAutoSqlConv is True, blob fields, as used to
-    arrays, are converted to str rather than stored as bytes.   Defaults to DictCursor"""
+    arrays, are converted to str rather than stored as bytes.   Use
+    cusrorclass=mysqlOps.DictCursor for a dictionary cursor)
+    """
     if hgConf is None:
         hgConf = HgConf.obtain(confFile)
     conv = getAutoSqlConverter() if useAutoSqlConv else None

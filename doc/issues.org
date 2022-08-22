@@ -2,7 +2,16 @@
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
 * TsvReader could create named tuples.
-what about the name?  Doesn't seem to matter, as there 
+what about the name?  Doesn't seem to matter
+* id pycbio.db.dbDict really useful?
+* for APSW, something like sqlite3.Row as; it is both a tuple and a dict
+however, it can't be passed to apsw, as it expects a sqlite3 cursor.
+Either suggest as an addition to APSW or port to here
+cpython-main/Modules/_sqlite/row.{c,h}
+
+https://docs.python.org/3/howto/clinic.html
+Currently Argument Clinic is considered internal-only for CPython.
+
 * blob conversion doesn't work:
 see kznf-gene-homology/bin/refseqBuildGeneSet
 could it be dictionary cursor?
