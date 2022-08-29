@@ -3,6 +3,7 @@
 import warnings
 import MySQLdb   # mysqlclient is required for python 3
 from MySQLdb.cursors import DictCursor  # noqa: F401
+from MySQLdb.cursors import Cursor
 import MySQLdb.converters
 
 _mySqlErrorOnWarnDone = False
@@ -44,9 +45,9 @@ def execute(conn, sql, args=None):
         cur.close()
 
 
-def query(conn, sql, args=None):
+def query(conn, sql, args=None, *, cursorclass=None):
     "generator to run an SQL query on a connection"
-    cur = conn.cursor()
+    cur = conn.cursor(cursorclass=cursorclass)
     try:
         cur.execute(sql, args)
         for row in cur:
@@ -58,7 +59,7 @@ def query(conn, sql, args=None):
 def getTablesLike(conn, pattern, db=None):
     frm = "" if db is None else "from " + db
     sql = "show tables {} like \"{}\"".format(frm, pattern)
-    cur = conn.cursor()
+    cur = conn.cursor(cursorclass=Cursor)
     try:
         cur.execute(sql)
         return [row[0] for row in cur]

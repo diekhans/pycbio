@@ -95,7 +95,7 @@ def executeMany(conn, sql, args=None):
         cur.executemany(sql, args)
 
 
-def query(conn, sql, args=None, rowFactory=None):
+def query(conn, sql, args=None, *, rowFactory=None):
     "generator to run an SQL query on a connection"
     with SqliteCursor(conn, rowFactory=rowFactory) as cur:
         cur.execute(sql, args)
