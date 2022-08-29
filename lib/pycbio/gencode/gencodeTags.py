@@ -80,6 +80,7 @@ class GencodeTag(SymEnum):
     stop_codon_readthrough = auto()
     Ensembl_canonical = auto()
     artifactual_duplication = auto()
+    overlaps_pseudogene = auto()
 
 
 gencodeTagNotFullCds = frozenset([GencodeTag.cds_start_NF,

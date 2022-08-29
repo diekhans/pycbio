@@ -66,6 +66,7 @@ class BioType(SymEnum):
     protein_coding_LoF = auto()
     artifact = auto()
     artifactual_duplication = auto()
+    protein_coding_CDS_not_defined = auto()
 
 class GencodeFunction(SymEnum):
     """category used to color UCSC browser tracks"""
@@ -96,6 +97,7 @@ bioTypesCoding = frozenset([BioType.IG_C_gene,
                             BioType.IG_LV_gene,
                             BioType.polymorphic_pseudogene,
                             BioType.protein_coding_LoF,
+                            BioType.protein_coding_CDS_not_defined,
                             BioType.protein_coding,
                             BioType.nonsense_mediated_decay,
                             BioType.TR_C_gene,
