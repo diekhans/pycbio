@@ -63,7 +63,7 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         return name, start, end
 
     @classmethod
-    def parse(cls, coordsStr, strand=None, size=None, oneBased=False):
+    def parse(cls, coordsStr, *, strand=None, size=None, oneBased=False):
         """Construct an object from genome browser 'name:start-end' or 'name".
         If only a simple names is specified without a size, the range
         will be None..None, with a size it will be 0..size.  Commas in numbers
