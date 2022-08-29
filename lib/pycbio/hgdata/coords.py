@@ -76,7 +76,7 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         except Exception as ex:
             raise CoordsError(f"invalid coordinates: '{coordsStr}'") from ex
 
-    def subrange(self, start, end, strand=None):
+    def subrange(self, start, end, *, strand=None):
         """Construct a Coords object that is a subrange of this one.  If strand is provided,
         then the coordinates will be reversed if to match current strand, otherwise strand
         is assumed to be the same as self.strand"""
