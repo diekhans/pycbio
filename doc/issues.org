@@ -1,6 +1,9 @@
 #+STARTUP: nologdone
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
+
+* Add functions to locate UCSC data
+some is already in kznf
 * TsvReader could create named tuples.
 what about the name?  Doesn't seem to matter
 * id pycbio.db.dbDict really useful?
