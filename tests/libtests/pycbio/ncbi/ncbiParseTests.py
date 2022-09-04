@@ -4,6 +4,7 @@ import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 
+from pycbio import PycbioException
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.ncbi.assembly import AssemblyReport
 from pycbio.ncbi.agp import Agp
@@ -35,22 +36,50 @@ class NcbiParseTests(TestCaseBase):
         for name in ('HSCHR19KIR_T7526_BDEL_HAP_CTG3_1', 'KI270916.1', 'NT_187670.1', 'chr19_KI270916v1_alt'):
             self.assertEqual(str(asmReport.getByName(name)), expectLine)
 
-        metaData = [(name, asmReport.metaData[name]) for name in sorted(asmReport.metaData.keys())]
+        metaData = sorted(list(asmReport.metaData.items()))
         self.assertEqual(metaData,
-                         [('Assembly_Name', 'GRCh38.p2'),
-                          ('Assembly_level', 'Chromosome'),
-                          ('Assembly_type', 'haploid-with-alt-loci'),
-                          ('Date', '2014-12-5'),
-                          ('Description', 'Genome Reference Consortium Human Build 38 patch release 2 (GRCh38.p2)'),
-                          ('GenBank_Assembly_Accession', 'GCA_000001405.17 (replaced)'),
-                          ('Genome_representation', 'full'),
-                          ('Organism_name', 'Homo sapiens'),
-                          ('RefSeq_Assembly_Accession', 'GCF_000001405.28 (species-representative replaced)'),
-                          ('RefSeq_Assembly_and_GenBank_Assemblies_Identical', 'yes'),
-                          ('Release_type', 'patch'),
-                          ('Submitter', 'Genome Reference Consortium'),
-                          ('Taxid', '9606')])
+                         [('assembly_level', 'Chromosome'),
+                          ('assembly_name', 'GRCh38.p2'),
+                          ('assembly_type', 'haploid-with-alt-loci'),
+                          ('date', '2014-12-5'),
+                          ('description', 'Genome Reference Consortium Human Build 38 patch release 2 (GRCh38.p2)'),
+                          ('genbank_assembly_accession', 'GCA_000001405.17 (replaced)'),
+                          ('genome_representation', 'full'),
+                          ('organism_name', 'Homo sapiens'),
+                          ('refseq_assembly_accession', 'GCF_000001405.28 (species-representative replaced)'),
+                          ('refseq_assembly_and_genbank_assemblies_identical', 'yes'),
+                          ('release_type', 'patch'),
+                          ('submitter', 'Genome Reference Consortium'),
+                          ('taxid', '9606')])
         self.assertEqual(asmReport.assemblyName, 'GRCh38.p2')
+        with self.assertRaisesRegex(PycbioException, "^unknown 'GRCh38\\.p2' sequence: 'fred'$"):
+            asmReport.getByName("fred")
+
+    def testAssemblyReportNewMeta(self):
+        # updated metadata name capitalization
+        asmReport = AssemblyReport(self.getInputFile("GCF_000001405.39_GRCh38.p13_assembly_report.txt"))
+        self.assertEqual(asmReport.assemblyName, 'GRCh38.p13')
+        metaData = sorted(list(asmReport.metaData.items()))
+        self.assertEqual(metaData,
+                         [('assembly_level', 'Chromosome'),
+                          ('assembly_name', 'GRCh38.p13'),
+                          ('assembly_type', 'haploid-with-alt-loci'),
+                          ('bioproject', 'PRJNA31257'),
+                          ('date', '2019-02-28'),
+                          ('description', 'Genome Reference Consortium Human Build 38 patch release 13 (GRCh38.p13)'),
+                          ('genbank_assembly_accession', 'GCA_000001405.28'),
+                          ('genome_representation', 'full'),
+                          ('organism_name', 'Homo sapiens (human)'),
+                          ('refseq_assembly_accession', 'GCF_000001405.39'),
+                          ('refseq_assembly_and_genbank_assemblies_identical', 'no'),
+                          ('refseq_category', 'Reference Genome'),
+                          ('release_type', 'patch'),
+                          ('submitter', 'Genome Reference Consortium'),
+                          ('synonyms', 'hg38'),
+                          ('taxid', '9606')])
+        with self.assertRaisesRegex(PycbioException, "^unknown 'GRCh38\\.p13' sequence: 'fred'$"):
+            asmReport.getByName("fred")
+
 
     def testAgpGrch38(self):
         agp = Agp(self.getInputFile("GCA_000001305.2.chr22.agp"))
