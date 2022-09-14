@@ -23,7 +23,6 @@ def connect(db="", *, confFile=None, host=None, hgConf=None,
                             cursorclass=cursorclass, conv=conv)
 
 def _binaryDecode(v):
-    print(_binaryDecode(v))
     return v.decode()
 
 def getAutoSqlConverter():

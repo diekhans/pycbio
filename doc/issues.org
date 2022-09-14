@@ -1,7 +1,8 @@
 #+STARTUP: nologdone
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
-
+* the hgDb convert that is suppose to convert long blobs to text doesn't seem to work
+for DictCursor.  
 * Add functions to locate UCSC data
 some is already in kznf
 * TsvReader could create named tuples.
