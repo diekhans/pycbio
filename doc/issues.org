@@ -1,8 +1,11 @@
 #+STARTUP: nologdone
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
-* the hgDb convert that is suppose to convert long blobs to text doesn't seem to work
-for DictCursor.  
+* the hgDb autoload long convert doesn't seem to work.
+Happends with raw reads of PSL rows without cursorclass
+    with hgDb.connect(ucscSpec, cursorclass=None) as conn:
+        return [r[1:] for r in mysqlOps.query(conn, sql)]  # drop bin column
+
 * Add functions to locate UCSC data
 some is already in kznf
 * TsvReader could create named tuples.
