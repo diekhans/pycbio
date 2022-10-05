@@ -80,7 +80,6 @@ class NcbiParseTests(TestCaseBase):
         with self.assertRaisesRegex(PycbioException, "^unknown 'GRCh38\\.p13' sequence: 'fred'$"):
             asmReport.getByName("fred")
 
-
     def testAgpGrch38(self):
         agp = Agp(self.getInputFile("GCA_000001305.2.chr22.agp"))
         agpRows = [rec.format(True) for rec in agp.recs]

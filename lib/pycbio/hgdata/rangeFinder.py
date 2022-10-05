@@ -216,6 +216,10 @@ class RangeFinder(object):
             self.seqBins[key] = bins = RangeBins(seqId, strand)
         bins.add(start, end, value)
 
+    def addCoords(self, coords, value):
+        "added using Coords object"
+        self.add(coords.name, coords.start, coords.end, value, coords.strand)
+
     def _overlappingSpecificStrand(self, seqId, start, end, strand):
         "check overlap on specific strand, which might be None"
         bins = self.seqBins.get((seqId, strand))
