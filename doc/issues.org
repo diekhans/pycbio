@@ -1,6 +1,13 @@
 #+STARTUP: nologdone
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
+* rangefinder: coords strand is like PSL strand, not BED= strand,
+but a lot overlap are strand on the chrom coords.  Make this clean
+and add a separate strand to rangefinder, maybe rename coords.strand
+to clear up confusion,  Maybe coords.orient?
+
+* add AtomicFileOpen()
+
 * the hgDb autoload long convert doesn't seem to work.
 Happends with raw reads of PSL rows without cursorclass
     with hgDb.connect(ucscSpec, cursorclass=None) as conn:

@@ -247,7 +247,7 @@ class RangeFinder(object):
             return self._overlappingSpecificStrand(seqId, start, end, strand)
 
     def overlappingByCoords(self, coords):
-        "generator over values overlapping using a Coords object"
+        """generator over values overlapping using a Coords object"""
         return self.overlapping(coords.name, coords.start, coords.end, coords.strand)
 
     def _removeIfExists(self, seqId, start, end, value, strand):
