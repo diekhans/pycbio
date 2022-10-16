@@ -1,54 +1,163 @@
-acc	chr	chrStart	chrEnd	strand	stat	frame	start	stop	orfStop	smallGap	unknownSplice	causes
-NM_000581.2	chr3	49369614	49370795	-	err	ok	ok	ok	1	0	0	orfStop
-NM_000792.3	chr1	54071881	54088778	+	err	ok	ok	ok	1	0	0	orfStop
-NM_000793.2	chr14	79733625	79748278	-	err	ok	ok	ok	2	0	0	orfStop
-NM_001362.1	chr14	101097440	101099538	+	err	ok	ok	ok	1	0	0	orfStop
-NM_002083.2	chr14	64475624	64479284	-	err	ok	ok	ok	1	0	0	orfStop
-NM_002084.2	chr5	150380111	150388742	+	err	ok	ok	ok	1	0	0	orfStop
-NM_002085.1	chr19	1054966	1057778	+	err	ok	ok	ok	1	0	0	orfStop
-NM_003009.2	chr19	52973653	52979755	+	err	ok	ok	ok	1	0	0	orfStop
-NM_003330.2	chr12	103183193	103246529	+	err	ok	ok	ok	1	0	0	orfStop
-NM_004261.3	chr1	87040150	87092128	-	err	ok	ok	ok	1	0	0	orfStop
-NM_005410.1	chr5	42835743	42847717	-	err	ok	ok	ok	10	0	0	orfStop
-NM_006440.2	chr22	18237599	18304069	-	err	ok	ok	ok	1	0	0	orfStop
-NM_012248.2	chr16	30362453	30364725	-	err	ok	ok	ok	1	0	0	orfStop
-NM_013989.1	chr14	79733625	79748278	-	err	ok	ok	ok	2	0	0	orfStop
-NM_016275.3	chr3	151803763	151830932	+	err	ok	ok	ok	1	0	0	orfStop
-NM_016332.2	chr16	1928235	1933295	-	err	ok	ok	ok	1	0	0	orfStop
-NM_018445.4	chr15	99629913	99635223	-	err	ok	ok	ok	1	0	0	orfStop
-NM_021237.3	chr3	53894266	53901029	-	err	ok	ok	ok	1	0	0	orfStop
-NM_031454.1	chr22	48941864	48958502	+	err	ok	ok	ok	1	0	0	orfStop
-NM_057163.2	chr1	142998278	143005120	-	err	ok	ok	ok	1	0	0	orfStop
-NM_080430.2	chr22	29825318	29828105	-	err	ok	ok	ok	1	0	0	orfStop
-NM_145747.1	chr22	18237594	18300256	-	err	ok	ok	ok	1	0	0	orfStop
-NM_145748.1	chr22	18237593	18294630	-	err	ok	ok	ok	1	0	0	orfStop
-NM_170746.2	chr11	57265297	57267459	+	err	ok	ok	ok	1	0	0	orfStop
-NM_182701.1	chr6	28579051	28591549	-	err	ok	ok	ok	1	0	0	orfStop
-NM_182704.1	chr19	44697592	44703166	+	err	ok	ok	ok	1	0	0	orfStop
-NM_182729.1	chr12	103183193	103246529	+	err	ok	ok	ok	1	0	0	orfStop
-NM_182742.1	chr12	103183193	103246529	+	err	ok	ok	ok	1	0	0	orfStop
-NM_182743.1	chr12	103183193	103246529	+	err	ok	ok	ok	1	0	0	orfStop
-NM_201397.1	chr3	49369614	49370795	-	err	ok	ok	ok	1	0	0	orfStop
-NM_203341.1	chr1	87040150	87092128	-	err	ok	ok	ok	1	0	0	orfStop
-NM_203472.1	chr15	99628736	99635223	-	err	ok	ok	ok	1	0	0	orfStop
-NM_206994.1	chr1	142998278	143005120	-	err	ok	ok	ok	1	0	0	orfStop
-XM_208554.4	chr11	85583823	85584958	+	err	ok	ok	ok	1	0	1	orfStop,splice
-XM_370682.3	chr12	13044634	13127650	+	err	ok	ok	ok	1	2	0	orfStop,smallGap
-XM_495897.1	chr11	104279389	104295011	-	err	ok	ok	ok	1	0	0	orfStop
-XM_495898.1	chr11	104439283	104447442	-	err	ok	ok	ok	1	0	0	orfStop
-XM_495900.1	chr11	125439655	125456330	+	err	ok	ok	ok	1	0	0	orfStop
-XM_495912.1	chr12	12894536	12895941	+	err	ok	ok	ok	1	0	1	orfStop,splice
-XM_497305.1	chr11	67317239	67397346	-	err	ok	ok	ok	2	0	0	orfStop
-XM_497307.1	chr11	68827448	68828818	-	err	ok	ok	ok	1	0	0	orfStop
-XM_497308.1	chr11	70771294	70793633	-	err	ok	ok	ok	2	0	0	orfStop
-XM_497309.1	chr11	71531644	71548431	+	err	ok	ok	ok	2	0	0	orfStop
-XM_497314.1	chr11	91708845	91709310	-	err	ok	ok	ok	1	0	0	orfStop
-XM_497315.1	chr11	94285859	94286953	+	err	ok	ok	ok	4	0	0	orfStop
-XM_497316.1	chr11	101670946	101671747	+	err	ok	ok	ok	2	0	0	orfStop
-XM_497318.1	chr11	109425462	109426095	+	err	ok	ok	ok	2	0	0	orfStop
-XM_497322.1	chr11	117698595	117699009	-	err	ok	ok	ok	1	0	0	orfStop
-XM_497323.1	chr11	121994527	122031964	+	err	ok	ok	ok	3	0	0	orfStop
-XM_497326.1	chr12	3279667	3316629	-	err	ok	ok	ok	1	0	0	orfStop
-XM_497327.1	chr12	4089114	4099382	-	err	ok	ok	ok	1	0	0	orfStop
-XM_497330.1	chr12	10143441	10156304	+	err	ok	ok	ok	1	0	0	orfStop
-XM_497332.1	chr12	17444599	17445106	+	err	ok	ok	ok	1	0	0	orfStop
+checkId	acc	chr	chrStart	chrEnd	strand	stat	frame	start	stop	orfStop	cdsGap	cdsMult3Gap	utrGap	cdsUnknownSplice	utrUnknownSplice	cdsNonCanonSplice	utrNonCanonSplice	numExons	numCds	numUtr5	numUtr3	numCdsIntrons	numUtrIntrons	nmd	causes
+1	ENST00000252713.9	chr7	7797122	7800840	-	err	bad	no	no	66	0	0	17	0	3	0	3	4	1	0	4	0	3	ok	badFrame,noStart,noStop,utrGap,unknownUtrSplice
+2	ENST00000296092.7	chr5	67906277	67908786	+	err	ok	ok	ok	1	0	0	5	0	1	0	1	2	1	1	2	0	1	nmd	orfStop,utrGap,unknownUtrSplice
+3	ENST00000301085.8	chr15	27280055	27291072	+	err	bad	no	no	2	0	0	9	1	5	1	5	9	2	0	8	1	7	ok	badFrame,noStart,noStop,utrGap,unknownCdsSplice,unknownUtrSplice
+4	ENST00000301093.6	chr5	40376046	40378954	-	err	bad	no	no	29	0	0	10	2	0	2	0	3	3	1	1	2	0	ok	badFrame,noStart,noStop,utrGap,unknownCdsSplice
+5	ENST00000302851.8	chr5	59168189	59171711	-	err	bad	ok	no	12	0	0	24	0	2	0	2	3	1	1	3	0	2	ok	badFrame,noStop,utrGap,unknownUtrSplice
+6	ENST00000302851.8	chr19	9242066	9258556	-	err	bad	no	no	31	0	0	16	1	3	1	3	5	2	0	4	1	3	ok	badFrame,noStart,noStop,utrGap,unknownCdsSplice,unknownUtrSplice
+7	ENST00000306346.5	chr19	31766867	31769050	+	err	bad	no	no	10	1	1	12	0	1	0	1	2	1	0	2	0	1	ok	badFrame,noStart,noStop,cdsGap,utrGap,unknownUtrSplice
+8	ENST00000306938.8	chr6	143285501	143287330	-	err	ok	ok	no	20	0	0	0	3	0	3	0	4	4	1	0	3	0	ok	noStop,orfStop,unknownCdsSplice
+9	ENST00000306938.8	chr7	122806438	122809379	-	err	bad	ok	no	22	1	1	0	4	0	4	0	5	5	1	0	4	0	ok	badFrame,noStop,cdsGap,unknownCdsSplice
+10	ENST00000321233.10	chr2B	90866162	90868739	-	err	ok	ok	no	8	1	0	2	3	1	3	1	5	4	1	2	3	1	ok	noStop,orfStop,cdsGap,utrGap,unknownCdsSplice,unknownUtrSplice
+11	ENST00000326044.9	chr5	59169737	59171701	-	err	ok	ok	ok	0	0	0	11	1	0	1	0	2	2	1	1	1	0	nmd	utrGap,unknownCdsSplice
+12	ENST00000326044.9	chr19	9256684	9258556	-	err	bad	no	no	0	0	0	5	0	1	0	1	2	1	0	2	0	1	ok	badFrame,noStart,noStop,utrGap,unknownUtrSplice
+13	ENST00000334589.9	chr19	23231625	23271709	+	err	bad	no	no	10	0	0	5	0	1	0	1	4	3	0	1	2	1	ok	badFrame,noStart,noStop,utrGap,unknownUtrSplice
+14	ENST00000336078.8	chr10	74251233	74258625	+	err	ok	no	ok	34	0	0	5	1	1	1	1	3	2	0	2	1	1	nmd	noStart,orfStop,utrGap,unknownCdsSplice,unknownUtrSplice
+15	ENST00000336078.8	chr2A	91689775	91694371	-	err	bad	no	no	27	0	0	6	1	0	1	0	2	2	0	1	1	0	ok	badFrame,noStart,noStop,utrGap,unknownCdsSplice
+16	ENST00000337815.9	chr1	138426152	138430730	-	err	bad	ok	no	1	0	0	6	1	0	1	0	2	2	1	1	1	0	ok	badFrame,noStop,utrGap,unknownCdsSplice
+17	ENST00000340911.8	chrUn_NW_023255768v1	17296	26393	-	err	bad	no	no	6	0	0	0	0	0	0	0	3	3	0	1	2	0	ok	badFrame,noStart,noStop
+18	ENST00000340911.8	chrUn_NW_023258314v1	2026	4008	+	err	ok	no	ok	0	0	0	28	0	0	0	0	1	1	0	1	0	0	nmd	noStart,utrGap
+19	ENST00000342427.6	chr4	43815619	43818875	+	err	ok	no	ok	11	2	1	5	2	0	2	0	3	3	1	1	2	0	nmd	noStart,orfStop,cdsGap,utrGap,unknownCdsSplice
+20	ENST00000342555.10	chr2B	90866749	90868727	-	err	bad	no	no	17	1	0	2	2	1	2	1	4	3	1	2	2	1	ok	badFrame,noStart,noStop,cdsGap,utrGap,unknownCdsSplice,unknownUtrSplice
+21	ENST00000356321.4	chrX	92311404	92316844	+	err	bad	ok	no	42	1	1	22	0	1	0	1	2	1	1	2	0	1	ok	badFrame,noStop,cdsGap,utrGap,unknownUtrSplice
+22	ENST00000356322.10	chr11	93567894	93568691	-	err	ok	ok	no	8	1	0	2	0	0	0	0	1	1	1	0	0	0	ok	noStop,orfStop,cdsGap,utrGap
+23	ENST00000357774.9	chr9	34996496	34998612	-	err	bad	no	no	4	0	0	7	0	0	0	0	1	1	1	1	0	0	ok	badFrame,noStart,noStop,utrGap
+24	ENST00000359035.4	chrUn_NW_023255783v1	13103	17324	-	err	bad	ok	no	6	0	0	7	0	0	0	0	5	5	1	1	4	0	ok	badFrame,noStop,utrGap
+25	ENST00000361518.10	chrUn_NW_023255783v1	13104	17351	-	err	bad	ok	no	3	0	0	0	0	0	0	0	6	6	1	1	5	0	ok	badFrame,noStop
+26	ENST00000370764.1	chr11	73444335	73447423	+	err	bad	ok	no	3	1	1	18	0	3	0	3	5	2	4	1	1	3	ok	badFrame,noStop,cdsGap,utrGap,unknownUtrSplice
+27	ENST00000375200.6	chr4	43815619	43818875	+	err	ok	no	ok	12	2	1	5	1	0	1	0	2	2	1	1	1	0	nmd	noStart,orfStop,cdsGap,utrGap,unknownCdsSplice
+28	ENST00000391785.7	chr5	40375905	40378964	-	err	ok	ok	no	9	0	0	10	2	0	2	0	3	3	1	1	2	0	ok	noStop,orfStop,utrGap,unknownCdsSplice
+29	ENST00000392404.7	chr1	138426152	138430731	-	err	bad	ok	no	1	0	0	5	1	0	1	0	2	2	1	1	1	0	ok	badFrame,noStop,utrGap,unknownCdsSplice
+30	ENST00000394163.2	chr7	7797122	7800840	-	err	bad	no	no	66	0	0	17	0	3	0	3	4	1	0	4	0	3	ok	badFrame,noStart,noStop,utrGap,unknownUtrSplice
+31	ENST00000394673.6	chr2B	90866265	90868739	-	err	bad	ok	no	17	1	0	2	1	1	1	1	3	2	1	2	1	1	ok	badFrame,noStop,cdsGap,utrGap,unknownCdsSplice,unknownUtrSplice
+32	ENST00000394679.9	chr2B	90867816	90868693	-	err	bad	no	no	10	1	0	2	0	0	1	0	2	2	1	0	1	0	ok	badFrame,noStart,noStop,cdsGap,utrGap
+33	ENST00000395395.7	chrUn_NW_023255768v1	16918	26393	-	err	bad	no	no	13	0	0	0	0	0	0	0	3	3	0	1	2	0	ok	badFrame,noStart,noStop
+34	ENST00000395395.7	chrUn_NW_023258314v1	2392	4382	+	err	bad	no	no	9	0	0	7	0	0	0	0	1	1	0	1	0	0	ok	badFrame,noStart,noStop,utrGap
+35	ENST00000396056.7	chr5	67906273	67908786	+	err	ok	ok	ok	9	1	1	4	0	1	0	1	2	1	1	2	0	1	nmd	orfStop,cdsGap,utrGap,unknownUtrSplice
+36	ENST00000396403.9	chr19	50427474	50441481	+	err	bad	ok	no	15	0	0	7	0	0	0	0	3	3	1	1	2	0	ok	badFrame,noStop,utrGap
+37	ENST00000396409.5	chr19	50429804	50435694	+	err	bad	ok	no	0	0	0	0	2	0	2	0	3	3	0	0	2	0	ok	badFrame,noStop,unknownCdsSplice
+38	ENST00000396409.5	chr5	40378585	40378840	-	err	ok	no	no	1	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart,noStop,orfStop
+39	ENST00000399560.2	chr5	67906277	67906867	+	err	ok	ok	ok	1	0	0	0	0	1	0	1	2	1	2	1	0	1	ok	orfStop,unknownUtrSplice
+40	ENST00000415571.6	chr5	67906276	67906751	+	err	bad	ok	no	0	1	1	1	0	0	0	0	1	1	1	0	0	0	ok	badFrame,noStop,cdsGap,utrGap
+41	ENST00000424629.5	chr5	59168189	59171687	-	err	bad	no	no	40	0	0	24	0	3	0	3	4	1	1	3	0	3	ok	badFrame,noStart,noStop,utrGap,unknownUtrSplice
+42	ENST00000424629.5	chr19	9242066	9258556	-	err	bad	no	no	31	0	0	16	1	3	1	3	5	2	0	4	1	3	ok	badFrame,noStart,noStop,utrGap,unknownCdsSplice,unknownUtrSplice
+43	ENST00000424881.5	chr7	7797122	7801423	-	err	ok	no	ok	5	0	0	17	0	3	0	3	5	2	0	4	1	3	nmd	noStart,orfStop,utrGap,unknownUtrSplice
+44	ENST00000425063.5	chr7	7797122	7801425	-	err	ok	no	ok	0	0	0	21	0	3	0	3	5	1	0	5	0	4	nmd	noStart,utrGap,unknownUtrSplice
+45	ENST00000432115.6	chr5	67906276	67906690	+	err	bad	ok	no	0	0	0	0	0	1	0	1	2	1	2	0	0	1	ok	badFrame,noStop,unknownUtrSplice
+46	ENST00000443819.5	chr5	59170522	59171710	-	err	ok	ok	no	0	0	0	3	0	1	0	1	2	1	1	2	0	1	ok	noStop,utrGap,unknownUtrSplice
+47	ENST00000444611.5	chr5	59170795	59171713	-	err	bad	no	no	2	1	0	2	0	0	0	0	1	1	1	0	0	0	ok	badFrame,noStart,noStop,cdsGap,utrGap
+48	ENST00000449244.5	chr12	7171369	7171734	-	err	ok	ok	no	0	0	0	0	0	0	0	0	1	1	1	0	0	0	ok	noStop
+49	ENST00000453164.1	chr5	67906280	67906884	+	err	ok	ok	ok	1	0	0	0	0	1	0	1	2	1	2	1	0	1	ok	orfStop,unknownUtrSplice
+50	ENST00000468296.5	chrUn_NW_023259892v1	743260	745680	-	err	bad	no	no	0	0	0	0	0	0	0	0	3	3	0	0	2	0	ok	badFrame,noStart,noStop
+51	ENST00000468450.5	chr19	50427474	50435977	+	err	ok	ok	no	0	0	0	1	0	0	0	0	2	1	2	0	0	1	ok	noStop,utrGap
+52	ENST00000468450.5	chr5	40378344	40378921	-	err	ok	ok	no	1	0	0	0	0	1	0	1	2	1	2	0	0	1	ok	noStop,orfStop,unknownUtrSplice
+53	ENST00000471541.2	chrUn_NW_023259892v1	743260	745680	-	err	bad	ok	no	0	0	0	1	0	0	0	0	3	3	1	0	2	0	ok	badFrame,noStop,utrGap
+54	ENST00000478296.5	chrUn_NW_023259892v1	739841	745680	-	err	ok	ok	no	10	0	0	4	0	0	0	0	3	3	1	1	2	0	ok	noStop,orfStop,utrGap
+55	ENST00000481550.6	chrUn_NW_023255768v1	24278	26393	-	err	bad	no	no	6	0	0	3	0	0	0	0	2	2	0	1	1	0	ok	badFrame,noStart,noStop,utrGap
+56	ENST00000483118.5	chr4	43815619	43818875	+	err	bad	no	no	10	2	1	8	0	1	0	1	3	2	1	2	1	1	ok	badFrame,noStart,noStop,cdsGap,utrGap,unknownUtrSplice
+57	ENST00000490956.1	chr19	50427474	50435788	+	err	ok	ok	no	0	0	0	1	0	0	0	0	4	4	1	0	3	0	ok	noStop,utrGap
+58	ENST00000490956.1	chr5	40378506	40378921	-	err	ok	ok	no	1	0	0	0	0	0	0	0	1	1	1	0	0	0	ok	noStop,orfStop
+59	ENST00000493277.5	chr7	7799394	7801423	-	err	ok	no	ok	5	0	0	0	0	1	0	1	3	2	0	2	1	1	ok	noStart,orfStop,unknownUtrSplice
+60	ENST00000497876.5	chr4	43815619	43818875	+	err	ok	no	ok	0	0	0	17	1	1	1	1	3	2	1	2	1	1	nmd	noStart,utrGap,unknownCdsSplice,unknownUtrSplice
+61	ENST00000502623.1	chr6	143285531	143285810	-	err	ok	no	ok	5	0	0	1	0	0	0	0	1	1	0	1	0	0	nmd	noStart,orfStop,utrGap
+62	ENST00000502623.1	chr7	122806468	122806741	-	err	bad	no	no	0	0	0	2	0	0	0	0	1	1	0	1	0	0	ok	badFrame,noStart,noStop,utrGap
+63	ENST00000502623.1	chr1	100430722	100430958	+	err	bad	no	no	1	1	1	1	0	0	0	0	1	1	0	1	0	0	ok	badFrame,noStart,noStop,cdsGap,utrGap
+64	ENST00000505606.6	chr6	143285501	143287330	-	err	ok	ok	no	20	0	0	0	3	0	3	0	4	4	1	0	3	0	ok	noStop,orfStop,unknownCdsSplice
+65	ENST00000505606.6	chr7	122806438	122809379	-	err	bad	ok	no	22	1	1	0	4	0	4	0	5	5	1	0	4	0	ok	badFrame,noStop,cdsGap,unknownCdsSplice
+66	ENST00000507218.5	chr6	143285501	143287239	-	err	ok	no	ok	0	0	0	6	1	0	1	0	2	2	0	1	1	0	nmd	noStart,utrGap,unknownCdsSplice
+67	ENST00000507218.5	chr7	122806438	122809379	-	err	ok	ok	ok	1	0	0	7	2	2	2	2	6	4	1	3	3	2	nmd	orfStop,utrGap,unknownCdsSplice,unknownUtrSplice
+68	ENST00000508259.5	chr7	122808654	122809379	-	err	ok	ok	no	1	0	0	0	1	0	1	0	2	2	1	0	1	0	ok	noStop,orfStop,unknownCdsSplice
+69	ENST00000509156.5	chr6	143285501	143287330	-	err	bad	ok	no	7	0	0	0	2	0	2	0	3	3	1	0	2	0	ok	badFrame,noStop,unknownCdsSplice
+70	ENST00000509156.5	chr7	122806438	122809379	-	err	bad	ok	no	22	1	1	0	4	0	4	0	5	5	1	0	4	0	ok	badFrame,noStop,cdsGap,unknownCdsSplice
+71	ENST00000509341.5	chr7	122808319	122809379	-	err	ok	ok	no	1	0	0	0	2	0	2	0	3	3	1	0	2	0	ok	noStop,orfStop,unknownCdsSplice
+72	ENST00000509634.5	chr6	143285501	143287330	-	err	ok	ok	no	20	0	0	0	3	0	3	0	4	4	1	0	3	0	ok	noStop,orfStop,unknownCdsSplice
+73	ENST00000509634.5	chr7	122806438	122809379	-	err	bad	ok	no	22	1	1	0	4	0	4	0	5	5	1	0	4	0	ok	badFrame,noStop,cdsGap,unknownCdsSplice
+74	ENST00000510026.5	chr6	143285501	143287330	-	err	bad	ok	no	6	0	0	1	3	0	3	0	4	4	1	1	3	0	ok	badFrame,noStop,utrGap,unknownCdsSplice
+75	ENST00000511736.5	chr7	122806468	122809379	-	err	ok	ok	ok	1	0	0	2	2	0	2	0	3	3	1	1	2	0	nmd	orfStop,utrGap,unknownCdsSplice
+76	ENST00000511736.5	chr6	143285531	143287292	-	err	ok	no	ok	8	0	0	1	3	0	3	0	4	4	0	1	3	0	nmd	noStart,orfStop,utrGap,unknownCdsSplice
+77	ENST00000515578.5	chr17	63078086	63093323	-	err	ok	ok	ok	0	0	0	5	0	6	0	6	13	0	0	0	0	12	ok	utrGap,unknownUtrSplice
+78	ENST00000517844.5	chr1	199643649	199644197	-	err	ok	ok	ok	0	0	0	1	0	0	0	0	1	1	1	1	0	0	nmd	utrGap
+79	ENST00000518708.1	chrX	38885307	38900370	+	err	ok	ok	no	3	0	0	0	2	1	2	1	4	3	2	0	2	1	ok	noStop,orfStop,unknownCdsSplice,unknownUtrSplice
+80	ENST00000519103.1	chr1	199643649	199644111	-	err	bad	no	no	0	0	0	1	0	0	0	0	1	1	0	1	0	0	ok	badFrame,noStart,noStop,utrGap
+81	ENST00000519744.5	chr1	199643649	199644331	-	err	ok	ok	no	0	0	0	1	1	0	1	0	2	2	1	1	1	0	ok	noStop,utrGap,unknownCdsSplice
+82	ENST00000519882.5	chr1	199643650	199644399	-	err	ok	ok	ok	0	0	0	3	0	0	0	0	1	1	1	1	0	0	nmd	utrGap
+83	ENST00000521272.5	chr1	199643872	199644399	-	err	ok	ok	ok	0	0	0	2	0	0	0	0	1	1	1	1	0	0	ok	utrGap
+84	ENST00000538932.6	chr1	138426152	138430730	-	err	bad	ok	no	1	0	0	5	1	0	1	0	2	2	1	1	1	0	ok	badFrame,noStop,utrGap,unknownCdsSplice
+85	ENST00000539644.5	chr1	138426156	138430868	-	err	bad	ok	no	1	0	0	8	1	0	1	0	2	2	1	1	1	0	ok	badFrame,noStop,utrGap,unknownCdsSplice
+86	ENST00000544719.6	chr20	26966582	26981203	-	err	ok	ok	ok	22	0	0	6	1	1	1	1	4	3	2	1	2	1	nmd	orfStop,utrGap,unknownCdsSplice,unknownUtrSplice
+87	ENST00000559564.1	chrX	92311443	92312100	+	err	bad	ok	no	1	0	0	0	0	1	0	1	2	1	2	0	0	1	ok	badFrame,noStop,unknownUtrSplice
+88	ENST00000567041.1	chr2A	43760187	43760743	-	err	ok	ok	ok	15	0	0	0	0	0	0	0	1	1	1	0	0	0	ok	orfStop
+89	ENST00000579634.5	chr2B	90868237	90868738	-	err	ok	no	no	4	0	0	2	0	0	0	0	1	1	1	0	0	0	ok	noStart,noStop,orfStop,utrGap
+90	ENST00000580259.5	chrUn_NW_023258757v1	48054	49576	+	err	bad	ok	no	0	0	0	0	0	0	0	0	3	2	2	0	1	1	ok	badFrame,noStop
+91	ENST00000580759.5	chr2B	90868181	90868737	-	err	bad	no	no	4	0	0	2	0	0	0	0	1	1	1	0	0	0	ok	badFrame,noStart,noStop,utrGap
+92	ENST00000582165.1	chr2B	90868092	90868693	-	err	bad	no	no	4	0	0	2	1	0	1	0	2	2	1	0	1	0	ok	badFrame,noStart,noStop,utrGap,unknownCdsSplice
+93	ENST00000583031.5	chrUn_NW_023258757v1	48087	49575	+	err	ok	ok	no	0	0	0	0	0	0	0	0	3	2	2	0	1	1	ok	noStop
+94	ENST00000585662.5	chr4	94583429	94583926	-	err	bad	no	no	3	0	0	0	0	0	0	0	1	1	0	1	0	0	ok	badFrame,noStart,noStop
+95	ENST00000585662.5	chr10	74254151	74254633	+	err	bad	no	no	3	0	0	2	0	0	0	0	1	1	0	1	0	0	ok	badFrame,noStart,noStop,utrGap
+96	ENST00000585662.5	chr8	116171104	116171585	-	err	ok	no	no	5	0	0	2	0	0	0	0	1	1	0	1	0	0	ok	noStart,noStop,orfStop,utrGap
+97	ENST00000585662.5	chr2A	91691823	91692317	-	err	ok	no	no	2	0	0	0	0	0	0	0	1	1	0	1	0	0	ok	noStart,noStop,orfStop
+98	ENST00000585688.5	chr5	59170280	59171669	-	err	ok	ok	no	0	0	0	5	0	2	0	2	3	1	1	2	0	2	ok	noStop,utrGap,unknownUtrSplice
+99	ENST00000585868.1	chr20	26968590	26976879	-	err	bad	no	no	0	0	0	0	0	1	0	1	2	1	2	0	0	1	ok	badFrame,noStart,noStop,unknownUtrSplice
+100	ENST00000586021.5	chrUn_NW_023259858v1	3917096	3917616	+	err	bad	ok	no	0	0	0	0	0	1	0	1	2	1	1	1	0	1	ok	badFrame,noStop,unknownUtrSplice
+101	ENST00000586021.5	chr9	34998197	34998612	-	err	bad	ok	no	0	0	0	1	0	0	0	0	1	1	1	1	0	0	ok	badFrame,noStop,utrGap
+102	ENST00000586997.1	chr4	94583337	94584513	-	err	ok	no	no	0	0	0	0	1	0	1	0	2	2	0	0	1	0	ok	noStart,noStop,unknownCdsSplice
+103	ENST00000586997.1	chr10	74253559	74254726	+	err	ok	no	no	1	0	0	0	1	0	1	0	2	2	0	0	1	0	ok	noStart,noStop,orfStop,unknownCdsSplice
+104	ENST00000586997.1	chr2A	91691737	91692888	-	err	ok	no	no	0	0	0	0	1	0	1	0	2	2	0	0	1	0	ok	noStart,noStop,unknownCdsSplice
+105	ENST00000586997.1	chr8	116171012	116171256	-	err	bad	no	no	5	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
+106	ENST00000587392.5	chr5	59171136	59171669	-	err	ok	ok	ok	1	0	0	1	1	0	1	0	2	2	1	1	1	0	ok	orfStop,utrGap,unknownCdsSplice
+107	ENST00000588653.5	chr5	59171186	59171669	-	err	bad	no	no	7	0	0	1	1	0	1	0	2	2	1	0	1	0	ok	badFrame,noStart,noStop,utrGap,unknownCdsSplice
+108	ENST00000589288.5	chr4	94581369	94585337	-	err	bad	no	no	36	0	0	3	0	0	0	0	1	1	0	1	0	0	ok	badFrame,noStart,noStop,utrGap
+109	ENST00000589288.5	chr10	74251233	74258092	+	err	ok	no	ok	34	0	0	5	1	1	1	1	3	2	0	2	1	1	nmd	noStart,orfStop,utrGap,unknownCdsSplice,unknownUtrSplice
+110	ENST00000589288.5	chr2A	91689775	91694371	-	err	bad	no	no	27	0	0	6	1	0	1	0	2	2	0	1	1	0	ok	badFrame,noStart,noStop,utrGap,unknownCdsSplice
+111	ENST00000589390.5	chrUn_NW_023257813v1	32233	42405	-	err	bad	ok	no	1	0	0	0	0	1	0	1	4	3	2	0	2	1	ok	badFrame,noStop,unknownUtrSplice
+112	ENST00000589390.5	chrUn_NW_023259845v1	1140891	1151038	-	err	ok	ok	no	4	0	0	1	0	1	0	1	4	3	2	0	2	1	ok	noStop,orfStop,utrGap,unknownUtrSplice
+113	ENST00000589738.5	chr20	26968850	26976879	-	err	bad	ok	no	3	0	0	0	1	1	1	1	3	2	1	2	1	1	ok	badFrame,noStop,unknownCdsSplice,unknownUtrSplice
+114	ENST00000590155.5	chr5	59170130	59171669	-	err	bad	ok	no	1	0	0	3	1	1	1	1	3	2	1	2	1	1	ok	badFrame,noStop,utrGap,unknownCdsSplice,unknownUtrSplice
+115	ENST00000590157.5	chr4	94584256	94584706	-	err	bad	no	no	5	0	0	0	0	0	0	0	1	1	0	1	0	0	ok	badFrame,noStart,noStop
+116	ENST00000590157.5	chr10	74253366	74253815	+	err	bad	no	no	5	0	0	1	0	0	0	0	1	1	0	1	0	0	ok	badFrame,noStart,noStop,utrGap
+117	ENST00000590157.5	chr2A	91692647	91693091	-	err	bad	no	no	0	0	0	1	1	0	1	0	2	2	0	1	1	0	ok	badFrame,noStart,noStop,utrGap,unknownCdsSplice
+118	ENST00000590766.5	chrUn_NW_023259858v1	3917146	3917424	+	err	ok	ok	no	0	0	0	1	0	0	0	0	1	1	1	0	0	0	ok	noStop,utrGap
+119	ENST00000590766.5	chr12	30959369	30959636	-	err	bad	ok	no	1	0	0	0	0	0	0	0	1	1	1	0	0	0	ok	badFrame,noStop
+120	ENST00000591083.5	chr4	94581771	94585337	-	err	bad	no	no	36	0	0	2	0	0	0	0	1	1	0	1	0	0	ok	badFrame,noStart,noStop,utrGap
+121	ENST00000591083.5	chr10	74251233	74256286	+	err	ok	no	ok	34	0	0	4	1	0	1	0	2	2	0	1	1	0	nmd	noStart,orfStop,utrGap,unknownCdsSplice
+122	ENST00000591083.5	chr2A	91690173	91694371	-	err	bad	no	no	27	0	0	5	1	0	1	0	2	2	0	1	1	0	ok	badFrame,noStart,noStop,utrGap,unknownCdsSplice
+123	ENST00000591230.5	chr4	94582652	94585337	-	err	bad	no	no	36	0	0	0	0	0	0	0	1	1	0	1	0	0	ok	badFrame,noStart,noStop
+124	ENST00000591230.5	chr10	74251233	74255406	+	err	ok	no	ok	34	0	0	1	1	0	1	0	2	2	0	1	1	0	nmd	noStart,orfStop,utrGap,unknownCdsSplice
+125	ENST00000591230.5	chr2A	91691058	91694371	-	err	bad	no	no	27	0	0	2	1	0	1	0	2	2	0	1	1	0	ok	badFrame,noStart,noStop,utrGap,unknownCdsSplice
+126	ENST00000591366.5	chr19	19494698	19671382	-	err	ok	ok	no	1	0	0	2	0	0	0	0	3	3	1	0	2	0	ok	noStop,orfStop,utrGap
+127	ENST00000591508.1	chr8	90283156	90283540	+	err	bad	no	no	0	0	0	5	0	0	0	0	1	1	0	1	0	0	ok	badFrame,noStart,noStop,utrGap
+128	ENST00000591679.5	chr20	26966862	26976879	-	err	bad	ok	no	24	0	0	3	2	0	2	0	3	3	1	1	2	0	ok	badFrame,noStop,utrGap,unknownCdsSplice
+129	ENST00000591808.5	chr10	74251233	74255594	+	err	ok	no	ok	34	0	0	1	1	0	1	0	2	2	0	1	1	0	nmd	noStart,orfStop,utrGap,unknownCdsSplice
+130	ENST00000591808.5	chr2A	91690870	91694371	-	err	bad	no	no	27	0	0	2	1	0	1	0	2	2	0	1	1	0	ok	badFrame,noStart,noStop,utrGap,unknownCdsSplice
+131	ENST00000593551.1	chr19	23194401	23232289	+	err	bad	no	no	0	0	0	5	0	3	0	3	5	2	4	0	1	3	ok	badFrame,noStart,noStop,utrGap,unknownUtrSplice
+132	ENST00000593618.5	chr5	40378481	40378925	-	err	bad	ok	no	1	0	0	0	0	0	0	0	1	1	1	0	0	0	ok	badFrame,noStop
+133	ENST00000593657.5	chr9	34998030	34998514	-	err	ok	ok	no	0	0	0	0	0	0	0	0	1	1	1	0	0	0	ok	noStop
+134	ENST00000593802.1	chr19	21774665	21832585	+	err	bad	no	no	1	1	0	1	0	1	0	1	3	2	1	0	1	1	ok	badFrame,noStart,noStop,cdsGap,utrGap,unknownUtrSplice
+135	ENST00000595189.5	chr11	93567779	93568678	-	err	bad	ok	no	1	0	0	3	0	0	0	0	1	1	1	1	0	0	ok	badFrame,noStop,utrGap
+136	ENST00000595295.1	chr19	54921809	54922571	+	err	bad	no	no	0	0	0	0	0	0	0	0	1	1	0	1	0	0	ok	badFrame,noStart,noStop
+137	ENST00000595533.1	chr19	23254446	23255636	+	err	bad	ok	no	0	0	0	0	3	0	3	0	4	4	1	0	3	0	ok	badFrame,noStop,unknownCdsSplice
+138	ENST00000595939.5	chr19	49470265	49470353	+	err	ok	ok	no	0	0	0	0	0	0	0	0	1	1	1	0	0	0	ok	noStop
+139	ENST00000595939.5	chr5	40378836	40378950	-	err	ok	ok	no	0	0	0	0	0	0	0	0	1	1	1	0	0	0	ok	noStop
+140	ENST00000596211.5	chr19	23212906	23232331	+	err	bad	ok	no	0	0	0	2	0	0	0	0	3	3	1	0	2	0	ok	badFrame,noStop,utrGap
+141	ENST00000596930.5	chr19	49470265	49470353	+	err	ok	ok	no	0	0	0	0	0	0	0	0	1	1	1	0	0	0	ok	noStop
+142	ENST00000596930.5	chr5	40378836	40378950	-	err	ok	ok	no	0	0	0	0	0	0	0	0	1	1	1	0	0	0	ok	noStop
+143	ENST00000597091.5	chr5	40377548	40378925	-	err	ok	ok	no	6	0	0	0	2	0	2	0	3	3	1	0	2	0	ok	noStop,orfStop,unknownCdsSplice
+144	ENST00000597161.5	chr19	49470265	49470353	+	err	ok	ok	no	0	0	0	0	0	0	0	0	1	1	1	0	0	0	ok	noStop
+145	ENST00000597161.5	chr5	40378836	40378950	-	err	ok	ok	no	0	0	0	0	0	0	0	0	1	1	1	0	0	0	ok	noStop
+146	ENST00000597537.1	chr9	34998240	34998915	-	err	ok	no	no	0	0	0	0	0	1	0	1	2	1	2	0	0	1	ok	noStart,noStop,unknownUtrSplice
+147	ENST00000597924.5	chr5	40378504	40378964	-	err	bad	ok	no	1	0	0	1	0	0	0	0	1	1	1	0	0	0	ok	badFrame,noStop,utrGap
+148	ENST00000600313.5	chr19	23212906	23442792	+	err	bad	ok	no	0	0	0	2	2	0	2	0	5	5	1	1	4	0	ok	badFrame,noStop,utrGap,unknownCdsSplice
+149	ENST00000600313.5	chr8	122553547	123247665	-	err	bad	ok	no	6	1	0	0	3	1	3	1	5	4	2	1	3	1	ok	badFrame,noStop,cdsGap,unknownCdsSplice,unknownUtrSplice
+150	ENST00000600714.5	chr17	48046392	48046596	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	0	0	0	0	0	ok	
+151	ENST00000600943.5	chr19	50435583	50435839	+	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	1	0	0	ok	noStart
+152	ENST00000601140.1	chr19	49470265	49470353	+	err	ok	ok	no	0	0	0	0	0	0	0	0	1	1	1	0	0	0	ok	noStop
+153	ENST00000601140.1	chr5	40378836	40378950	-	err	ok	ok	no	0	0	0	0	0	0	0	0	1	1	1	0	0	0	ok	noStop
+154	ENST00000601284.5	chr12	30959276	30959644	-	err	bad	ok	no	2	1	0	0	1	0	1	0	2	2	1	0	1	0	ok	badFrame,noStop,cdsGap,unknownCdsSplice
+155	ENST00000601284.5	chr9	34998256	34998609	-	err	bad	ok	no	0	0	0	0	1	0	1	0	2	2	1	0	1	0	ok	badFrame,noStop,unknownCdsSplice
+156	ENST00000601553.1	chr19	21814225	21833622	+	err	bad	no	no	4	0	0	1	2	0	2	0	4	4	1	1	3	0	ok	badFrame,noStart,noStop,utrGap,unknownCdsSplice
+157	ENST00000601643.5	chr19	50435583	50435945	+	err	bad	ok	no	0	0	0	0	0	0	0	0	1	1	1	0	0	0	ok	badFrame,noStop
+158	ENST00000601924.5	chrUn_NW_023259840v1	1076673	1112322	+	err	bad	ok	no	1	0	0	1	2	0	2	0	4	4	1	0	3	0	ok	badFrame,noStop,utrGap,unknownCdsSplice
+159	ENST00000614994.4	chr20	26963182	26976879	-	err	ok	ok	ok	22	0	0	19	1	2	1	2	5	3	1	3	2	2	nmd	orfStop,utrGap,unknownCdsSplice,unknownUtrSplice
+160	ENST00000620639.1	chr7	62162435	62172717	-	err	ok	no	ok	8	0	0	0	1	0	1	0	3	3	0	0	2	0	ok	noStart,orfStop,unknownCdsSplice
+161	ENST00000638862.1	chr5	39825957	40378903	-	err	bad	ok	no	10	1	0	11	2	1	2	1	4	3	1	2	2	1	ok	badFrame,noStop,cdsGap,utrGap,unknownCdsSplice,unknownUtrSplice
+162	ENST00000652011.2	chrUn_NW_023259892v1	739831	745680	-	err	ok	no	no	10	0	0	4	0	0	0	0	3	3	0	1	2	0	ok	noStart,noStop,orfStop,utrGap

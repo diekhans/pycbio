@@ -1,171 +1,171 @@
-acc	chr	chrStart	chrEnd	strand	stat	frame	start	stop	orfStop	cdsGap	cdsMult3Gap	utrGap	cdsUnknownSplice	utrUnknownSplice	cdsNonCanonSplice	utrNonCanonSplice	numExons	numCds	numUtr5	numUtr3	numCdsIntrons	numUtrIntrons	nmd	causes
-g1.t1	scaffold-18882	649	1410	-	err	bad	no	no	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
-g2.t1	scaffold-250138	8586	9495	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g3.t1	scaffold-290908	139732	140200	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g4.t1	scaffold-290908	92234	113571	+	err	bad	no	no	16	0	0	0	0	0	0	0	7	7	0	0	6	0	ok	badFrame,noStart,noStop
-g5.t1	scaffold-290908	117616	119263	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g6.t1	scaffold-290908	120696	121650	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g7.t1	scaffold-290908	126364	126871	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g8.t1	scaffold-290908	11817	12430	+	err	bad	no	no	8	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
-g21.t1	scaffold-49566	23902	24460	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g22.t1	scaffold-49566	24476	25190	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g23.t1	scaffold-49566	27007	28162	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g24.t1	scaffold-49566	31964	36359	-	err	ok	no	ok	0	0	0	0	0	0	0	0	2	2	0	0	1	0	ok	noStart
-g25.t1	scaffold-49566	53337	106814	-	err	bad	no	no	4	0	0	0	0	0	0	0	6	6	0	0	5	0	ok	badFrame,noStart,noStop
-g26.t1	scaffold-49931	138134	138776	+	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
-g27.t1	scaffold-49931	142022	142616	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g28.t1	scaffold-54370	2097	2688	+	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
-g29.t1	scaffold-145684	15431	16088	+	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
-g30.t1	scaffold-145684	20381	21125	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g31.t1	scaffold-145684	30142	30683	-	err	bad	no	no	4	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
-g32.t1	scaffold-145684	42000	42619	-	err	bad	no	no	1	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
-g33.t1	scaffold-145684	59168	59965	+	err	bad	no	no	1	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
-g34.t1	scaffold-145684	61861	62425	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g35.t1	scaffold-145684	64064	64682	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g36.t1	scaffold-145684	65539	66148	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g37.t1	scaffold-145684	69657	71193	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g38.t1	scaffold-145684	72064	72709	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g39.t1	scaffold-145684	80958	81627	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g40.t1	scaffold-145684	82947	83565	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g41.t1	scaffold-145684	95108	97070	+	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
-g42.t1	scaffold-145684	101485	103855	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	2	2	0	0	1	0	ok	
-g43.t1	scaffold-145684	106870	107530	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g44.t1	scaffold-145684	116070	116700	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g45.t1	scaffold-145684	121967	122855	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g46.t1	scaffold-145684	127182	128190	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g47.t1	scaffold-145684	133639	134124	-	err	bad	no	no	5	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
-g48.t1	scaffold-145684	144123	145569	+	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
-g49.t1	scaffold-145684	150814	153160	-	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
-g50.t1	scaffold-145684	241446	242683	+	err	bad	no	no	7	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
-g51.t1	scaffold-145684	247858	248344	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g52.t1	scaffold-145684	257915	258747	-	err	bad	no	no	2	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
-g53.t1	scaffold-163220	32353	32887	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g54.t1	scaffold-163220	34765	35620	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g55.t1	scaffold-163220	46077	47766	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g61.t1	scaffold-229586	10692	11448	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g62.t1	scaffold-229586	19413	20394	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g63.t1	scaffold-125952	9862	10394	-	err	bad	no	no	5	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
-g64.t1	scaffold-272849	7614	8151	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g65.t1	scaffold-272849	13431	19746	-	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
-g66.t1	scaffold-166772	2390	3114	+	err	bad	no	no	3	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
-g67.t1	scaffold-166772	10056	11607	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g68.t1	scaffold-178251	8751	9327	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g69.t1	scaffold-178251	19906	21107	+	err	bad	no	no	7	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
-g70.t1	scaffold-259384	117121	118271	+	err	bad	no	no	6	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
-g71.t1	scaffold-259384	118394	118928	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g72.t1	scaffold-259384	127541	128318	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g73.t1	scaffold-192743	13136	13754	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g74.t1	scaffold-192743	20728	21259	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g75.t1	scaffold-192743	26848	27784	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g76.t1	scaffold-192743	37975	38608	-	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
-g77.t1	scaffold-287881	2043	2737	+	err	bad	no	no	4	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
-g78.t1	scaffold-287881	8866	9403	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g79.t1	scaffold-287881	11591	12299	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g80.t1	scaffold-287881	20005	20512	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g81.t1	scaffold-287881	38187	38874	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g82.t1	scaffold-287881	51051	51651	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g83.t1	scaffold-287881	69094	70974	-	err	ok	no	ok	0	0	0	0	0	0	0	0	2	2	0	0	1	0	ok	noStart
-g84.t1	scaffold-231168	201448	206855	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	5	5	0	0	4	0	ok	
-g85.t1	scaffold-231168	207555	209094	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g86.t1	scaffold-231168	216662	217307	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g87.t1	scaffold-231168	222577	223546	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g88.t1	scaffold-231168	240808	241714	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g89.t1	scaffold-231168	248827	249757	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g90.t1	scaffold-231168	177768	179199	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g91.t1	scaffold-231168	181944	182211	-	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
-g92.t1	scaffold-231168	74278	74980	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g93.t1	scaffold-231168	87214	87997	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g94.t1	scaffold-231168	94530	95010	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g95.t1	scaffold-231168	98482	99181	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g96.t1	scaffold-231168	101599	105734	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	4	4	0	0	3	0	ok	
-g97.t1	scaffold-231168	106006	107143	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g98.t1	scaffold-231168	122938	123760	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g99.t1	scaffold-231168	123817	142589	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	6	6	0	0	5	0	ok	
-g100.t1	scaffold-231168	143848	144397	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g101.t1	scaffold-231168	159953	161021	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g102.t1	scaffold-231168	66203	66854	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g103.t1	scaffold-231168	52456	53982	+	err	bad	no	no	2	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
-g104.t1	scaffold-231168	45032	46877	+	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
-g105.t1	scaffold-231168	48060	49173	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g106.t1	scaffold-231168	35417	40066	+	err	bad	no	no	6	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
-g107.t1	scaffold-231168	1000	1618	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g108.t1	scaffold-231168	2853	3405	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g109.t1	scaffold-231168	15452	16214	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g110.t1	scaffold-268882	38486	39023	+	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
-g111.t1	scaffold-268882	40294	40963	-	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
-g112.t1	scaffold-268882	31524	32424	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g113.t1	scaffold-268882	34618	35215	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g114.t1	scaffold-268882	2901	3551	+	err	bad	no	no	7	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
-g115.t1	scaffold-268882	5523	6336	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g116.t1	scaffold-268882	12880	13552	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g117.t1	scaffold-268882	13564	14605	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g118.t1	scaffold-268882	16310	17060	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g119.t1	scaffold-268882	17341	18451	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g120.t1	scaffold-268882	19528	20020	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g121.t1	scaffold-176165	6899	8375	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g122.t1	scaffold-176165	10967	11504	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g123.t1	scaffold-176165	16520	17048	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g124.t1	scaffold-176165	18334	18904	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g125.t1	scaffold-176165	21253	21784	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g126.t1	scaffold-176165	21952	22522	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g127.t1	scaffold-176165	22667	23792	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g128.t1	scaffold-176165	29395	30190	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g129.t1	scaffold-176165	36200	37598	+	err	ok	ok	no	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStop
-g130.t1	scaffold-176165	51757	52364	+	err	bad	no	no	2	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
-g131.t1	scaffold-176165	54443	55337	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g132.t1	scaffold-176165	56159	56933	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g133.t1	scaffold-176165	77130	77805	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g134.t1	scaffold-176165	79488	83967	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	2	2	0	0	1	0	ok	
-g135.t1	scaffold-176165	86426	86915	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g136.t1	scaffold-176165	89899	114815	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	2	2	0	0	1	0	ok	
-g137.t1	scaffold-176165	117030	118053	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g138.t1	scaffold-176165	119293	119824	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g139.t1	scaffold-176165	121683	122247	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g140.t1	scaffold-176165	133705	135898	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g141.t1	scaffold-176165	150466	151075	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g142.t1	scaffold-176165	151959	153537	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g143.t1	scaffold-176165	154067	154622	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g144.t1	scaffold-176165	157880	158600	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g145.t1	scaffold-176165	164351	165113	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g146.t1	scaffold-176165	178096	178687	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g147.t1	scaffold-176165	179106	179657	-	err	bad	no	no	9	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
-g148.t1	scaffold-176165	182860	183377	-	err	bad	no	no	4	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
-g149.t1	scaffold-308783	1025	7756	-	err	bad	no	no	2	0	0	0	0	0	0	0	2	2	0	0	1	0	ok	badFrame,noStart,noStop
-g150.t1	scaffold-239584	115303	116285	+	err	bad	no	no	1	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
-g151.t1	scaffold-239584	117404	117869	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g152.t1	scaffold-239584	123282	123840	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g153.t1	scaffold-239584	134717	135230	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g154.t1	scaffold-239584	135495	136221	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g155.t1	scaffold-239584	93988	98204	-	err	ok	no	no	0	0	0	0	0	0	0	0	3	3	0	0	2	0	ok	noStart,noStop
-g156.t1	scaffold-239584	65666	74622	-	err	bad	ok	no	0	0	0	0	0	0	0	0	3	3	0	0	2	0	ok	badFrame,noStop
-g157.t1	scaffold-239584	12184	13536	+	err	bad	no	no	15	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
-g158.t1	scaffold-239584	14931	40413	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	7	7	0	0	6	0	ok	
-g159.t1	scaffold-239584	43673	44195	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g160.t1	scaffold-239584	49075	52706	-	err	ok	no	ok	0	0	0	0	0	0	0	0	3	3	0	0	2	0	ok	noStart
-g161.t1	scaffold-239584	3308	3923	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g162.t1	scaffold-55537	8014	9892	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g163.t1	scaffold-55537	2349	3174	+	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
-g164.t1	scaffold-55537	4664	5201	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g165.t1	scaffold-77539	87754	87881	+	err	bad	no	no	3	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
-g166.t1	scaffold-77539	84096	85564	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	2	2	0	0	1	0	ok	
-g167.t1	scaffold-77539	69996	70791	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g168.t1	scaffold-77539	71709	72327	-	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
-g169.t1	scaffold-77539	39287	39803	+	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
-g170.t1	scaffold-77539	46219	46945	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g171.t1	scaffold-77539	21052	23325	+	err	ok	no	ok	0	0	0	0	0	0	0	0	2	2	0	0	1	0	ok	noStart
-g172.t1	scaffold-77539	25459	25533	+	err	bad	ok	no	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStop
-g173.t1	scaffold-222412	19645	20266	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g174.t1	scaffold-222412	26366	27866	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g175.t1	scaffold-222412	11786	14180	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g176.t1	scaffold-222412	15511	16195	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g177.t1	scaffold-222412	16533	17388	-	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
-g178.t1	scaffold-222412	4437	6738	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g179.t1	scaffold-222412	7102	9037	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g180.t1	scaffold-290908	1854	2559	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g181.t1	scaffold-294813	14998	15188	+	err	bad	no	no	8	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
-g182.t1	scaffold-93141	113486	114011	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g183.t1	scaffold-93141	114885	115353	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g184.t1	scaffold-93141	117345	117975	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g185.t1	scaffold-93141	119529	120318	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
-g186.t1	scaffold-145684	170678	174460	+	err	ok	ok	no	0	0	0	0	0	0	0	0	2	2	0	0	1	0	ok	noStop
-g187.t1	scaffold-145684	199480	200392	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+checkId	acc	chr	chrStart	chrEnd	strand	stat	frame	start	stop	orfStop	cdsGap	cdsMult3Gap	utrGap	cdsUnknownSplice	utrUnknownSplice	cdsNonCanonSplice	utrNonCanonSplice	numExons	numCds	numUtr5	numUtr3	numCdsIntrons	numUtrIntrons	nmd	causes
+1	g1.t1	scaffold-18882	649	1410	-	err	bad	no	no	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
+2	g2.t1	scaffold-250138	8586	9495	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+3	g3.t1	scaffold-290908	139732	140200	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+4	g4.t1	scaffold-290908	92234	113571	+	err	bad	no	no	16	0	0	0	0	0	0	0	7	7	0	0	6	0	ok	badFrame,noStart,noStop
+5	g5.t1	scaffold-290908	117616	119263	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+6	g6.t1	scaffold-290908	120696	121650	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+7	g7.t1	scaffold-290908	126364	126871	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+8	g8.t1	scaffold-290908	11817	12430	+	err	bad	no	no	8	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
+9	g21.t1	scaffold-49566	23902	24460	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+10	g22.t1	scaffold-49566	24476	25190	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+11	g23.t1	scaffold-49566	27007	28162	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+12	g24.t1	scaffold-49566	31964	36359	-	err	ok	no	ok	0	0	0	0	0	0	0	0	2	2	0	0	1	0	ok	noStart
+13	g25.t1	scaffold-49566	53337	106814	-	err	bad	no	no	4	0	0	0	0	0	0	0	6	6	0	0	5	0	ok	badFrame,noStart,noStop
+14	g26.t1	scaffold-49931	138134	138776	+	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
+15	g27.t1	scaffold-49931	142022	142616	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+16	g28.t1	scaffold-54370	2097	2688	+	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
+17	g29.t1	scaffold-145684	15431	16088	+	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
+18	g30.t1	scaffold-145684	20381	21125	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+19	g31.t1	scaffold-145684	30142	30683	-	err	bad	no	no	4	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
+20	g32.t1	scaffold-145684	42000	42619	-	err	bad	no	no	1	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
+21	g33.t1	scaffold-145684	59168	59965	+	err	bad	no	no	1	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
+22	g34.t1	scaffold-145684	61861	62425	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+23	g35.t1	scaffold-145684	64064	64682	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+24	g36.t1	scaffold-145684	65539	66148	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+25	g37.t1	scaffold-145684	69657	71193	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+26	g38.t1	scaffold-145684	72064	72709	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+27	g39.t1	scaffold-145684	80958	81627	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+28	g40.t1	scaffold-145684	82947	83565	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+29	g41.t1	scaffold-145684	95108	97070	+	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
+30	g42.t1	scaffold-145684	101485	103855	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	2	2	0	0	1	0	ok	
+31	g43.t1	scaffold-145684	106870	107530	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+32	g44.t1	scaffold-145684	116070	116700	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+33	g45.t1	scaffold-145684	121967	122855	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+34	g46.t1	scaffold-145684	127182	128190	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+35	g47.t1	scaffold-145684	133639	134124	-	err	bad	no	no	5	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
+36	g48.t1	scaffold-145684	144123	145569	+	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
+37	g49.t1	scaffold-145684	150814	153160	-	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
+38	g50.t1	scaffold-145684	241446	242683	+	err	bad	no	no	7	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
+39	g51.t1	scaffold-145684	247858	248344	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+40	g52.t1	scaffold-145684	257915	258747	-	err	bad	no	no	2	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
+41	g53.t1	scaffold-163220	32353	32887	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+42	g54.t1	scaffold-163220	34765	35620	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+43	g55.t1	scaffold-163220	46077	47766	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+44	g61.t1	scaffold-229586	10692	11448	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+45	g62.t1	scaffold-229586	19413	20394	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+46	g63.t1	scaffold-125952	9862	10394	-	err	bad	no	no	5	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
+47	g64.t1	scaffold-272849	7614	8151	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+48	g65.t1	scaffold-272849	13431	19746	-	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
+49	g66.t1	scaffold-166772	2390	3114	+	err	bad	no	no	3	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
+50	g67.t1	scaffold-166772	10056	11607	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+51	g68.t1	scaffold-178251	8751	9327	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+52	g69.t1	scaffold-178251	19906	21107	+	err	bad	no	no	7	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
+53	g70.t1	scaffold-259384	117121	118271	+	err	bad	no	no	6	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
+54	g71.t1	scaffold-259384	118394	118928	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+55	g72.t1	scaffold-259384	127541	128318	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+56	g73.t1	scaffold-192743	13136	13754	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+57	g74.t1	scaffold-192743	20728	21259	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+58	g75.t1	scaffold-192743	26848	27784	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+59	g76.t1	scaffold-192743	37975	38608	-	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
+60	g77.t1	scaffold-287881	2043	2737	+	err	bad	no	no	4	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
+61	g78.t1	scaffold-287881	8866	9403	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+62	g79.t1	scaffold-287881	11591	12299	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+63	g80.t1	scaffold-287881	20005	20512	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+64	g81.t1	scaffold-287881	38187	38874	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+65	g82.t1	scaffold-287881	51051	51651	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+66	g83.t1	scaffold-287881	69094	70974	-	err	ok	no	ok	0	0	0	0	0	0	0	0	2	2	0	0	1	0	ok	noStart
+67	g84.t1	scaffold-231168	201448	206855	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	5	5	0	0	4	0	ok	
+68	g85.t1	scaffold-231168	207555	209094	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+69	g86.t1	scaffold-231168	216662	217307	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+70	g87.t1	scaffold-231168	222577	223546	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+71	g88.t1	scaffold-231168	240808	241714	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+72	g89.t1	scaffold-231168	248827	249757	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+73	g90.t1	scaffold-231168	177768	179199	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+74	g91.t1	scaffold-231168	181944	182211	-	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
+75	g92.t1	scaffold-231168	74278	74980	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+76	g93.t1	scaffold-231168	87214	87997	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+77	g94.t1	scaffold-231168	94530	95010	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+78	g95.t1	scaffold-231168	98482	99181	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+79	g96.t1	scaffold-231168	101599	105734	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	4	4	0	0	3	0	ok	
+80	g97.t1	scaffold-231168	106006	107143	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+81	g98.t1	scaffold-231168	122938	123760	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+82	g99.t1	scaffold-231168	123817	142589	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	6	6	0	0	5	0	ok	
+83	g100.t1	scaffold-231168	143848	144397	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+84	g101.t1	scaffold-231168	159953	161021	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+85	g102.t1	scaffold-231168	66203	66854	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+86	g103.t1	scaffold-231168	52456	53982	+	err	bad	no	no	2	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
+87	g104.t1	scaffold-231168	45032	46877	+	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
+88	g105.t1	scaffold-231168	48060	49173	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+89	g106.t1	scaffold-231168	35417	40066	+	err	bad	no	no	6	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
+90	g107.t1	scaffold-231168	1000	1618	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+91	g108.t1	scaffold-231168	2853	3405	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+92	g109.t1	scaffold-231168	15452	16214	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+93	g110.t1	scaffold-268882	38486	39023	+	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
+94	g111.t1	scaffold-268882	40294	40963	-	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
+95	g112.t1	scaffold-268882	31524	32424	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+96	g113.t1	scaffold-268882	34618	35215	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+97	g114.t1	scaffold-268882	2901	3551	+	err	bad	no	no	7	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
+98	g115.t1	scaffold-268882	5523	6336	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+99	g116.t1	scaffold-268882	12880	13552	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+100	g117.t1	scaffold-268882	13564	14605	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+101	g118.t1	scaffold-268882	16310	17060	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+102	g119.t1	scaffold-268882	17341	18451	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+103	g120.t1	scaffold-268882	19528	20020	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+104	g121.t1	scaffold-176165	6899	8375	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+105	g122.t1	scaffold-176165	10967	11504	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+106	g123.t1	scaffold-176165	16520	17048	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+107	g124.t1	scaffold-176165	18334	18904	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+108	g125.t1	scaffold-176165	21253	21784	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+109	g126.t1	scaffold-176165	21952	22522	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+110	g127.t1	scaffold-176165	22667	23792	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+111	g128.t1	scaffold-176165	29395	30190	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+112	g129.t1	scaffold-176165	36200	37598	+	err	ok	ok	no	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStop
+113	g130.t1	scaffold-176165	51757	52364	+	err	bad	no	no	2	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
+114	g131.t1	scaffold-176165	54443	55337	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+115	g132.t1	scaffold-176165	56159	56933	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+116	g133.t1	scaffold-176165	77130	77805	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+117	g134.t1	scaffold-176165	79488	83967	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	2	2	0	0	1	0	ok	
+118	g135.t1	scaffold-176165	86426	86915	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+119	g136.t1	scaffold-176165	89899	114815	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	2	2	0	0	1	0	ok	
+120	g137.t1	scaffold-176165	117030	118053	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+121	g138.t1	scaffold-176165	119293	119824	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+122	g139.t1	scaffold-176165	121683	122247	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+123	g140.t1	scaffold-176165	133705	135898	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+124	g141.t1	scaffold-176165	150466	151075	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+125	g142.t1	scaffold-176165	151959	153537	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+126	g143.t1	scaffold-176165	154067	154622	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+127	g144.t1	scaffold-176165	157880	158600	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+128	g145.t1	scaffold-176165	164351	165113	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+129	g146.t1	scaffold-176165	178096	178687	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+130	g147.t1	scaffold-176165	179106	179657	-	err	bad	no	no	9	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
+131	g148.t1	scaffold-176165	182860	183377	-	err	bad	no	no	4	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
+132	g149.t1	scaffold-308783	1025	7756	-	err	bad	no	no	2	0	0	0	0	0	0	0	2	2	0	0	1	0	ok	badFrame,noStart,noStop
+133	g150.t1	scaffold-239584	115303	116285	+	err	bad	no	no	1	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
+134	g151.t1	scaffold-239584	117404	117869	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+135	g152.t1	scaffold-239584	123282	123840	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+136	g153.t1	scaffold-239584	134717	135230	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+137	g154.t1	scaffold-239584	135495	136221	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+138	g155.t1	scaffold-239584	93988	98204	-	err	ok	no	no	0	0	0	0	0	0	0	0	3	3	0	0	2	0	ok	noStart,noStop
+139	g156.t1	scaffold-239584	65666	74622	-	err	bad	ok	no	0	0	0	0	0	0	0	0	3	3	0	0	2	0	ok	badFrame,noStop
+140	g157.t1	scaffold-239584	12184	13536	+	err	bad	no	no	15	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
+141	g158.t1	scaffold-239584	14931	40413	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	7	7	0	0	6	0	ok	
+142	g159.t1	scaffold-239584	43673	44195	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+143	g160.t1	scaffold-239584	49075	52706	-	err	ok	no	ok	0	0	0	0	0	0	0	0	3	3	0	0	2	0	ok	noStart
+144	g161.t1	scaffold-239584	3308	3923	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+145	g162.t1	scaffold-55537	8014	9892	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+146	g163.t1	scaffold-55537	2349	3174	+	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
+147	g164.t1	scaffold-55537	4664	5201	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+148	g165.t1	scaffold-77539	87754	87881	+	err	bad	no	no	3	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
+149	g166.t1	scaffold-77539	84096	85564	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	2	2	0	0	1	0	ok	
+150	g167.t1	scaffold-77539	69996	70791	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+151	g168.t1	scaffold-77539	71709	72327	-	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
+152	g169.t1	scaffold-77539	39287	39803	+	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
+153	g170.t1	scaffold-77539	46219	46945	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+154	g171.t1	scaffold-77539	21052	23325	+	err	ok	no	ok	0	0	0	0	0	0	0	0	2	2	0	0	1	0	ok	noStart
+155	g172.t1	scaffold-77539	25459	25533	+	err	bad	ok	no	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStop
+156	g173.t1	scaffold-222412	19645	20266	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+157	g174.t1	scaffold-222412	26366	27866	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+158	g175.t1	scaffold-222412	11786	14180	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+159	g176.t1	scaffold-222412	15511	16195	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+160	g177.t1	scaffold-222412	16533	17388	-	err	ok	no	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	noStart
+161	g178.t1	scaffold-222412	4437	6738	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+162	g179.t1	scaffold-222412	7102	9037	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+163	g180.t1	scaffold-290908	1854	2559	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+164	g181.t1	scaffold-294813	14998	15188	+	err	bad	no	no	8	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	badFrame,noStart,noStop
+165	g182.t1	scaffold-93141	113486	114011	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+166	g183.t1	scaffold-93141	114885	115353	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+167	g184.t1	scaffold-93141	117345	117975	+	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+168	g185.t1	scaffold-93141	119529	120318	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	
+169	g186.t1	scaffold-145684	170678	174460	+	err	ok	ok	no	0	0	0	0	0	0	0	0	2	2	0	0	1	0	ok	noStop
+170	g187.t1	scaffold-145684	199480	200392	-	ok	ok	ok	ok	0	0	0	0	0	0	0	0	1	1	0	0	0	0	ok	

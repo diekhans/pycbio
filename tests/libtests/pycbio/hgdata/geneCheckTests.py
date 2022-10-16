@@ -8,24 +8,31 @@ from pycbio.hgdata.geneCheck import GeneCheckTbl
 
 
 class ReadTests(TestCaseBase):
+    def _dumpCheck(self, fh, checks, g):
+        g.dump(fh)
+        if checks.haveDetails():
+            details = checks.getDetails(g)
+            if details is not None:
+                for d in details:
+                    fh.write('\t')
+                    d.dump(fh)
+
     def _checkDmp(self, checks):
-        dmp = self.getOutputFile(".dmp")
-        dmpfh = open(dmp, "w")
-        for g in checks:
-            g.dump(dmpfh)
-        dmpfh.close()
+        with open(self.getOutputFile(".dmp"), 'w') as fh:
+            for g in checks:
+                self._dumpCheck(fh, checks, g)
         self.diffExpected(".dmp")
 
-    def testTsvUniq(self):
-        checks = GeneCheckTbl(self.getInputFile("geneCheck.tsv"), idIsUniq=True)
-        self.assertEqual(len(checks), 53)
+    def testCheck(self):
+        checks = GeneCheckTbl(self.getInputFile("geneCheck.tsv"))
+        self.assertEqual(len(checks), 162)
         self._checkDmp(checks)
 
-    def testTsvMulti(self):
-        checks = GeneCheckTbl(self.getInputFile("geneCheckMulti.tsv"))
-        self.assertEqual(len(checks), 8)
+    def testCheckDetails(self):
+        checks = GeneCheckTbl(self.getInputFile("geneCheck.tsv"),
+                              self.getInputFile("geneCheckDetails.tsv"))
+        self.assertEqual(len(checks), 162)
         self._checkDmp(checks)
-
 
 def suite():
     ts = unittest.TestSuite()
