@@ -145,11 +145,11 @@ class RangeTests(TestCaseBase):
 
     def testGetSeqsStrand(self):
         rf = self.mkRangeFinder(data1, True)
-        self.assertEqual(rf.getSeqs(), frozenset([d.seqId for d in data1]))
+        self.assertEqual(rf.getSeqIds(), frozenset([d.seqId for d in data1]))
 
     def testGetSeqsNoStrand(self):
         rf = self.mkRangeFinder(data1, False)
-        self.assertEqual(rf.getSeqs(), frozenset([d.seqId for d in data1]))
+        self.assertEqual(rf.getSeqIds(), frozenset([d.seqId for d in data1]))
 
     def testGetSeqRangeStrand(self):
         rf = self.mkRangeFinder(data1, True)

@@ -1,6 +1,14 @@
 #+STARTUP: nologdone
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
+* add function to merge range finder entries
+kznf-gene-homology/builds/2022-09/analysis/bin/paraAlignRept
+
+* rangeFinder:
+is this right, not sure this does an is test of value.
+bucket.remove(Entry(start, end, value))
+
+
 * rangefinder: coords strand is like PSL strand, not BED= strand,
 but a lot overlap are strand on the chrom coords.  Make this clean
 and add a separate strand to rangefinder, maybe rename coords.strand

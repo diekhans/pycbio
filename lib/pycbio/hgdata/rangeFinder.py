@@ -18,6 +18,7 @@ generating SQL where clauses to restrict by bin."""
 
 import sys
 from collections import namedtuple
+from deprecation import deprecated
 from pycbio import PycbioException
 
 
@@ -143,8 +144,8 @@ class RangeBins(object):
         if end > self.maxEnd:
             self.maxEnd = end
 
-    def overlapping(self, start, end):
-        "generator over values overlapping the specified range"
+    def overlappingEntries(self, start, end):
+        "generator of entries overlapping the specified range"
         if (start < end):
             for bins in Binner.getOverlappingBins(start, end):
                 for j in range(bins[0], bins[1] + 1):
@@ -152,7 +153,12 @@ class RangeBins(object):
                     if bucket is not None:
                         for entry in bucket:
                             if entry.overlaps(start, end):
-                                yield entry.value
+                                yield entry
+
+    def overlapping(self, start, end):
+        "generator of values overlapping the specified range"
+        for entry in self.overlappingEntries(start, end):
+            yield entry.value
 
     def removeIfExists(self, start, end, value):
         """Remove an entry with the particular range if it exists, otherwise return false """
@@ -288,9 +294,13 @@ class RangeFinder(object):
             for entry in bins.entries():
                 yield entry.value
 
-    def getSeqs(self):
+    def getSeqIds(self):
         """get set of sequences"""
         return frozenset([k[0] for k in self.seqBins.keys()])
+
+    @deprecated()
+    def getSeqs(self):
+        return self.getSeqIds()
 
     def getSeqRange(self, seqId, strand=None):
         """Return the minimum start and maximum end for a given sequence.  Useful for
