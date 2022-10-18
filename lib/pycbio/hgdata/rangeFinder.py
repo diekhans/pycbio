@@ -215,7 +215,7 @@ class RangeFinder(object):
         if self.haveStrand is None:
             self.haveStrand = (strand is not None)
         elif self.haveStrand != (strand is not None):
-            raise PycbioException("all RangeFinder entries must either have strand or not have strand")
+            raise PycbioException("all RangeFinder entries must all either have strand or not have strand")
         key = self._binKey(seqId, strand)
         bins = self.seqBins.get(key)
         if bins is None:
