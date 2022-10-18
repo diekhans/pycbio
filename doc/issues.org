@@ -8,6 +8,9 @@ kznf-gene-homology/builds/2022-09/analysis/bin/paraAlignRept
 is this right, not sure this does an is test of value.
 bucket.remove(Entry(start, end, value))
 
+* rangefinder:
+make have-strand explict on creating finder
+might be easier to keep on SeqBins with strand as part of entry
 
 * rangefinder: coords strand is like PSL strand, not BED= strand,
 but a lot overlap are strand on the chrom coords.  Make this clean

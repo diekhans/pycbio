@@ -107,8 +107,8 @@ class Binner(object):
         return "(({}=\"{}\") and ({}<{}) and ({}>{}) and ({}))".format(seqCol, seq, startCol, end, endCol, start, " or ".join(parts))
 
 
-class Entry(namedtuple("Entry",
-                       ("start", "end", "value"))):
+class _Entry(namedtuple("Entry",
+                        ("start", "end", "value"))):
     "entry associating a range with a value"
     __slots__ = ()
 
@@ -138,7 +138,7 @@ class RangeBins(object):
         entries = self.buckets.get(bin)
         if entries is None:
             self.buckets[bin] = entries = []
-        entries.append(Entry(start, end, value))
+        entries.append(_Entry(start, end, value))
         if start < self.minStart:
             self.minStart = start
         if end > self.maxEnd:
@@ -164,18 +164,18 @@ class RangeBins(object):
         """Remove an entry with the particular range if it exists, otherwise return false """
         try:
             bucket = self.buckets[(Binner.calcBin(start, end))]  # exception if no bucket
-            bucket.remove(Entry(start, end, value))  # exception if no value
+            bucket.remove(_Entry(start, end, value))  # exception if no value
             return True
         except IndexError:
             return False
         except ValueError:
             return False
 
-    def entries(self):
-        "generator over all entries"
+    def values(self):
+        "generator over all values"
         for bin in list(self.buckets.values()):
             for entry in bin:
-                yield entry
+                yield entry.value
 
     def dump(self, fh):
         "print contents for debugging purposes"
@@ -291,8 +291,7 @@ class RangeFinder(object):
     def values(self):
         "generator over all values"
         for bins in self.seqBins.values():
-            for entry in bins.entries():
-                yield entry.value
+            yield from bins.values()
 
     def getSeqIds(self):
         """get set of sequences"""
