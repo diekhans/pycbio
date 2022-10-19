@@ -3,7 +3,7 @@
 browser.
 """
 import copy
-from urllib.parse import urlencode
+from urllib.parse import quote
 from pycbio.html.htmlPage import HtmlPage
 from pycbio.sys import fileOps
 
@@ -23,10 +23,23 @@ TABLE, TR, TH, TD {
     border-width: 1px;
     border-collapse: collapse;
 }
+.tableFixHead {
+    overflow-y: auto;
+    height: 100px;
+}
+.tableFixHead THEAD TH {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+TH {
+    background: #eee;
+}
 """
 
+GENOME_UCSC_URL = "https://genome.ucsc.edu"
 
-class SubRows(object):
+class SubRows:
     """Object used to specify a set of sub-rows.  Indicates number of columns
     occupied, which is need for laying out.
     """
@@ -52,7 +65,7 @@ class SubRows(object):
             return "<td>"
 
 
-class Entry(object):
+class Entry:
     "entry in directory"
     __slots__ = ("row", "key", "cssRowClass", "cssCellClasses", "subRowGroups")
 
@@ -141,6 +154,21 @@ class Entry(object):
         else:
             return self._toHtmlRowSimple()
 
+def _makeUrlArg(name, val):
+    return f'{name}=' + quote(val)
+
+def _buildTrackArgsList(trackArgs):
+    # track args is dict
+    if trackArgs is None:
+        return []
+    return [_makeUrlArg(n, v) for n, v in trackArgs.items()]
+
+def _buildRefsList(argName, urls):
+    if urls is None:
+        return []
+    if isinstance(urls, str):
+        urls = [urls]
+    return [_makeUrlArg(argName, u) for u in urls]
 
 class BrowserDir(object):
     """Create a frameset and collection of HTML pages that index one or more
@@ -149,12 +177,12 @@ class BrowserDir(object):
 
     def __init__(self, browserUrl, defaultDb, *, colNames=None, pageSize=50,
                  title=None, dirPercent=15, below=False, pageDesc=None,
-                 tracks={}, initTracks={}, style=defaultStyle, numColumns=1, customTrackUrl=None,
-                 hubUrl=None):
+                 tracks={}, initTracks={}, style=defaultStyle, numColumns=1,
+                 customTrackUrls=None, hubUrls=None):
         """The tracks arg is a dict of track name to setting, it is added to
         each URL and the initial setting of the frame. The initTracks arg is
         similar, however its only set in the initial frame and not added to
-        each URL.
+        each URL. customTrackUrls and hubUrls can be a string URL or list of URLs.
         A pageSize arg of None creates a single page. If numColumns is greater than 1
         create multi-column directories.
         """
@@ -171,29 +199,29 @@ class BrowserDir(object):
         self.pageDesc = pageDesc
         self.entries = []
         self.style = style
-        self.customTrackUrl = customTrackUrl
-        self.trackArgs = tracks.copy()
-        self.initTrackArgs = initTracks.copy()
-        if customTrackUrl is not None:
-            self.trackArgs["hgt.customText"] = self.customTrackUrl
-        if hubUrl is not None:
-            self.trackArgs["hubUrl"] = self.hubUrl
+        self.trackArgs = _buildTrackArgsList(tracks)
+        self.initTrackArgs = _buildTrackArgsList(initTracks)
+        self.customTrackArgs = _buildRefsList("hgt.customText", customTrackUrls)
+        self.hubArgs = _buildRefsList("hubUrl", hubUrls)
 
-    def mkUrl(self, coords, db=None, extra=None):
-        """extract is a dict, the track arguments are added on if db defaultDb or None"""
+    def mkUrl(self, coords, db=None, extraArgs=None):
+        """can make URL to default db or another other db.  trackArgs are added if
+        for defaultDb. extraArgs should list of CGI args with values quoted,
+        """
         if db is None:
             db = self.defaultDb
-        args = {"db": db,
-                "genome": db,
-                "position": str(coords)}
+        urlArgs = [_makeUrlArg("db", db),
+                   _makeUrlArg("genome", db),
+                   _makeUrlArg("position", str(coords))]
         if db == self.defaultDb:
-            args.update(self.trackArgs)
-        if extra is not None:
-            args.update(extra)
-        return "{}/cgi-bin/hgTracks?{}".format(self.browserUrl, urlencode(args))
+            urlArgs.extend(self.trackArgs)
+        if extraArgs is not None:
+            urlArgs.extend(extraArgs)
+        return self.browserUrl + "/cgi-bin/hgTracks?" + '&'.join(urlArgs)
 
     def mkDefaultUrl(self):
-        return self.mkUrl("default", db=self.defaultDb, extra=self.initTrackArgs)
+        return self.mkUrl("default", db=self.defaultDb,
+                          extraArgs=self.initTrackArgs + self.customTrackArgs + self.hubArgs)
 
     def mkAnchor(self, coords, text=None, db=None, target="browser"):
         if text is None:
@@ -273,15 +301,17 @@ class BrowserDir(object):
     def _addPageRows(self, pg, pgEntries, numPadRows):
         """add one set of rows to the page.  In multi-column mode, this
         will be contained in a higher-level table"""
-        pg.tableStart()
+        pg.tableStart(hclass="tableFixHead")
         if self.colNames is not None:
             pg.tableHeader(self.colNames)
         numColumns = None
+        pg.add("<tbody>")  # hack because we don't use addTableRow
         for ent in pgEntries:
             numColumns = ent.numColumns()  # better all be the same
             pg.add(ent.toHtmlRow())
         if numPadRows > 0:
             self._padRows(pg, numPadRows, numColumns)
+        pg.add("</tbody>")
         pg.tableEnd()
 
     def _addMultiColEntryTbl(self, pg, pgEntries):

@@ -12,7 +12,16 @@ bucket.remove(Entry(start, end, value))
 make have-strand explict on creating finder
 might be easier to keep on SeqBins with strand as part of entry
 
-* HtmlPage - is there some pypi library to do this?
+* HtmlPage
+** is there some pypi library to do this?
+** addTableRow is clunky, whould convert types to str, special attribute throubh
+cell class rather than "If a cell is
+a list or tuple. then the remain arguments become TH or TD
+attributes.
+
+* BrowserDir
+** subrows could use HTML tables in tables and be much cleaner
+** build java script sortable table?
 
 * rangefinder: coords strand is like PSL strand, not BED= strand,
 but a lot overlap are strand on the chrom coords.  Make this clean
@@ -28,8 +37,11 @@ Happends with raw reads of PSL rows without cursorclass
 
 * Add functions to locate UCSC data
 some is already in kznf
-* TsvReader could create named tuples.
-what about the name?  Doesn't seem to matter
+* TsvReader
+** could create named tuples.
+what about the class name and serialization
+maybe just make lighter weight
+
 * id pycbio.db.dbDict really useful?
 * for APSW, something like sqlite3.Row as; it is both a tuple and a dict
 however, it can't be passed to apsw, as it expects a sqlite3 cursor.

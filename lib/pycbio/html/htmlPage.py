@@ -22,6 +22,7 @@ class HtmlPage(list):
         """Start a new page."""
         self.frameSet = (framesetAttrs is not None)
         self.title = title
+        self.tableBodyCnt = 0
         if not fragment:
             self.append('<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">')
             self.append("<html><head>")
@@ -105,6 +106,7 @@ class HtmlPage(list):
         self.append(tag)
         if caption is not None:
             self.append("<caption>{}</caption>".format(caption))
+        self.tableBodyCnt = 0
 
     def _addTableRow(self, cell, row, hclasses=None):
         """ add a table row
@@ -121,7 +123,7 @@ class HtmlPage(list):
         for c in row:
             hrow += "<" + cell
             if (hclasses is not None) and (hclasses[i] is not None):
-                hrow += ' classes=\"' + hclasses[i] + '"'
+                hrow += ' class=\"' + hclasses[i] + '"'
             if isinstance(c, list) or isinstance(c, tuple):
                 hrow += " " + " ".join(c[1:])
                 c = c[0]
@@ -137,12 +139,20 @@ class HtmlPage(list):
         self.add(hrow)
 
     def tableHeader(self, row, hclasses=None):
+        self.add("<thead>")
         self._addTableRow("th", row, hclasses)
+        self.add("</thead>")
 
     def tableRow(self, row, hclasses=None):
+        if self.tableBodyCnt == 0:
+            self.add("<tbody")
+        self.tableBodyCnt += 1
         self._addTableRow("td", row, hclasses)
 
     def tableEnd(self):
+        if self.tableBodyCnt > 0:
+            self.add("</tbody>")
+        self.tableBodyCnt = 0
         self.append("</table>")
 
     def table(self, rows, header=None, caption=None):
