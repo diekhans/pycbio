@@ -1,4 +1,4 @@
-# Copyright 2006-2018 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 """
 Storage of genePred data from sqlite for use in cluster jobs and other
 random access uses.

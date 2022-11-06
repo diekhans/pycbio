@@ -1,4 +1,4 @@
-# Copyright 2006-2012 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 "array and matrix classed, indexed by Enumerations"
 
 from pycbio.sys.enumeration import Enumeration

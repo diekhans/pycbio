@@ -1,4 +1,4 @@
-# Copyright 2006-2012 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 """Operations for accessing mysql"""
 import warnings
 import MySQLdb   # mysqlclient is required for python 3

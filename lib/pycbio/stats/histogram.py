@@ -1,4 +1,4 @@
-# Copyright 2006-2012 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 from pycbio.sys.fileOps import prLine, iterRows
 from pycbio import PycbioException
 

@@ -1,4 +1,4 @@
-# Copyright 2006-2014 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 
 from enum import Enum, EnumMeta
 from functools import total_ordering

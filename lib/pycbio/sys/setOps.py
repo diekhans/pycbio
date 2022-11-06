@@ -1,4 +1,4 @@
-# Copyright 2006-2012 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 """Miscellaneous operations on sets"""
 
 # FIXME: should not need `set' as part of function names, since qualified by

@@ -1,4 +1,4 @@
-# Copyright 2006-2012 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 """Connect to UCSC genome database using info in .hg.conf """
 from pycbio.hgdata.hgConf import HgConf
 from pycbio.db import mysqlOps

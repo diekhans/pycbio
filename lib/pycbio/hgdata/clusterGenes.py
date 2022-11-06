@@ -1,4 +1,4 @@
-# Copyright 2006-2012 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 """Module to access output of clusterGenes UCSC browser command"""
 
 from collections import defaultdict

@@ -1,4 +1,4 @@
-# Copyright 2006-2012 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 """ Version of Binner class that works with sqlalchemy
 """
 from .rangeFinder import Binner

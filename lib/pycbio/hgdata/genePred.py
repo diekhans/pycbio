@@ -1,4 +1,4 @@
-# Copyright 2006-2012 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 import copy
 from collections import defaultdict, namedtuple
 from pycbio.tsv.tabFile import TabFileReader

@@ -1,4 +1,4 @@
-# Copyright 2006-2012 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 """Debug tracing and stack dumps on signals """
 # ideas from:
 #  http://www.dalkescientific.com/writings/diary/archive/2005/04/20/tracing_python_code.html

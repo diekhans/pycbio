@@ -1,4 +1,4 @@
-# Copyright 2006-2018 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 import unittest
 import sys
 import pickle

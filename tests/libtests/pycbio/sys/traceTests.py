@@ -1,4 +1,4 @@
-# Copyright 2006-2020 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 import unittest
 import os
 import sys

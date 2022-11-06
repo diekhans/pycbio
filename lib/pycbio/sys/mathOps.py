@@ -1,4 +1,4 @@
-# Copyright 2006-2017 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 """
 Math operations
 """

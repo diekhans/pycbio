@@ -1,4 +1,4 @@
-# Copyright 2006-2012 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 
 # FIXME: danger of dump, etc, methods conflicting with columns.  maybe
 # a better convention to avoid collisions or make these functions rather

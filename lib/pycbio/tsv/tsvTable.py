@@ -1,4 +1,4 @@
-# Copyright 2006-2012 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 from collections import defaultdict
 from pycbio.tsv.tsvReader import TsvReader
 from pycbio.tsv import TsvError

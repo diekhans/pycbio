@@ -1,4 +1,4 @@
-# Copyright 2006-2012 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 """support classes for parsing autoSql generated objects"""
 
 def strArraySplit(commaStr):

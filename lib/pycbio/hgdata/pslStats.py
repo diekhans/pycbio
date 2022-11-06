@@ -1,4 +1,4 @@
-# Copyright 2006-2012 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 """Module to access output of pslStats UCSC browser command"""
 from collections import defaultdict
 from pycbio.tsv import TsvReader

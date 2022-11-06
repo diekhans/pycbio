@@ -1,4 +1,4 @@
-# Copyright 2006-2018 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 # Copyright of original unknown (https://goodcode.io/articles/python-dict-object/)
 
 # dictionary with keys as object files, based on:

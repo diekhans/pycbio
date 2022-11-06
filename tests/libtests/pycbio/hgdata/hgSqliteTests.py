@@ -1,4 +1,4 @@
-# Copyright 2006-2016 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 """
 Test for storage of genome data in sqlite for use in cluster jobs and other random
 access uses.

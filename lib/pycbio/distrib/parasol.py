@@ -1,4 +1,4 @@
-# Copyright 2006-2012 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 """classes for interacting with parasol batch system"""
 import shlex
 import os.path

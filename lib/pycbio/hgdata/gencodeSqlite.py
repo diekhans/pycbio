@@ -1,4 +1,4 @@
-# Copyright 2006-2018 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 """
 Storage of GENCODE data from UCSC import in sqlite for use in cluster jobs and
 other random access uses.

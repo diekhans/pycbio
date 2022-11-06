@@ -1,4 +1,4 @@
-# Copyright 2017-2017 Mark Diekhans
+# Copyright 2006-2022 Mark Diekhans
 import unittest
 import sys
 if __name__ == '__main__':
