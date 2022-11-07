@@ -86,7 +86,8 @@ class TsvReader(object):
                 raise TsvError("empty TSV file", reader=self)
         else:
             if (len(row) > 0) and row[0].startswith('#'):
-                row[0] = row[0][1:]
+                # sometimes there is a space after #
+                row[0] = row[0][1:].strip()
             self._setupColumns(row)
 
     def _setupColumns(self, columns):

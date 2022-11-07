@@ -179,10 +179,18 @@ class ReadTests(TestCaseBase):
         self.assertEqual(len(tbl), 0)
 
     def testPrintfed(self):
-        # created with, escaped quotes in data
+        # created with escaped quotes in data
         rows = [r for r in TsvReader(self.getInputFile("printfed-with-quotes.tsv"), dialect=printf_basic_dialect)]
         self.assertEqual(len(rows), 5)
         self.assertEqual(rows[1].Mentions, '"GP I')
+
+    def testHashSpace(self):
+        # headers like UCSC chromAlias "# ucsc	assembly"
+        rdr = TsvReader(self.getInputFile("GCF_003709585.1.chromAlias.tsv"))
+        rows = [r for r in rdr]
+        self.assertEqual(rdr.columns, ["ucsc", "assembly", "custom", "genbank", "ncbi", "refseq"])
+        self.assertEqual(rows[0].ucsc, 'NW_020834726v1')
+
 
     class WeirdCaseExpect(namedtuple("WeirdCaseExpect",
                                      ("num_col", "text_col", "another"))):
