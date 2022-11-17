@@ -47,7 +47,7 @@ class printf_basic_dialect(csv.Dialect):
     in bioinformatics.  Quotes can be included in data, etc.
     """
     delimiter = '\t'
-    quotechar = ''
+    quotechar = None
     doublequote = False
     skipinitialspace = False
     lineterminator = '\n'
