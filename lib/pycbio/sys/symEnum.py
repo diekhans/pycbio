@@ -98,8 +98,8 @@ class SymEnumMeta(EnumMeta):
             member_type, first_enum = metacls._get_mixins_(cls, bases)
         if first_enum is not None:
             enum_dict['_generate_next_value_'] = getattr(
-                    first_enum, '_generate_next_value_', None,
-                    )
+                first_enum, '_generate_next_value_', None,
+            )
         return enum_dict
 
     def __new__(metacls, clsname, bases, classdict, *, boundary=None, _simple=False, **kwds):
