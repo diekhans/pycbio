@@ -191,7 +191,6 @@ class ReadTests(TestCaseBase):
         self.assertEqual(rdr.columns, ["ucsc", "assembly", "custom", "genbank", "ncbi", "refseq"])
         self.assertEqual(rows[0].ucsc, 'NW_020834726v1')
 
-
     class WeirdCaseExpect(namedtuple("WeirdCaseExpect",
                                      ("num_col", "text_col", "another"))):
         __slots__ = ()

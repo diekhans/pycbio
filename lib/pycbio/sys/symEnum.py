@@ -1,6 +1,6 @@
 # Copyright 2006-2022 Mark Diekhans
-
-from enum import Enum, EnumMeta
+import sys
+from enum import Enum, EnumMeta, _EnumDict
 from functools import total_ordering
 
 # FIXME: should really be built like other IntEnum, etc
@@ -11,7 +11,7 @@ from enum import auto
 SymEnum = None  # class defined after use
 
 
-class SymEnumValue(object):
+class SymEnumValue:
     "Class used to define SymEnum member that have additional attributes."
     __slots__ = ("value", "externalName")
 
@@ -19,8 +19,10 @@ class SymEnumValue(object):
         self.value = value
         self.externalName = externalName
 
+    def __repr__(self):
+        return f'SymEnumValue({self.value}, {self.externalName})'
 
-class _SysEnumExternalNameMap(object):
+class _SysEnumExternalNameMap:
     "Mapping between internal and external member names"
     __slots__ = ("internalToExternal", "externalToInternal")
 
@@ -41,38 +43,74 @@ class _SysEnumExternalNameMap(object):
         return self.externalToInternal.get(externalName, externalName)
 
     def __str__(self):
-        return "intToExt={} extToInt={}".format(self.internalToExternal, self.externalToInternal)
+        return f"intToExt={self.internalToExternal} extToInt={self.externalToInternal}"
+
+class _SymEnumDict(_EnumDict):
+    """Extends _EnumDict to record internal/external name mapping.
+    This must be done as a wrapper around _EnumDict instead of
+    as an external edit, as _EnumDict.__setitem__ does the auto()
+    assignment. This converts SymEnumValue(auto(), "ext") to
+    just auto() value
+    """
+    __slots__ = ("externalNameMap")
+
+    def __init__(self):
+        super().__init__()
+        self.externalNameMap = _SysEnumExternalNameMap()
+
+    def __setitem__(self, key, value):
+        if isinstance(value, SymEnumValue):
+            if value.externalName is not None:
+                self.externalNameMap.add(key, value.externalName)
+            value = value.value
+        super().__setitem__(key, value)
+
+    def toExternalName(self, internalName):
+        "return name unchanged if no mapping"
+        return self.internalToExternal.get(internalName, internalName)
+
+    def toInternalName(self, externalName):
+        "return name unchanged if no mapping"
+        return self.externalToInternal.get(externalName, externalName)
 
 
 class SymEnumMeta(EnumMeta):
     """metaclass for SysEnumMeta that implements looking up of singleton members
     by string name."""
 
+    # WARNING: this is copied from EnumMeta in standard enum.py to use
+    # derived _EnumDict
     @classmethod
-    def _symEnumValueUpdate(cls, classdict, name, externalNameMap):
-        """record info about a member specified with SymEnum and update value in classdict
-        to be actual value rather than SymEnumValue"""
-        symValue = classdict[name]
-        # under python3, enum does some sanity check, must remove from
-        # _EnumDict before reinserting
-        del classdict._member_names[classdict._member_names.index(name)]
-        del classdict[name]
-        classdict[name] = symValue.value
-        externalNameMap.add(name, symValue.externalName)
+    def __prepare__(metacls, cls, bases, **kwds):
+        # check that previous enum members do not exist
+        # NOTE: not in 3.7, name changed in 3.11
+        if hasattr(metacls, "_check_for_existing_members"):
+            metacls._check_for_existing_members(cls, bases)  # 3.9
+        elif hasattr(metacls, "_check_for_existing_members_"):
+            metacls._check_for_existing_members_(cls, bases)  # 3.11
+        # create the namespace dict
+        enum_dict = _SymEnumDict()
+        enum_dict._cls_name = cls
+        # inherit previous flags and _generate_next_value_ function
+        if sys.version_info.minor <= 7:
+            member_type, first_enum = metacls._get_mixins_(bases)
+        else:
+            member_type, first_enum = metacls._get_mixins_(cls, bases)
+        if first_enum is not None:
+            enum_dict['_generate_next_value_'] = getattr(
+                    first_enum, '_generate_next_value_', None,
+                    )
+        return enum_dict
 
-    @classmethod
-    def _buildExternalNameMap(cls, classdict):
-        "fill in external name map"
-        externalNameMap = classdict["__externalNameMap__"] = _SysEnumExternalNameMap()
-        for name in list(classdict.keys()):  # MUST COPY, as modifying classdict
-            if isinstance(classdict[name], SymEnumValue):
-                cls._symEnumValueUpdate(classdict, name, externalNameMap)
-
-    def __new__(metacls, clsname, bases, classdict):
-        "updates class fields defined as SymEnumValue to register external names"
+    def __new__(metacls, clsname, bases, classdict, *, boundary=None, _simple=False, **kwds):
+        "store away externalNameMap from _SymEnumDict"
         if SymEnum in bases:
-            metacls._buildExternalNameMap(classdict)
-        return super(SymEnumMeta, metacls).__new__(metacls, clsname, bases, classdict)
+            classdict["__externalNameMap__"] = classdict.externalNameMap
+        # keyword arguments added in 3.10, boundary and _simple in 3.11, which get added to **kwds
+        if sys.version_info.minor <= 10:
+            return super(SymEnumMeta, metacls).__new__(metacls, clsname, bases, classdict)
+        else:
+            return super(SymEnumMeta, metacls).__new__(metacls, clsname, bases, classdict, boundary=boundary, _simple=_simple, **kwds)
 
     @staticmethod
     def _lookUpByStr(cls, value):
