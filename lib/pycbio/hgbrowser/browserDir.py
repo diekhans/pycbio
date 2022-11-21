@@ -8,13 +8,11 @@ from pycbio.html.htmlPage import HtmlPage
 from pycbio.sys import fileOps
 
 # FIXME: need to encode text
-# FIXME: need to have ability set attributes on cells (e.g. heatmap)
+# FIXME: need to have ability set attributes on cells
 #        this could be done by having full object model of rows.
-# FIXME: cellClasses is also a pain, a Cell object would be
-# FIXME: subrows is a hack, having full object model can make this go away
+# FIXME: cellClasses is also a pain, a Cell object would adress
 # FIXME add altcounter thing form gencode/projs/mm39/mus-grch39-eval/bin/browserDirBuild
-# FIXME: numColumns is weird
-
+# maybe use https://pypi.org/project/htmlBuilder/
 
 defaultStyle = """
 TABLE, TR, TH, TD {
@@ -39,91 +37,24 @@ TH {
 
 GENOME_UCSC_URL = "https://genome.ucsc.edu"
 
-class SubRows:
-    """Object used to specify a set of sub-rows.  Indicates number of columns
-    occupied, which is need for laying out.
-    """
-    def __init__(self, numCols):
-        self.numCols = numCols
-        self.rows = []
+class Row:
+    "Row in the table"
+    __slots__ = ("row", "key", "cssRowClass", "cssCellClasses")
 
-    def addRow(self, row):
-        assert len(row) == self.numCols
-        self.rows.append(row)
-
-    def getNumRows(self):
-        return len(self.rows)
-
-    def toTdRow(self, iRow):
-        """return row of cells for the specified row, or one covering multiple
-        columns if iRow exceeds the number of rows"""
-        if iRow < len(self.rows):
-            return "<td>" + "<td>".join([str(c) for c in self.rows[iRow]])
-        elif self.numCols > 1:
-            return "<td colspan={}>".format(self.numCols)
-        else:
-            return "<td>"
-
-
-class Entry:
-    "entry in directory"
-    __slots__ = ("row", "key", "cssRowClass", "cssCellClasses", "subRowGroups")
-
-    def __init__(self, row, key=None, cssRowClass=None, cssCellClasses=None, subRows=None):
-        """Entry in directory, key can be some value(s) used in sorting. The
-        row should be HTML encoded.  If subRows is not None, it should be a SubRow
-        object or list of SubRow objects, used to produce row spanning rows for
-        contained in this row.  If cssCellClasses is not None, it should be an parallel
-        vector with None or the class name for the corresponding cells"""
+    def __init__(self, row, key=None, cssRowClass=None, cssCellClasses=None):
+        """Row in the, key can be some value(s) used in sorting. The row
+        should be HTML encoded.  If If cssCellClasses is not None, it should
+        be an parallel vector with None or the class name for the
+        corresponding cells"""
         self.row = tuple(row)
         self.key = key
         self.cssRowClass = copy.copy(cssRowClass)
         self.cssCellClasses = copy.copy(cssCellClasses)
-        self.subRowGroups = None
-        if subRows is not None:
-            if isinstance(subRows, SubRows):
-                self.subRowGroups = [subRows]
-            else:
-                self.subRowGroups = subRows
         assert (self.cssCellClasses is None) or (len(self.cssCellClasses) == len(row))
-        assert (self.cssCellClasses is None) or (self.subRowGroups is None)  # can't have both yet
-
-    def _numSubRowGroupCols(self):
-        n = 0
-        if self.subRowGroups is not None:
-            for subRows in self.subRowGroups:
-                n += subRows.numCols
-        return n
-
-    def _numSubRowGroupRows(self):
-        n = 0
-        if self.subRowGroups is not None:
-            for subRows in self.subRowGroups:
-                n = max(n, subRows.getNumRows())
-        return n
 
     def numColumns(self):
         "compute number of columns that will be generated"
-        return len(self.row) + self._numSubRowGroupCols()
-
-    def _toHtmlRowWithSubRows(self):
-        numSubRowRows = self._numSubRowGroupRows()
-        hrow = ["<tr>"]
-        td = "<td rowspan=\"{}\">".format(numSubRowRows)
-        for c in self.row:
-            hrow.append(td + str(c))
-        if numSubRowRows > 0:
-            for subRows in self.subRowGroups:
-                hrow.append(subRows.toTdRow(0))
-        hrow.append("</tr>\n")
-
-        # remaining rows
-        for iRow in range(1, numSubRowRows):
-            hrow.append("<tr>\n")
-            for subRows in self.subRowGroups:
-                hrow.append(subRows.toTdRow(iRow))
-            hrow.append("</tr>\n")
-        return "".join(hrow)
+        return len(self.row)
 
     def _mkRowStart(self):
         return "<tr>" if self.cssRowClass is None else '<tr class="{}">'.format(self.cssRowClass)
@@ -147,8 +78,6 @@ class Entry:
         return "".join(hrow)
 
     def toHtmlRow(self):
-        if self.subRowGroups is not None:
-            return self._toHtmlRowWithSubRows()
         if self.cssCellClasses is not None:
             return self._toHtmlRowWithStyle()
         else:
@@ -177,14 +106,12 @@ class BrowserDir(object):
 
     def __init__(self, browserUrl, defaultDb, *, colNames=None, pageSize=50,
                  title=None, dirPercent=15, below=False, pageDesc=None,
-                 tracks={}, initTracks={}, style=defaultStyle, numColumns=1,
+                 tracks={}, initTracks={}, style=defaultStyle,
                  customTrackUrls=None, hubUrls=None):
         """The tracks arg is a dict of track name to setting, it is added to
         each URL and the initial setting of the frame. The initTracks arg is
         similar, however its only set in the initial frame and not added to
         each URL. customTrackUrls and hubUrls can be a string URL or list of URLs.
-        A pageSize arg of None creates a single page. If numColumns is greater than 1
-        create multi-column directories.
         """
         self.browserUrl = browserUrl
         if self.browserUrl.endswith("/"):
@@ -195,9 +122,8 @@ class BrowserDir(object):
         self.title = title
         self.dirPercent = dirPercent
         self.below = below
-        self.numColumns = numColumns
         self.pageDesc = pageDesc
-        self.entries = []
+        self.rows = []
         self.style = style
         self.trackArgs = _buildTrackArgsList(tracks)
         self.initTrackArgs = _buildTrackArgsList(initTracks)
@@ -228,11 +154,11 @@ class BrowserDir(object):
             text = str(coords)
         return "<a href=\"{}\" target={}>{}</a>".format(self.mkUrl(coords, db=db), target, text)
 
-    def addRow(self, row, key=None, cssRowClass=None, cssCellClasses=None, subRows=None):
-        """add an encoded row, row can be a list or an Entry object"""
-        if not isinstance(row, Entry):
-            row = Entry(row, key, cssRowClass, cssCellClasses, subRows)
-        self.entries.append(row)
+    def addRow(self, row, key=None, cssRowClass=None, cssCellClasses=None):
+        """add an encoded row, row can be a list or an Row object"""
+        if not isinstance(row, Row):
+            row = Row(row, key, cssRowClass, cssCellClasses)
+        self.rows.append(row)
 
     def add(self, coords, name=None):
         """add a simple row, linking to location. If name is None, the coords are used"""
@@ -246,7 +172,7 @@ class BrowserDir(object):
         if keyFunc is None:
             def keyFunc(r):
                 return r.key
-        self.entries.sort(key=keyFunc, reverse=reverse)
+        self.rows.sort(key=keyFunc, reverse=reverse)
 
     def _mkFrame(self, title=None, dirPercent=15, below=False):
         """create frameset as a HtmlPage object"""
@@ -290,56 +216,18 @@ class BrowserDir(object):
             html.append("next")
         return ", ".join(html)
 
-    def _padRows(self, pg, numPadRows, numColumns):
-        if numColumns > 1:
-            pr = "<tr colspan=\"{}\"></tr>".format(numColumns)
-        else:
-            pr = "<tr></tr>"
-        for i in range(numPadRows):
-            pg.add(pr)
-
-    def _addPageRows(self, pg, pgEntries, numPadRows):
-        """add one set of rows to the page.  In multi-column mode, this
-        will be contained in a higher-level table"""
+    def _addPageRows(self, pg, pgRows):
+        """add one set of rows to the page."""
         pg.tableStart(hclass="tableFixHead")
         if self.colNames is not None:
             pg.tableHeader(self.colNames)
-        numColumns = None
-        pg.add("<tbody>")  # hack because we don't use addTableRow
-        for ent in pgEntries:
-            numColumns = ent.numColumns()  # better all be the same
+        pg.add("<tbody>")   # because we don't use addTableRow
+        for ent in pgRows:
             pg.add(ent.toHtmlRow())
-        if numPadRows > 0:
-            self._padRows(pg, numPadRows, numColumns)
         pg.add("</tbody>")
         pg.tableEnd()
 
-    def _addMultiColEntryTbl(self, pg, pgEntries):
-        pg.tableStart()
-        nEnts = len(pgEntries)
-        rowsPerCol = nEnts // self.numColumns
-        iEnt = 0
-        pg.add("<tr>")
-        for icol in range(self.numColumns):
-            pg.add("<td>")
-            if iEnt < nEnts - rowsPerCol:
-                n = rowsPerCol
-                np = 0
-            else:
-                n = nEnts - iEnt
-                np = rowsPerCol - n
-            self._addPageRows(pg, pgEntries[iEnt:iEnt + n], np)
-            pg.add("</td>")
-        pg.add("</tr>")
-        pg.tableEnd()
-
-    def _addEntryTbl(self, pg, pgEntries):
-        if self.numColumns > 1:
-            self._addMultiColEntryTbl(pg, pgEntries)
-        else:
-            self._addPageRows(pg, pgEntries, 0)
-
-    def _writeDirPage(self, outDir, pgEntries, pageNum, numPages):
+    def _writeDirPage(self, outDir, pgRows, pageNum, numPages):
         title = "page {}".format(pageNum)
         if self.title:
             title += ": {}".format(self.title)
@@ -349,27 +237,21 @@ class BrowserDir(object):
             pg.add(self.pageDesc)
             pg.add("<br><br>")
         pg.add(self._getPageLinks(pageNum, numPages, False))
-        self._addEntryTbl(pg, pgEntries)
+        self._addPageRows(pg, pgRows)
         pg.add(self._getPageLinks(pageNum, numPages, True))
 
         dirFile = outDir + "/dir{}.html".format(pageNum)
         pg.writeFile(dirFile)
 
     def _writeDirPages(self, outDir):
-        if len(self.entries) == 0:
-            # at least write an empty page
-            self._writeDirPage(outDir, [], 1, 0)
-        elif self.pageSize is None:
-            # single page
-            self._writeDirPage(outDir, self.entries, 1, 1)
-        else:
-            # split
-            numPages = (len(self.entries) + self.pageSize - 1) // self.pageSize
-            for pageNum in range(1, numPages + 1):
-                first = (pageNum - 1) * self.pageSize
-                last = first + (self.pageSize - 1)
-                pgEntries = self.entries[first:last]
-                self._writeDirPage(outDir, pgEntries, pageNum, numPages)
+        numPages = (len(self.rows) + self.pageSize - 1) // self.pageSize
+        if numPages == 0:
+            numPages = 1
+        for pageNum in range(1, numPages + 1):
+            first = (pageNum - 1) * self.pageSize
+            last = first + (self.pageSize - 1)
+            pgRows = self.rows[first:last]
+            self._writeDirPage(outDir, pgRows, pageNum, numPages)
 
     def write(self, outDir):
         fileOps.ensureDir(outDir)

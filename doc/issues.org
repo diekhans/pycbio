@@ -29,7 +29,7 @@ a list or tuple. then the remain arguments become TH or TD
 attributes.
 
 * BrowserDir
-** subrows could use HTML tables in tables and be much cleaner
+** implement subrow functionality bu allowing rows within rows
 ** build java script sortable table?
 
 * rangefinder: coords strand is like PSL strand, not BED= strand,

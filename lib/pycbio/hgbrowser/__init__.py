@@ -1,4 +1,4 @@
 # Copyright 2006-2022 Mark Diekhans
-from pycbio.hgbrowser.browserDir import BrowserDir, SubRows
+from pycbio.hgbrowser.browserDir import BrowserDir
 
-__all__ = (BrowserDir.__name__, SubRows.__name__)
+__all__ = (BrowserDir.__name__, )
