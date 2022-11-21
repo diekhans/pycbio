@@ -74,7 +74,7 @@ class Entry:
         row should be HTML encoded.  If subRows is not None, it should be a SubRow
         object or list of SubRow objects, used to produce row spanning rows for
         contained in this row.  If cssCellClasses is not None, it should be an parallel
-        vector with wither None or the class name for the corresponding cells"""
+        vector with None or the class name for the corresponding cells"""
         self.row = tuple(row)
         self.key = key
         self.cssRowClass = copy.copy(cssRowClass)
