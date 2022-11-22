@@ -136,7 +136,7 @@ class Coord(object):
     @staticmethod
     def fromFeatureLocation(loc, strand):
         "convert to a FeatureLocation object to a Coord"
-        return Coord(loc.start.position, loc.end.position, strand)
+        return Coord(int(loc.start), int(loc.end), strand)
 
 
 class Coords(list):
