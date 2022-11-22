@@ -30,6 +30,8 @@ class DbReadTests(TestCaseBase):
         return hgDb.connect(db=testDb, hgConf=self.hgConf)
 
     def testDbQueryLoad(self):
+        if not onTestHost:
+            return
         conn = self._connect()
         try:
             # just read 10 PSLs
@@ -41,6 +43,8 @@ class DbReadTests(TestCaseBase):
             conn.close()
 
     def testDbRangeLoad(self):
+        if not onTestHost:
+            return
         conn = self._connect()
         qNames = set()
         try:

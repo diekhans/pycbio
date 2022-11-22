@@ -8,7 +8,7 @@ all:
 test: ${subdirs:%=%.test}
 
 libtests.test:
-	pytest libtests 
+	pytest --capture=no libtests 
 
 progtests.test:
 	(cd progtests && ${MAKE} test)
