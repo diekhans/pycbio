@@ -10,7 +10,7 @@ import glob
 import subprocess
 import traceback
 import warnings
-from pipes import quote
+import shlex
 from pycbio.sys import fileOps
 from pycbio.hgdata.hgConf import HgConf
 
@@ -195,7 +195,7 @@ class TestCaseBase(unittest.TestCase):
             raise self.failureException(msg or "regexp '{}' does not match '{}'".format(expectRe, str(obj)))
 
     def _logCmd(self, cmd):
-        cmdStrs = [quote(a) for a in cmd]
+        cmdStrs = [shlex.quote(a) for a in cmd]
         sys.stderr.write("run: " + " ".join(cmdStrs) + "\n")
 
     def runProg(self, cmd, stdin=None, stdout=None, stderr=None):

@@ -6,3 +6,4 @@ apsw
 deprecation
 flake8
 pyBigWig
+pytest
