@@ -16,7 +16,7 @@ class HistoTests(TestCaseBase):
     def _getBinsInfo(self, bins):
         return [self._getBinInfo(b) for b in bins]
 
-    def testNumBins(self):
+    def X_testNumBins(self):
         h = Histogram([-1.0, 1.0], numBins=2)
         bins = h.build()
         self.assertEqual(self._getBinsInfo(bins),
