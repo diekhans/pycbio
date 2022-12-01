@@ -11,7 +11,7 @@ from collections import namedtuple
 class Color(namedtuple("Color", ("red", "green", "blue",
                                  "hue", "saturation", "value"))):
     """Immutable color object with conversion to/from different formats.
-    Don't construct  directly use, factory (from*) static methods.
+    Don't construct directly use, factory (from*) static methods.
 
     :ivar red: red channel, in the range 0.0..1.0
     :ivar green: green channel, in the range 0.0..1.0
