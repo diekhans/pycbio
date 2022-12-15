@@ -22,6 +22,10 @@ from deprecation import deprecated
 from pycbio import PycbioException
 
 
+class RangeFinderException(PycbioException):
+    """Exception from RangeFinder"""
+    pass
+
 class RemoveValueError(ValueError):
     "error when removed not found"
     def __init__(self, start, end):
@@ -199,7 +203,7 @@ class RangeFinder(object):
 
     def _checkStrand(self, strand):
         if strand not in (None, "+", "-"):
-            raise PycbioException("invalid strand: {}".format(strand))
+            raise RangeFinderException("invalid strand: {}".format(strand))
 
     @staticmethod
     def _binKey(seqId, strand):
@@ -215,7 +219,7 @@ class RangeFinder(object):
         if self.haveStrand is None:
             self.haveStrand = (strand is not None)
         elif self.haveStrand != (strand is not None):
-            raise PycbioException("all RangeFinder entries must all either have strand or not have strand")
+            raise RangeFinderException("all RangeFinder entries must all either have strand or not have strand")
         key = self._binKey(seqId, strand)
         bins = self.seqBins.get(key)
         if bins is None:
@@ -333,4 +337,5 @@ class RangeFinder(object):
             bins.dump(fh)
 
 
-__all__ = (RemoveValueError.__name__, Binner.__name__, RangeFinder.__name__,)
+__all__ = (RemoveValueError.__name__, RangeFinderException.__name__,
+           Binner.__name__, RangeFinder.__name__,)
