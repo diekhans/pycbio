@@ -11,9 +11,11 @@
 kznf-gene-homology/builds/2022-09/analysis/lib/znfAnalyze/__init__.py
 LociRanges
 
-* rangeFinder:
+* RangeFinder:
 is this right, not sure this does an is test of value.
 bucket.remove(Entry(start, end, value))
+
+* RangeFinder.addCoords a bit klunky
 
 * rangefinder:
 ** make have-strand explict on creating finder

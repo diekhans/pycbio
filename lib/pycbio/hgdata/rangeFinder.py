@@ -26,10 +26,14 @@ class RangeFinderException(PycbioException):
     """Exception from RangeFinder"""
     pass
 
+class _EntryNotFound(Exception):
+    "low-level indication of entry found"
+    pass
+
 class RemoveValueError(ValueError):
     "error when removed not found"
-    def __init__(self, seqId, start, end):
-        super(RemoveValueError, self).__init__(f"range {seqId}:{start}-{end} with specified value not found")
+    def __init__(self, seqId, strand, entry):
+        super(RemoveValueError, self).__init__(f"entry to remove not found: {seqId}:{entry.start}-{entry.end} strand={strand}, value: {repr(entry.value)}")
 
 
 class Binner(object):
@@ -127,7 +131,7 @@ class _Entry(namedtuple("Entry",
 class RangeBins(object):
     """Range indexed container for a single sequence.  This using a binning
     scheme that implements spacial indexing. Based on UCSC hg browser binRange
-    C module.  """
+    C module."""
     __slots__ = ("seqId", "strand", "minStart", "maxEnd", "buckets")
 
     def __init__(self, seqId, strand):
@@ -135,20 +139,32 @@ class RangeBins(object):
         self.strand = strand
         self.minStart = sys.maxsize
         self.maxEnd = 0
-        self.buckets = {}  # indexed by bin, each bucket is a list
+        self.buckets = {}  # indexed by bin, each bucket is a list of _Entry objects
 
-    def add(self, start, end, value):
-        bin = Binner.calcBin(start, end)
+    def add(self, entry):
+        bin = Binner.calcBin(entry.start, entry.end)
         entries = self.buckets.get(bin)
         if entries is None:
             self.buckets[bin] = entries = []
-        entries.append(_Entry(start, end, value))
-        if start < self.minStart:
-            self.minStart = start
-        if end > self.maxEnd:
-            self.maxEnd = end
+        entries.append(entry)
+        self.minStart = min(self.minStart, entry.start)
+        self.maxEnd = max(self.maxEnd, entry.end)
 
-    def overlappingEntries(self, start, end):
+    def _mergeEntries(self, newEntry, overEntries, mergeFunc):
+        for e in overEntries:
+            self.remove(e)
+        entries = [newEntry] + overEntries
+        return _Entry(min((e.start for e in entries)),
+                      max((e.end for e in entries)),
+                      mergeFunc([e.value for e in entries]))
+
+    def addMerge(self, entry, mergeFunc):
+        overEntries = list(self.overlapping(entry.start, entry.end))  # must make copy
+        if len(overEntries) > 0:
+            entry = self._mergeEntries(entry, overEntries, mergeFunc)
+        self.add(entry)
+
+    def overlapping(self, start, end):
         "generator of entries overlapping the specified range"
         if (start < end):
             for bins in Binner.getOverlappingBins(start, end):
@@ -159,28 +175,17 @@ class RangeBins(object):
                             if entry.overlaps(start, end):
                                 yield entry
 
-    def overlapping(self, start, end):
-        "generator of values overlapping the specified range"
-        for entry in self.overlappingEntries(start, end):
-            yield entry.value
-
-    def remove(self, start, end, value):
+    def remove(self, entry):
         """Remove an entry with the particular range and value"""
-        bucket = self.buckets[(Binner.calcBin(start, end))]  # exception if no bucket
-        bucket.remove(_Entry(start, end, value))  # exception if no value
-
-    def removeIfExists(self, start, end, value):
-        """Remove an entry with the particular range and value if it exists,
-        otherwise return False"""
         try:
-            self.remove(start, end, value)
-            return True
+            bucket = self.buckets[(Binner.calcBin(entry.start, entry.end))]  # exception if no bucket
+            bucket.remove(entry)  # exception if no value
         except (IndexError, ValueError):
-            return False
+            raise _EntryNotFound()
 
     def values(self):
         "generator over all values"
-        for bin in list(self.buckets.values()):
+        for bin in self.buckets.values():
             for entry in bin:
                 yield entry.value
 
@@ -200,7 +205,9 @@ class RangeFinder(object):
     """
     validStrands = set((None, "+", "-"))
 
-    def __init__(self):
+    def __init__(self, *, mergeFunc=None):
+        "mergeFunc must take a list of values and returned a new value"
+        self.mergeFunc = mergeFunc
         self.haveStrand = None
         self.seqBins = {}
 
@@ -216,7 +223,7 @@ class RangeFinder(object):
         "return None if no bin for seq+strand"
         return self.seqBins.get(self._binKey(seqId, strand))
 
-    def _getAddBins(self, seqId, start, end, strand):
+    def _getBinsForAdd(self, seqId, start, end, strand):
         "setup for adding entries"
         self._checkStrand(strand)
         if self.haveStrand is None:
@@ -231,12 +238,20 @@ class RangeFinder(object):
 
     def add(self, seqId, start, end, value, strand=None):
         "add an entry for a sequence and range, and optional strand"
-        bins = self._getAddBins(seqId, start, end, strand)
-        bins.add(start, end, value)
+        bins = self._getBinsForAdd(seqId, start, end, strand)
+        bins.add(_Entry(start, end, value))
+
+    def addMerge(self, seqId, start, end, value, strand=None):
+        """add an entry for a sequence and range, and optional strand,
+        merging with existing overlapping entries"""
+        if self.mergeFunc is None:
+            raise RangeFinderException("RangeFinder does not have a mergeFunc, can't merge entries")
+        bins = self._getBinsForAdd(seqId, start, end, strand)
+        bins.addMerge(_Entry(start, end, value), self.mergeFunc)
 
     def addCoords(self, coords, value, strand=None):
-        "added using Coords object"
-        # coords.strands is direction for sequence, not orientation of annotation
+        """Added using Coords object.  Note that coords.strands is direction
+        for sequence, not orientation of annotation on a strand"""
         if coords.strand == '-':
             coords = coords.reverse()
         self.add(coords.name, coords.start, coords.end, value, strand)
@@ -245,15 +260,13 @@ class RangeFinder(object):
         "check overlap on specific strand, which might be None"
         bins = self.seqBins.get((seqId, strand))
         if bins is not None:
-            for value in bins.overlapping(start, end):
-                yield value
+            for entry in bins.overlapping(start, end):
+                yield entry.value
 
     def _overlappingBothStrands(self, seqId, start, end):
         "return range overlaps, checking both strands"
-        for value in self._overlappingSpecificStrand(seqId, start, end, '+'):
-            yield value
-        for value in self._overlappingSpecificStrand(seqId, start, end, '-'):
-            yield value
+        yield from self._overlappingSpecificStrand(seqId, start, end, '+')
+        yield from self._overlappingSpecificStrand(seqId, start, end, '-')
 
     def overlapping(self, seqId, start, end, strand=None):
         "generator over values overlapping the specified range on seqId, optional strand"
@@ -271,37 +284,35 @@ class RangeFinder(object):
         """generator over values overlapping using a Coords object"""
         return self.overlapping(coords.name, coords.start, coords.end, coords.strand)
 
-    def _removeIfExists(self, seqId, start, end, value, strand):
-        removed = False
-        bins = self.seqBins.get((seqId, strand))
-        if bins is not None:
-            removed = bins.removeIfExists(start, end, value)
-        return removed
+    def _removeFromSeqBin(self, seqId, strand, entry):
+        # strand maybe None
+        self.seqBins.get((seqId, strand)).remove(entry)
 
-    def _removeSpecificStrand(self, seqId, start, end, value, strand):
-        "remove an entry on specific strand, which might be None"
-        if not self._removeIfExists(seqId, start, end, value, strand):
-            raise RemoveValueError(seqId, start, end)
-
-    def _removeBothStrands(self, seqId, start, end, value):
+    def _removeBothStrands(self, seqId, entry):
         "remove an entry, checking both strands"
-        removed = self._removeIfExists(seqId, start, end, value, '+')
-        if not removed:
-            removed = self._removeIfExists(seqId, start, end, value, '-')
-        if not removed:
-            raise RemoveValueError(seqId, start, end)
+        try:
+            self._removeFromSeqBin(seqId, '+', entry)
+        except _EntryNotFound:
+            self._removeFromSeqBin(seqId, '-', entry)
 
-    def remove(self, seqId, start, end, value, strand=None):
-        """remove an entry with the particular range and value, value error if not found"""
-        self._checkStrand(strand)
+    def _remove(self, seqId, strand, entry):
         if self.haveStrand and (strand is None):
             # must check on both strands
-            self._removeBothStrands(seqId, start, end, value)
+            self._removeBothStrands(seqId, entry)
         else:
             # must only check a specifc strand, or no strand to check
             if not self.haveStrand:
                 strand = None  # no strand to check
-            self._removeSpecificStrand(seqId, start, end, value, strand)
+            self._removeFromSeqBin(seqId, strand, entry)
+
+    def remove(self, seqId, start, end, value, strand=None):
+        """remove an entry with the particular range and value, value error if not found"""
+        self._checkStrand(strand)
+        entry = _Entry(start, end, value)
+        try:
+            self._remove(seqId, strand, entry)
+        except _EntryNotFound:
+            raise RemoveValueError(seqId, strand, entry)
 
     def values(self):
         "generator over all values"

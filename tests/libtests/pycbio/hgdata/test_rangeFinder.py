@@ -7,8 +7,6 @@ from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.hgdata.rangeFinder import RangeFinder
 from collections import namedtuple
 
-debug = True
-
 # test data and query types
 Data = namedtuple("Data", ("seqId", "start", "end", "strand", "value"))
 Query = namedtuple("Query", ("seqId", "start", "end", "strand", "expectWithStrand", "expectWithOutStrand"))
@@ -46,6 +44,31 @@ queries2 = (
     Query("chr1", 100316598, 100387207, '+', ("NM_000643.2", "NM_000644.2"), ("NM_000643.2", "NM_000644.2")),
 )
 
+# for merge test, same sequence
+data3 = (
+    Data("chr12", 100, 1000, '+', "val1.1"),
+    Data("chr12", 100, 1000, '+', "val1.2"),
+    Data("chr12", 100, 500, '-', "val1.3"),
+    Data("chr12", 150, 10000, '+', "val1.4"),
+    Data("chr12", 1000000000, 2000000000, '+', "val1.5"),  # outside of basic range
+    Data("chr12", 100000, 2000000000, '-', "val1.6"),  # crossing of basic and extended range
+)
+
+def dataMergeFunc(values):
+    seqIds = list(set([v.seqId for v in values]))
+    if len(seqIds) != 1:
+        raise Exception("should only merge one seqId")
+    start = min([v.start for v in values])
+    end = max([v.end for v in values])
+    # values might already be comma separate from previous merge
+    strands = []
+    vals = []
+    for v in values:
+        strands.extend(v.strand.split(','))
+        vals.extend(v.value.split(','))
+    strand = ",".join(sorted(set(strands)))
+    value = ",".join(sorted(vals))
+    return Data(seqIds[0], start, end, strand, value)
 
 class RangeTests(TestCaseBase):
     def mkRangeFinder(self, data, useStrand):
@@ -56,11 +79,6 @@ class RangeTests(TestCaseBase):
             else:
                 rf.add(row.seqId, row.start, row.end, row.value)
         return rf
-
-    def failTrace(self, desc, query, expect, got):
-        msg = "{} query failed: {}:{}-{} {}: expect: {}\n\tgot: {}\n".format(desc, query.seqId, query.start, query.end, query.strand, str(expect), str(got))
-        sys.stderr.write(msg)
-        sys.stderr.flush()
 
     def doQuery(self, rf, seqId, start, end, strand):
         "do query and sort results, returning tuple result"
@@ -74,15 +92,11 @@ class RangeTests(TestCaseBase):
         else:
             expect = query.expectWithOutStrand
         val = self.doQuery(rf, query.seqId, query.start, query.end, query.strand)
-        if debug and (val != expect):
-            self.failTrace("strand of haveStrand={}".format(rf.haveStrand), query, expect, val)
         self.assertEqual(val, expect)
 
     def doNoStrandQuery(self, rf, query):
         expect = query.expectWithOutStrand
         val = self.doQuery(rf, query.seqId, query.start, query.end, None)
-        if debug and (val != expect):
-            self.failTrace("no-strand of haveStrand={}".format(rf.haveStrand), query, expect, val)
         self.assertEqual(val, expect)
 
     def doQueries(self, rf, queries, useStrand):
@@ -165,6 +179,52 @@ class RangeTests(TestCaseBase):
         self.assertEqual(rf.getSeqRange("chr55"), (None, None))
         self.assertEqual(rf.getSeqRange("chr55", '-'), (None, None))
 
+    def mkRangeFinderMerge(self, data, useStrand):
+        rf = RangeFinder(mergeFunc=dataMergeFunc)
+        for row in data:
+            if useStrand:
+                rf.addMerge(row.seqId, row.start, row.end, row, row.strand)
+            else:
+                rf.addMerge(row.seqId, row.start, row.end, row)
+        return rf
+
+    def testMergerStrand1(self):
+        rf = self.mkRangeFinderMerge(data1, True)
+        values = sorted(rf.values())
+        self.assertEqual(values, [
+            Data(seqId='chr12', start=100, end=500, strand='-', value='val1.3'),
+            Data(seqId='chr12', start=100, end=10000, strand='+', value='val1.2,val1.4'),
+            Data(seqId='chr22', start=100, end=1000, strand='+', value='val1.1'),
+            Data(seqId='chr32', start=100000, end=2000000000, strand='-', value='val1.6'),
+            Data(seqId='chr32', start=1000000000, end=2000000000, strand='+', value='val1.5')
+        ])
+
+    def testMergerNoStrand1(self):
+        rf = self.mkRangeFinderMerge(data1, False)
+        values = sorted(rf.values())
+        self.assertEqual(values, [
+            Data(seqId='chr12', start=100, end=10000, strand='+,-', value='val1.2,val1.3,val1.4'),
+            Data(seqId='chr22', start=100, end=1000, strand='+', value='val1.1'),
+            Data(seqId='chr32', start=100000, end=2000000000, strand='+,-', value='val1.5,val1.6')
+        ])
+
+    def testMergerStrand3(self):
+        rf = self.mkRangeFinderMerge(data3, True)
+        values = sorted(rf.values())
+        self.assertEqual(values, [
+            Data(seqId='chr12', start=100, end=500, strand='-', value='val1.3'),
+            Data(seqId='chr12', start=100, end=10000, strand='+', value='val1.1,val1.2,val1.4'),
+            Data(seqId='chr12', start=100000, end=2000000000, strand='-', value='val1.6'),
+            Data(seqId='chr12', start=1000000000, end=2000000000, strand='+', value='val1.5')
+        ])
+
+    def testMergerNoStrand3(self):
+        rf = self.mkRangeFinderMerge(data3, False)
+        values = sorted(rf.values())
+        self.assertEqual(values, [
+            Data(seqId='chr12', start=100, end=10000, strand='+,-', value='val1.1,val1.2,val1.3,val1.4'),
+            Data(seqId='chr12', start=100000, end=2000000000, strand='+,-', value='val1.5,val1.6')
+        ])
 
 def suite():
     ts = unittest.TestSuite()
