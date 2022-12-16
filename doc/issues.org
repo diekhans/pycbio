@@ -7,14 +7,6 @@
 * collect plot functions
 ~/compbio/kznf/projs/gene-homology/kznf-gene-homology/builds/2022-09/analysis/bin/geneAnnotPlot
 
-* add function to merge range finder entries
-kznf-gene-homology/builds/2022-09/analysis/lib/znfAnalyze/__init__.py
-LociRanges
-
-* RangeFinder:
-is this right, not sure this does an is test of value.
-bucket.remove(Entry(start, end, value))
-
 * RangeFinder.addCoords a bit klunky
 
 * rangefinder:
