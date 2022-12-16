@@ -33,12 +33,12 @@ def _basicAddRow(brDir, row):
 def _basicTest(outDir):
     _basicCols = ("position", "name", "status")
     primateHub = "https://primates.org/hub.txt"
-    quaryHub =  "https://quary.com/hub.txt"
+    quaryHub = "https://quary.com/hub.txt"
     css = browserDir.defaultStyle + "\n.great {background-color: aquamarine;}\n"
     brDir = browserDir.BrowserDir(browserDir.GENOME_UCSC_URL, "hg38",
                                   colNames=_basicCols,
                                   pageSize=5, style=css,
-                                  title=f"Flintstones hub",
+                                  title="Flintstones hub",
                                   below=True, hubUrls=[primateHub, quaryHub])
     for row in _genBasicData(15):
         _basicAddRow(brDir, row)
