@@ -28,8 +28,8 @@ class RangeFinderException(PycbioException):
 
 class RemoveValueError(ValueError):
     "error when removed not found"
-    def __init__(self, start, end):
-        super(RemoveValueError, self).__init__("range {}-{} with specified value not found".format(start, end))
+    def __init__(self, seqId, start, end):
+        super(RemoveValueError, self).__init__(f"range {seqId}:{start}-{end} with specified value not found")
 
 
 class Binner(object):
@@ -164,15 +164,18 @@ class RangeBins(object):
         for entry in self.overlappingEntries(start, end):
             yield entry.value
 
+    def remove(self, start, end, value):
+        """Remove an entry with the particular range and value"""
+        bucket = self.buckets[(Binner.calcBin(start, end))]  # exception if no bucket
+        bucket.remove(_Entry(start, end, value))  # exception if no value
+
     def removeIfExists(self, start, end, value):
-        """Remove an entry with the particular range if it exists, otherwise return false """
+        """Remove an entry with the particular range and value if it exists,
+        otherwise return False"""
         try:
-            bucket = self.buckets[(Binner.calcBin(start, end))]  # exception if no bucket
-            bucket.remove(_Entry(start, end, value))  # exception if no value
+            self.remove(start, end, value)
             return True
-        except IndexError:
-            return False
-        except ValueError:
+        except (IndexError, ValueError):
             return False
 
     def values(self):
@@ -203,7 +206,7 @@ class RangeFinder(object):
 
     def _checkStrand(self, strand):
         if strand not in (None, "+", "-"):
-            raise RangeFinderException("invalid strand: {}".format(strand))
+            raise RangeFinderException(f"invalid strand: '{strand}'")
 
     @staticmethod
     def _binKey(seqId, strand):
@@ -213,8 +216,8 @@ class RangeFinder(object):
         "return None if no bin for seq+strand"
         return self.seqBins.get(self._binKey(seqId, strand))
 
-    def add(self, seqId, start, end, value, strand=None):
-        "add an entry for a sequence and range, and optional strand"
+    def _getAddBins(self, seqId, start, end, strand):
+        "setup for adding entries"
         self._checkStrand(strand)
         if self.haveStrand is None:
             self.haveStrand = (strand is not None)
@@ -224,11 +227,19 @@ class RangeFinder(object):
         bins = self.seqBins.get(key)
         if bins is None:
             self.seqBins[key] = bins = RangeBins(seqId, strand)
+        return bins
+
+    def add(self, seqId, start, end, value, strand=None):
+        "add an entry for a sequence and range, and optional strand"
+        bins = self._getAddBins(seqId, start, end, strand)
         bins.add(start, end, value)
 
-    def addCoords(self, coords, value):
+    def addCoords(self, coords, value, strand=None):
         "added using Coords object"
-        self.add(coords.name, coords.start, coords.end, value, coords.strand)
+        # coords.strands is direction for sequence, not orientation of annotation
+        if coords.strand == '-':
+            coords = coords.reverse()
+        self.add(coords.name, coords.start, coords.end, value, strand)
 
     def _overlappingSpecificStrand(self, seqId, start, end, strand):
         "check overlap on specific strand, which might be None"
@@ -270,7 +281,7 @@ class RangeFinder(object):
     def _removeSpecificStrand(self, seqId, start, end, value, strand):
         "remove an entry on specific strand, which might be None"
         if not self._removeIfExists(seqId, start, end, value, strand):
-            raise RemoveValueError(start, end)
+            raise RemoveValueError(seqId, start, end)
 
     def _removeBothStrands(self, seqId, start, end, value):
         "remove an entry, checking both strands"
@@ -278,7 +289,7 @@ class RangeFinder(object):
         if not removed:
             removed = self._removeIfExists(seqId, start, end, value, '-')
         if not removed:
-            raise RemoveValueError(start, end)
+            raise RemoveValueError(seqId, start, end)
 
     def remove(self, seqId, start, end, value, strand=None):
         """remove an entry with the particular range and value, value error if not found"""
