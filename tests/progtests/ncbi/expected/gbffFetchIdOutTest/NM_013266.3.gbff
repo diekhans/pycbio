@@ -131,8 +131,10 @@ COMMENT     REVIEWED REFSEQ: This record has been curated by NCBI staff. The
             reference sequence was derived from AK313882.1, AF091606.1,
             AC018979.9 and BX103986.1.
             This sequence is a reference standard in the RefSeqGene project.
+            
             [WARNING] On Nov 22, 2018 this sequence was replaced by
             NM_013266.4.
+            
             On Mar 27, 2014 this sequence version replaced NM_013266.2.
             
             Summary: This gene encodes a protein that belongs to the
