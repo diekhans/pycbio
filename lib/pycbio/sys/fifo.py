@@ -6,7 +6,7 @@ import fcntl
 from pycbio import PycbioException
 
 
-class _Fifo(object):
+class _Fifo:
     """Object wrapper for pipes, abstracting traditional and named pipes,
     and hiding OS differences"""
     __slots__ = ("rfd", "wfd", "rfh", "wfh", "rpath", "wpath")

@@ -2,7 +2,7 @@
 import pyBigWig
 from pycbio.hgdata.bed import Bed
 
-class BigBedAccessor(object):
+class BigBedAccessor:
     """Access a bigBed file either randomly or sequentially. It can be
     used as a context manager."""
     def __init__(self, bigBedFile, numStdCols=None):

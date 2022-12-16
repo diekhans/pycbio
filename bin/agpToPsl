@@ -37,7 +37,7 @@ class UnmappedNameException(PycbioException):
     pass
 
 
-class NameMap(object):
+class NameMap:
     """call to do name mapping with useful errors"""
     def __init__(self, nameDesc):
         self.nameDesc = nameDesc

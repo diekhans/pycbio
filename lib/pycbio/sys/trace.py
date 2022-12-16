@@ -25,7 +25,7 @@ def getActiveTraceFds():
     return frozenset(_activeTraceFds)
 
 
-class Trace(object):
+class Trace:
     """Trace object, associate with an open trace file.  File is flushed after
     each write to debug blocking"""
 

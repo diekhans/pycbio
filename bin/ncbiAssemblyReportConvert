@@ -76,7 +76,7 @@ Special id types:
     return args
 
 
-class CnvInfo(object):
+class CnvInfo:
     """info about conversion"""
     def __init__(self, prSkipped):
         self.prSkipped = prSkipped
@@ -176,7 +176,7 @@ def createIdmap(asmReport, filterFn, fromIdType, toIdType, cnvInfo, outFh):
             createIdmapRec(seq, fromIdType, toIdType, cnvInfo, outFh)
 
 
-class IncludeFilter(object):
+class IncludeFilter:
     "filter to select records"
     def __init__(self, include):
         if include is None:

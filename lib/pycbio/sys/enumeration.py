@@ -27,7 +27,7 @@ from pycbio.sys.typeOps import isListLike
 # aliases in this case.
 
 
-class EnumValue(object):
+class EnumValue:
     """A value of an enumeration.  The object id (address) is the
     unique value, with an associated display string and numeric value
     """
@@ -100,7 +100,7 @@ class EnumValue(object):
             return self.numValue != other
 
 
-class Enumeration(object):
+class Enumeration:
     """A class for creating enumeration objects.
     """
 

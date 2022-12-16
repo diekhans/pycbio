@@ -99,7 +99,7 @@ def _buildRefsList(argName, urls):
         urls = [urls]
     return [_makeUrlArg(argName, u) for u in urls]
 
-class BrowserDir(object):
+class BrowserDir:
     """Create a frameset and collection of HTML pages that index one or more
     genome browsers.
     """

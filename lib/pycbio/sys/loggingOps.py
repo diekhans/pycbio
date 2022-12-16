@@ -163,7 +163,7 @@ def setupFromCmd(opts, *, logger=None, prog=None):
     return logger
 
 
-class StreamToLogger(object):
+class StreamToLogger:
     """
     File-like stream object that redirects writes to a logger instance.
     """

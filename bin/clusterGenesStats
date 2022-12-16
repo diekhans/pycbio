@@ -50,7 +50,7 @@ def fmtFrac(cnt, total):
         return "%0.3f" % (float(cnt) / float(total))
 
 
-class Total(object):
+class Total:
     def __init__(self, name):
         self.name = name
         self.transCnt = 0
@@ -64,7 +64,7 @@ class Total(object):
         return str(self.lociCnt) + "/" + str(self.transCnt)
 
 
-class ClusterStats(object):
+class ClusterStats:
     def __init__(self, clusterFile, lociCats=None, omitZero=False):
         self.clusters = ClusterGenes(clusterFile)
         if lociCats is None:

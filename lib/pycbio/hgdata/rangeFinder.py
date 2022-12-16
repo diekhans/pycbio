@@ -36,7 +36,7 @@ class RemoveValueError(ValueError):
         super(RemoveValueError, self).__init__(f"entry to remove not found: {seqId}:{entry.start}-{entry.end} strand={strand}, value: {repr(entry.value)}")
 
 
-class Binner(object):
+class Binner:
     "functions to translate ranges to bin numbers"
 
     binOffsetsBasic = (512 + 64 + 8 + 1,
@@ -128,7 +128,7 @@ class _Entry(namedtuple("Entry",
         return str(self.start) + "-" + str(self.end) + ": " + str(self.value)
 
 
-class RangeBins(object):
+class RangeBins:
     """Range indexed container for a single sequence.  This using a binning
     scheme that implements spacial indexing. Based on UCSC hg browser binRange
     C module."""
@@ -197,7 +197,7 @@ class RangeBins(object):
                 fh.write("\t" + str(entry) + "\n")
 
 
-class RangeFinder(object):
+class RangeFinder:
     """Container index by sequence id, range, and optionally strand.
     All entries added to the object must either have strand or not
     have strand.  A query without strand will find all overlapping

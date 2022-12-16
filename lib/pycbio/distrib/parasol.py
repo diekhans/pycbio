@@ -7,7 +7,7 @@ from pycbio.sys import fileOps
 import pipettor
 
 
-class BatchStats(object):
+class BatchStats:
     "statistics on jobs in the current batch"
 
     # map of `string: cnt' lines to fields
@@ -74,7 +74,7 @@ class BatchStats(object):
         return (not self.hasParasolErrs()) and (self.ranOk == self.totalJobs)
 
 
-class Para(object):
+class Para:
     "interface to the parasol para command"
     def __init__(self, paraHost, runDir, paraDir, jobFile=None, cpu=None, mem=None, maxJobs=None, retries=None):
         """"will chdir to run dir.. paraDir should be relative

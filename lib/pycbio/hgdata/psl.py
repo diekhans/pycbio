@@ -26,7 +26,7 @@ def dropQueryUniq(qName):
     drop it"""
     return re.match('^(.+?)(-[0-9]+(.[0-9]+)*)?$', qName).group(1)
 
-class PslBlock(object):
+class PslBlock:
     """Block of a PSL"""
     __slots__ = ("psl", "iBlk", "qStart", "tStart", "size", "qSeq", "tSeq")
 
@@ -125,7 +125,7 @@ class PslBlock(object):
                         (dnaOps.reverseComplement(self.qSeq) if (self.qSeq is not None) else None))
 
 
-class Psl(object):
+class Psl:
     """Object containing data from a PSL record."""
     __slots__ = ("match", "misMatch", "repMatch", "nCount", "qNumInsert", "qBaseInsert", "tNumInsert", "tBaseInsert", "strand", "qName", "qSize", "qStart", "qEnd", "tName", "tSize", "tStart", "tEnd", "blocks")
 
@@ -486,7 +486,7 @@ class Psl(object):
         return swap
 
 
-class PslReader(object):
+class PslReader:
     """Generator to read PSLs from a tab file or file-like object"""
     def __init__(self, fspec):
         self.fspec = fspec

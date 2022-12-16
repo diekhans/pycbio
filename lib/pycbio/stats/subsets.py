@@ -3,7 +3,7 @@ from pycbio import PycbioException
 
 # FIXME: distinction between subsets, subset, and elements not clear
 
-class Subsets(object):
+class Subsets:
     "Generate and store possible subsets for a set of elements."
 
     def __init__(self, elements=None):

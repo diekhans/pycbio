@@ -6,7 +6,7 @@ from pycbio import PycbioException
 # FIXME: binnins doesn't work for values in the range [-1.0, 1.0]
 
 
-class Bin(object):
+class Bin:
     "A bin in the histogram"
     def __init__(self, histo, idx, binMin, binSize):
         self.histo = histo
@@ -59,7 +59,7 @@ class NumCntData(list):
             self.total += item[1] * val
 
 
-class Histogram(object):
+class Histogram:
     """Bin data into a histogram for ploting or other purposes.
     Data items can either be single numbers (floats or ints), or
     tuples of (value, count).

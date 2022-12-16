@@ -6,7 +6,7 @@ from pycbio.hgdata.genePred import genePredFromDictRow
 from pycbio.db import mysqlOps
 
 
-class GenePredMySqlReader(object):
+class GenePredMySqlReader:
     """Read genePreds from a mysql query"""
     def __init__(self, conn, query, queryArgs=None):
         self.conn = conn

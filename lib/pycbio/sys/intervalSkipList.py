@@ -18,7 +18,7 @@ class Entry(namedtuple("Entry", ("start", "end", "val"))):
     __slots__ = ()
 
 
-class Node(object):
+class Node:
     """a node in the skip list.
 
     Fields:
@@ -37,7 +37,7 @@ class Node(object):
         self.eqMarkers = set()
 
 
-class IntervalSkipList(object):
+class IntervalSkipList:
     "skip list object addressed by interval"
     def __init__(self, maxLevel):
         self.maxLevel = maxLevel

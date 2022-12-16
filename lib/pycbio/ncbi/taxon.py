@@ -8,7 +8,7 @@ from collections import defaultdict
 from pycbio.sys import fileOps
 
 
-class DmpFileParser(object):
+class DmpFileParser:
     "parse one of the taxon dmp files"
     def __init__(self, dmpFile):
         self.dmpFile = dmpFile
@@ -23,7 +23,7 @@ class DmpFileParser(object):
                 yield row
 
 
-class Node(object):
+class Node:
     "A record from nodes.dmp table"
     def __init__(self, row):
         self.taxId = int(row[0])
@@ -41,7 +41,7 @@ class Node(object):
         self.comments = row[12]
 
 
-class Name(object):
+class Name:
     "A record from the names.dmp table"
     def __init__(self, row):
         self.taxId = int(row[0])
@@ -50,7 +50,7 @@ class Name(object):
         self.nameClass = sys.intern(row[3])
 
 
-class Tree(object):
+class Tree:
     def _loadNames(self, dmpDir):
         self.names = defaultdict(list)
         self.sciNames = dict()

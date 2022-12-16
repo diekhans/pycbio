@@ -6,7 +6,7 @@ from pycbio.hgdata.rangeFinder import Binner
 from pycbio.db import mysqlOps
 
 
-class PslMySqlReader(object):
+class PslMySqlReader:
     """Read PSLs from db query.  Factory methods are provide
     to generate instances for range queries."""
 

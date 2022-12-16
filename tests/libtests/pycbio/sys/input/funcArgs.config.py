@@ -1,5 +1,5 @@
 
-class Barney(object):
+class Barney:
     def __init__(self, f1, f2, f3, configPyFile):
         self.f1 = f1
         self.f2 = f2

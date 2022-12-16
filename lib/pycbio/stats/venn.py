@@ -28,7 +28,7 @@ class SetDict(dict):
         self[key].add(val)
 
 
-class Venn(object):
+class Venn:
     """Generate Venn diagram set intersections.  Each set has
     list of ids associated with it that are shared between sets.
     """

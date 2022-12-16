@@ -62,7 +62,7 @@ class Range(namedtuple("Range", ("start", "end"))):
         return Range(chromSize - self.end, chromSize - self.start)
 
 
-class ExonFeatures(object):
+class ExonFeatures:
     "object the holds the features of a single exon"
     __slots__ = ("utr5", "cds", "utr3")
 
@@ -75,7 +75,7 @@ class ExonFeatures(object):
         return "utr5=" + str(self.utr5) + " cds=" + str(self.cds) + " utr3=" + str(self.utr3)
 
 
-class Exon(object):
+class Exon:
     "an exon in a genePred annotation"
     __slots__ = ("gene", "iExon", "start", "end", "frame")
 
@@ -171,7 +171,7 @@ class Exon(object):
             return Range(chromSize - self.end, chromSize - self.start)
 
 
-class GenePred(object):
+class GenePred:
     """Object wrapper for a genePred"""
 
     def __init__(self, name=None, chrom=None, strand=None, txStart=None, txEnd=None, cdsStart=None, cdsEnd=None):

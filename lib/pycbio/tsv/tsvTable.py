@@ -14,7 +14,7 @@ class TsvTable(list):
     - idx - Index on columns, with each field a column name. Unique indexed columns are a dict
       of value to row, multi-index columns are a dict of value to list of rows.
     """
-    class Indices (object):
+    class Indices :
         """object with attribute for each key column"""
 
         def __getitem__(self, key):

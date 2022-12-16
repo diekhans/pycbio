@@ -29,7 +29,7 @@ Output defaults to PDF format.
     return parser.parse_args()
 
 
-class BoolStats(object):
+class BoolStats:
     "stats extract from boolean Tsv"
     def __init__(self, statsFile, countsCol):
         reader = TsvReader(statsFile, typeMap={countsCol: int}, defaultColType=bool)
@@ -37,7 +37,7 @@ class BoolStats(object):
             raise TsvReader("counts column \"{}\" not found".format(countsCol), reader)
 
 
-class VennCircle(object):
+class VennCircle:
     diameter = 1.0
 
     def __init__(self, pos):

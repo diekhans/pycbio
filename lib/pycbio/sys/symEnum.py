@@ -132,7 +132,7 @@ class SymEnumMeta(EnumMeta):
 
 
 @total_ordering
-class SymEnumMixin(object):
+class SymEnumMixin:
     """Mixin that adds comparisons and other functions for SymEnum"""
 
     def __hash__(self):

@@ -53,7 +53,7 @@ def setSynchronous(conn, mode):
         mode = "NORMAL"
     execute(conn, "PRAGMA synchronous={}".format(mode))
 
-class SqliteCursor(object):
+class SqliteCursor:
     """Context manager creating an sqlite cursor and a transaction.
     """
     def __init__(self, conn, rowFactory=None):

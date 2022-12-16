@@ -34,7 +34,7 @@ def parseArgs():
     return parser.parse_args()
 
 
-class GeneSet(object):
+class GeneSet:
     def __init__(self, genePredFile):
         allTrans = [t for t in GenePred.GenePredReader(genePredFile)]
         self.byGene = None
@@ -47,7 +47,7 @@ class GeneSet(object):
             self.byGene.append(t.name2, t)
 
 
-class GenePredSelect(object):
+class GenePredSelect:
     def __init__(self, opts):
         self.geneIds = None
         self.singleExon = opts.singleExon

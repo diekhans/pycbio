@@ -34,7 +34,7 @@ def parseArgs():
     return parser.parse_args()
 
 
-class GenePredSelect(object):
+class GenePredSelect:
     def __init__(self, opts):
         self.geneIds = None
         self.singleExon = opts.singleExon

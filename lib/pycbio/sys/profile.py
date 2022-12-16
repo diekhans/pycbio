@@ -6,7 +6,7 @@ import sys
 from pycbio import PycbioException
 
 
-class Profile(object):
+class Profile:
     """Wrapper to make adding optional support for profiling easy.
     Adds cmd options:
        --profile=profFile

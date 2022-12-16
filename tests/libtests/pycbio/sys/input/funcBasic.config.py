@@ -3,7 +3,7 @@
 global configPyFile
 
 
-class Fred(object):
+class Fred:
     def __init__(self, n, configPyFile, passedInModule):
         self.f1 = n
         self.f2 = 2 * n

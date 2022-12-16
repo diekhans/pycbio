@@ -58,7 +58,7 @@ def evalConfigFunc(configPyFile, getFuncName="getConfig", getFuncArgs=[], getFun
         raise PycbioException("Error from configuration function {}(): {}".format(getFuncName, configPyFile)) from ex
 
 
-class Config(object):
+class Config:
     "configuration object"
     pass
 

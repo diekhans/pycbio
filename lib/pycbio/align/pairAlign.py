@@ -14,7 +14,7 @@ from pycbio import PycbioException
 otherStrand = {"+": "-", "-": "+"}
 
 
-class Coord(object):
+class Coord:
     """A coordinate, which can be either absolute or relative to start of strand.
     """
     __slots__ = ("seqId", "start", "end", "size", "strand", "isAbs")
@@ -149,7 +149,7 @@ class Seq(Coord):
             self.cds.end = max(self.cds.end, cdsEnd)
 
 
-class SubSeq(object):
+class SubSeq:
     "subsequence in alignment"
     __slots__ = ("seq", "start", "end", "cds")
 
@@ -245,7 +245,7 @@ class SubSeqs(list):
         return None
 
 
-class Cds(object):
+class Cds:
     "range or subrange of CDS"
     __slots__ = ("start", "end")
 
@@ -272,7 +272,7 @@ class Cds(object):
         return self.end - self.start
 
 
-class Block(object):
+class Block:
     """Block in alignment, query or target SubSeq can be None.  Links allow
     for simple traversing"""
     __slots__ = ("aln", "q", "t", "prev", "next")

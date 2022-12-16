@@ -216,7 +216,7 @@ def prRowv(fh, *objs):
     prRow(fh, objs)
 
 
-class FileAccessor(object):
+class FileAccessor:
     """Context manager that opens a file (possibly compressed) if specified as
     a string, otherwise assume it is file-like and don't open/close"""
     def __init__(self, fspec, mode="r"):

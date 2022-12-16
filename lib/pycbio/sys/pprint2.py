@@ -20,11 +20,11 @@ class NoStrWrapPrettyPrinter(PrettyPrinter):
         else:
             super(NoStrWrapPrettyPrinter, self)._format(object, *args)
 
-def nswpprint(object, stream=None, indent=1, width=80, depth=None, compact=False):
+def nswpprint(obj, stream=None, indent=1, width=80, depth=None, compact=False):
     """Pretty-print a Python object to a stream [default is sys.stdout] without
     wrapping strings"""
     printer = NoStrWrapPrettyPrinter(stream=stream, indent=indent, width=width, depth=depth, compact=compact)
-    printer.pprint(object)
+    printer.pprint(obj)
 
 
 __all__ = [nswpprint.__name__, NoStrWrapPrettyPrinter.__name__]

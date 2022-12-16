@@ -18,7 +18,7 @@ def noneIfEmpty(s):
     return s if s != "" else None
 
 
-class HgSqliteTable(object):
+class HgSqliteTable:
     """Base class for SQL list table interface object."""
     def __init__(self, conn, table):
         self.conn = conn

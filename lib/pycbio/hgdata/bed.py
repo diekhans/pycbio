@@ -18,7 +18,7 @@ def defaultIfNone(v, dflt=""):
     # also converts to a string
     return str(v) if v is not None else str(dflt)
 
-class Bed(object):
+class Bed:
     """Object wrapper for a BED record.  ExtraCols is a vector of extra
     columns to add.  Special columns be added by extending and overriding
     parse() and toRow(), numColumns to do special handling.

@@ -54,7 +54,7 @@ class printf_basic_dialect(csv.Dialect):
     quoting = csv.QUOTE_NONE
 
 
-class TsvReader(object):
+class TsvReader:
     """Class for reading TSV files.  Reads header and builds column name to
     column index map.  After a next, object contains a row and each column
     becomes a field name.  It is also indexable by column name or int index.

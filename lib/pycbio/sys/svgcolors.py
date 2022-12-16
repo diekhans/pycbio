@@ -10,7 +10,7 @@ def _mkcolor(rgb8):
     return Color.fromPackRgb8(rgb8)
 
 
-class SvgColors(object):
+class SvgColors:
     """Definitions of SVG/CCS3 colors by name
     good table here: http://www.december.com/html/spec/colorsvg.html.
     Some have duplicate names.

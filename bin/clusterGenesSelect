@@ -44,7 +44,7 @@ def parseArgs():
     return parser.parse_args()
 
 
-class ClusterSelect(object):
+class ClusterSelect:
     def __init__(self, opts):
         self.clusters = ClusterGenes(opts.clusterFile)
 

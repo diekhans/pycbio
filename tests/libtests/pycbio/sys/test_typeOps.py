@@ -17,11 +17,11 @@ class TypeOpsTests(TestCaseBase):
         self.assertEqual(str(ao), "a=10, b=20, fred='spaced out'")
 
     def testAttrdic(self):
-        class ODict(object):
+        class ODict:
             def __init__(self):
                 self.f = 100
 
-        class OSlots(object):
+        class OSlots:
             __slots__ = ("f")
 
             def __init__(self):

@@ -14,7 +14,7 @@ except ModuleNotFoundError:
     haveJsonPickle = False
     print("NOTE: jsonpickle not found, tests disabled", file=sys.stderr)
 
-class TestMixin(object):
+class TestMixin:
     def assertKeyValues(self, expect, od):
         "compare (key, values) to expeccted"
         self.assertEqual(expect, tuple(od.items()))

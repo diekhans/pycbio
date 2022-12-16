@@ -9,7 +9,7 @@ from pycbio.align.pairAlign import loadPslFile
 from pycbio import PycbioException
 
 
-class WithSrcCds(object):
+class WithSrcCds:
     "container for map CDS results"
     def __init__(self, srcAln, destAln):
         self.srcAln = srcAln

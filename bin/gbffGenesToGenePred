@@ -136,7 +136,7 @@ def prWarn(*objs):
     warnCnt += 1
 
 
-class RnaCdsMap(object):
+class RnaCdsMap:
     "associate table of mRNA id to protein id from rna.q or a tab-separated file"
     def __init__(self, rnaqFile=None, mrnaProtFile=None):
         self.rnaProtMap = dict()
@@ -160,7 +160,7 @@ class RnaCdsMap(object):
             self.protRnaMap[row[1]] = row[0]
 
 
-class TransFeatures(object):
+class TransFeatures:
     "object that holds features"
 
     def __init__(self, gene, transId):
@@ -280,7 +280,7 @@ class TransFeatures(object):
         prLine(sys.stderr, "\t exons: ", self.exonFts)
 
 
-class GeneFeatures(object):
+class GeneFeatures:
     """object for a gene and associated transcripts. This reduces gene
     and pseudogene annotations into a common data format.
     If features don't have transcripts ids, they are added to a
@@ -480,7 +480,7 @@ class GeneFeatures(object):
             trans.dump()
 
 
-class RecProcessor(object):
+class RecProcessor:
     "process a record from the file"
 
     def __init__(self, rec, opts, rnaCdsMap=None):
@@ -597,7 +597,7 @@ class RecProcessor(object):
         gene.flagImmunoglobulin()
 
 
-class GenePredBuilder(object):
+class GenePredBuilder:
     "object to build a genePred"
 
     def __init__(self, geneSym, transId, chrom, mkExt):
@@ -664,7 +664,7 @@ class GenePredBuilder(object):
             self.gp.addExon(prevStart, prevEnd)
 
 
-class GeneConverter(object):
+class GeneConverter:
     """object for pseudo and real gene conversion. Big differences is how we
     get the exon annotations.  For pseudogenes, they come from exon features,
     for genes they come from the mRNA feature"""
@@ -717,7 +717,7 @@ class GeneConverter(object):
             self._convertTrans(self.gene.transTbl[transId])
 
 
-class GbffToGenes(object):
+class GbffToGenes:
     "convert a genbank flat file object to genePreds"
     def __init__(self, opts, rnaCdsMap):
         self.opts = opts

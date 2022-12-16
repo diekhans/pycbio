@@ -64,7 +64,7 @@ class PslMapRange(namedtuple("PslMapRange",
                            tPrevEnd, tStart, tEnd, tNextStart, tStrand)
 
 
-class PslMap(object):
+class PslMap:
     """Object for mapping coordinates using PSL alignments.
     Can map from either query-to-target or target-to-query coordinates.
     Has a generator that is used to traverse the range.

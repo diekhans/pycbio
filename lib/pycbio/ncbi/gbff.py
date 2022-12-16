@@ -94,7 +94,7 @@ def featGetCdsId(feat):
     return featGetQual1ByKeys(feat, ("protein_id", "standard_name"))
 
 
-class Coord(object):
+class Coord:
     "[0..n) coord"
     __slots__ = ("start", "end", "strand")
 

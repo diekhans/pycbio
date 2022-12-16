@@ -35,7 +35,7 @@ def parseArgs():
     return parser.parse_args()
 
 
-class CountChks(object):
+class CountChks:
     def __init__(self, geneChks):
         self.chks = geneCheck.GeneCheckTbl(geneChks)
         self.cnt = 0

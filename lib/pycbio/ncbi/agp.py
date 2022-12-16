@@ -19,12 +19,12 @@ class AgpException(PycbioException):
         super(AgpException, self).__init__(msg)
 
 
-class Agp(object):
+class Agp:
     """NCBI AGP file parser.
     https://www.ncbi.nlm.nih.gov/assembly/agp/AGP_Specification/
     """
 
-    class Record(object):
+    class Record:
         __slots__ = ("object", "part_number", "component_type")
 
         def __init__(self, object, part_number, component_type):

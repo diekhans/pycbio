@@ -55,7 +55,7 @@ def _encodeAttr(v):
         return v
 
 
-class Feature(object):
+class Feature:
     """
     One feature notation from a GFF3 file.  Coordinates are in zero-based, half-open.
     Missing attribute, as code by `.' in the file are stored as None.
@@ -158,7 +158,7 @@ class Feature(object):
         return values[0]
 
 
-class Gff3Set(object):
+class Gff3Set:
     """
     A set of GFF3 sequence annotations
     """
@@ -227,7 +227,7 @@ class Gff3Set(object):
             self._writeRec(fh, root)
 
 
-class Gff3Parser(object):
+class Gff3Parser:
     """
     Parser for GFF3 files.  This parse does basic validation, but does not
     fully test for conformance.
