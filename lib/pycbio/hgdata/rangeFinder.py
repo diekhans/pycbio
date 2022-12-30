@@ -294,9 +294,9 @@ class RangeFinder:
                 strand = None  # no strand to check
             return self._overlappingEntriesStrand(seqId, start, end, strand)
 
-    def overlappingEntriesByCoords(self, coords):
+    def overlappingEntriesByCoords(self, coords, strand=None):
         """generator over Entry object overlapping using a Coords object"""
-        return self.overlappingEntries(coords.name, coords.start, coords.end, coords.strand)
+        return self.overlappingEntries(coords.name, coords.start, coords.end, strand)
 
     def overlapping(self, seqId, start, end, strand=None):
         """Return generator over values overlapping the specified range on
