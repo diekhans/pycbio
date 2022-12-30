@@ -27,7 +27,7 @@ class RangeFinderException(PycbioException):
     pass
 
 class _EntryNotFound(Exception):
-    "low-level indication of entry found"
+    "low-level indication of entry not found"
     pass
 
 class RemoveValueError(ValueError):
@@ -113,8 +113,8 @@ def getOverlappingSqlExpr(binCol, seqCol, startCol, endCol, seq, start, end):
     return "(({}=\"{}\") and ({}<{}) and ({}>{}) and ({}))".format(seqCol, seq, startCol, end, endCol, start, " or ".join(parts))
 
 
-class _Entry(namedtuple("Entry",
-                        ("start", "end", "value"))):
+class Entry(namedtuple("Entry",
+                       ("start", "end", "value"))):
     "entry associating a range with a value"
     __slots__ = ()
 
@@ -137,7 +137,7 @@ class RangeBins:
         self.strand = strand
         self.minStart = sys.maxsize
         self.maxEnd = 0
-        self.buckets = {}  # indexed by bin, each bucket is a list of _Entry objects
+        self.buckets = {}  # indexed by bin, each bucket is a list of Entry objects
 
     def add(self, entry):
         bin = calcBin(entry.start, entry.end)
@@ -152,9 +152,9 @@ class RangeBins:
         for e in overEntries:
             self.remove(e)
         entries = [newEntry] + overEntries
-        return _Entry(min((e.start for e in entries)),
-                      max((e.end for e in entries)),
-                      mergeFunc([e.value for e in entries]))
+        return Entry(min((e.start for e in entries)),
+                     max((e.end for e in entries)),
+                     mergeFunc([e.value for e in entries]))
 
     def addMerge(self, entry, mergeFunc):
         overEntries = list(self.overlapping(entry.start, entry.end))  # must make copy
@@ -237,7 +237,7 @@ class RangeFinder:
     def add(self, seqId, start, end, value, strand=None):
         "add an entry for a sequence and range, and optional strand"
         bins = self._getBinsForAdd(seqId, start, end, strand)
-        bins.add(_Entry(start, end, value))
+        bins.add(Entry(start, end, value))
 
     def addMerge(self, seqId, start, end, value, strand=None):
         """add an entry for a sequence and range, and optional strand,
@@ -245,7 +245,7 @@ class RangeFinder:
         if self.mergeFunc is None:
             raise RangeFinderException("RangeFinder does not have a mergeFunc, can't merge entries")
         bins = self._getBinsForAdd(seqId, start, end, strand)
-        bins.addMerge(_Entry(start, end, value), self.mergeFunc)
+        bins.addMerge(Entry(start, end, value), self.mergeFunc)
 
     def addCoords(self, coords, value, strand=None):
         """Added using Coords object.  Note that coords.strands is direction
@@ -254,29 +254,40 @@ class RangeFinder:
             coords = coords.reverse()
         self.add(coords.name, coords.start, coords.end, value, strand)
 
-    def _overlappingSpecificStrand(self, seqId, start, end, strand):
+    def _overlappingEntriesStrand(self, seqId, start, end, strand):
         "check overlap on specific strand, which might be None"
         bins = self.seqBins.get((seqId, strand))
         if bins is not None:
             for entry in bins.overlapping(start, end):
-                yield entry.value
+                yield entry
 
-    def _overlappingBothStrands(self, seqId, start, end):
+    def _overlappingEntriesBothStrands(self, seqId, start, end):
         "return range overlaps, checking both strands"
-        yield from self._overlappingSpecificStrand(seqId, start, end, '+')
-        yield from self._overlappingSpecificStrand(seqId, start, end, '-')
+        yield from self._overlappingEntriesStrand(seqId, start, end, '+')
+        yield from self._overlappingEntriesStrand(seqId, start, end, '-')
 
-    def overlapping(self, seqId, start, end, strand=None):
-        "generator over values overlapping the specified range on seqId, optional strand"
+    def overlappingEntries(self, seqId, start, end, strand=None):
+        """Return generator over Entry objects overlapping the specified range on
+        seqId, optional strand"""
         self._checkStrand(strand)
         if self.haveStrand and (strand is None):
             # must check on both strands
-            return self._overlappingBothStrands(seqId, start, end)
+            return self._overlappingEntriesBothStrands(seqId, start, end)
         else:
             # must only check a specifc strand, or no strand to check
             if not self.haveStrand:
                 strand = None  # no strand to check
-            return self._overlappingSpecificStrand(seqId, start, end, strand)
+            return self._overlappingEntriesStrand(seqId, start, end, strand)
+
+    def overlappingEntriesByCoords(self, coords):
+        """generator over Entry object overlapping using a Coords object"""
+        return self.overlappingEntries(coords.name, coords.start, coords.end, coords.strand)
+
+    def overlapping(self, seqId, start, end, strand=None):
+        """Return generator over values overlapping the specified range on
+        seqId, optional strand"""
+        for entry in self.overlappingEntries(seqId, start, end, strand=strand):
+            yield entry.value
 
     def overlappingByCoords(self, coords):
         """generator over values overlapping using a Coords object"""
@@ -306,7 +317,7 @@ class RangeFinder:
     def remove(self, seqId, start, end, value, strand=None):
         """remove an entry with the particular range and value, value error if not found"""
         self._checkStrand(strand)
-        entry = _Entry(start, end, value)
+        entry = Entry(start, end, value)
         try:
             self._remove(seqId, strand, entry)
         except _EntryNotFound:
@@ -355,7 +366,3 @@ class RangeFinder:
         "print contents for debugging purposes"
         for bins in list(self.seqBins.values()):
             bins.dump(fh)
-
-
-__all__ = (RemoveValueError.__name__, RangeFinderException.__name__,
-           RangeFinder.__name__,)
