@@ -36,83 +36,81 @@ class RemoveValueError(ValueError):
         super(RemoveValueError, self).__init__(f"entry to remove not found: {seqId}:{entry.start}-{entry.end} strand={strand}, value: {repr(entry.value)}")
 
 
-class Binner:
-    "functions to translate ranges to bin numbers"
+##
+# Functions to translate ranges to bin numbers. Bin values are compatible with
+# ones in UCSC database.
+##
 
-    binOffsetsBasic = (512 + 64 + 8 + 1,
-                       64 + 8 + 1,
-                       8 + 1,
-                       1, 0)
-    binOffsetsExtended = (4096 + 512 + 64 + 8 + 1,
-                          512 + 64 + 8 + 1,
-                          64 + 8 + 1, 8 + 1,
-                          1, 0)
+BIN_OFFSETS_BASIC = (512 + 64 + 8 + 1,
+                     64 + 8 + 1,
+                     8 + 1,
+                     1, 0)
 
-    binFirstShift = 17  # How much to shift to get to finest bin.
-    binNextShift = 3    # How much to shift to get to next larger bin.
+BIN_OFFSETS_EXTENDED = (4096 + 512 + 64 + 8 + 1,
+                        512 + 64 + 8 + 1,
+                        64 + 8 + 1, 8 + 1,
+                        1, 0)
 
-    binBasicMaxEnd = 512 * 1024 * 1024
-    binOffsetToExtended = 4681
+BIN_FIRST_SHIFT = 17  # How much to shift to get to finest bin.
+BIN_NEXT_SHIFT = 3    # How much to shift to get to next larger bin.
 
-    @staticmethod
-    def _calcBinForOffsets(start, end, baseOffset, offsets):
-        "get the bin for a range"
-        startBin = start >> Binner.binFirstShift
-        endBin = (end - 1) >> Binner.binFirstShift
-        for binOff in offsets:
-            if (startBin == endBin):
-                return baseOffset + binOff + startBin
-            startBin >>= Binner.binNextShift
-            endBin >>= Binner.binNextShift
-        raise Exception("can't compute bin: start {}, end {} out of range".format(start, end))
+BIN_BASIC_MAX_END = 512 * 1024 * 1024
+BIN_OFFSET_TO_EXTENDED = 4681
 
-    @staticmethod
-    def calcBin(start, end):
-        "get the bin for a range"
-        if end <= Binner.binBasicMaxEnd:
-            return Binner._calcBinForOffsets(start, end, 0, Binner.binOffsetsBasic)
-        else:
-            return Binner._calcBinForOffsets(start, end, Binner.binOffsetToExtended, Binner.binOffsetsExtended)
+def _calcBinForOffsets(start, end, baseOffset, offsets):
+    "get the bin for a range"
+    startBin = start >> BIN_FIRST_SHIFT
+    endBin = (end - 1) >> BIN_FIRST_SHIFT
+    for binOff in offsets:
+        if (startBin == endBin):
+            return baseOffset + binOff + startBin
+        startBin >>= BIN_NEXT_SHIFT
+        endBin >>= BIN_NEXT_SHIFT
+    raise Exception("can't compute bin: start {}, end {} out of range".format(start, end))
 
-    @staticmethod
-    def _getOverlappingBinsForOffsets(start, end, baseOffset, offsets):
-        "generate bins for a range given a list of offsets"
-        startBin = start >> Binner.binFirstShift
-        endBin = (end - 1) >> Binner.binFirstShift
-        for offset in offsets:
-            yield (startBin + baseOffset + offset, endBin + baseOffset + offset)
-            startBin >>= Binner.binNextShift
-            endBin >>= Binner.binNextShift
+def calcBin(start, end):
+    "get the bin for a range"
+    if end <= BIN_BASIC_MAX_END:
+        return _calcBinForOffsets(start, end, 0, BIN_OFFSETS_BASIC)
+    else:
+        return _calcBinForOffsets(start, end, BIN_OFFSET_TO_EXTENDED, BIN_OFFSETS_EXTENDED)
 
-    @staticmethod
-    def getOverlappingBins(start, end):
-        """Generate bins for the range.  Each value is closed range of (startBin, endBin)"""
-        if end <= Binner.binBasicMaxEnd:
-            # contained in basic range
-            for bins in Binner._getOverlappingBinsForOffsets(start, end, 0, Binner.binOffsetsBasic):
+def _getOverlappingBinsForOffsets(start, end, baseOffset, offsets):
+    "generate bins for a range given a list of offsets"
+    startBin = start >> BIN_FIRST_SHIFT
+    endBin = (end - 1) >> BIN_FIRST_SHIFT
+    for offset in offsets:
+        yield (startBin + baseOffset + offset, endBin + baseOffset + offset)
+        startBin >>= BIN_NEXT_SHIFT
+        endBin >>= BIN_NEXT_SHIFT
+
+def getOverlappingBins(start, end):
+    """Generate bins for the range.  Each value is closed range of (startBin, endBin)"""
+    if end <= BIN_BASIC_MAX_END:
+        # contained in basic range
+        for bins in _getOverlappingBinsForOffsets(start, end, 0, BIN_OFFSETS_BASIC):
+            yield bins
+        yield (BIN_OFFSET_TO_EXTENDED, BIN_OFFSET_TO_EXTENDED)
+    else:
+        if start < BIN_BASIC_MAX_END:
+            # overlapping both basic and extended
+            for bins in _getOverlappingBinsForOffsets(start, BIN_BASIC_MAX_END, 0, BIN_OFFSETS_BASIC):
                 yield bins
-            yield (Binner.binOffsetToExtended, Binner.binOffsetToExtended)
-        else:
-            if start < Binner.binBasicMaxEnd:
-                # overlapping both basic and extended
-                for bins in Binner._getOverlappingBinsForOffsets(start, Binner.binBasicMaxEnd, 0, Binner.binOffsetsBasic):
-                    yield bins
-            for bins in Binner._getOverlappingBinsForOffsets(start, end, Binner.binOffsetToExtended, Binner.binOffsetsExtended):
-                yield bins
+        for bins in _getOverlappingBinsForOffsets(start, end, BIN_OFFSET_TO_EXTENDED, BIN_OFFSETS_EXTENDED):
+            yield bins
 
-    @staticmethod
-    def getOverlappingSqlExpr(binCol, seqCol, startCol, endCol, seq, start, end):
-        """generate an SQL expression for overlaps with the specified range
-        in order to efficiently query, there should be an index on (seqName, bin)
-        """
-        # build bin parts
-        parts = []
-        for bins in Binner.getOverlappingBins(start, end):
-            if bins[0] == bins[1]:
-                parts.append("({}={})".format(binCol, bins[0]))
-            else:
-                parts.append("({}>={} and {}<={})".format(binCol, bins[0], binCol, bins[1]))
-        return "(({}=\"{}\") and ({}<{}) and ({}>{}) and ({}))".format(seqCol, seq, startCol, end, endCol, start, " or ".join(parts))
+def getOverlappingSqlExpr(binCol, seqCol, startCol, endCol, seq, start, end):
+    """generate an SQL expression for overlaps with the specified range
+    in order to efficiently query, there should be an index on (seqName, bin)
+    """
+    # build bin parts
+    parts = []
+    for bins in getOverlappingBins(start, end):
+        if bins[0] == bins[1]:
+            parts.append("({}={})".format(binCol, bins[0]))
+        else:
+            parts.append("({}>={} and {}<={})".format(binCol, bins[0], binCol, bins[1]))
+    return "(({}=\"{}\") and ({}<{}) and ({}>{}) and ({}))".format(seqCol, seq, startCol, end, endCol, start, " or ".join(parts))
 
 
 class _Entry(namedtuple("Entry",
@@ -142,7 +140,7 @@ class RangeBins:
         self.buckets = {}  # indexed by bin, each bucket is a list of _Entry objects
 
     def add(self, entry):
-        bin = Binner.calcBin(entry.start, entry.end)
+        bin = calcBin(entry.start, entry.end)
         entries = self.buckets.get(bin)
         if entries is None:
             self.buckets[bin] = entries = []
@@ -167,7 +165,7 @@ class RangeBins:
     def overlapping(self, start, end):
         "generator of entries overlapping the specified range"
         if (start < end):
-            for bins in Binner.getOverlappingBins(start, end):
+            for bins in getOverlappingBins(start, end):
                 for j in range(bins[0], bins[1] + 1):
                     bucket = self.buckets.get(j)
                     if bucket is not None:
@@ -178,7 +176,7 @@ class RangeBins:
     def remove(self, entry):
         """Remove an entry with the particular range and value"""
         try:
-            bucket = self.buckets[(Binner.calcBin(entry.start, entry.end))]  # exception if no bucket
+            bucket = self.buckets[(calcBin(entry.start, entry.end))]  # exception if no bucket
             bucket.remove(entry)  # exception if no value
         except (IndexError, ValueError):
             raise _EntryNotFound()
@@ -360,4 +358,4 @@ class RangeFinder:
 
 
 __all__ = (RemoveValueError.__name__, RangeFinderException.__name__,
-           Binner.__name__, RangeFinder.__name__,)
+           RangeFinder.__name__,)
