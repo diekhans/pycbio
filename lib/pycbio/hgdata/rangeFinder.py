@@ -254,6 +254,15 @@ class RangeFinder:
             coords = coords.reverse()
         self.add(coords.name, coords.start, coords.end, value, strand)
 
+    def addMergeCoords(self, coords, value, strand=None):
+        """add an entry using coords, and optional strand, merging with
+        existing overlapping entries.  Note that coords.strands is direction for
+        sequence, not orientation of annotation on a strand
+        """
+        if coords.strand == '-':
+            coords = coords.reverse()
+        self.addMerge(coords.name, coords.start, coords.end, value, strand)
+
     def _overlappingEntriesStrand(self, seqId, start, end, strand):
         "check overlap on specific strand, which might be None"
         bins = self.seqBins.get((seqId, strand))
