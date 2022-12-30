@@ -187,6 +187,12 @@ class RangeBins:
             for entry in bin:
                 yield entry.value
 
+    def entries(self):
+        "generator over all Entry objects"
+        for bin in self.buckets.values():
+            for entry in bin:
+                yield entry
+
     def dump(self, fh):
         "print contents for debugging purposes"
         for bin in list(self.buckets.keys()):
@@ -298,9 +304,9 @@ class RangeFinder:
         for entry in self.overlappingEntries(seqId, start, end, strand=strand):
             yield entry.value
 
-    def overlappingByCoords(self, coords):
+    def overlappingByCoords(self, coords, strand=None):
         """generator over values overlapping using a Coords object"""
-        return self.overlapping(coords.name, coords.start, coords.end, coords.strand)
+        return self.overlapping(coords.name, coords.start, coords.end, strand=strand)
 
     def _removeFromSeqBin(self, seqId, strand, entry):
         # strand maybe None
@@ -333,9 +339,14 @@ class RangeFinder:
             raise RemoveValueError(seqId, strand, entry)
 
     def values(self):
-        "generator over all values"
+        "generator over all Entries object"
         for bins in self.seqBins.values():
             yield from bins.values()
+
+    def entries(self):
+        "generator over all Entriy objects"
+        for bins in self.seqBins.values():
+            yield from bins.entries()
 
     def getSeqIds(self):
         """get set of sequences"""
