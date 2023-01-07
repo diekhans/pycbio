@@ -1,21 +1,16 @@
 # Copyright 2006-2022 Mark Diekhans
 """Miscellaneous type operations"""
-# FIXME: move to other modules or move set in here.
+# FIXME: move to other modules or move set stuff in here.
+from collections import abc
 from pycbio import PycbioException
 
+def isListLike(obj):
+    "is variable a list-lile, but not a string?"
+    return isinstance(obj, abc.Sequence) and (not isinstance(obj, str))
 
-def isListLike(v):
-    "is variable a list or tuple?"
-    return isinstance(v, list) or isinstance(v, tuple)
-
-
-def listInit(size, val):
-    "create a list of length size, with each element containing val"
-    lst = []
-    for i in range(size):
-        lst.append(val)
-    return lst
-
+def isIterable(obj):
+    "is variable a iterable, but not a string"
+    return isinstance(obj, abc.Iterable) and (not isinstance(obj, str))
 
 def listAppend(lst, item):
     """if lst is None, create a new list with item, otherwise append item.
@@ -35,12 +30,6 @@ def listExtend(lst, items):
     else:
         lst.extend(items)
     return lst
-
-
-def isIterable(v):
-    "is variable a list, tuple, set, or hash? str doesn't count"
-    # FIXME: bad name, as strings are iterable
-    return isinstance(v, list) or isinstance(v, tuple) or isinstance(v, set) or isinstance(v, dict)
 
 
 def mkiter(item):
@@ -114,9 +103,3 @@ def attrdict(obj):
         return vars(obj)
     except TypeError:
         return {a: getattr(obj, a) for a in dir(obj)}
-
-
-__all__ = (isListLike.__name__, listInit.__name__, listAppend.__name__,
-           isIterable.__name__, mkiter.__name__, mkset.__name__,
-           noneOrZero.__name__, addUniq.__name__, dictObtain.__name__,
-           annon.__name__, attrdict.__name__)
