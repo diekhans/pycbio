@@ -34,7 +34,7 @@ def ensureFileDir(fname):
     else:
         return "."
 
-def unlinkIfExists(path, *, dir_fd):
+def unlinkIfExists(path, *, dir_fd=None):
     """unlink a file if it exists, ignoring FileNotFoundError, which prevents
     race conditions."""
     try:
@@ -42,7 +42,7 @@ def unlinkIfExists(path, *, dir_fd):
     except FileNotFoundError:
         pass
 
-def rmdirIfExists(path, *, dir_fd):
+def rmdirIfExists(path, *, dir_fd=None):
     """remove a directory if it exists, ignoring FileNotFoundError, which prevents
     race conditions."""
     try:
