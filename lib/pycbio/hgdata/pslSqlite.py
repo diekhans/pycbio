@@ -5,7 +5,7 @@ random access uses.
 """
 from pycbio.hgdata.hgSqlite import HgSqliteTable
 from pycbio.hgdata.psl import Psl
-from pycbio.hgdata.rangeFinder import Binner
+from pycbio.hgdata import rangeFinder
 from pycbio.tsv import TabFileReader
 
 
@@ -73,7 +73,7 @@ class PslSqliteTable(HgSqliteTable):
         for row in rows:
             if isinstance(row, Psl):
                 row = row.toRow()
-            bin = Binner.calcBin(int(row[15]), int(row[16]))
+            bin = rangeFinder.calcBin(int(row[15]), int(row[16]))
             binnedRows.append((bin,) + tuple(row))
         self.loadsWithBin(binnedRows)
 
@@ -81,7 +81,7 @@ class PslSqliteTable(HgSqliteTable):
     @staticmethod
     def _binPslRow(row):
         "add bin; note modifies row"
-        row.insert(0, Binner.calcBin(int(row[15]), int(row[16])))
+        row.insert(0, rangeFinder.calcBin(int(row[15]), int(row[16])))
         return row
 
     def loadPslFile(self, pslFile):
@@ -121,7 +121,7 @@ class PslSqliteTable(HgSqliteTable):
         if tStart is None:
             rangeWhere = "(tName = '{}')".format(tName)
         else:
-            rangeWhere = Binner.getOverlappingSqlExpr("bin", "tName", "tStart", "tEnd", tName, tStart, tEnd)
+            rangeWhere = rangeFinder.getOverlappingSqlExpr("bin", "tName", "tStart", "tEnd", tName, tStart, tEnd)
         sql = "SELECT {{columns}} FROM {{table}} WHERE {}".format(rangeWhere)
         if strand is not None:
             if isinstance(strand, str):

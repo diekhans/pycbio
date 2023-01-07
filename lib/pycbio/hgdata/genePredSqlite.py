@@ -6,7 +6,7 @@ random access uses.
 from pycbio.db import sqliteOps
 from pycbio.hgdata.hgSqlite import HgSqliteTable
 from pycbio.hgdata.genePred import GenePred, genePredFromRow
-from pycbio.hgdata.rangeFinder import Binner
+from pycbio.hgdata import rangeFinder
 from pycbio.tsv import TabFileReader
 
 
@@ -66,7 +66,7 @@ class GenePredSqliteTable(HgSqliteTable):
         for row in rows:
             if isinstance(row, GenePred):
                 row = row.getRow()
-            bin = Binner.calcBin(int(row[3]), int(row[4]))
+            bin = rangeFinder.calcBin(int(row[3]), int(row[4]))
             binnedRows.append((bin,) + tuple(row))
         self.loadsWithBin(binnedRows)
 
@@ -109,7 +109,7 @@ class GenePredSqliteTable(HgSqliteTable):
         if start is None:
             rangeWhere = "(chrom = '{}')".format(chrom)
         else:
-            rangeWhere = Binner.getOverlappingSqlExpr("bin", "chrom", "txStart", "txEnd", chrom, start, end)
+            rangeWhere = rangeFinder.getOverlappingSqlExpr("bin", "chrom", "txStart", "txEnd", chrom, start, end)
         sql = "SELECT {{columns}} FROM {{table}} WHERE {}".format(rangeWhere)
         sqlArgs = []
         if strand is not None:

@@ -7,7 +7,7 @@ from collections import namedtuple
 from pycbio.db import sqliteOps
 from pycbio import PycbioException
 from pycbio.hgdata.hgSqlite import HgSqliteTable, noneIfEmpty
-from pycbio.hgdata.rangeFinder import Binner
+from pycbio.hgdata import rangeFinder
 from pycbio.tsv import TsvReader
 
 # FIXME: binning code redundant with other objects.
@@ -418,7 +418,7 @@ class GencodeGeneSqliteTable(HgSqliteTable):
         """load rows, which can be list-like or GencodeGene objects, adding bin"""
         binnedRows = []
         for row in rows:
-            bin = Binner.calcBin(int(row[1]), int(row[2]))
+            bin = rangeFinder.calcBin(int(row[1]), int(row[2]))
             binnedRows.append((bin,) + tuple(row))
         self.loadsWithBin(binnedRows)
 
@@ -456,7 +456,7 @@ class GencodeGeneSqliteTable(HgSqliteTable):
         if start is None:
             rangeWhere = "(chrom = '{}')".format(chrom)
         else:
-            rangeWhere = Binner.getOverlappingSqlExpr("bin", "chrom", "txStart", "txEnd", chrom, start, end)
+            rangeWhere = rangeFinder.getOverlappingSqlExpr("bin", "chrom", "txStart", "txEnd", chrom, start, end)
             sql = "SELECT {{columns}} FROM {{table}} WHERE {}".format(rangeWhere)
             sqlArgs = []
         if strand is not None:

@@ -2,7 +2,7 @@
 Read PSL from mysql queries.
 """
 from pycbio.hgdata.psl import Psl
-from pycbio.hgdata.rangeFinder import Binner
+from pycbio.hgdata import rangeFinder
 from pycbio.db import mysqlOps
 
 
@@ -34,5 +34,5 @@ class PslMySqlReader:
         if haveSeqs:
             query += "," + ",".join(PslMySqlReader.pslSeqColumns)
         query += " from " + table + " where " \
-            + Binner.getOverlappingSqlExpr("bin", "tName", "tStart", "tEnd", tName, tStart, tEnd)
+            + rangeFinder.getOverlappingSqlExpr("bin", "tName", "tStart", "tEnd", tName, tStart, tEnd)
         return PslMySqlReader(conn, query)
