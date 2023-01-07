@@ -2,8 +2,9 @@
 """Miscellaneous file operations"""
 
 import os
+import os.path as osp
+from pathlib import Path
 import sys
-import errno
 import re
 import socket
 import tempfile
@@ -14,49 +15,60 @@ from pycbio import PycbioException
 
 # FIXME: normalize file line read routines to all take fh or name, remove redundant code.
 
+def isFilePath(fspec):
+    return isinstance(fspec, str) or isinstance(fspec, Path)
 
 def ensureDir(dir):
-    """Ensure that a directory exists, creating it (and parents) if needed."""
-    # catching exception rather than checking for existence prevents race condition
-    try:
-        os.makedirs(dir)
-    except OSError as ex:
-        if ex.errno != errno.EEXIST:
-            raise ex
+    """Ensure that a directory exists, creating it (and parents) if needed, avoiding
+    race conditions"""
+    os.makedirs(dir, exist_ok=True)
 
 
 def ensureFileDir(fname):
     """Ensure that the directory for a file exists, creating it (and parents) if needed.
     Returns the directory path"""
-    dir = os.path.dirname(fname)
+    dir = osp.dirname(fname)
     if len(dir) > 0:
         ensureDir(dir)
         return dir
     else:
         return "."
 
+def unlinkIfExists(path, *, dir_fd):
+    """unlink a file if it exists, ignoring FileNotFoundError, which prevents
+    race conditions."""
+    try:
+        os.unlink(path, dir_fd=dir_fd)
+    except FileNotFoundError:
+        pass
 
-def rmFiles(*fileArgs):
-    """Remove one or more files if they exist. Each file argument can be a
-    single file name of a list of file names"""
-    for files in fileArgs:
-        if isinstance(files, str):
-            files = [files]
-        for f in files:
-            if os.path.exists(f):
-                os.unlink(f)
+def rmdirIfExists(path, *, dir_fd):
+    """remove a directory if it exists, ignoring FileNotFoundError, which prevents
+    race conditions."""
+    try:
+        os.unlink(path, dir_fd=dir_fd)
+    except FileNotFoundError:
+        pass
+
+def rmFiles(*files):
+    """Remove one or more files if they exist File paths of None are skipped.
+    Missing files don't generate an error"""
+    for f in files:
+        if f is not None:
+            unlinkIfExists(f)
 
 
 def rmTree(root):
-    "remove a file hierarchy, root can be a file or a directory"
-    if os.path.isdir(root):
+    """remove a file hierarchy, root can be a file or a directory, missing files don't
+    generate errors"""
+    if osp.isdir(root):
         for dir, subdirs, files in os.walk(root, topdown=False):
-            for f in files:
-                os.unlink(dir + "/" + f)
-            os.rmdir(dir)
+            with os.open(dir, os.O_DIRECTORY) as dir_fd:
+                for f in files:
+                    unlinkIfExists(f, dir_fd=dir_fd)
+            rmdirIfExists(dir)
     else:
-        if os.path.lexists(root):
-            os.unlink(root)
+        unlinkIfExists(root)
 
 
 def isCompressed(path):
@@ -83,7 +95,7 @@ def compressCmd(path):
 def compressBaseName(path):
     """if a file is compressed, return the path without the compressed extension"""
     if isCompressed(path):
-        return os.path.splitext(path)[0]
+        return osp.splitext(path)[0]
     else:
         return path
 
@@ -302,7 +314,7 @@ def findTmpDir(tmpDir=None):
         return tmpDir
     # UCSC special checks
     for tmpDir in ("/data/tmp", "/scratch/tmp", "/var/tmp", "/tmp"):
-        if os.path.exists(tmpDir):
+        if osp.exists(tmpDir):
             return tmpDir
     raise PycbioException("can't find a tmp directory")
 
@@ -336,14 +348,14 @@ def atomicTmpFile(finalPath):
     nothing.  The output directory will be created if it doesn't exist.
     Thread-safe."""
     # note: this can't use tmpFileGet, since file should not be created or be private
-    finalDir = os.path.dirname(os.path.normpath(finalPath))  # maybe empty
+    finalDir = osp.dirname(osp.normpath(finalPath))  # maybe empty
     if finalDir == '/dev':
         return finalPath
-    finalBasename = os.path.basename(finalPath)
-    finalExt = os.path.splitext(finalPath)[1]
+    finalBasename = osp.basename(finalPath)
+    finalExt = osp.splitext(finalPath)[1]
     tmpBasename = "{}.{}.{}.tmp{}".format(finalBasename, socket.gethostname(), os.getpid(), finalExt)
-    tmpPath = os.path.join(finalDir, tmpBasename)
-    if os.path.exists(tmpPath):
+    tmpPath = osp.join(finalDir, tmpBasename)
+    if osp.exists(tmpPath):
         os.unlink(tmpPath)
     elif finalDir != "":
         ensureDir(finalDir)
@@ -351,7 +363,7 @@ def atomicTmpFile(finalPath):
 
 def atomicInstall(tmpPath, finalPath):
     "atomic install of tmpPath as finalPath"
-    if os.path.dirname(os.path.normpath(finalPath)) != '/dev':
+    if osp.dirname(osp.normpath(finalPath)) != '/dev':
         os.rename(tmpPath, finalPath)
 
 
@@ -378,7 +390,7 @@ def AtomicFileCreate(finalPath, keep=False):
 def uncompressedBase(path):
     "return the file path, removing a compression extension if it exists"
     if path.endswith(".gz") or path.endswith(".bz2") or path.endswith(".Z"):
-        return os.path.splitext(path)[0]
+        return osp.splitext(path)[0]
     else:
         return path
 
