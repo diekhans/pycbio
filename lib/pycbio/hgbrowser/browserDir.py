@@ -23,7 +23,6 @@ TABLE, TR, TH, TD {
 }
 .tableFixHead {
     overflow-y: auto;
-    height: 100px;
 }
 .tableFixHead THEAD TH {
     position: sticky;
