@@ -3,7 +3,7 @@ import re
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin, strArraySplit, strArrayJoin
 from pycbio.tsv.tabFile import TabFileReader
 from pycbio.hgdata import dnaOps
-from pycbio.hgdata.cigar import ExonerateCigar
+from pycbio.hgdata.cigar import Cigar
 from collections import defaultdict
 from deprecation import deprecated
 
@@ -557,52 +557,44 @@ class PslTbl(list):
         return list(self.genByTName(tName))
 
 
-def pslFromExonerateCigar(qName, qSize, qStart, qEnd, qStrand, tName, tSize, tStart, tEnd, tStrand, cigarStr):
-    "create a PSL from an Ensembl-style cigar formatted alignment"
-    def processMatch(psl, size, qNext, tNext):
-        psl.addBlock(PslBlock(qNext, tNext, size))
-        psl.match += size
-        return (qNext + size, tNext + size)
+def _processMatch(psl, size, qNext, tNext):
+    psl.addBlock(PslBlock(qNext, tNext, size))
+    psl.match += size
 
-    def processInsert(psl, size, tNext):
-        psl.tNumInsert += 1
-        psl.tBaseInsert += size
-        return tNext + size
+def _processTInsert(psl, size, tNext):
+    psl.tNumInsert += 1
+    psl.tBaseInsert += size
 
-    def processDelete(psl, size, qNext):
-        psl.qNumInsert += 1
-        psl.qBaseInsert += size
-        return qNext + size
+def _processQInsert(psl, size, qNext):
+    psl.qNumInsert += 1
+    psl.qBaseInsert += size
 
-    cigar = ExonerateCigar(cigarStr)
-    psl = Psl.create(qName=qName, qSize=qSize, qStart=qStart, qEnd=qEnd,
-                     tName=tName, tSize=tSize, tStart=tStart, tEnd=tEnd,
-                     strand=qStrand + tStrand)
-
-    qNext = qStart
-    qBlkEnd = qEnd
-    if qStrand == '-':
-        qNext, qBlkEnd = reverseCoords(qNext, qBlkEnd, qSize)
-    tNext = tStart
-    tBlkEnd = tEnd
-    if tStrand == '-':
-        tNext, tBlkEnd = reverseCoords(tNext, tBlkEnd, tSize)
-
+def _addCigarBlocks(cigar, psl, qNext, tNext):
     for op in cigar:
         if op.aligned:
-            qNext, tNext = processMatch(psl, op.count, qNext, tNext)
+            _processMatch(psl, op.count, qNext, tNext)
         elif op.tinsert:
-            tNext = processInsert(psl, op.count, tNext)
-        elif op.tdelete:
-            qNext = processDelete(psl, op.count, qNext)
-        else:
-            raise Exception("invalid CIGAR op {} in {}".format(op, cigar))
+            _processTInsert(psl, op.count, tNext)
+        elif op.qinsert:
+            _processQInsert(psl, op.count, qNext)
+        if op.consumesQuery:
+            qNext += op.count
+        if op.consumesTarget:
+            tNext += op.count
+    return qNext
 
-    if qNext != qBlkEnd:
-        raise Exception("CIGAR length does not match aligned query range: {} {}".format(qName, cigar))
-    if tNext != tBlkEnd:
-        raise Exception("CIGAR length does not match aligned target range: {} {}".format(qName, cigar))
-    if psl.tStrand == '-':
-        psl = psl.reverseComplement()
-    psl.strand = psl.strand[0]   # BLAT convention
+def pslFromCigar(qName, qStrand, tName, tSize, tPos, cigarStr):
+    "create a PSL from an cigar string"
+    cigar = Cigar(cigarStr)
+    psl = Psl.create(qName=qName, qSize=None, qStart=None, qEnd=None,
+                     tName=tName, tSize=tSize, tStart=None, tEnd=None,
+                     strand=qStrand)
+
+    psl.qSize = _addCigarBlocks(cigar, psl, 0, tPos)
+
+    # use ends out of blocks to deal with soft-clipping
+    psl.qStart, psl.qEnd = psl.blocks[0].qStart, psl.blocks[-1].qEnd
+    if qStrand == '-':
+        psl.qStart, psl.qEnd = reverseCoords(psl.qStart, psl.qEnd, psl.qSize)
+    psl.tStart, psl.tEnd = psl.blocks[0].tStart, psl.blocks[-1].tEnd
     return psl

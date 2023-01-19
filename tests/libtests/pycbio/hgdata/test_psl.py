@@ -4,7 +4,8 @@ import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.hgdata.psl import Psl, PslTbl, pslFromExonerateCigar
+from pycbio.sys import fileOps
+from pycbio.hgdata.psl import Psl, PslTbl, pslFromCigar
 
 def splitToPsl(ps):
     return Psl.fromRow(ps.split("\t"))
@@ -94,39 +95,41 @@ class OpsTests(TestCaseBase):
                     splitToPsl(self.psPos)])
         self.assertEqual(1, len(psls))
 
-class ExonerateCigarTests(TestCaseBase):
-    "Exonerate cigar to PSL tests"
+def samParseHeader(row, chromSizes):
+    # e@SQ	SN:chr1	LN:248956422
+    if row[0] == "@SQ":
+        chromSizes[row[1][3:]] = int(row[2][3:])
 
-    @staticmethod
-    def _cigarInfoToArgs(cigarInfo):
-        return [int(c) if c.isdigit() else c for c in cigarInfo.split()]
+def samParseData(row, chromSizes):
+    # qName, qStrand, tName, tSize, tPos, cigarStr
+    # 0:QNAME, 1:FLAG 2:RNAME, 3:POS, 5:CIGAR
+    return (row[0],  '-' if (int(row[1]) & 0x10) else '+',
+            row[2], chromSizes[row[2]], int(row[3]) - 1, row[5])
 
-    def _testCnv(self, cigarInfo, psExpect):
-        gotPsl = pslFromExonerateCigar(*self._cigarInfoToArgs(cigarInfo))
-        self.assertEqual(str(gotPsl), psExpect)
+def samReader(bamFile):
+    "return input to pslFromCigar"
+    # doesn't depend on pysam, but just a quick hack
+    chromSizes = {}
+    for row in fileOps.iterRows(bamFile):
+        if row[0][0] == '@':
+            samParseHeader(row, chromSizes)
+        else:
+            yield samParseData(row, chromSizes)
 
-    def testPosSimple(self):
-        self._testCnv("AF275801.1 511 0 481 + chrM 16569 5030 5511 + 481M",
-                      "481	0	0	0	0	0	0	0	+	AF275801.1	511	0	481	chrM	16569	5030	5511	1	481,	0,	5030,")
+class MiniMapCigarTests(TestCaseBase):
+    "Minimap cigar to PSL tests"
 
-    def testPosComplex(self):
-        self._testCnv("Y17179.1 264 0 264 + chrM 16569 8661 8929 + 20MD83MI68MI6M2I5MI81M",
-                      "263	0	0	0	1	1	4	5	+	Y17179.1	264	0	264	chrM	16569	8661	8929	6	20,83,68,6,5,81,	0,21,104,172,178,183,	8661,8681,8765,8834,8842,8848,")
-
-    def testNegSimple(self):
-        self._testCnv("U85268.1 302 0 302 - chrM 16569 6887 7189 + 302M",
-                      "302	0	0	0	0	0	0	0	-	U85268.1	302	0	302	chrM	16569	6887	7189	1	302,	0,	6887,")
-
-    def testNegComplex(self):
-        self._testCnv("BX648054.1 1736 0 1719 - chrM 16569 5900 12135 - 1196M4516I523M",
-                      "1719	0	0	0	0	0	1	4516	+	BX648054.1	1736	0	1719	chrM	16569	5900	12135	2	523,1196,	0,523,	5900,10939,")
-
+    def testOntSam(self):
+        with open(self.getOutputFile(".psl"), 'w') as fh:
+            for args in samReader(self.getInputFile("ont-rna.sam")):
+                pslFromCigar(*args).write(fh)
+        self.diffExpected(".psl")
 
 def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(ReadTests))
     ts.addTest(unittest.makeSuite(OpsTests))
-    ts.addTest(unittest.makeSuite(ExonerateCigarTests))
+    ts.addTest(unittest.makeSuite(MiniMapCigarTests))
     return ts
 
 

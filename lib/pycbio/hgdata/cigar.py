@@ -4,6 +4,10 @@ Cigar parsers and operations.
 import re
 from collections import namedtuple
 
+# See
+# SAM manual
+# https://github.com/NBISweden/GAAS/blob/master/annotation/knowledge/cigar.md
+
 
 # |----+-----------------------------------+---------+---------|
 # | OP | Description                       | consume | consume |
@@ -19,8 +23,6 @@ from collections import namedtuple
 # | =  | sequence match                    | yes     | yes     |
 # | X  | sequence mismatch                 | yes     | yes     |
 # |----+-----------------------------------+---------+---------|
-
-# Exonerate has only M,I D
 
 consumeQueryOps = frozenset(['M', 'I', 'S', '=', 'X'])
 consumeTargetOps = frozenset(['M', 'D', 'N', '=', 'X'])
@@ -44,31 +46,31 @@ class CigarRun(namedtuple("CigarRun", ("code", "count"))):
     @property
     def tdelete(self):
         "is this a target deletion block?"
-        return self.code in ('I', 'S')
+        return self.code == 'I'
 
     @property
     def qinsert(self):
         "is this a query insert block?"
-        return self.tdelete
+        return self.code == 'I'
 
     @property
     def qdelete(self):
         "is this a query deletion block?"
-        return self.tinsert
+        return self.code in ('D', 'N')
 
     @property
     def intron(self):
-        "is this an intron? (not in Exonerate)"
+        "is this an intron? (not in Ensembl)"
         return self.code == 'N'
 
     @property
     def match(self):
-        "is this a match? (not in Exonerate, maybe not record with others)"
+        """is this a match? (not in Ensembl, maybe others, check aligned as well)"""
         return self.code == '='
 
     @property
     def mismatch(self):
-        "is this a mismatch? (not in Exonerate, maybe not record with others)"
+        """is this a mismatch?  (not in Ensembl, maybe others, check aligned as well)"""
         return self.code == 'X'
 
     @property
@@ -82,12 +84,12 @@ class CigarRun(namedtuple("CigarRun", ("code", "count"))):
         return self.code == 'H'
 
     @property
-    def consumeQuery(self):
-        self.code in consumeQueryOps
+    def consumesQuery(self):
+        return self.code in consumeQueryOps
 
     @property
-    def consumeTarget(self):
-        self.code in consumeTargetOps
+    def consumesTarget(self):
+        return self.code in consumeTargetOps
 
 def _parseOp(cigarStr, opParts):
     try:
