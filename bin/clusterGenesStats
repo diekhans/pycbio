@@ -163,12 +163,14 @@ class ClusterStats:
         fh.close()
 
 
-opts = parseArgs()
+def clusterGenesStats(opts):
+    lociCats = readLociCats(opts.lociCatsFile) if opts.lociCatsFile is not None else None
+    clStats = ClusterStats(opts.clusterFile, lociCats, opts.omitZero)
+    clStats.saveVenn(opts.statsFile, opts.total)
+    if opts.totalsOut is not None:
+        clStats.saveSetTotals(opts.totalsOut)
+    if opts.geneSubsetOut:
+        clStats.saveGeneSubsets(opts.geneSubsetOut)
 
-lociCats = readLociCats(opts.lociCatsFile) if opts.lociCatsFile is not None else None
-clStats = ClusterStats(opts.clusterFile, lociCats, opts.omitZero)
-clStats.saveVenn(opts.statsFile, opts.total)
-if opts.totalsOut is not None:
-    clStats.saveSetTotals(opts.totalsOut)
-if opts.geneSubsetOut:
-    clStats.saveGeneSubsets(opts.geneSubsetOut)
+
+clusterGenesStats(parseArgs())

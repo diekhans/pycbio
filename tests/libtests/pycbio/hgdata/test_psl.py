@@ -103,7 +103,7 @@ def samParseHeader(row, chromSizes):
 def samParseData(row, chromSizes):
     # qName, qStrand, tName, tSize, tPos, cigarStr
     # 0:QNAME, 1:FLAG 2:RNAME, 3:POS, 5:CIGAR
-    return (row[0],  '-' if (int(row[1]) & 0x10) else '+',
+    return (row[0], '-' if (int(row[1]) & 0x10) else '+',
             row[2], chromSizes[row[2]], int(row[3]) - 1, row[5])
 
 def samReader(bamFile):
