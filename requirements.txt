@@ -1,9 +1,7 @@
-pipettor>=0.5.0
+pipettor>=0.8.0
 numpy
 biopython
 mysqlclient
 apsw
 deprecation
-flake8
 pyBigWig
-pytest
