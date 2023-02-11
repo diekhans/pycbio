@@ -6,7 +6,8 @@
 from collections import defaultdict
 from functools import partial
 
-# FIXME: remove dup code with a mixin?
+def _attributeError(name):
+    raise AttributeError("No such attribute: " + name)
 
 class ObjDict(dict):
     """Dict object where keys are field names.
@@ -19,19 +20,17 @@ class ObjDict(dict):
     __slots__ = ()
 
     def __getattr__(self, name):
-        if name in self:
-            return self[name]
-        else:
-            raise AttributeError("No such attribute: " + name)
+        if not name in self:
+            _attributeError(name)
+        return self[name]
 
     def __setattr__(self, name, value):
         self[name] = value
 
     def __delattr__(self, name):
-        if name in self:
-            del self[name]
-        else:
-            raise AttributeError("No such attribute: " + name)
+        if not name in self:
+            _attributeError(name)
+        del self[name]
 
 
 class DefaultObjDict(defaultdict):
@@ -51,10 +50,9 @@ class DefaultObjDict(defaultdict):
         self[name] = value
 
     def __delattr__(self, name):
-        if name in self:
-            del self[name]
-        else:
-            raise AttributeError("No such attribute: " + name)
+        if not name in self:
+            _attributeError(name)
+        del self[name]
 
     @staticmethod
     def jsonHook(default_factory=None):
