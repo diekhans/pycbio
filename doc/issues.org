@@ -2,6 +2,8 @@
 
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
+* create cigar iterator to track query and reference coordinates
+
 * symEnum is invasive to with Enum, can it be cleaner, like other derived enum class?
 
 * collect plot functions

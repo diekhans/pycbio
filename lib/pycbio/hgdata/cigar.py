@@ -107,7 +107,7 @@ def _parseCigar(cigarStr):
     # remove white space first, then convert to (count, op).  Re split will
     # result in triples of ("", count, op), where count might be empty.
     # Also as a trailing space.
-    parts = re.split("([0-9]*)([A-Za-z])", re.sub("\\s+", "", cigarStr))
+    parts = re.split("([0-9]*)([A-Za-z=])", re.sub("\\s+", "", cigarStr))
     if ((len(parts) - 1) % 3) != 0:
         raise TypeError("Invalid cigar string, doesn't parse into a valid cigar: {}".format(cigarStr))
     return (_parseOp(cigarStr, parts[i:i + 3])
