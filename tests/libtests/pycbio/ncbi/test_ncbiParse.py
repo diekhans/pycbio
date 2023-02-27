@@ -4,9 +4,8 @@ import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 
-from pycbio import PycbioException
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.ncbi.assembly import AssemblyReport
+from pycbio.ncbi.assembly import AssemblyReport, AssemblyReportNotFound
 from pycbio.ncbi.agp import Agp
 
 
@@ -52,7 +51,7 @@ class NcbiParseTests(TestCaseBase):
                           ('submitter', 'Genome Reference Consortium'),
                           ('taxid', '9606')])
         self.assertEqual(asmReport.assemblyName, 'GRCh38.p2')
-        with self.assertRaisesRegex(PycbioException, "^sequence 'fred' not found in NCBI AssemblyReport for 'GRCh38.p2'$"):
+        with self.assertRaisesRegex(AssemblyReportNotFound, "^sequence 'fred' not found in NCBI AssemblyReport for 'GRCh38.p2'$"):
             asmReport.getByName("fred")
 
     def testAssemblyReportNewMeta(self):
@@ -77,7 +76,7 @@ class NcbiParseTests(TestCaseBase):
                           ('submitter', 'Genome Reference Consortium'),
                           ('synonyms', 'hg38'),
                           ('taxid', '9606')])
-        with self.assertRaisesRegex(PycbioException, "^sequence 'fred' not found in NCBI AssemblyReport for 'GRCh38.p13'$"):
+        with self.assertRaisesRegex(AssemblyReportNotFound, "^sequence 'fred' not found in NCBI AssemblyReport for 'GRCh38.p13'$"):
             asmReport.getByName("fred")
 
     def testAgpGrch38(self):

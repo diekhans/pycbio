@@ -15,6 +15,14 @@ def _noneIfNa(name):
 def _naIfNone(name):
     return "na" if name is None else name
 
+class AssemblyReportException(PycbioException):
+    "error associate with assembly report"
+    pass
+
+class AssemblyReportNotFound(AssemblyReportException):
+    "Identifier not found in assembly report"
+    pass
+
 class Record(namedtuple("Record",
                         ("sequenceName", "sequenceRole", "assignedMolecule", "locationType", "genBankAccn",
                          "relationship", "refSeqAccn", "assemblyUnit", "sequenceLength", "ucscStyleName"))):
@@ -43,7 +51,7 @@ class Record(namedtuple("Record",
                           _naIfNone(self.genBankAccn), self.relationship, _naIfNone(self.refSeqAccn), self.assemblyUnit, str(self.sequenceLength), _naIfNone(self.ucscStyleName)])
 def _parseRecord(row):
     if len(row) != 10:
-        raise PycbioException("expected 10 columns in assembly report record, found: " + str(len(row)))
+        raise AssemblyReportException("expected 10 columns in assembly report record, found: " + str(len(row)))
     return Record(sequenceName=row[0],
                   sequenceRole=row[1],
                   assignedMolecule=row[2],
@@ -62,7 +70,7 @@ class MetaData(ObjDict):
 def _parseMetaDataLine(metaData, line):
     colon = line.find(":")
     if colon < 0:
-        raise PycbioException("invalid metaData line: " + line)
+        raise AssemblyReportException("invalid metaData line: " + line)
     name = line[2:colon].strip().lower().replace(' ', '_')
     value = line[colon + 1:].strip()
     metaData[name] = value
@@ -88,7 +96,7 @@ class AssemblyReport:
         try:
             self._parse(asmReport)
         except Exception as ex:
-            raise PycbioException(f"parse of NCBI assembly report '{asmReport}' failed") from ex
+            raise AssemblyReportException(f"parse of NCBI assembly report '{asmReport}' failed") from ex
 
     def _parse(self, asmReport):
         with fileOps.opengz(asmReport) as fh:
@@ -110,7 +118,7 @@ class AssemblyReport:
         for line in fh:
             if line[0:-1] == self.expectedHeader:
                 return
-        raise PycbioException("expected assembly report header not found in " + fh.name)
+        raise AssemblyReportException("expected assembly report header not found in " + fh.name)
 
     def _parseRecord(self, line):
         rec = _parseRecord(line.split('\t'))
@@ -132,7 +140,7 @@ class AssemblyReport:
         return self.metaData.assembly_name
 
     def _notFoundError(self, desc, ident):
-        raise PycbioException(f"{desc} '{ident}' not found in NCBI AssemblyReport for '{self.assemblyName}'")
+        raise AssemblyReportNotFound(f"{desc} '{ident}' not found in NCBI AssemblyReport for '{self.assemblyName}'")
 
     def getBySequenceName(self, seqName):
         try:
