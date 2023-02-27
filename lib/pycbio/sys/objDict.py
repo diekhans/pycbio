@@ -20,7 +20,7 @@ class ObjDict(dict):
     __slots__ = ()
 
     def __getattr__(self, name):
-        if not name in self:
+        if name not in self:
             _attributeError(name)
         return self[name]
 
@@ -28,7 +28,7 @@ class ObjDict(dict):
         self[name] = value
 
     def __delattr__(self, name):
-        if not name in self:
+        if name not in self:
             _attributeError(name)
         del self[name]
 
@@ -50,7 +50,7 @@ class DefaultObjDict(defaultdict):
         self[name] = value
 
     def __delattr__(self, name):
-        if not name in self:
+        if name not in self:
             _attributeError(name)
         del self[name]
 
