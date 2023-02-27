@@ -52,7 +52,7 @@ class NcbiParseTests(TestCaseBase):
                           ('submitter', 'Genome Reference Consortium'),
                           ('taxid', '9606')])
         self.assertEqual(asmReport.assemblyName, 'GRCh38.p2')
-        with self.assertRaisesRegex(PycbioException, "^unknown 'GRCh38\\.p2' sequence: 'fred'$"):
+        with self.assertRaisesRegex(PycbioException, "^sequence 'fred' not found in NCBI AssemblyReport for 'GRCh38.p2'$"):
             asmReport.getByName("fred")
 
     def testAssemblyReportNewMeta(self):
@@ -77,7 +77,7 @@ class NcbiParseTests(TestCaseBase):
                           ('submitter', 'Genome Reference Consortium'),
                           ('synonyms', 'hg38'),
                           ('taxid', '9606')])
-        with self.assertRaisesRegex(PycbioException, "^unknown 'GRCh38\\.p13' sequence: 'fred'$"):
+        with self.assertRaisesRegex(PycbioException, "^sequence 'fred' not found in NCBI AssemblyReport for 'GRCh38.p13'$"):
             asmReport.getByName("fred")
 
     def testAgpGrch38(self):

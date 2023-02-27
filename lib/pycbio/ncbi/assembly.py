@@ -131,29 +131,32 @@ class AssemblyReport:
     def assemblyName(self):
         return self.metaData.assembly_name
 
+    def _notFoundError(self, desc, ident):
+        raise PycbioException(f"{desc} '{ident}' not found in NCBI AssemblyReport for '{self.assemblyName}'")
+
     def getBySequenceName(self, seqName):
         try:
             return self.bySequenceName[seqName]
         except KeyError:
-            raise PycbioException(f"unknown '{self.assemblyName}' sequence name: '{seqName}'")
+            self._notFoundError("sequence", seqName)
 
     def getByGenBankAccn(self, genBankAccn):
         try:
             return self.byGenBankAccn[genBankAccn]
         except KeyError:
-            raise PycbioException(f"unknown '{self.assemblyName}'  a GenBank accession: '{genBankAccn}'")
+            self._notFoundError("GenBank accession", genBankAccn)
 
     def getByRefSeqAccn(self, refSeqAccn):
         try:
             return self.byRefSeqAccn[refSeqAccn]
         except KeyError:
-            raise PycbioException(f"unknown '{self.assemblyName}' RefSeq accession: '{refSeqAccn}'")
+            self._notFoundError("RefSeq accession", refSeqAccn)
 
     def getByUcscStyleName(self, ucscStyleName):
         try:
             return self.byUcscStyleName[ucscStyleName]
         except KeyError:
-            raise PycbioException(f"unknown '{self.assemblyName}' UCSC-style name: '{ucscStyleName}'")
+            self._notFoundError("UCSC-style name", ucscStyleName)
 
     def getByName(self, name):
         """try all of the various sequence names to find a record"""
@@ -165,7 +168,7 @@ class AssemblyReport:
         if rec is None:
             rec = self.byUcscStyleName.get(name)
         if rec is None:
-            raise PycbioException(f"unknown '{self.assemblyName}' sequence: '{name}'")
+            self._notFoundError("sequence", name)
         return rec
 
     def ucscNameToSeqName(self, ucscName):
