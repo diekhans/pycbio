@@ -9,6 +9,14 @@
 * collect plot functions
 ~/compbio/kznf/projs/gene-homology/kznf-gene-homology/builds/2022-09/analysis/bin/geneAnnotPlot
 
+* make TsvReader a context manager
+
+* add TsvWriter
+
+* clean up TsvRow
+
+* add functions to build bigBed stuff
+
 * RangeFinder.addCoords a bit klunky
 
 * rangefinder:
