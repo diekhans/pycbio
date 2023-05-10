@@ -4,12 +4,18 @@ import colorsys
 import math
 from collections import namedtuple
 
-# FIXME: add optional alpha.
 # FIXME: do we really need to store both RGB and HSV?, maybe cache HSV converson
 
 
+def _int8ToReal(v):
+    assert 0 <= v <= 255
+    return v / 255.0
+
+def _realToInt8(v):
+    return int(round(v * 255))
+
 class Color(namedtuple("Color", ("red", "green", "blue",
-                                 "hue", "saturation", "value"))):
+                                 "hue", "saturation", "value", "alpha"))):
     """Immutable color object with conversion to/from different formats.
     Don't construct directly use, factory (from*) static methods.
 
@@ -19,48 +25,53 @@ class Color(namedtuple("Color", ("red", "green", "blue",
     :ivar hue: hue component, in the range 0.0..1.0
     :ivar saturation: saturation component in the range 0.0..1.0
     :ivar value: value component, in the range 0.0..1.0
+    :ivar alpha: it not None, alpha value in the range 0.0..1.0
     """
     __slots__ = ()
 
     def __str__(self):
-        return str((self.red, self.green, self.blue))
+        if self.alpha is None:
+            return str((self.red, self.green, self.blue))
+        else:
+            return str((self.red, self.green, self.blue, self.alpha))
 
-    @staticmethod
-    def _int8ToReal(v):
-        assert 0 <= v <= 255
-        return v / 255.0
-
-    @staticmethod
-    def _realToInt8(v):
-        return int(round(v * 255))
+    @property
+    def alphaDflt(self):
+        "alpha, defaulted to 1.0 if None"
+        return self.alpha if self.alpha is not None else 1.0
 
     @property
     def red8(self):
         "red channel as an 8-bit int"
-        return self._realToInt8(self.red)
+        return _realToInt8(self.red)
 
     @property
     def green8(self):
         "green channel as an 8-bit int"
-        return self._realToInt8(self.green)
+        return _realToInt8(self.green)
 
     @property
     def blue8(self):
         "get blue channel as an 8-bit int"
-        return self._realToInt8(self.blue)
+        return _realToInt8(self.blue)
 
     @property
-    def huei(self):
+    def alpha8(self):
+        "get alpha as an 8-bit int, or None if no alpha"
+        return _realToInt8(self.alpha) if self.alpha is not None else None
+
+    @property
+    def hue8(self):
         "hue component as an integer angle"
         return int(round(360 * self.hue))
 
     @property
-    def saturationi(self):
+    def saturation8(self):
         "saturation component as an integer percent"
         return int(round(100 * self.saturation))
 
     @property
-    def valuei(self):
+    def value8(self):
         "value component as an integer percent"
         return int(round(100 * self.value))
 
@@ -70,14 +81,24 @@ class Color(namedtuple("Color", ("red", "green", "blue",
         return (self.red, self.green, self.blue)
 
     @property
+    def rgba(self):
+        "RGBA as tuple of real numbers"
+        return (self.red, self.green, self.blue, self.alphaDflt)
+
+    @property
     def rgb8(self):
         "RGB as tuple of 8-bit ints"
-        return (self._realToInt8(self.red), self._realToInt8(self.green), self._realToInt8(self.blue))
+        return (_realToInt8(self.red), _realToInt8(self.green), _realToInt8(self.blue))
+
+    @property
+    def rgba8(self):
+        "RGBA as tuple of 8-bit ints"
+        return (_realToInt8(self.red), _realToInt8(self.green), _realToInt8(self.blue), _realToInt8(self.alphaDflt))
 
     @property
     def packRgb8(self):
         "return packed 8-bit int RGB values (e.g.#008000)"
-        return (self._realToInt8(self.red) << 16) | (self._realToInt8(self.green) << 8) | self._realToInt8(self.blue)
+        return (_realToInt8(self.red) << 16) | (_realToInt8(self.green) << 8) | _realToInt8(self.blue)
 
     @property
     def hsv(self):
@@ -85,9 +106,19 @@ class Color(namedtuple("Color", ("red", "green", "blue",
         return (self.hue, self.saturation, self.value)
 
     @property
-    def hsvi(self):
-        "HSV as tuple of integers"
-        return (self.huei, self.saturationi, self.valuei)
+    def hsva(self):
+        "HSVA as tuple of real numbers"
+        return (self.hue, self.saturation, self.value, self.alphaDflt)
+
+    @property
+    def hsv8(self):
+        "HSV as tuple of 8-bit integers"
+        return (self.hue8, self.saturation8, self.value8)
+
+    @property
+    def hsva8(self):
+        "HSVA as tuple of 8-bit integers"
+        return (self.hue8, self.saturation8, self.value8, self.alpha8)
 
     def toHtmlColor(self):
         "as an html color"
@@ -97,67 +128,80 @@ class Color(namedtuple("Color", ("red", "green", "blue",
         "convert to a string of real RGB values, separated by sep"
         return "%0.*f%s%0.*f%s%0.*f" % (pos, self.red, sep, pos, self.green, sep, pos, self.blue)
 
+    def toRgbaStr(self, sep=",", pos=4):
+        "convert to a string of real RGBA values, separated by sep"
+        return "%s%s%0.*f" % (self.toRgbaStr(sep, pos), sep, pos, self.alphaDflt)
+
     def toRgb8Str(self, sep=","):
         "convert to a string of 8-bit RGB values, separated by sep"
-        return "{}{}{}{}{}".format(self._realToInt8(self.red), sep, self._realToInt8(self.green), sep, self._realToInt8(self.blue))
+        return "{}{}{}{}{}".format(_realToInt8(self.red), sep, _realToInt8(self.green), sep, _realToInt8(self.blue))
+
+    def toRgba8Str(self, sep=","):
+        "convert to a string of 8-bit RGBA values, separated by sep"
+        return "{}{}{}".format(self.toRgb8Str(sep), sep, _realToInt8(self.alphaDflt))
 
     def toHsvStr(self, sep=",", pos=4):
         "convert to a string of real HSV values, separated by sep"
         return "%0.*f%s%0.*f%s%0.*f" % (pos, self.hue, sep, pos, self.saturation, sep, pos, self.value)
 
-    def toHsviStr(self, sep=","):
+    def toHsv8Str(self, sep=","):
         "convert to a string of integer HSV values, separated by sep"
-        return "{}{}{}{}{}".format(self.huei, sep, self.saturationi, sep, self.valuei)
+        return "{}{}{}{}{}".format(self.hue8, sep, self.saturation8, sep, self.value8)
 
     def setRed(self, red):
         "Create a new Color object with red set to the specified real number"
-        return self.fromRgb(red, self.green, self.blue)
+        return self.fromRgb(red, self.green, self.blue, self.alpha)
 
     def setGreen(self, green):
         "Create a new Color object with green set to the specified real number"
-        return self.fromRgb(self.red, green, self.blue)
+        return self.fromRgb(self.red, green, self.blue, self.alpha)
 
     def setBlue(self, blue):
         "Create a new Color object with blue set to the new real number"
-        return self.fromRgb(self.red, self.green, blue)
+        return self.fromRgb(self.red, self.green, blue, self.alpha)
+
+    def setAlpha(self, alpha):
+        "Create a new Color object with blue set to the new real number"
+        return self.fromRgb(self.red, self.green, self.blue, alpha)
 
     def setHue(self, hue):
         "Create a new Color object with hue set to the specified real number"
-        return self.fromHsv(hue, self.saturation, self.value)
+        return self.fromHsv(hue, self.saturation, self.value, self.alpha)
 
     def setSaturation(self, sat):
         "Create a new Color object with saturation set to the specified real number"
-        return self.fromHsv(self.hue, sat, self.value)
+        return self.fromHsv(self.hue, sat, self.value, self.alpha)
 
     def setValue(self, val):
         "Create a new Color object with value set to the new real number"
-        return self.fromHsv(self.hue, self.saturation, val)
+        return self.fromHsv(self.hue, self.saturation, val, self.alpha)
 
     @staticmethod
-    def fromRgb(r, g, b):
-        "construct from real RGB values"
+    def fromRgb(r, g, b, a=None):
+        "construct from real RGB or RGBA values"
         assert (0.0 <= r <= 1.0)
         assert (0.0 <= g <= 1.0)
         assert (0.0 <= b <= 1.0)
+        assert (a is None) or (0.0 <= a <= 1.0)
         h, s, v = colorsys.rgb_to_hsv(r, g, b)
-        return Color(r, g, b, h, s, v)
+        return Color(r, g, b, h, s, v, a)
 
     @staticmethod
     def fromRgb8(r, g, b):
         "construct from 8-bit int RGB values"
-        return Color.fromRgb(Color._int8ToReal(r), Color._int8ToReal(g), Color._int8ToReal(b))
+        return Color.fromRgb(_int8ToReal(r), _int8ToReal(g), _int8ToReal(b))
 
     @staticmethod
     def fromPackRgb8(c):
-        "construct from packed 8-bit int RGB values (e.g.#008000)"
+        "construct from packed 8-bit int RGB values (e.g. #008000)"
         r = (c >> 16) & 0xff
         g = (c >> 8) & 0xff
         b = c & 0xff
-        return Color.fromRgb(Color._int8ToReal(r), Color._int8ToReal(g), Color._int8ToReal(b))
+        return Color.fromRgb(_int8ToReal(r), _int8ToReal(g), _int8ToReal(b))
 
     @staticmethod
     def fromRgb8Str(rgb8str):
-        "construct from 8-bit int RGB values in a comma separate string ("
+        "construct from 8-bit int RGB values in a comma separate string (100,200,50)"
         try:
             parts = rgb8str.split(',')
             if len(parts) != 3:
@@ -171,16 +215,17 @@ class Color(namedtuple("Color", ("red", "green", "blue",
             raise ValueError("invalid RGB8 color string: {}".format(rgb8str)) from ex
 
     @staticmethod
-    def fromHsv(h, s, v):
+    def fromHsv(h, s, v, a=None):
         "construct from real HSV values"
         assert (0.0 <= h <= 1.0)
         assert (0.0 <= s <= 1.0)
         assert (0.0 <= v <= 1.0)
+        assert (a is None) or (0.0 <= a <= 1.0)
         r, g, b = colorsys.hsv_to_rgb(h, s, v)
-        return Color(r, g, b, h, s, v)
+        return Color(r, g, b, h, s, v, a)
 
     @staticmethod
-    def fromHsvi(h, s, v):
+    def fromHsv8(h, s, v):
         "construct from integer HSV values"
         return Color.fromHsv(h / 306.0, s / 100.0, v / 100.0)
 
