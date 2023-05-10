@@ -18,6 +18,17 @@ def defaultIfNone(v, dflt=""):
     # also converts to a string
     return str(v) if v is not None else str(dflt)
 
+class BedBlock(namedtuple("Block", ("start", "end"))):
+    """A block in the BED.  Coordinates are absolute, not relative and are transformed on write.
+    """
+    __slots__ = ()
+
+    def __len__(self):
+        return self.end - self.start
+
+    def __str__(self):
+        return "{}-{}".format(self.start, self.end)
+
 class Bed:
     """Object wrapper for a BED record.  ExtraCols is a vector of extra
     columns to add.  Special columns be added by extending and overriding
@@ -27,17 +38,6 @@ class Bed:
     __slots__ = ("chrom", "chromStart", "chromEnd", "name", "score",
                  "strand", "thickStart", "thickEnd", "itemRgb", "blocks",
                  "extraCols", "numStdCols")
-
-    class Block(namedtuple("Block", ("start", "end"))):
-        """A block in the BED.  Coordinates are absolute, not relative and are transformed on write.
-        """
-        __slots__ = ()
-
-        def __len__(self):
-            return self.end - self.start
-
-        def __str__(self):
-            return "{}-{}".format(self.start, self.end)
 
     def __init__(self, chrom, chromStart, chromEnd, name=None, *, score=None, strand=None,
                  thickStart=None, thickEnd=None, itemRgb=None, blocks=None, extraCols=None,
@@ -78,7 +78,7 @@ class Bed:
         assert start < end
         assert start >= self.chromStart
         assert end <= self.chromEnd
-        blk = Bed.Block(start, end)
+        blk = BedBlock(start, end)
         if self.blocks is None:
             self.blocks = []
         self.blocks.append(blk)
@@ -131,7 +131,7 @@ class Bed:
         blocks = []
         for i in range(len(relStarts)):
             start = chromStart + relStarts[i]
-            blocks.append(Bed.Block(start, start + sizes[i]))
+            blocks.append(BedBlock(start, start + sizes[i]))
         return blocks
 
     @classmethod
