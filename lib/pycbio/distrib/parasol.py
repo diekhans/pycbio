@@ -6,6 +6,11 @@ from pycbio import PycbioException
 from pycbio.sys import fileOps
 import pipettor
 
+def _mkAbs(parent, child):
+    if os.path.isabs(child):
+        return child
+    else:
+        return os.path.join(parent, child)
 
 class BatchStats:
     "statistics on jobs in the current batch"
@@ -76,32 +81,28 @@ class BatchStats:
 
 class Para:
     "interface to the parasol para command"
-    def __init__(self, paraHost, runDir, paraDir, jobFile=None, cpu=None, mem=None, maxJobs=None, retries=None):
-        """"will chdir to run dir.. paraDir should be relative
-        to runDir or absolute, jobFile should be relative to runDir
+    def __init__(self, paraHost, jobFile, *, runDir=None, paraDir=None, cpu=None, mem=None, maxJobs=None, retries=None):
+        """"will chdir to runDir, which default to cwd.  paraDir should be relative
+        to runDir or absolute, defaults to runDir to jobFile should be relative to runDir
         or absolute.
         """
         self.paraHost = paraHost
         # symlinks can confuse parasol, as it can give two different names for a job.
+        if runDir is None:
+            runDir = os.getcwd()
         self.runDir = os.path.realpath(os.path.abspath(runDir))
+        if paraDir is None:
+            paraDir = runDir
         self.paraDir = os.path.realpath(paraDir)
         self.jobFile = jobFile
         self.cpu = cpu
         self.mem = mem
         self.maxJobs = maxJobs
         self.retries = retries
-        fileOps.ensureDir(self._mkAbs(self.runDir, self.paraDir))
-        if jobFile is not None:
-            absJobFile = self._mkAbs(self.runDir, self.jobFile)
-            if not os.path.exists(absJobFile):
-                raise PycbioException("job file not found: {}".format(absJobFile))
-
-    @staticmethod
-    def _mkAbs(parent, child):
-        if os.path.isabs(child):
-            return child
-        else:
-            return os.path.join(parent, child)
+        absJobFile = _mkAbs(self.runDir, self.jobFile)
+        if not os.path.exists(absJobFile):
+            raise PycbioException("job file not found: {}".format(absJobFile))
+        fileOps.ensureDir(_mkAbs(self.runDir, self.paraDir))
 
     def _para(self, *paraArgs):
         """ssh to the remote machine and run the para command.  paraArgs are
