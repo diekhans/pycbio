@@ -5,7 +5,7 @@ if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.sys import fileOps
-from pycbio.hgdata.psl import Psl, PslTbl, pslFromCigar
+from pycbio.hgdata.psl import Psl, PslBlock, PslTbl, pslFromCigar
 
 def splitToPsl(ps):
     return Psl.fromRow(ps.split("\t"))
@@ -94,6 +94,24 @@ class OpsTests(TestCaseBase):
         psls = set([splitToPsl(self.psPos),
                     splitToPsl(self.psPos)])
         self.assertEqual(1, len(psls))
+
+    def testCaclStats(self):
+        # 2618	0	0	0	0	0	2	3549
+        # 2618	0	0	0	0	0	2	3549	+	ENST00000641515.2	2618	0	2618	chr1	248956422	65418	71585	3
+
+        # sizes 15,54,2549,
+	# q 0,15,69,
+	# y 65418,65519,69036,
+
+        psl = Psl(qName="ENST00000641515.2", qSize=2618, qStart=0, qEnd=2618,
+                  tName="chr1", tSize=248956422, tStart=65418, tEnd=71585, strand='+')
+        psl.addBlock(PslBlock(0, 65418, 15))
+        psl.addBlock(PslBlock(15, 65519, 54))
+        psl.addBlock(PslBlock(69, 69036, 2549))
+        psl.computeCounts()
+        self.assertEqual(psl.match, 2618)
+        self.assertEqual(psl.tNumInsert, 2)
+        self.assertEqual(psl.tBaseInsert, 3549)
 
 def samParseHeader(row, chromSizes):
     # e@SQ	SN:chr1	LN:248956422
