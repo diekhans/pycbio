@@ -30,24 +30,27 @@ def parseArgs():
                         help="strip directory names from output")
     parser.add_argument("profLog",
                         help="profile log file input")
-    parser.add_argument("profStats",
+    parser.add_argument("statsOut",
                         help="statistics output")
     return parser.parse_args()
 
 
-def generateReport(opts, outFh):
-    profStats = pstats.Stats(opts.profLog, stream=outFh)
-    if opts.stripDirs:
+def generateReport(profLog, statsOut, sortKeys, reportType, stripDirs):
+    statsOutFh = open(statsOut, "w")
+    profStats = pstats.Stats(profLog, stream=statsOutFh)
+    if stripDirs:
         profStats.strip_dirs()
-    profStats.sort_stats(*opts.sortKeys)
-    if opts.reportType == ReportType.basic:
+    profStats.sort_stats(*sortKeys)
+    if reportType == ReportType.basic:
         profStats.print_stats()
-    elif opts.reportType == ReportType.callers:
+    elif reportType == ReportType.callers:
         profStats.print_callers()
-    elif opts.reportType == ReportType.callees:
+    elif reportType == ReportType.callees:
         profStats.print_callees()
+    statsOutFh.close()
+
+def main(opts):
+    generateReport(opts.profLog, opts.statsOut, opts.sortKeys, opts.reportType, opts.stripDirs)
 
 
-opts = parseArgs()
-with open(opts.profOut, "w") as outFh:
-    generateReport(opts, outFh)
+main(parseArgs())
