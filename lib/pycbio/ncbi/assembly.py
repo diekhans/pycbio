@@ -180,7 +180,7 @@ class AssemblyReport:
         return rec
 
     def ucscNameToSeqName(self, ucscName):
-        return self.getByUcscStyleName[ucscName].sequenceName
+        return self.getByUcscStyleName(ucscName).sequenceName
 
     def seqNameToUcscName(self, seqName):
-        return self.getBySequenceName[seqName].ucscStyleName
+        return self.getBySequenceName(seqName).ucscStyleName
