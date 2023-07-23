@@ -1,7 +1,6 @@
 # Copyright 2006-2022 Mark Diekhans
 import cProfile
 import signal
-import argparse
 import sys
 import atexit
 from pycbio import PycbioException
