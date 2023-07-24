@@ -3,6 +3,7 @@
 
 from collections import namedtuple
 from functools import total_ordering
+from types import NoneType
 from pycbio import PycbioException
 
 
@@ -24,10 +25,6 @@ def reverseStrand(strand):
         return '+' if strand == '-' else '-'
 
 
-def _intOrNone(v):
-    return v if v is None else int(v)
-
-
 @total_ordering
 class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
     """Immutable sequence coordinates
@@ -40,26 +37,45 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
     __slots__ = ()
 
     def __new__(cls, name, start, end, strand=None, size=None):
-        if not ((start <= end) and (start >= 0)):
-            raise CoordsError(f"invalid range {start}..{end} for {name}")
-        if not ((size is None) or (end <= size)):
-            raise CoordsError(f"range {start}..{end} exceeds size {size} for {name}")
-        return super(Coords, cls).__new__(cls, name, _intOrNone(start), _intOrNone(end), strand, _intOrNone(size))
+        # check types
+        if ((((start is None) or (end is None)) and (not ((start is None) and (end is None)))) or
+            (not isinstance(start, (int, NoneType))) or (not isinstance(end, (int, NoneType)))):
+            raise CoordsError(f"start ({start}) and end ({end}) must either be both none or both ints for {name}")
+        if not isinstance(size, (int, NoneType)):
+            raise CoordsError(f"size ({size}) must be int or None for {name}")
+        if (not isinstance(strand, (str, NoneType))) or (strand not in ('+', '-', None)):
+            raise CoordsError(f"strand ({strand}) must be '+', '-', or None for {name}")
+
+        # check range
+        if (start is not None):
+            if not ((start <= end) and (start >= 0)):
+                raise CoordsError(f"invalid range {start}..{end} for {name}")
+            if (size is not None) and (end > size):
+                raise CoordsError(f"range {start}..{end} exceeds size ({size}) for {name}")
+        return super(Coords, cls).__new__(cls, name, start, end, strand, size)
 
     def __getnewargs_ex__(self):
         return ((self.name, self.start, self.end, self.strand, self.size), {})
 
-    @classmethod
-    def _parse_parts(cls, coordsStr, oneBased):
-        cparts = coordsStr.split(":")
-        name = cparts[0]
-        if len(cparts) != 2:
-            raise CoordsError(f"range missing, expect chr:start-end: '{coordsStr}'")
+    @staticmethod
+    def _parse_range(cparts, oneBased):
         startStr, endStr = cparts[1].split("-")
         start = int(startStr.replace(',', ''))
         if oneBased:
             start -= 1
         end = int(endStr.replace(',', ''))
+        return start, end
+
+    @classmethod
+    def _parse_parts(cls, coordsStr, oneBased):
+        cparts = coordsStr.split(":")
+        name = cparts[0]
+        if (len(name) == 0) or (len(cparts) > 2):
+            raise CoordsError("expected 'chr' or 'chr:start-end'")
+        if len(cparts) == 2:
+            start, end = cls._parse_range(cparts, oneBased)
+        else:
+            start = end = None
         return name, start, end
 
     @classmethod
@@ -72,6 +88,9 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
             if strand not in ('+', '-', None):
                 raise CoordsError(f"invalid strand: '{strand}'")
             name, start, end = cls._parse_parts(coordsStr, oneBased)
+            if (start is None) and (size is not None):
+                start = 0
+                end = size
             return Coords(name, start, end, strand, size)
         except Exception as ex:
             raise CoordsError(f"invalid coordinates: '{coordsStr}'") from ex

@@ -21,6 +21,17 @@ class CoordsTests(TestCaseBase):
         check(Coords.parse("chr22:10,000-20,000"))
         check(Coords.parse("chr22:10,001-20,000", oneBased=True))
 
+    def testCoordsParseFullSeq(self):
+        c = Coords.parse("chr22")
+        self.assertEqual(c.name, "chr22")
+        self.assertEqual(c.start, None)
+        self.assertEqual(c.end, None)
+
+        c = Coords.parse("chr22", size=50818468)
+        self.assertEqual(c.name, "chr22")
+        self.assertEqual(c.start, 0)
+        self.assertEqual(c.end, 50818468)
+
     def testCoordsSimple(self):
         c = Coords("chr22", 10000, 20000)
         self.assertEqual(c.name, "chr22")

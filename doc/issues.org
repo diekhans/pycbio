@@ -37,7 +37,7 @@ attributes.
 ** build java script sortable table?
 
 * Coords:
-** range name, start, end strand?
+** total ordering tests disabled
 
 * rangefinder: coords strand is like PSL strand, not BED= strand,
 but a lot overlap are strand on the chrom coords.  Make this clean
