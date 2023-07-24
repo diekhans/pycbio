@@ -13,7 +13,6 @@ from deprecation import deprecated
 #  - terms plus and minus are used because `positive' is long and `pos' abbreviation is
 #    often used for position.
 
-
 def reverseCoords(start, end, size):
     return (size - end, size - start)
 
@@ -620,8 +619,8 @@ def pslFromCigar(qName, qStrand, tName, tSize, tPos, cigarStr):
     return psl
 
 def pslFromExonerateCigar(qName, qSize, qStart, qEnd, qStrand, tName, tSize, tStart, tEnd, tStrand, cigarStr):
-    "create a PSL from an Ensembl-style cigar formatted alignment"
-    # this doesn't indicate where the alignment was trimmed
+    """create a PSL from an Ensembl-style cigar formatted alignment,
+    which does not include trimmed sequence"""
 
     cigar = Cigar(cigarStr)
     psl = Psl.create(qName=qName, qSize=qSize, qStart=qStart, qEnd=qEnd,
