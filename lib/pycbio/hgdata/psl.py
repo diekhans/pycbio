@@ -617,32 +617,3 @@ def pslFromCigar(qName, qStrand, tName, tSize, tPos, cigarStr):
         psl.qStart, psl.qEnd = reverseCoords(psl.qStart, psl.qEnd, psl.qSize)
     psl.tStart, psl.tEnd = psl.blocks[0].tStart, psl.blocks[-1].tEnd
     return psl
-
-def pslFromExonerateCigar(qName, qSize, qStart, qEnd, qStrand, tName, tSize, tStart, tEnd, tStrand, cigarStr):
-    """create a PSL from an Ensembl-style cigar formatted alignment,
-    which does not include trimmed sequence"""
-
-    cigar = Cigar(cigarStr)
-    psl = Psl.create(qName=qName, qSize=qSize, qStart=qStart, qEnd=qEnd,
-                     tName=tName, tSize=tSize, tStart=tStart, tEnd=tEnd,
-                     strand=qStrand + tStrand)
-
-    qNext = qStart
-    qBlkEnd = qEnd
-    if qStrand == '-':
-        qNext, qBlkEnd = reverseCoords(qNext, qBlkEnd, qSize)
-    tNext = tStart
-    tBlkEnd = tEnd
-    if tStrand == '-':
-        tNext, tBlkEnd = reverseCoords(tNext, tBlkEnd, tSize)
-
-    qNext, tNext = _addCigarBlocks(cigar, psl, qNext, tNext)
-
-    if qNext != qBlkEnd:
-        raise Exception(f"CIGAR length {qNext} does not match aligned query range {qStart}-{qEnd}: {qName} {cigar}")
-    if tNext != tBlkEnd:
-        raise Exception(f"CIGAR length {tNext} does not match aligned target range {tStart}-{tEnd}: {qName} {cigar}")
-    if psl.tStrand == '-':
-        psl = psl.reverseComplement()
-    psl.strand = psl.strand[0]   # BLAT convention
-    return psl
