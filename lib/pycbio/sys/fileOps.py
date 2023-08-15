@@ -46,7 +46,7 @@ def rmdirIfExists(path, *, dir_fd=None):
     """remove a directory if it exists, ignoring FileNotFoundError, which prevents
     race conditions."""
     try:
-        os.unlink(path, dir_fd=dir_fd)
+        os.rmdir(path, dir_fd=dir_fd)
     except FileNotFoundError:
         pass
 
@@ -63,9 +63,12 @@ def rmTree(root):
     generate errors"""
     if osp.isdir(root):
         for dir, subdirs, files in os.walk(root, topdown=False):
-            with os.open(dir, os.O_DIRECTORY) as dir_fd:
+            dir_fd = os.open(dir, os.O_DIRECTORY)
+            try:
                 for f in files:
                     unlinkIfExists(f, dir_fd=dir_fd)
+            finally:
+                os.close(dir_fd)
             rmdirIfExists(dir)
     else:
         unlinkIfExists(root)

@@ -2,6 +2,10 @@
 
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
+* should rmTree use shutil.rmtree
+rmTree fails on errors other than missing files, but can do this with onerror
+** need more tests
+
 * create cigar iterator to track query and reference coordinates
 
 * symEnum is invasive to with Enum, can it be cleaner, like other derived enum class?
