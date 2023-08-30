@@ -9,20 +9,37 @@ import pstats
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.sys.symEnum import SymEnum
 
-validSortKeys = ('calls', 'cumulative', 'file', 'module', 'pcalls', 'line',
-                 'name', 'nfl', 'stdname', 'time')
+sortKeys = {
+    'calls': 'call count',
+    'cumulative': 'cumulative time',
+    'cumtime': 'cumulative time',
+    'file': 'file name',
+    'filename': 'file name',
+    'module': 'file name',
+    'ncalls': 'call count',
+    'pcalls': 'primitive call count',
+    'line': 'line number',
+    'name': 'function name',
+    'nfl': 'name/file/line',
+    'stdname': 'standard name',
+    'time': 'internal time',
+    'tottime': 'internal time',
+}
 
 ReportType = SymEnum("ReportType", ("basic", "callers", "callees"))
 
 
 def parseArgs():
-    desc = """format python profile logs from hotshot."""
+    desc = """format python profile logs from cProfile, etc."""
 
-    parser = argparse.ArgumentParser(description=desc)
-    parser.add_argument("--sort", action="append", dest="sortKeys", default=["cumulative"],
-                        choices=validSortKeys,
-                        help="sort result by specified key, which maybe repeated, one of: "
-                        + ", ".join(validSortKeys))
+    sortKeyDesc = "\n".join([f"   {key: <12} {sortKeys[key]}" for key in sortKeys.keys()])
+
+    parser = argparse.ArgumentParser(description=desc,
+                                     formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument("--sort", action="append", dest="sortKeys",
+                        choices=sortKeys.keys(),
+                        help="sort result by specified key, which maybe repeated, one of:\n"
+                        + sortKeyDesc)
     parser.add_argument("--report", dest="reportType", type=ReportType, default=ReportType.basic,
                         help="specify type of report to produce, one of: "
                         + ", ".join([str(v) for v in ReportType]))
@@ -32,8 +49,11 @@ def parseArgs():
                         help="profile log file input")
     parser.add_argument("statsOut",
                         help="statistics output")
-    return parser.parse_args()
-
+    opts = parser.parse_args()
+    if opts.sortKeys is None:
+        # can't do this with defaults, since it is a list.
+        opts.sortKeys = ["cumulative"]
+    return opts
 
 def generateReport(profLog, statsOut, sortKeys, reportType, stripDirs):
     statsOutFh = open(statsOut, "w")
