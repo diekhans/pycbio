@@ -3,11 +3,7 @@
 # FIXME: needed for faster readings, but needs cleaned up, need reader/writer
 # classes
 # FIXME add try and error msg with file/line num, move to row reader class; see fileOps.iterRows
-import sys
-import csv
 from pycbio.sys import fileOps
-
-csv.field_size_limit(sys.maxsize)
 
 
 class TabFile(list):
