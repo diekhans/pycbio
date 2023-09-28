@@ -11,5 +11,8 @@ version, I will gladly add a tag on request.
 Additional, if you fork this package with the intent of redistributing it,
 please rename the top-level package from `pycbio', to avoid import conflicts.
 
+To install from GitHub:
+  pip install git+https://github.com/diekhans/pycbio.git
+
 
 markd@ucsc.edu
