@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 requirements = [
     'pipettor>=0.5.0',
@@ -14,13 +14,15 @@ requirements = [
 setup(
     name = 'pycbio',
     version = '1.0.0',
+    license = "BSD3",
     url = 'https://github.com/diekhans/pycbio.git',
     author = 'Mark Diekhans',
     author_email = 'markd@ucsc.edu',
     description = 'My personal genomics bioinformatics toolkit',
+    zip_safe = True,
     install_requires = requirements,
     package_dir = {'': 'lib'},
-    packages = ['pycbio'],
+    packages = find_packages(where='lib'),
     scripts = [
         'bin/agpToPsl',
         'bin/bedToCdsBed',
