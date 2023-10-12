@@ -33,7 +33,10 @@ class Bed:
     """Object wrapper for a BED record.  ExtraCols is a vector of extra
     columns to add.  Special columns be added by extending and overriding
     parse() and toRow(), numColumns to do special handling.
-    For BEDs with extra columns not handled by derived are stored in extraCols
+
+    For BEDs with extra columns not handled by derived are stored in extraCols.
+    If extra columns is a tuple, include namedtuple, it is stored as-is, otherwise
+    a copy is stored.
     """
     __slots__ = ("chrom", "chromStart", "chromEnd", "name", "score",
                  "strand", "thickStart", "thickEnd", "itemRgb", "blocks",
@@ -52,7 +55,7 @@ class Bed:
         self.thickEnd = thickEnd
         self.itemRgb = itemRgb
         self.blocks = copy.copy(blocks)
-        self.extraCols = copy.copy(extraCols)
+        self.extraCols = extraCols if isinstance(extraCols, tuple) else copy.copy(extraCols)
 
         if numStdCols is None:
             # computer based on what is specified
