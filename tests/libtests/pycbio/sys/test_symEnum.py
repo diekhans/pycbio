@@ -23,6 +23,7 @@ class GeneFeature(SymEnum):
     coding = cds
 
 class ColorNoDict(SymEnum):
+    "however __slots__ doesn't seem to do anything, there is still a dict"
     __slots__ = ()
     purple = 1
     gold = 2

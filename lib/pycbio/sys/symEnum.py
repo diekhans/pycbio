@@ -158,8 +158,16 @@ class SymEnum(SymEnumMixin, Enum, metaclass=SymEnumMeta):
     """
     Metaclass for symbolic enumerations.  These are easily converted between
     string values and Enum objects.  This support construction from string
-    values and str() returns value without class name.  Aliases can be
-    added using the Enum approach of:
+    values and str() returns value without class name.
+
+    For example:
+        class Color(SymEnum):
+            purple = 1
+            gold = 2
+            black = 3
+
+
+    Aliases can be added using the Enum approach of:
         name = 1
         namealias = 1
 
@@ -169,6 +177,14 @@ class SymEnum(SymEnumMixin, Enum, metaclass=SymEnumMeta):
     To handle string values that are not valid Python member names, an external
     name maybe associated with a field using a SymEnumValue object
         utr5 = SymEnumValue(1, "5'UTR")
+
+    for example:
+        class GeneFeature(SymEnum):
+            promoter = 1
+            utr5 = SymEnumValue(2, "5'UTR")
+            cds = SymEnumValue(3, "CDS")
+            utr3 = SymEnumValue(4, "3'UTR")
+            coding = cds
 
     Either field name or external name maybe used to obtain a value.  The external
     name is returned with str().
