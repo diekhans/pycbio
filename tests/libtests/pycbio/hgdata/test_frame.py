@@ -5,13 +5,20 @@ if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.hgdata.frame import Frame
+from pycbio.hgdata.frame import Frame, FRAME1
 
 
 class FrameTests(TestCaseBase):
     def testConstruct(self):
-        self.assertEqual(Frame(1), 1)
-        self.assertEqual(Frame("1"), Frame(1))
+        # make sure singletons are returned
+        f = Frame(1)
+        self.assertEqual(f, 1)
+        self.assertTrue(f is FRAME1)
+
+        f = Frame("1")
+        self.assertEqual(f, 1)
+        self.assertEqual(f, Frame(1))
+        self.assertTrue(f is FRAME1)
 
     def testIncr(self):
         self.assertEqual(Frame(1).incr(1), 2)
@@ -40,6 +47,15 @@ class FrameTests(TestCaseBase):
         self.assertEqual(Frame.fromFrame("-1"), None)
         self.assertEqual(Frame.fromFrame("."), None)
         self.assertEqual(Frame.fromFrame(-1), None)
+
+    def testErrors(self):
+        with self.assertRaises(ValueError) as context:
+            Frame(3)
+        self.assertEqual(str(context.exception), "Frame() argument must be in the range 0..2, got 3")
+        with self.assertRaises(ValueError) as context:
+            Frame(1.0)
+        self.assertEqual(str(context.exception), "Frame() takes either a Frame, int, or str value as an argument, got <class 'float'>")
+
 
 def suite():
     ts = unittest.TestSuite()

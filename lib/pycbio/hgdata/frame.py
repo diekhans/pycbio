@@ -1,11 +1,19 @@
 # Copyright 2006-2022 Mark Diekhans
 from pycbio import PycbioException
 
+# singleton instances for each supported value, initialized after class is created
+FRAME0 = None
+FRAME1 = None
+FRAME2 = None
+_frames = None
 
 class Frame(int):
     """Immutable object the represents a frame, integer value of 0, 1, or 2.
-    This is also an int.  Use None if there is no frame."""
+    This object is also an int.  Use None if there is no frame, not a Frame instance.
+    Frames implement a set of singletons to minimize memory usage.
 
+    val - an int, str convertible to an int, or another Frame.
+    """
     __slots__ = ()
 
     @staticmethod
@@ -14,6 +22,16 @@ class Frame(int):
             raise TypeError("frame must be an integer in the range 0..2, got {}".format(val))
 
     def __new__(cls, val):
+        if not (isinstance(val, (Frame, int, str))):
+            raise ValueError(f"Frame() takes either a Frame, int, or str value as an argument, got {type(val)}")
+        if isinstance(val, str):
+            val = int(val)
+        if not (0 <= val <= 2):
+            raise ValueError(f"Frame() argument must be in the range 0..2, got {val}")
+        if _frames is not None:
+            return _frames[val]
+
+        # first time
         obj = super(Frame, cls).__new__(cls, val)
         cls._checkFrameValue(obj)
         return obj
@@ -79,3 +97,10 @@ class Frame(int):
 
     def __sub__(self, amt):
         return self.incr(-amt)
+
+
+# first-time initialization
+FRAME0 = Frame(0)
+FRAME1 = Frame(1)
+FRAME2 = Frame(2)
+_frames = (FRAME0, FRAME1, FRAME2)
