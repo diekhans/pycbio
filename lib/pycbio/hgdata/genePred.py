@@ -3,6 +3,7 @@ import copy
 from collections import defaultdict, namedtuple
 from pycbio.tsv.tabFile import TabFileReader
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin
+from pycbio.hgdata.frame import Frame
 from pycbio.sys.symEnum import SymEnum, SymEnumValue
 from pycbio import PycbioException
 
@@ -62,18 +63,10 @@ class Range(namedtuple("Range", ("start", "end"))):
         return Range(chromSize - self.end, chromSize - self.start)
 
 
-class ExonFeatures:
-    "object the holds the features of a single exon"
-    __slots__ = ("utr5", "cds", "utr3")
-
-    def __init__(self, utr5=None, cds=None, utr3=None):
-        self.utr5 = utr5
-        self.cds = cds
-        self.utr3 = utr3
-
-    def __str__(self):
-        return "utr5=" + str(self.utr5) + " cds=" + str(self.cds) + " utr3=" + str(self.utr3)
-
+class ExonFeatures(namedtuple("ExonFeatures", ("utr5", "cds", "utr3"))):
+    "Object the holds the features of a single exon as Range objects or None"
+    __slots__ = ()
+    pass
 
 class Exon:
     "an exon in a genePred annotation"
@@ -115,32 +108,34 @@ class Exon:
         """split exon into an object with the fields (utr5, cds, utr3)
 `        where each element is either None, or (start, end).  utr5 is 5' UTR
         in the exon, utr3, is 3'UTR, and cds is coding sequence of the exon."""
-        feats = ExonFeatures()
+
+        utr5 = cds = utr3 = None
 
         # UTR before CDS in exon
         start = self.start
         if (start < self.gene.cdsStart):
             end = min(self.end, self.gene.cdsStart)
             if self.gene.inDirectionOfTranscription():
-                feats.utr5 = Range(start, end)
+                utr5 = Range(start, end)
             else:
-                feats.utr3 = Range(start, end)
+                utr3 = Range(start, end)
             start = end
 
         # CDS in exon
         if (start < self.end) and (start < self.gene.cdsEnd):
             end = min(self.end, self.gene.cdsEnd)
-            feats.cds = Range(start, end)
+            cds = Range(start, end)
             start = end
 
         # UTR after CDS in exon
         if (start < self.end) and (start >= self.gene.cdsEnd):
             if self.gene.inDirectionOfTranscription():
-                feats.utr3 = Range(start, self.end)
+                utr3 = Range(start, self.end)
             else:
-                feats.utr5 = Range(start, self.end)
+                utr5 = Range(start, self.end)
 
-        return feats
+        return ExonFeatures(utr5, cds, utr3)
+
 
     def contains(self, pos):
         "does exon contain pos?"
@@ -229,7 +224,7 @@ class GenePred:
     def addExon(self, exonStart, exonEnd, frame=None):
         "add an exon; which must be done in assending order"
         i = len(self.exons)
-        self.exons.append(Exon(self, i, exonStart, exonEnd, frame))
+        self.exons.append(Exon(self, i, exonStart, exonEnd, Frame(frame)))
         if self._overlapsCds(exonStart, exonEnd):
             if self.cdsStartIExon is None:
                 self.cdsStartIExon = i
