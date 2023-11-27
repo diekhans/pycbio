@@ -33,7 +33,6 @@ bigGenePredColumns = ("chrom", "chromStart", "chromEnd", "name", "score", "stran
 class Range(namedtuple("Range", ("start", "end"))):
     "start and end coordinates"
     __slots__ = ()
-    # FIXME: maybe base class for coords?
 
     def __eq__(self, other):
         return (other is not None) and (self.start == other.start) and (self.end == other.end)
@@ -69,7 +68,7 @@ class ExonFeatures(namedtuple("ExonFeatures", ("utr5", "cds", "utr3"))):
     pass
 
 class Exon:
-    "an exon in a genePred annotation"
+    "An exon in a genePred annotation. This should be treated as immutable"
     __slots__ = ("gene", "iExon", "start", "end", "frame")
 
     def __init__(self, gene, iExon, start, end, frame=None):
@@ -77,6 +76,10 @@ class Exon:
         self.iExon = iExon
         self.start = start
         self.end = end
+        if isinstance(frame, int) and (frame == -1):
+            frame = None
+        elif frame is not None:
+            frame = Frame(frame)
         self.frame = frame
 
     def __str__(self):
@@ -135,7 +138,6 @@ class Exon:
                 utr5 = Range(start, self.end)
 
         return ExonFeatures(utr5, cds, utr3)
-
 
     def contains(self, pos):
         "does exon contain pos?"
@@ -224,7 +226,7 @@ class GenePred:
     def addExon(self, exonStart, exonEnd, frame=None):
         "add an exon; which must be done in assending order"
         i = len(self.exons)
-        self.exons.append(Exon(self, i, exonStart, exonEnd, Frame(frame)))
+        self.exons.append(Exon(self, i, exonStart, exonEnd, frame))
         if self._overlapsCds(exonStart, exonEnd):
             if self.cdsStartIExon is None:
                 self.cdsStartIExon = i
@@ -378,10 +380,9 @@ class GenePred:
             frames = []
             if self.hasExonFrames:
                 for e in self.exons:
-                    frames.append(e.frame)
+                    frames.append(-1 if e.frame is None else e.frame)
             else:
-                for e in self.exons:
-                    frames.append(-1)
+                frames = len(self.exons) * [-1]
             row.append(intArrayJoin(frames))
         return row
 
