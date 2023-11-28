@@ -1,4 +1,5 @@
 # Copyright 2006-2023 Mark Diekhans
+from pycbio import PycbioException
 from pycbio.hgdata.bed import Bed, BedBlock
 from pycbio.sys.symEnum import SymEnum
 from pycbio.sys.color import Color
@@ -28,10 +29,16 @@ class Decoration(Bed):
 
     see kent/src/hg/lib/decoration.as
     """
+    __slots__ = ("decoratedItemName", "decoratedItemStart", "decoratedItemEnd", "decoExtraCols")
+
     def __init__(self, chrom, chromStart, chromEnd, name,
                  decoratedItemName, decoratedItemStart, decoratedItemEnd,
                  *, strand=None, itemRgb=None, blocks=None,
-                 glyph=None, fillColor=None, extraCols=None):
+                 glyph=None, fillColor=None, decoExtraCols=None):
+        self.decoratedItemName = decoratedItemName
+        self.decoratedItemStart = decoratedItemStart
+        self.decoratedItemEnd = decoratedItemEnd
+        self.decoExtraCols = decoExtraCols
         decoratedItem = f"{chrom}:{decoratedItemStart}-{decoratedItemEnd}:{decoratedItemName}"
         if (glyph is None) or (glyph is Glyph.NA):
             style = Style.block
@@ -47,9 +54,13 @@ class Decoration(Bed):
             fillColor = itemRgb
         elif isinstance(fillColor, Color):
             fillColor = fillColor.toRgba8Str()
-        decoExtraCols = [decoratedItem, str(style), fillColor, str(glyph)]
-        if extraCols is not None:
-            decoExtraCols += extraCols
+        extraCols = [decoratedItem, str(style), fillColor, str(glyph)]
+        if decoExtraCols is not None:
+            extraCols += decoExtraCols
         super(Decoration, self).__init__(chrom, chromStart, chromEnd, name=name, score=0, strand=strand,
                                          thickStart=chromStart, thickEnd=chromEnd, itemRgb=itemRgb, blocks=blocks,
-                                         extraCols=decoExtraCols, numStdCols=12)
+                                         extraCols=extraCols, numStdCols=12)
+
+    @classmethod
+    def parse(cls, row, numStdCols=None):
+        raise PycbioException("Decoration.parse not implement")

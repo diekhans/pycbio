@@ -208,3 +208,7 @@ maybe a single function to parse RGBA and RGB8 strs
 
 * color shouldn't have to store both RGB and HSV
 more rgba tests
+
+* Bed extension needs work (see decoration.py)
+
+

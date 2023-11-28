@@ -22,7 +22,7 @@ class DecorationTests(TestCaseBase):
         deco = Decoration("chr1", start, end, "HORMA", "ENST00000697272.1", 11658917, 11675722,
                           strand='-', itemRgb=Color.fromRgb8(255, 0, 0), blocks=blocks,
                           fillColor=Color.fromRgb8(34, 139, 34, 128),
-                          extraCols=("Fred", "Wilma"))
+                          decoExtraCols=("Fred", "Wilma"))
         self.assertEqual(deco.toRow(),
                          ['chr1', '11674801', '11675720', 'HORMA', '0', '-', '11674801', '11675720', '255,0,0',
                           '3', '15,93,63,', '0,280,856,',
@@ -34,7 +34,7 @@ class DecorationTests(TestCaseBase):
                           "ENST00000697274.1", 11675146, 11691811,
                           strand='-', itemRgb="255,0,0",
                           glyph=Glyph.Triangle,
-                          extraCols=("Barney", "Betty"))
+                          decoExtraCols=("Barney", "Betty"))
         self.assertEqual(deco.toRow(),
                          ['chr1', '11675147', '11675147', 'del 105', '0', '-', '11675147', '11675147', '255,0,0',
                           '1', '0,', '0,', 'chr1:11675146-11691811:ENST00000697274.1', 'glyph', '255,0,0', 'Triangle',
