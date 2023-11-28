@@ -187,9 +187,10 @@ class Color(namedtuple("Color", ("red", "green", "blue",
         return Color(r, g, b, h, s, v, a)
 
     @staticmethod
-    def fromRgb8(r, g, b):
+    def fromRgb8(r, g, b, a=None):
         "construct from 8-bit int RGB values"
-        return Color.fromRgb(_int8ToReal(r), _int8ToReal(g), _int8ToReal(b))
+        a8 = _int8ToReal(a) if a is not None else None
+        return Color.fromRgb(_int8ToReal(r), _int8ToReal(g), _int8ToReal(b), a8)
 
     @staticmethod
     def fromPackRgb8(c):

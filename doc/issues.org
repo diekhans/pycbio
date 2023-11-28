@@ -201,3 +201,10 @@ bed-analysis-tools has some tools that were quickly hacked to compare mappings a
 it will have to contains its CDS bounds
 getting features can then be lazy and drop featureSplit
 
+
+* clean up RGBA
+need fromRGA8Str
+maybe a single function to parse RGBA and RGB8 strs
+
+* color shouldn't have to store both RGB and HSV
+more rgba tests
