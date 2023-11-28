@@ -52,7 +52,7 @@ class Decoration(Bed):
             itemRgb = "0,0,0"
         if fillColor is None:
             fillColor = itemRgb
-        elif isinstance(fillColor, Color):
+        if isinstance(fillColor, Color):
             fillColor = fillColor.toRgba8Str()
         extraCols = [decoratedItem, str(style), fillColor, str(glyph)]
         if decoExtraCols is not None:
