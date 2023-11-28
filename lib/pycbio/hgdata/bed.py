@@ -34,6 +34,8 @@ class Bed:
     columns to add.  Special columns be added by extending and overriding
     parse() and toRow(), numColumns to do special handling.
 
+    Columns maybe sparsely specified, with ones up to numStdCols defaulted.
+
     For BEDs with extra columns not handled by derived are stored in extraCols.
     If extra columns is a tuple, include namedtuple, it is stored as-is, otherwise
     a copy is stored.
@@ -56,25 +58,32 @@ class Bed:
         self.itemRgb = itemRgb
         self.blocks = copy.copy(blocks)
         self.extraCols = extraCols if isinstance(extraCols, tuple) else copy.copy(extraCols)
+        self.numStdCols = self._calcNumStdCols(numStdCols)
 
-        if numStdCols is None:
-            # computer based on what is specified
+    def _calcNumStdCols(self, specNumStdCols):
+        # computer based on maximum specified
+        if self.blocks is not None:
+            numStdCols = 12
+        elif self.itemRgb is not None:
+            numStdCols = 9
+        elif self.thickStart is not None:
+            numStdCols = 8
+        elif self.strand is not None:
+            numStdCols = 6
+        elif self.score is not None:
+            numStdCols = 5
+        elif self.name is not None:
+            numStdCols = 4
+        else:
             numStdCols = 3
-            if name is not None:
-                numStdCols += 1
-            if score is not None:
-                numStdCols += 1
-            if strand is not None:
-                numStdCols += 1
-            if thickStart is not None:
-                numStdCols += 2
-            if thickStart is not None:
-                numStdCols += 2
-            if itemRgb is not None:
-                numStdCols += 1
-            if blocks is not None:
-                numStdCols += 3
-        self.numStdCols = numStdCols
+        if specNumStdCols is not None:
+            if not (3 <= specNumStdCols <= 12):
+                raise PycbioException(f"numStdCols must be in the range 3 to 12, got {specNumStdCols}")
+            if numStdCols > specNumStdCols:
+                raise PycbioException(f"numStdCols was specified as {specNumStdCols}, however the arguments supplied require {numStdCols} standard columns")
+            if specNumStdCols > numStdCols:
+                numStdCols = specNumStdCols
+        return numStdCols
 
     def addBlock(self, start, end):
         """add a new block"""
@@ -104,25 +113,26 @@ class Bed:
         for blk in self.blocks:
             relStarts.append(str(blk.start - self.chromStart))
             sizes.append(str(len(blk)))
-        return [intArrayJoin(sizes), intArrayJoin(relStarts)]
+        return str(len(self.blocks)), intArrayJoin(sizes), intArrayJoin(relStarts)
+
+    def _defaultBlockColumns(self):
+        return "1", "0", str(self.chromEnd - self.chromStart)
 
     def toRow(self):
         row = [self.chrom, str(self.chromStart), str(self.chromEnd)]
         if self.numStdCols >= 4:
-            row.append(defaultIfNone(self.name))
+            row.append(self.name if self.name is not None else f"{self.chrom}:{self.chromStart}-{self.chromEnd}")
         if self.numStdCols >= 5:
             row.append(defaultIfNone(self.score, 0))
         if self.numStdCols >= 6:
             row.append(defaultIfNone(self.strand, '+'))
-        if self.numStdCols >= 7:
-            row.append(defaultIfNone(self.thickStart, self.chromEnd))
         if self.numStdCols >= 8:
+            row.append(defaultIfNone(self.thickStart, self.chromEnd))
             row.append(defaultIfNone(self.thickEnd, self.chromEnd))
         if self.numStdCols >= 9:
-            row.append(str(self.itemRgb))
+            row.append(defaultIfNone(str(self.itemRgb), "0,0,0"))
         if self.numStdCols >= 10:
-            row.append(str(len(self.blocks)))
-            row.extend(self._getBlockColumns())
+            row.extend(self._getBlockColumns() if self.blocks is not None else self._defaultBlockColumns())
         if self.extraCols is not None:
             row.extend([defaultIfNone(c) for c in self.extraCols])
         return row
