@@ -6,6 +6,7 @@ if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.hgdata.bed import Bed, BedTable, BedReader
+from pycbio.sys.color import Color
 import pipettor
 
 class BedGame(Bed):
@@ -100,7 +101,7 @@ class BedTests(TestCaseBase):
             self.assertEqual(bp, b0)
 
     def testDefaultingStdCols(self):
-        bed = Bed("chr22", 100, 200, itemRgb="255,0,255")
+        bed = Bed("chr22", 100, 200, itemRgb=Color.fromRgb8(255, 0, 255))
         self.assertEqual(bed.toRow(), ["chr22", "100", "200", 'chr22:100-200', '0', '+', '200', '200', '255,0,255'])
 
         bed = Bed("chr22", 100, 200, "Fred", itemRgb="255,0,255", numStdCols=12)

@@ -1,6 +1,7 @@
 # Copyright 2006-2022 Mark Diekhans
 import copy
 from pycbio import PycbioException
+from pycbio.sys.color import Color
 from pycbio.tsv.tabFile import TabFile, TabFileReader
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin
 from collections import defaultdict, namedtuple
@@ -39,6 +40,8 @@ class Bed:
     For BEDs with extra columns not handled by derived are stored in extraCols.
     If extra columns is a tuple, include namedtuple, it is stored as-is, otherwise
     a copy is stored.
+
+    itemRgb can be a string or Color object
     """
     __slots__ = ("chrom", "chromStart", "chromEnd", "name", "score",
                  "strand", "thickStart", "thickEnd", "itemRgb", "blocks",
@@ -55,7 +58,7 @@ class Bed:
         self.strand = strand
         self.thickStart = thickStart
         self.thickEnd = thickEnd
-        self.itemRgb = itemRgb
+        self.itemRgb = itemRgb.toRgb8Str() if isinstance(itemRgb, Color) else itemRgb
         self.blocks = copy.copy(blocks)
         self.extraCols = extraCols if isinstance(extraCols, tuple) else copy.copy(extraCols)
         self.numStdCols = self._calcNumStdCols(numStdCols)
