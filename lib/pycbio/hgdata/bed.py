@@ -104,8 +104,6 @@ class Bed:
         """Returns the number of columns in the BED when formatted as a row."""
         # exclude extraCols
         n = self.numStdCols
-        if n >= 9:
-            n += 2  # blocks take up three columns
         if self.extraCols is not None:
             n += len(self.extraCols)
         return n

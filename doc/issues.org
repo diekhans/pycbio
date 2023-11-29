@@ -210,5 +210,6 @@ maybe a single function to parse RGBA and RGB8 strs
 more rgba tests
 
 * Bed extension needs work (see decoration.py)
+need to validate override function
 
-
+* maybe store BED itemRgb, fillColor, as a Color and convert on format.
