@@ -211,5 +211,6 @@ more rgba tests
 
 * Bed extension needs work (see decoration.py)
 need to validate override function
+bed.encodeRow maybe in autoSql or tab modules
 
 * maybe store BED itemRgb, fillColor, as a Color and convert on format.

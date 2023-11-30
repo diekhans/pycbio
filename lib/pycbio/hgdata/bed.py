@@ -16,8 +16,14 @@ bed12Columns = ("chrom", "chromStart", "chromEnd", "name", "score", "strand", "t
 
 
 def defaultIfNone(v, dflt=""):
-    # also converts to a string
+    "also converts to a string"
     return str(v) if v is not None else str(dflt)
+
+def encodeRow(row):
+    """convert a list of values to a list of strings, making None empty otherwise ensure it is
+    """
+    return [str(v) if v is not None else "" for v in row]
+
 
 class BedBlock(namedtuple("Block", ("start", "end"))):
     """A block in the BED.  Coordinates are absolute, not relative and are transformed on write.
@@ -122,7 +128,7 @@ class Bed:
     def toRow(self):
         row = [self.chrom, str(self.chromStart), str(self.chromEnd)]
         if self.numStdCols >= 4:
-            row.append(self.name if self.name is not None else f"{self.chrom}:{self.chromStart}-{self.chromEnd}")
+            row.append(str(self.name) if self.name is not None else f"{self.chrom}:{self.chromStart}-{self.chromEnd}")
         if self.numStdCols >= 5:
             row.append(defaultIfNone(self.score, 0))
         if self.numStdCols >= 6:
@@ -135,7 +141,7 @@ class Bed:
         if self.numStdCols >= 10:
             row.extend(self._getBlockColumns() if self.blocks is not None else self._defaultBlockColumns())
         if self.extraCols is not None:
-            row.extend([defaultIfNone(c) for c in self.extraCols])
+            row.extend(encodeRow(self.extraCols))
         return row
 
     @staticmethod
