@@ -39,6 +39,10 @@ class Decoration(Bed):
                  decoratedItemName, decoratedItemStart, decoratedItemEnd,
                  *, strand=None, itemRgb=None, blocks=None,
                  glyph=None, fillColor=None, decoExtraCols=None):
+        if blocks is None:
+            blocks = [BedBlock(chromStart, chromEnd)]
+        if itemRgb is None:
+            itemRgb = "0,0,0"
         super(Decoration, self).__init__(chrom, chromStart, chromEnd, name=name, score=0, strand=strand,
                                          thickStart=chromStart, thickEnd=chromEnd, itemRgb=itemRgb, blocks=blocks,
                                          numStdCols=12)
@@ -53,14 +57,11 @@ class Decoration(Bed):
         else:
             self.style = Style.glyph
             self.glyph = Glyph(glyph)
-        if blocks is None:
-            blocks = [BedBlock(chromStart, chromEnd)]
-        if itemRgb is None:
-            itemRgb = "0,0,0"
         if fillColor is None:
-            self.fillColor = itemRgb
+            fillColor = itemRgb
         if isinstance(fillColor, Color):
-            self.fillColor = fillColor.toRgba8Str()
+            fillColor = fillColor.toRgba8Str()
+        self.fillColor = fillColor
 
     @classmethod
     def parse(cls, row, numStdCols=None):
