@@ -214,3 +214,5 @@ need to validate override function
 bed.encodeRow maybe in autoSql or tab modules
 
 * maybe store BED itemRgb, fillColor, as a Color and convert on format.
+
+* check this on the using realpath to find library: https://patmaddox.com/doc/trunk/www/2023-12-sh-relative-shell-script-includes-with-realpath-on-freebsd/
