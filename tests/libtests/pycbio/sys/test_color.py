@@ -3,6 +3,7 @@ import unittest
 import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
+from pycbio import PycbioException
 from pycbio.sys.color import Color
 from pycbio.sys.svgcolors import SvgColors
 from pycbio.sys.testCaseBase import TestCaseBase
@@ -115,8 +116,12 @@ class SvgColorsTests(TestCaseBase):
     def testLookup(self):
         self.assertEqual(SvgColors.yellowgreen, SvgColors.lookup("yellowgreen"))
 
+    def testLoopErr(self):
+        with self.assertRaisesRegex(PycbioException, "^unknown SVG color 'fred'$"):
+            SvgColors.lookup("fred")
+
     def testLookupBad(self):
-        with self.assertRaises(AttributeError):
+        with self.assertRaisesRegex(PycbioException, "^unknown SVG color 'evil'$"):
             SvgColors.lookup("evil")
 
     def testGetColors(self):
@@ -132,7 +137,17 @@ class SvgColorsTests(TestCaseBase):
         self.assertEqual(SvgColors.getClosestName(near), "skyblue")
         self.assertEqual(SvgColors.getClosestColor(near), SvgColors.skyblue)
 
-# FIXME: many more tests needed
+    def testGetName(self):
+        self.assertEqual(SvgColors.getName(SvgColors.skyblue), "skyblue")
+
+    def testGetNameObjErr(self):
+        with self.assertRaisesRegex(PycbioException, "^object is not a Color '<class 'dict'>'$"):
+            SvgColors.getName(dict())
+
+    def testGetNameNotSvgErr(self):
+        with self.assertRaisesRegex(PycbioException, "^color is not an SVG color object '0.1200,0.4500,0.0010'$"):
+            SvgColors.getName(Color.fromRgb(0.12, 0.45, 0.001))
+
 
 def suite():
     ts = unittest.TestSuite()

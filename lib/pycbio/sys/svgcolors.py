@@ -3,8 +3,8 @@
 # table lifted from
 #  https://pypi.org/project/webcolors/
 
+from pycbio import PycbioException
 from pycbio.sys.color import Color
-
 
 def _mkcolor(rgb8):
     return Color.fromPackRgb8(rgb8)
@@ -169,6 +169,9 @@ class SvgColors:
     _names = None
     _colors = None
 
+    # table of id of color objects to name
+    _svgcolorIdNameMap = {}
+
     @classmethod
     def _initColors(cls):
         names = []
@@ -178,13 +181,31 @@ class SvgColors:
             if isinstance(c, Color):
                 names.append(n)
                 colors.append(c)
+                cls._svgcolorIdNameMap[id(c)] = n
         cls._names = tuple(names)
         cls._colors = tuple(colors)
 
     @classmethod
     def lookup(cls, name):
         "convert case-insensitive name to color"
-        return getattr(cls, name.lower())
+        try:
+            return getattr(cls, name.lower())
+        except AttributeError:
+            raise PycbioException(f"unknown SVG color '{name}'")
+
+    @classmethod
+    def getName(cls, color):
+        """Get the name for a color. The color must be one of the members
+        of this class"""
+        if cls._names is None:
+            cls._initColors()
+        try:
+            return cls._svgcolorIdNameMap[id(color)]
+        except KeyError:
+            if not isinstance(color, Color):
+                raise PycbioException(f"object is not a Color '{type(color)}'")
+            else:
+                raise PycbioException(f"color is not an SVG color object '{color.toRgbStr()}'")
 
     @classmethod
     def getNames(cls):
