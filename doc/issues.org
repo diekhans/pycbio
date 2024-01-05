@@ -119,7 +119,9 @@ tests/libtests/pycbio/hgdata/coordsTests.py
 ** use more complete logging for non-stderr logs
 ** need to think it through a bit more; need to better understand how to configure propagation, handles
 see ~/compbio/gencode/projs/lrgasp/src/lrgasp-submissions/bin/lrgasp-synapse-download
-** macos syslog no longer works
+** macos syslog no longer works with apple unified logging
+*** https://developer.apple.com/documentation/os/logging
+*** https://pypi.org/project/pyoslog/
 ** ident not pass through to syslog
 
 * add dynamic mixing function to typeOps
