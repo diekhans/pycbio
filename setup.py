@@ -1,15 +1,29 @@
 from setuptools import setup, find_packages
+import sys
+import subprocess
+
+def have_mysql_client_lib():
+    "check for mysql or mariadb libraries in the same way mysqlclient checks"
+    for pkg in ("mysqlclient", "mariadb", "libmariadb"):
+        if subprocess.run(["pkg-config", "--exists", pkg]).returncode == 0:
+            return True
+    return False
 
 requirements = [
     'pipettor>=0.5.0',
-    'numpy',
     'biopython',
-    'mysqlclient',
     'apsw',
     'deprecation',
     'flake8',
     'pyBigWig',
 ]
+
+if have_mysql_client_lib():
+    requirements.append('mysqlclient')
+else:
+    print("Warning: mysql or mariadb libraries are not found, mysql functionality will not be available", file=sys.stderr)
+
+
 
 setup(
     name = 'pycbio',
