@@ -35,7 +35,7 @@ class TsvRow:
         try:
             col = row[i]
             ct = self._colTypes_[i]
-            if type(ct) == tuple:
+            if type(ct) is tuple:
                 col = ct[0](col)
             elif ct:
                 col = ct(col)
@@ -78,7 +78,7 @@ class TsvRow:
             ct = self._colTypes_[i]
             if col is None:
                 col = ""
-            elif type(ct) == tuple:
+            elif type(ct) is tuple:
                 col = ct[1](col)
             else:
                 col = str(col)

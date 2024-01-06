@@ -46,7 +46,7 @@ class ReadTests(TestCaseBase):
 
     @staticmethod
     def onOffFmt(val):
-        if type(val) != bool:
+        if type(val) is not bool:
             raise TypeError("onOff value not a bool: " + str(type(val)))
         if val:
             return "on"

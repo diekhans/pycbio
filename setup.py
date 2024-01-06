@@ -10,7 +10,7 @@ def have_mysql_client_lib():
     return False
 
 requirements = [
-    'pipettor>=0.5.0',
+    'pipettor',
     'biopython',
     'apsw',
     'deprecation',
