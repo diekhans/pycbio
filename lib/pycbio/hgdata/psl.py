@@ -235,6 +235,35 @@ class Psl:
         blk.iBlk = len(self.blocks)
         self.blocks.append(blk)
 
+    def _updateIndelCnts(self, prevBlk, blk):
+        if blk.qStart > prevBlk.qEnd:
+            self.qNumInsert += 1
+            self.qBaseInsert += blk.qStart - prevBlk.qEnd
+        if blk.tStart > prevBlk.tEnd:
+            self.tNumInsert += 1
+            self.tBaseInsert += blk.tStart - prevBlk.tEnd
+
+    def updateBounds(self):
+        "update bounds from the blocks"
+        self.qStart = self.blocks[0].qStart
+        self.qEnd = self.blocks[-1].qEnd
+        if self.qStrand == '-':
+            self.qStart, self.qEnd = reverseCoords(self.qStart, self.qEnd, self.qSize)
+        self.tStart = self.blocks[0].tStart
+        self.tEnd = self.blocks[-1].tEnd
+        if self.tStrand == '-':
+            self.tStart, self.tEnd = reverseCoords(self.tStart, self.tEnd, self.tSize)
+
+    def updateCounts(self):
+        "compute counts, calling everything a match"
+        self.match = self.misMatch = self.repMatch = self.nCount = self.qNumInsert = self.qBaseInsert = self.tNumInsert = self.tBaseInsert = 0
+        prevBlk = self.blocks[0]
+        self.match = len(prevBlk)
+        for blk in self.blocks:
+            self.match += len(blk)
+            self._updateIndelCnts(prevBlk, blk)
+            prevBlk = blk
+
     @property
     def blockCount(self):
         return len(self.blocks)
