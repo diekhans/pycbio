@@ -5,6 +5,14 @@ class PycbioException(Exception):
     """Base class for Pycbio exceptions."""
     pass
 
+class PycbioOptionalFeatureException(PycbioException):
+    """Thrown to indicate an optional feature is missing"""
+    def __init__(self, feature, reason):
+        super(PycbioOptionalFeatureException, self).__init__(f"{feature} is disabled due to {reason}")
+        self.feature = feature
+        self.reason = reason
+
+
 def pycbioExFormat(ex):
     """Format any type of exception into list of new-line terminated, handling
     PycbioException objects and saved stack traces"""

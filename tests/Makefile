@@ -1,6 +1,8 @@
 root = ..
 include ${root}/defs.mk
 
+export PYTHONPATH:=${root}/lib:libtests:${PYTHONPATH}
+
 subdirs = libtests progtests
 
 all:

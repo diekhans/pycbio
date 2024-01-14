@@ -2,22 +2,18 @@
 import unittest
 import sys
 if __name__ == '__main__':
-    sys.path.insert(0, "../../../../lib")
+    sys.path = ["../../../../lib", "../.."] + sys.path
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.hgdata.pslMySqlReader import PslMySqlReader
 from pycbio.hgdata.hgConf import HgConf
-from pycbio.hgdata import hgDb
-from socket import gethostname
+from testlib.mysqlCheck import mysqlTestsEnvAvailable, skip_if_no_mysql
+
+if mysqlTestsEnvAvailable():
+    from pycbio.hgdata import hgDb
+    from pycbio.hgdata.pslMySqlReader import PslMySqlReader
 
 # only run on these machines
-testHosts = set(["hgwdev"])
 testDb = "hg18"
 testTbl = "refSeqAli"
-
-onTestHost = gethostname() in testHosts
-if not onTestHost:
-    sys.stderr.write("Note: not running on test host, skipping PslMySqlTest\n")
-
 
 class DbReadTests(TestCaseBase):
     """database read tests.  Only run on certain hosts"""
@@ -29,9 +25,8 @@ class DbReadTests(TestCaseBase):
             self.hgConf = HgConf()
         return hgDb.connect(db=testDb, hgConf=self.hgConf)
 
+    @skip_if_no_mysql()
     def testDbQueryLoad(self):
-        if not onTestHost:
-            return
         conn = self._connect()
         try:
             # just read 10 PSLs
@@ -42,9 +37,8 @@ class DbReadTests(TestCaseBase):
         finally:
             conn.close()
 
+    @skip_if_no_mysql()
     def testDbRangeLoad(self):
-        if not onTestHost:
-            return
         conn = self._connect()
         qNames = set()
         try:
@@ -61,10 +55,9 @@ class DbReadTests(TestCaseBase):
 
 def suite():
     ts = unittest.TestSuite()
-    if onTestHost:
-        ts.addTest(unittest.makeSuite(DbReadTests))
+    ts.addTest(unittest.makeSuite(DbReadTests))
     return ts
 
 
-if __name__ == '__main__' and onTestHost:
+if __name__ == '__main__':
     unittest.main()

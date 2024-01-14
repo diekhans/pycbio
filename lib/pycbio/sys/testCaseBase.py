@@ -12,7 +12,6 @@ import traceback
 import warnings
 import shlex
 from pycbio.sys import fileOps
-from pycbio.hgdata.hgConf import HgConf
 
 
 try:
@@ -222,20 +221,8 @@ class TestCaseBase(unittest.TestCase):
         else:
             return False
 
-    warnedAboutHgConf = False
-
     def skipWarnTest(self, msg):
         "warn and mark test as skipped"
         msg = f"WARNING: skipping {self.id()}: {msg}"
         print(msg, file=sys.stderr)
         self.skipTest(msg)
-
-    def haveHgConf(self):
-        "check for ~/hg.conf so test can be skipped without it. Warn if not available"
-        try:
-            HgConf()
-            return True
-        except FileNotFoundError:
-            if not self.warnedAboutHgConf:
-                self.skipWarnTest("hg.conf not found, database tests disabled: {}".format(HgConf.getHgConf()))
-            return False

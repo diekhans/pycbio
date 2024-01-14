@@ -1,7 +1,7 @@
 # Copyright 2006-2022 Mark Diekhans
 """Connect to UCSC genome database using info in .hg.conf """
 from pycbio.hgdata.hgConf import HgConf
-from pycbio.db import mysqlOps
+from pycbio.db import mysqlOps  # will fail is MySQLdb is not installed
 import MySQLdb
 import MySQLdb.cursors
 import MySQLdb.converters

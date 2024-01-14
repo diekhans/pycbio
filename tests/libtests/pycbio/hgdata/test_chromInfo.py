@@ -4,12 +4,13 @@ import sys
 import os.path as osp
 
 if __name__ == '__main__':
-    sys.path.insert(0, "../../../../lib")
-
+    sys.path = ["../../../../lib", "../.."] + sys.path
 from pycbio.hgdata.chromInfo import ChromInfoTbl
-from pycbio.hgdata.hgDb import connect
 from pycbio.sys.testCaseBase import TestCaseBase
-from MySQLdb import OperationalError
+from testlib.mysqlCheck import mysqlTestsEnvAvailable, skip_if_no_mysql
+
+if mysqlTestsEnvAvailable():
+    from pycbio.hgdata.hgDb import connect
 
 class ChromInfoTests(TestCaseBase):
     expect10Chroms = (("chr1", 248956422),
@@ -32,17 +33,12 @@ class ChromInfoTests(TestCaseBase):
         chroms = ChromInfoTbl.loadFile(self.getInputFile("chrom.sizes"))
         self._checkChroms(chroms)
 
+    @skip_if_no_mysql()
     def testLoadDb(self):
         hgdb = "hg38"
-        if self.haveHgConf():
-            try:
-                conn = connect(hgdb)
-            except OperationalError as ex:
-                self.skipWarnTest(f"can not connect to {hgdb}: {ex}")
-            else:
-                chroms = ChromInfoTbl.loadDb(conn)
-                self._checkChroms(chroms)
-                conn.close()
+        with connect(hgdb) as conn:
+            chroms = ChromInfoTbl.loadDb(conn)
+            self._checkChroms(chroms)
 
     def testLoadTwoBit(self):
         hg38TwoBit = "/hive/data/genomes/hg38/hg38.2bit"

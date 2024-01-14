@@ -1,14 +1,14 @@
 # Copyright 2006-2022 Mark Diekhans
 """Operations for accessing mysql"""
 import warnings
-from pycbio import PycbioException
+from pycbio import PycbioOptionalFeatureException
 try:
     import MySQLdb   # mysqlclient is required for python 3
     from MySQLdb.cursors import DictCursor  # noqa: F401
     from MySQLdb.cursors import Cursor
     import MySQLdb.converters
 except ModuleNotFoundError as ex:
-    raise PycbioException("MySQL/MariaDb support not available without mysqlclient (MySQLdb) package") from ex
+    raise PycbioOptionalFeatureException("mysql", "MySQL/MariaDb support not available without mysqlclient (MySQLdb) package") from ex
 
 _mySqlErrorOnWarnDone = False
 

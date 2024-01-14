@@ -5,7 +5,6 @@ sources.
 # Copyright 2006-2022 Mark Diekhans
 from collections import namedtuple
 from pycbio.sys import fileOps
-from pycbio.db import mysqlOps
 import pipettor
 
 class ChromInfo(namedtuple("chromInfo",
@@ -33,6 +32,8 @@ class ChromInfoTbl(dict):
     @staticmethod
     def loadDb(conn):
         "Load from chromoInfo table"
+        from pycbio.db import mysqlOps  # optional
+
         chroms = ChromInfoTbl()
         cur = conn.cursor(cursorclass=mysqlOps.DictCursor)
         try:
