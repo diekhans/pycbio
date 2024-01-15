@@ -7,8 +7,6 @@ see decorator in tests/libtests/pycbio/hgdata/test_pslMySql.py
 this can be make general, for now in TestCaseBase.  Eventually
 isolate this more, we use it less and less.
 
-* remove mysql stuff from TestCaseBase
-
 * should rmTree use shutil.rmtree
 rmTree fails on errors other than missing files, but can do this with onerror
 ** need more tests

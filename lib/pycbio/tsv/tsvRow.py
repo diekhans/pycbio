@@ -61,6 +61,14 @@ class TsvRow:
         else:
             setattr(self, key, val)
 
+    def get(self, key, default=None):
+        """Return the value for string key or numeric index, if key is in the
+        dictionary, else default."""
+        if isinstance(key, int):
+            return self._columns_[key] if key < len(self._columns_) else default
+        else:
+            return getattr(self, key, default)
+
     def __len__(self):
         return len(self._columns_)
 
