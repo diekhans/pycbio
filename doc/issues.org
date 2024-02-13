@@ -23,6 +23,7 @@ rmTree fails on errors other than missing files, but can do this with onerror
 * add TsvWriter
 
 * clean up TsvRow
+could it be a ObjDict?
 
 * add functions to build bigBed stuff
 
