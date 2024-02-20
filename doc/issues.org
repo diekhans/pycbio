@@ -2,6 +2,10 @@
 
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
+* not sure if Bed will work if create Bed() with None blocks then add blocks later
+numStdCols and defaulting might mess up.
+add test.
+
 * need to finish making tests run without mysql
 see decorator in tests/libtests/pycbio/hgdata/test_pslMySql.py
 this can be make general, for now in TestCaseBase.  Eventually
