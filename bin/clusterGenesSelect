@@ -138,10 +138,12 @@ class ClusterSelect:
                 self._writeClusterBed(outFh, cl)
         outFh.close()
 
+def clusterGenesSelect(opts):
+    clSelect = ClusterSelect(opts)
+    if opts.clusterBedOutput:
+        clSelect.outClusterBed(opts.outFile)
+    else:
+        clSelect.outClusters(opts.outFile)
 
-opts = parseArgs()
-clSelect = ClusterSelect(opts)
-if opts.clusterBedOutput:
-    clSelect.outClusterBed(opts.outFile)
-else:
-    clSelect.outClusters(opts.outFile)
+
+clusterGenesSelect(parseArgs())
