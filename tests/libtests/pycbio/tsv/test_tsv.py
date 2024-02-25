@@ -32,7 +32,6 @@ class ReadTests(TestCaseBase):
         d = tsvRowToDict(r)
         self.assertEqual(d["qName"], "BC032353")
 
-
     def testMultiIdx(self):
         tsv = TsvTable(self.getInputFile("mrna1.tsv"), multiKeyCols=("tName", "tStart"))
         rows = tsv.idx.tName["chr1"]
