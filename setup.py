@@ -14,6 +14,7 @@ requirements = [
     'biopython',
     'apsw',
     'deprecation',
+    'unidecode',
     'flake8',
     'pyBigWig',
 ]
