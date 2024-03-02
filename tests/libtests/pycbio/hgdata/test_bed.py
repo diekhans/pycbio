@@ -5,7 +5,7 @@ import pickle
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.hgdata.bed import Bed, BedTable, BedReader
+from pycbio.hgdata.bed import Bed, BedBlock, BedTable, BedReader
 from pycbio.sys.color import Color
 import pipettor
 
@@ -111,6 +111,19 @@ class BedTests(TestCaseBase):
                   extraCols=("Star", "Trek"))
         self.assertEqual(bed.toRow(), ["chr22", "100", "200", 'Barney', '0', '+', '200', '200', '255,0,255', '1', '0,', '100,', "Star", "Trek"])
 
+
+    def testGaps(self):
+        beds = BedTable(self.getInputFile("fromPslMinTest.bed"))
+        self.assertEqual(beds[0].getGaps(),
+                         (BedBlock(119575687, 119576781),
+                          BedBlock(119576945, 119586741),
+                          BedBlock(119586891, 119587111),
+                          BedBlock(119587223, 119587592),
+                          BedBlock(119587744, 119588035),
+                          BedBlock(119588206, 119588288),
+                          BedBlock(119588426, 119588575),
+                          BedBlock(119588671, 119588895),
+                          BedBlock(119588952, 119589051)))
 
 def suite():
     ts = unittest.TestSuite()

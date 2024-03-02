@@ -239,6 +239,17 @@ class Bed:
         else:
             return sum([len(b) for b in self.blocks])
 
+    def getGaps(self):
+        """return a tuple of BedBlocks for the coordinates of the gaps between
+        the blocks, which are often introns"""
+        gaps = []
+        prevBlk = None
+        for blk in self.blocks:
+            if prevBlk is not None:
+                gaps.append(BedBlock(prevBlk.end, blk.start))
+            prevBlk = blk
+        return tuple(gaps)
+
     def write(self, fh):
         """write BED to a tab-separated file"""
         fh.write(str(self))
