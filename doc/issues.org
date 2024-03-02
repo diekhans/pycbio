@@ -2,6 +2,13 @@
 
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
+* add standard catch in programs
+** hide stack of some/all errors without debug
+ssl.SSLCertVerificationError ?
+
+* ncbiGbFetch - BioPython already has a retry loop
+
+
 * not sure if Bed will work if create Bed() with None blocks then add blocks later
 numStdCols and defaulting might mess up.
 add test.
