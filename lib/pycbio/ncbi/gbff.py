@@ -201,8 +201,8 @@ class Coords(list):
         coords = Coords()
         if isinstance(feat.location, SeqFeature.CompoundLocation):
             for location in feat.location.parts:
-                coords._cnvSeqFeature(location, feat.strand)
+                coords._cnvSeqFeature(location, feat.location.strand)
         else:
-            coords._cnvSeqFeature(feat.location, feat.strand)
+            coords._cnvSeqFeature(feat.location, feat.location.strand)
         coords.sort()
         return coords
