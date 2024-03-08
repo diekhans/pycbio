@@ -25,6 +25,7 @@ from collections import namedtuple
 # |----+-----------------------------------+---------+---------|
 
 consumeQueryOps = frozenset(['M', 'I', 'S', '=', 'X'])
+consumeQueryHardOps = frozenset(consumeQueryOps | frozenset(['H']))
 consumeTargetOps = frozenset(['M', 'D', 'N', '=', 'X'])
 validOps = frozenset("MIDNSHP=X")
 
@@ -86,6 +87,10 @@ class CigarRun(namedtuple("CigarRun", ("code", "count"))):
     @property
     def consumesQuery(self):
         return self.code in consumeQueryOps
+
+    @property
+    def consumesQueryHard(self):
+        return self.code in consumeQueryHardOps
 
     @property
     def consumesTarget(self):

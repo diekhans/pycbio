@@ -143,6 +143,13 @@ class MiniMapCigarTests(TestCaseBase):
                 pslFromCigar(*args).write(fh)
         self.diffExpected(".psl")
 
+    def testMultiMapSam(self):
+        # contains supplemental reads
+        with open(self.getOutputFile(".psl"), 'w') as fh:
+            for args in samReader(self.getInputFile("multimap.sam")):
+                pslFromCigar(*args).write(fh)
+        self.diffExpected(".psl")
+
 def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(ReadTests))

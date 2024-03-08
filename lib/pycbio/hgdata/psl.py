@@ -625,7 +625,7 @@ def _addCigarBlocks(cigar, psl, qNext, tNext):
             _processTInsert(psl, op.count, tNext)
         elif op.qinsert:
             _processQInsert(psl, op.count, qNext)
-        if op.consumesQuery:
+        if op.consumesQueryHard:  # supplemental are hard-clipped
             qNext += op.count
         if op.consumesTarget:
             tNext += op.count
