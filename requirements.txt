@@ -4,4 +4,3 @@ apsw
 deprecation
 unidecode
 pyBigWig
-mysqlclient
