@@ -8,6 +8,7 @@ ssl.SSLCertVerificationError ?
 
 * ncbiGbFetch - BioPython already has a retry loop
 
+* bx-python has an interval tree
 
 * not sure if Bed will work if create Bed() with None blocks then add blocks later
 numStdCols and defaulting might mess up.
