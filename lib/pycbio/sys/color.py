@@ -243,3 +243,7 @@ class Color(namedtuple("Color", ("red", "green", "blue",
         return math.sqrt(pow(self.red - other.red, 2) +
                          pow(self.green - other.green, 2) +
                          pow(self.blue - other.blue, 2))
+
+    def complementary(self):
+        "return complementary color to this one"
+        return Color.fromRgb(1.0 - self.red, 1.0 - self.green, 1.0 - self.blue, self.alpha)

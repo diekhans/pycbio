@@ -148,6 +148,10 @@ class SvgColorsTests(TestCaseBase):
         with self.assertRaisesRegex(PycbioException, "^color is not an SVG color object '0.1200,0.4500,0.0010'$"):
             SvgColors.getName(Color.fromRgb(0.12, 0.45, 0.001))
 
+    def testComplementary(self):
+        c1 = Color.fromRgb(0.5, 0.3, 0.4)
+        self.assertEqual(c1.complementary(), Color.fromRgb(0.5, 0.7, 0.6))
+
 
 def suite():
     ts = unittest.TestSuite()

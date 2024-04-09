@@ -111,7 +111,6 @@ class BedTests(TestCaseBase):
                   extraCols=("Star", "Trek"))
         self.assertEqual(bed.toRow(), ["chr22", "100", "200", 'Barney', '0', '+', '200', '200', '255,0,255', '1', '0,', '100,', "Star", "Trek"])
 
-
     def testGaps(self):
         beds = BedTable(self.getInputFile("fromPslMinTest.bed"))
         self.assertEqual(beds[0].getGaps(),
