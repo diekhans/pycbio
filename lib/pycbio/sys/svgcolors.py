@@ -219,13 +219,11 @@ class SvgColors:
         if cls._names is None:
             cls._initColors()
         minIdx = 0
-        minColor = cls._colors[minIdx]
-        minDist = color.distance(minColor)
+        minDist = color.distance(cls._colors[minIdx])
         for i in range(1, len(cls._colors)):
             d = color.distance(cls._colors[i])
             if d < minDist:
                 minIdx = i
-                minColor = cls._colors[i]
                 minDist = d
         return minIdx
 
