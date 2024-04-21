@@ -48,7 +48,7 @@ class TsvReader:
     are ignored and not part of the first column name.
     """
 
-    def __init__(self, fileName, rowClass=None, typeMap=None, defaultColType=None, columns=None, columnNameMapper=None,
+    def __init__(self, fileName, *, rowClass=None, typeMap=None, defaultColType=None, columns=None, columnNameMapper=None,
                  ignoreExtraCols=False, inFh=None, allowEmpty=False, dialect=csv.excel_tab,
                  encoding=None, errors=None):
         """Open TSV file and read header into object.  Removes leading # from
