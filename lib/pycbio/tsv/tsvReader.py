@@ -84,7 +84,6 @@ class TsvReader:
         self.rowClass = rowClass
         if rowClass is None:
             self.rowClass = TsvRow
-        self.columnNameMapper = columnNameMapper
         self.colTypes = None
         self.ignoreExtraCols = ignoreExtraCols
         self.inFh = None
@@ -92,13 +91,13 @@ class TsvReader:
         self._reader = None
 
         try:
-            self._openTsv(fileName, typeMap, defaultColType, columns, inFh,
+            self._openTsv(fileName, typeMap, defaultColType, columns, columnNameMapper, inFh,
                           allowEmpty, dialect, encoding, errors)
         except Exception as ex:
             self._closeTsv()
             raise TsvError(f"open of TSV failed {fileName}") from ex
 
-    def _openTsv(self, fileName, typeMap, defaultColType, columns, inFh,
+    def _openTsv(self, fileName, typeMap, defaultColType, columns, columnNameMapper, inFh,
                  allowEmpty, dialect, encoding, errors):
         if inFh is not None:
             self.inFh = inFh
@@ -107,10 +106,9 @@ class TsvReader:
             self.inFh = fileOps.opengz(fileName, encoding=encoding, errors=errors)
             self._shouldClose = True
         self._reader = csv.reader(self.inFh, dialect=dialect)
-        if columns:
-            self._setupColumns(columns)
-        else:
-            self._readHeader(allowEmpty)
+        if columns is None:
+            columns = self._readHeader(allowEmpty)
+        self._setupColumns(columns, columnNameMapper)
         self._initColTypes(typeMap, defaultColType)
 
     def _closeTsv(self):
@@ -133,18 +131,19 @@ class TsvReader:
         try:
             row = next(self._reader)
             _dehashHeader(row)
-            self._setupColumns(row)
+            return row
         except StopIteration:
             if not allowEmpty:
                 raise TsvError("empty TSV file", reader=self)
+            return []
 
-    def _setupColumns(self, columns):
+    def _setupColumns(self, columns, columnNameMapper):
         # n.b. columns could be passed in from client, must copy
         i = 0
         for col in columns:
-            if self.columnNameMapper is not None:
+            if columnNameMapper is not None:
                 self.extColumns.append(col)
-                col = self.columnNameMapper(col)
+                col = columnNameMapper(col)
             self.columns.append(col)
             if col in self.colMap:
                 raise TsvError("Duplicate column name: '{}'".format(col))
