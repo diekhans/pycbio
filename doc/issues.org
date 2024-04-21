@@ -244,3 +244,20 @@ bed.encodeRow maybe in autoSql or tab modules
 * check this on the using realpath to find library: https://patmaddox.com/doc/trunk/www/2023-12-sh-relative-shell-script-includes-with-realpath-on-freebsd/
 
 * need more Color and SvgColors tests
+
+* tsvreader issues
+** pass owndership of row to Row instead of having Row inherit from list
+** make rowClass (rename rowFactory) so that it can be able to construct and object.  Move parsing of columns outside of tsvRow (good for peewee)
+** create error with file name/line number
+** carefully consider naming of functions in Row, as they could conflict with fields.  Maybe put in a base-class??
+** put in same module as TSV
+** is colMap needed any more???
+** need to add write stuff. (see GeneCheck), where str() is called for all column types
+** add type mapping functions that gets column name
+** rename  typeMap -> colTypes
+** make a column object.
+** document how colName mapping and type mappings works together
+** check if column is a valid python field name
+** switch to row derived from namedtuple
+** rowClass interface is hacky.  It could be a keyword/value and not have to do column lookup.
+** add default handling for column not in file to typemap
