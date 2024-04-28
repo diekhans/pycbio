@@ -2,6 +2,8 @@
 
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
+* drop pycbio/db/dbDict.py, never been used
+
 * add standard catch in programs
 ** hide stack of some/all errors without debug
 ssl.SSLCertVerificationError ?
