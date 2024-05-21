@@ -12,7 +12,10 @@ ssl.SSLCertVerificationError ?
 
 * bx-python has an interval tree
 
+* Psl remove PslBlock back references, make named tuple
+
 * Bed add automatic conversions from std to int if needed.
+what does this even mean?
 
 * need to finish making tests run without mysql
 see decorator in tests/libtests/pycbio/hgdata/test_pslMySql.py
