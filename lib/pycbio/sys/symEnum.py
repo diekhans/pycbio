@@ -1,12 +1,9 @@
 # Copyright 2006-2022 Mark Diekhans
 import sys
-from enum import Enum, EnumMeta, _EnumDict
+from enum import Enum, EnumMeta, _EnumDict, auto
 from functools import total_ordering
 
 # FIXME: should really be built like other IntEnum, etc
-
-from enum import auto
-
 
 SymEnum = None  # class defined after use
 
