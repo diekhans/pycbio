@@ -102,6 +102,8 @@ class Bed:
         blk = BedBlock(start, end)
         if self.blocks is None:
             self.blocks = []
+            if self.numStdCols < 12:
+                self.numStdCols = 12
         self.blocks.append(blk)
         return blk
 

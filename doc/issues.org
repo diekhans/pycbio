@@ -12,10 +12,6 @@ ssl.SSLCertVerificationError ?
 
 * bx-python has an interval tree
 
-* not sure if Bed will work if create Bed() with None blocks then add blocks later
-numStdCols and defaulting might mess up.
-add test.
-
 * Bed add automatic conversions from std to int if needed.
 
 * need to finish making tests run without mysql
