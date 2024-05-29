@@ -130,7 +130,7 @@ class Color(namedtuple("Color", ("red", "green", "blue",
 
     def toRgbaStr(self, sep=",", pos=4):
         "convert to a string of real RGBA values, separated by sep"
-        return "%s%s%0.*f" % (self.toRgbaStr(sep, pos), sep, pos, self.alphaDflt)
+        return "%s%s%0.*f" % (self.toRgbStr(sep, pos), sep, pos, self.alphaDflt)
 
     def toRgb8Str(self, sep=","):
         "convert to a string of 8-bit RGB values, separated by sep"
