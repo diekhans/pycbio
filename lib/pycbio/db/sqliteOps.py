@@ -73,7 +73,7 @@ class SqliteCursor:
         self.cur.close()
         return self.trans.__exit__(*args)
 
-def formatValue(val):
+def quote(val):
     "generate a value that is safe to use directly in a SELECT"
     return apsw.format_sql_value(val)
 
