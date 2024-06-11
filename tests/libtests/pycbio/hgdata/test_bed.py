@@ -1,13 +1,17 @@
 # Copyright 2006-2022 Mark Diekhans
 import unittest
+import os.path as osp
 import sys
 import pickle
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.hgdata.bed import Bed, BedBlock, BedTable, BedReader
+from pycbio.hgdata.bed import Bed, BedBlock, BedTable, BedReader, bedFromPsl
 from pycbio.sys.color import Color
 import pipettor
+
+sys.path.insert(0, osp.dirname(__file__))
+from test_psl import psPos, psTransPosNeg, splitToPsl
 
 class BedGame(Bed):
     "example derived BED4+3 that adds columns"
@@ -123,6 +127,16 @@ class BedTests(TestCaseBase):
                           BedBlock(119588426, 119588575),
                           BedBlock(119588671, 119588895),
                           BedBlock(119588952, 119589051)))
+
+    def testBedFromPslPos(self):
+        bed = bedFromPsl(splitToPsl(psPos))
+        self.assertEqual(bed.toRow(),
+                         ['chr22', '48109515', '48454184', 'NM_025031.1', '0', '+', '48454184', '48454184', 'None', '4', '17,11,12,81,', '0,18,344032,344588,'])
+
+    def testBedFromPslTransPosNeg(self):
+        bed = bedFromPsl(splitToPsl(psTransPosNeg))
+        self.assertEqual(bed.toRow(),
+                         ['chr1', '92653606', '92661065', 'NM_001020776', '0', '-', '92661065', '92661065', 'None', '6', '184,164,135,30,84,57,', '0,2564,4322,4572,6836,7402,'])
 
 def suite():
     ts = unittest.TestSuite()

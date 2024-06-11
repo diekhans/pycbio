@@ -6,7 +6,6 @@ from pycbio.tsv.tabFile import TabFile, TabFileReader
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin
 from collections import defaultdict, namedtuple
 
-
 # FIXME: not complete, needs tests
 # FIXME: really need a better way to deal with derived classes than extraArgs
 
@@ -291,3 +290,13 @@ class BedTable(TabFile):
             return tuple(self.nameMap[name])
         else:
             return ()
+
+
+def bedFromPsl(psl, *, extraCols=None):
+    "create a BED12 from PSL, optionally adding extra columns"
+    if psl.tStrand == '-':
+        psl = psl.reverseComplement()
+    blks = [BedBlock(pb.tStart, pb.tEnd) for pb in psl.blocks]
+
+    return Bed(psl.tName, psl.tStart, psl.tEnd, name=psl.qName, strand=psl.qStrand,
+               blocks=blks, extraCols=extraCols, numStdCols=12)
