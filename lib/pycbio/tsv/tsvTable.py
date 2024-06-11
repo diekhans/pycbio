@@ -85,7 +85,7 @@ class TsvTable(list):
             can be string or sequence
         multiKeyCols - name or names of columns to index, allowing multiple keys.
             can be string or sequence
-        rowClass - class or class factory function to use for a row. Must take
+        rowClass - class or factory function to use for a row. Must take
             TsvReader and list of string values of columns.
         typeMap - if specified, it maps column names to the type objects to
             use to convert the column.  Unspecified columns will not be
