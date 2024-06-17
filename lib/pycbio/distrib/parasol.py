@@ -81,7 +81,7 @@ class BatchStats:
 
 class Para:
     "interface to the parasol para command"
-    def __init__(self, paraHost, jobFile, *, runDir=None, paraDir=None, cpu=None, mem=None, maxJobs=None, retries=None):
+    def __init__(self, paraHost, *, jobFile=None, runDir=None, paraDir=None, cpu=None, mem=None, maxJobs=None, retries=None):
         """"will chdir to runDir, which default to cwd.  paraDir should be relative
         to runDir or absolute, defaults to runDir to jobFile should be relative to runDir
         or absolute.
