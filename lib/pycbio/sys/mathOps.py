@@ -34,3 +34,9 @@ def fmtFreq(freq, precision=2):
 def calcFmtFreq(amt, total, precision=2, oneForUndef=False):
     "calculate and format a frequency"
     return fmtFreq(calcFreq(amt, total, oneForUndef), precision)
+
+def safeDiv(a, b):
+    try:
+        return a / b
+    except ZeroDivisionError:
+        return math.nan
