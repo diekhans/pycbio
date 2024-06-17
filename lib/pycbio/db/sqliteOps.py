@@ -13,7 +13,7 @@ from pycbio.sys.objDict import ObjDict
 
 class SqliteOpsError(Exception):
     "Error wrapped around sqlite exceptions to add information"
-
+    pass
 
 def objDictRowFactory(cur, row):
     """Row factory to return a ObjDict of the result.  Note that non-unique
@@ -26,7 +26,7 @@ def _createSqlExcept(sql, args):
     maxArgsLen = 500
     argsStr = str(args)
     if len(argsStr) > maxArgsLen:
-        argsStr = maxArgsLen[0: maxArgsLen]
+        argsStr = argsStr[0: maxArgsLen]
     return SqliteOpsError(f"failed query: '{sql}' with '{argsStr}'")
 
 def connect(sqliteDb, create=False, readonly=True, timeout=None, synchronous=None, rowFactory=None):
