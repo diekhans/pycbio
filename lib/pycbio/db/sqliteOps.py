@@ -11,12 +11,23 @@ from pycbio.sys.objDict import ObjDict
 # FIXME: add options to do logging, both of exceptions (apsw handler) and queries
 # FIXME  gets Obj of rows:
 
+class SqliteOpsError(Exception):
+    "Error wrapped around sqlite exceptions to add information"
+
 
 def objDictRowFactory(cur, row):
     """Row factory to return a ObjDict of the result.  Note that non-unique
     names from multiple tables will end up with the last column of the same
     name winning.  In sane cases, these will have the same value"""
     return ObjDict(zip((t[0] for t in cur.description), row))
+
+def _createSqlExcept(sql, args):
+    """create exception with SQL and optionally args, possibly truncating args to limit size"""
+    maxArgsLen = 500
+    argsStr = str(args)
+    if len(argsStr) > maxArgsLen:
+        argsStr = maxArgsLen[0: maxArgsLen]
+    return SqliteOpsError(f"failed query: '{sql}' with '{argsStr}'")
 
 def connect(sqliteDb, create=False, readonly=True, timeout=None, synchronous=None, rowFactory=None):
     """Connect to an sqlite3 database.  If create is specified, then database
@@ -86,22 +97,30 @@ def makeInSeqArg(vals):
 def execute(conn, sql, args=None):
     "Run an SQL query on a connection that does not return rows"
     with SqliteCursor(conn) as cur:
-        cur.execute(sql, args)
+        try:
+            cur.execute(sql, args)
+        except apsw.Error as ex:
+            raise _createSqlExcept(sql, args) from ex
 
 
 def executeMany(conn, sql, args=None):
     "Run multiple SQL queries on a connection that does not return rows"
     with SqliteCursor(conn) as cur:
-        cur.executemany(sql, args)
+        try:
+            cur.executemany(sql, args)
+        except apsw.Error as ex:
+            raise _createSqlExcept(sql, args) from ex
 
 
 def query(conn, sql, args=None, *, rowFactory=None):
     "generator to run an SQL query on a connection"
     with SqliteCursor(conn, rowFactory=rowFactory) as cur:
-        cur.execute(sql, args)
-        for row in cur:
-            yield row
-
+        try:
+            cur.execute(sql, args)
+            for row in cur:
+                yield row
+        except apsw.Error as ex:
+            raise _createSqlExcept(sql, args) from ex
 
 def haveTable(conn, table):
     "check if a table exists"
