@@ -84,7 +84,7 @@ class GenePredSelect:
             if self._selected(gp):
                 fileOps.prRow(outFh, gp.getRow())
 
-
+raise Exception("this doesn't work at all")
 opts = parseArgs()
 gs = GenePredSelect(opts)
 gs.select(opts.genePredIn, opts.genePredOut)
