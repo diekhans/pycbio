@@ -47,7 +47,6 @@ setup(
         'bin/emblToFasta',
         'bin/gbffGenesToGenePred',
         'bin/geneCheckStats',
-        'bin/genePredFlatten',
         'bin/genePredSelect',
         'bin/jsonDumpKeyStructure',
         'bin/ncbiAssemblyReportConvert',
