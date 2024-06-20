@@ -131,12 +131,12 @@ class BedTests(TestCaseBase):
     def testBedFromPslPos(self):
         bed = bedFromPsl(splitToPsl(psPos))
         self.assertEqual(bed.toRow(),
-                         ['chr22', '48109515', '48454184', 'NM_025031.1', '0', '+', '48454184', '48454184', '0,0,0', '4', '17,11,12,81,', '0,18,344032,344588,'])
+                         ['chr22', '48109515', '48454184', 'NM_025031.1', '0', '+', '48454184', '48454184', '0', '4', '17,11,12,81,', '0,18,344032,344588,'])
 
     def testBedFromPslTransPosNeg(self):
         bed = bedFromPsl(splitToPsl(psTransPosNeg))
         self.assertEqual(bed.toRow(),
-                         ['chr1', '92653606', '92661065', 'NM_001020776', '0', '-', '92661065', '92661065', '0,0,0', '6', '184,164,135,30,84,57,', '0,2564,4322,4572,6836,7402,'])
+                         ['chr1', '92653606', '92661065', 'NM_001020776', '0', '-', '92661065', '92661065', '0', '6', '184,164,135,30,84,57,', '0,2564,4322,4572,6836,7402,'])
 
     def testBedMerge1(self):
         beds = BedTable(self.getInputFile("lncRNA-locus1.bed"))

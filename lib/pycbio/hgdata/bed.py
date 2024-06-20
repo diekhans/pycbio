@@ -27,6 +27,14 @@ def encodeRow(row):
     """
     return [str(v) if v is not None else "" for v in row]
 
+def _fmtItemRgb(itemRgb):
+    "allows itemRgb to be a Color, None, a number, or a string"
+    if itemRgb is None:
+        return "0"
+    elif isinstance(itemRgb, Color):
+        return itemRgb.toRgb8Str()
+    else:
+        return itemRgb
 
 class BedBlock(namedtuple("Block", ("start", "end"))):
     """A block in the BED.  Coordinates are absolute, not relative and are transformed on write.
@@ -67,7 +75,7 @@ class Bed:
         self.strand = strand
         self.thickStart = thickStart
         self.thickEnd = thickEnd
-        self.itemRgb = itemRgb.toRgb8Str() if isinstance(itemRgb, Color) else itemRgb
+        self.itemRgb = itemRgb
         self.blocks = copy.copy(blocks)
         self.extraCols = extraCols if isinstance(extraCols, tuple) else copy.copy(extraCols)
         self.numStdCols = self._calcNumStdCols(numStdCols)
@@ -142,7 +150,7 @@ class Bed:
             row.append(defaultIfNone(self.thickStart, self.chromEnd))
             row.append(defaultIfNone(self.thickEnd, self.chromEnd))
         if self.numStdCols >= 9:
-            row.append(str(defaultIfNone(self.itemRgb, "0,0,0")))
+            row.append(_fmtItemRgb(self.itemRgb))
         if self.numStdCols >= 10:
             row.extend(self._getBlockColumns() if self.blocks is not None else self._defaultBlockColumns())
         if self.extraCols is not None:
