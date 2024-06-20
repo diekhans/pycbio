@@ -6,7 +6,7 @@ import pickle
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.hgdata.bed import Bed, BedBlock, BedTable, BedReader, bedFromPsl
+from pycbio.hgdata.bed import Bed, BedBlock, BedTable, BedReader, bedFromPsl, bedMergeBlocks
 from pycbio.sys.color import Color
 import pipettor
 
@@ -137,6 +137,13 @@ class BedTests(TestCaseBase):
         bed = bedFromPsl(splitToPsl(psTransPosNeg))
         self.assertEqual(bed.toRow(),
                          ['chr1', '92653606', '92661065', 'NM_001020776', '0', '-', '92661065', '92661065', 'None', '6', '184,164,135,30,84,57,', '0,2564,4322,4572,6836,7402,'])
+
+    def testBedMerge1(self):
+        beds = BedTable(self.getInputFile("lncRNA-locus1.bed"))
+        #beds = BedTable("test.bed")
+        mergedBed = bedMergeBlocks("test1", beds)
+        with open("merge.bed", 'w') as fh:
+            mergedBed.write(fh)
 
 def suite():
     ts = unittest.TestSuite()

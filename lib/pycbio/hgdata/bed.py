@@ -1,5 +1,6 @@
 # Copyright 2006-2022 Mark Diekhans
 import copy
+from collections import deque
 from pycbio import PycbioException
 from pycbio.sys.color import Color
 from pycbio.tsv.tabFile import TabFile, TabFileReader
@@ -13,6 +14,9 @@ from collections import defaultdict, namedtuple
 bed12Columns = ("chrom", "chromStart", "chromEnd", "name", "score", "strand", "thickStart",
                 "thickEnd", "reserved", "blockCount", "blockSizes", "chromStarts")
 
+class BedException(PycbioException):
+    """Error parsing or operating on a BED"""
+    pass
 
 def defaultIfNone(v, dflt=""):
     "also converts to a string"
@@ -86,9 +90,9 @@ class Bed:
             numStdCols = 3
         if specNumStdCols is not None:
             if not (3 <= specNumStdCols <= 12):
-                raise PycbioException(f"numStdCols must be in the range 3 to 12, got {specNumStdCols}")
+                raise BedException(f"numStdCols must be in the range 3 to 12, got {specNumStdCols}")
             if numStdCols > specNumStdCols:
-                raise PycbioException(f"numStdCols was specified as {specNumStdCols}, however the arguments supplied require {numStdCols} standard columns")
+                raise BedException(f"numStdCols was specified as {specNumStdCols}, however the arguments supplied require {numStdCols} standard columns")
             if specNumStdCols > numStdCols:
                 numStdCols = specNumStdCols
         return numStdCols
@@ -138,7 +142,7 @@ class Bed:
             row.append(defaultIfNone(self.thickStart, self.chromEnd))
             row.append(defaultIfNone(self.thickEnd, self.chromEnd))
         if self.numStdCols >= 9:
-            row.append(defaultIfNone(str(self.itemRgb), "0,0,0"))
+            row.append(str(defaultIfNone(self.itemRgb, "0,0,0")))
         if self.numStdCols >= 10:
             row.extend(self._getBlockColumns() if self.blocks is not None else self._defaultBlockColumns())
         if self.extraCols is not None:
@@ -161,7 +165,7 @@ class Bed:
         if numStdCols is None:
             numStdCols = min(len(row), 12)
         if len(row) < numStdCols:
-            raise PycbioException("expected at least {} columns, found {}: ".format(numStdCols, len(row)))
+            raise BedException("expected at least {} columns, found {}: ".format(numStdCols, len(row)))
         chrom = row[0]
         chromStart = int(row[1])
         chromEnd = int(row[2])
@@ -207,7 +211,7 @@ class Bed:
         try:
             return cls._parse(row, numStdCols=numStdCols)
         except Exception as ex:
-            raise PycbioException(f"parsing of BED row failed: {row}") from ex
+            raise BedException(f"parsing of BED row failed: {row}") from ex
 
     def __str__(self):
         "return BED as a tab-separated string"
@@ -291,7 +295,6 @@ class BedTable(TabFile):
         else:
             return ()
 
-
 def bedFromPsl(psl, *, extraCols=None):
     "create a BED12 from PSL, optionally adding extra columns"
     if psl.tStrand == '-':
@@ -300,3 +303,95 @@ def bedFromPsl(psl, *, extraCols=None):
 
     return Bed(psl.tName, psl.tStart, psl.tEnd, name=psl.qName, strand=psl.qStrand,
                blocks=blks, extraCols=extraCols, numStdCols=12)
+
+###
+# bedMergeBlocks
+###
+def _bedMergeCheckCompat(bed0, bed):
+    if bed.numStdCols != bed0.numStdCols:
+        raise BedException(f"attempt to merge BEDs number of standard columns: {bed.name}: {bed.numStdCols} != {bed0.name} {bed0.numStdCols}")
+    if bed.chrom != bed0.chrom:
+        raise BedException(f"attempt to merge BEDs on different chromosomes: {bed.name}: {bed.chrom} != {bed0.name} {bed0.chrom}")
+    if bed.strand != bed0.strand:
+        raise BedException(f"attempt to merge BEDs on different strands: {bed.name}: {bed.strand} != {bed0.name} {bed0.strand}")
+
+def _bedMergeBuildCursors(beds):
+    """Build a vector of cursors and validated sequence and strand compatibility"""
+    cursors = []
+    bed0 = beds[0]
+    minStart = bed0.chromStart
+    maxEnd = bed0.chromEnd
+    for bed in beds:
+        _bedMergeCheckCompat(bed0, bed)
+        cursors.append(deque(bed.blocks))
+        minStart = min(bed.chromStart, minStart)
+        maxEnd = max(bed.chromEnd, maxEnd)
+    return cursors, minStart, maxEnd
+
+def _bedMergeFindNextStart(cursors):
+    """locate the lowest starting position, or None if all cursors are empty"""
+    nextStart = None
+    for cursor in cursors:
+        if (len(cursor) > 0) and ((nextStart is None) or (cursor[0].start < nextStart)):
+            nextStart = cursor[0].start
+    return nextStart
+
+def _bedMergePass(cursors, mergeBlkEnd):
+    """make on pass over cursors, seeing if range can be updated with
+    overlapping or adjacent blocks.  Since processed blocks are removed, from
+    cursor, the block at the head of the cursor must either overlap or be
+    after the block.  Multiple passed handle transitive joins.
+    """
+    updated = False
+    for cursor in cursors:
+        if (len(cursor) > 0) and (cursor[0].start <= mergeBlkEnd):
+            mergeBlkEnd = max(cursor[0].end, mergeBlkEnd)
+            cursor.popleft()
+            updated = True
+    return mergeBlkEnd, updated
+
+def _bedMergeBuildBlk(cursors, mergeBlkStart):
+    "build one block"
+    mergeBlkEnd = mergeBlkStart + 1
+    while True:
+        mergeBlkEnd, updated = _bedMergePass(cursors, mergeBlkEnd)
+        if not updated:
+            break
+    return BedBlock(mergeBlkStart, mergeBlkEnd)
+
+def _bedMergeBuildBlks(cursors):
+    "build all blocks, run untils cursors are empty"
+    mergedBlocks = []
+    nextStart = _bedMergeFindNextStart(cursors)
+    while nextStart is not None:
+        mergedBlocks.append(_bedMergeBuildBlk(cursors, nextStart))
+        nextStart = _bedMergeFindNextStart(cursors)
+    return mergedBlocks
+
+def _bedMergeThickBounds(beds, maxEnd):
+    thickStart = thickEnd = None
+    for bed in beds:
+        if (bed.thickStart is not None) and (bed.thickStart < bed.thickEnd):
+            if thickStart is None:
+                thickStart, thickEnd = bed.thickStart, bed.thickEnd
+            else:
+                thickStart, thickEnd = min(thickStart, bed.thickStart), max(thickEnd, bed.thickEnd)
+    if thickStart is None:
+        thickStart = thickEnd = maxEnd
+    return thickStart, thickEnd
+
+def bedMergeBlocks(name, beds):
+    """Merge blocks from multiple BED into a single BED.  The BEDs must be on
+    the same sequence and strand.  The thickStart and thickStop will be the
+    minimum and maximum seen, unless they are zero length, in which case, it
+    will remain zero length.  Useful with RangeFinder merge functionality."""
+    if len(beds) == 0:
+        raise BedException("can't merge list with no BEDs")
+    cursors, minStart, maxEnd = _bedMergeBuildCursors(beds)
+    mergedBlocks = _bedMergeBuildBlks(cursors)
+    thickStart, thickEnd = _bedMergeThickBounds(beds, maxEnd)
+
+    bed0 = beds[0]
+    return Bed(bed0.chrom, minStart, maxEnd, name=name, strand=bed0.strand,
+               thickStart=thickStart, thickEnd=thickEnd, itemRgb=bed0.itemRgb,
+               blocks=mergedBlocks, numStdCols=12)
