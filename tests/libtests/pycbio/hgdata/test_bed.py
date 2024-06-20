@@ -141,8 +141,8 @@ class BedTests(TestCaseBase):
     def testBedMerge1(self):
         beds = BedTable(self.getInputFile("lncRNA-locus1.bed"))
         mergedBed = bedMergeBlocks("test1", beds)
-        with open("merge.bed", 'w') as fh:
-            mergedBed.write(fh)
+        self.assertEqual(mergedBed.toRow(),
+                         ['chr1', '148682028', '148712560', 'test1', '0', '-', '148712560', '148712560', '0', '5', '151,335,582,854,304,', '0,1264,23019,26177,30228,'])
 
 def suite():
     ts = unittest.TestSuite()
