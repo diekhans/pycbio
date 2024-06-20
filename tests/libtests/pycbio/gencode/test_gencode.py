@@ -7,7 +7,7 @@ from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.gencode import biotypes, gencodeTags  # noqa:F401
 
 class GencodeTests(TestCaseBase):
-    # asserts in biotypes test a lot, should move into here
+    # asserts in biotypes test a lot
     pass
 
 

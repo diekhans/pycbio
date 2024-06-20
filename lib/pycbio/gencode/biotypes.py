@@ -4,10 +4,7 @@ all biotypes are can be mapped to a reduced set for coloring and
 selection in the browser.
 """
 from pycbio.sys.symEnum import SymEnum, SymEnumValue, auto
-
-
-class GencodeGenesException(Exception):
-    pass
+from pycbio.gencode import GencodeGenesException
 
 class BioType(SymEnum):
     ambiguous_orf = auto()
@@ -34,15 +31,15 @@ class BioType(SymEnum):
     Mt_tRNA = auto()
     Mt_tRNA_pseudogene = auto()
     non_coding = auto()
-    nonsense_mediated_decay = auto()
-    non_stop_decay = auto()
+    nonsense_mediated_decay = auto()  # transcripts only
+    non_stop_decay = auto()  # transcripts only
     overlapping_ncRNA_3prime = SymEnumValue(auto(), "3prime_overlapping_ncRNA")
     polymorphic_pseudogene = auto()
     processed_pseudogene = auto()
     processed_transcript = auto()
     protein_coding = auto()
     pseudogene = auto()
-    retained_intron = auto()
+    retained_intron = auto()  # transcripts only
     ribozyme = auto()
     rRNA = auto()
     rRNA_pseudogene = auto()
@@ -74,8 +71,27 @@ class BioType(SymEnum):
     artifactual_duplication = auto()
     protein_coding_CDS_not_defined = auto()
 
+class GencodeFunction(SymEnum):
+    """category used to color UCSC browser tracks"""
+    coding = auto()
+    nonCoding = auto()
+    pseudo = auto()
+    other = auto()
 
-GencodeFunction = SymEnum("GencodeFunction", ("pseudo", "coding", "nonCoding", "problem"))
+
+class GnecodeGeneCategory(SymEnum):
+    """gene categories uses in GENCODE stats reporting, from
+     http://ftp.ebi.ac.uk/pub/databases/gencode/_README_stats.txt"""
+    protein_coding = auto()
+    lncRNA = auto()
+    smallRNA = auto()
+    pseudoGene = auto()
+    immunoSegment = auto()
+
+
+bioTypesTranscriptOnly = frozenset([BioType.nonsense_mediated_decay,
+                                    BioType.non_stop_decay,
+                                    BioType.retained_intron])
 
 bioTypesCoding = frozenset([BioType.IG_C_gene,
                             BioType.IG_D_gene,
@@ -83,15 +99,15 @@ bioTypesCoding = frozenset([BioType.IG_C_gene,
                             BioType.IG_V_gene,
                             BioType.IG_LV_gene,
                             BioType.polymorphic_pseudogene,
+                            BioType.protein_coding_LoF,
+                            BioType.protein_coding_CDS_not_defined,
                             BioType.protein_coding,
                             BioType.nonsense_mediated_decay,
                             BioType.TR_C_gene,
                             BioType.TR_D_gene,
                             BioType.TR_J_gene,
                             BioType.TR_V_gene,
-                            BioType.non_stop_decay,
-                            BioType.protein_coding_LoF,
-                            BioType.protein_coding_CDS_not_defined])
+                            BioType.non_stop_decay])
 bioTypesNonCoding = frozenset([BioType.antisense,
                                BioType.lincRNA,
                                BioType.lncRNA,
@@ -115,9 +131,18 @@ bioTypesNonCoding = frozenset([BioType.antisense,
                                BioType.vaultRNA,
                                BioType.vault_RNA,
                                BioType.bidirectional_promoter_lncRNA])
+bioTypesLncRna = frozenset([BioType.lincRNA,
+                            BioType.lncRNA])
+bioTypesOther = frozenset([BioType.retained_intron,
+                           BioType.TEC,
+                           BioType.disrupted_domain,
+                           BioType.ambiguous_orf,
+                           BioType.artifact,
+                           BioType.artifactual_duplication])
 bioTypesPseudo = frozenset([BioType.IG_J_pseudogene,
                             BioType.IG_pseudogene,
                             BioType.IG_V_pseudogene,
+                            BioType.Mt_tRNA_pseudogene,
                             BioType.processed_pseudogene,
                             BioType.pseudogene,
                             BioType.rRNA_pseudogene,
@@ -125,7 +150,6 @@ bioTypesPseudo = frozenset([BioType.IG_J_pseudogene,
                             BioType.transcribed_unprocessed_pseudogene,
                             BioType.unitary_pseudogene,
                             BioType.transcribed_unitary_pseudogene,
-                            BioType.Mt_tRNA_pseudogene,
                             BioType.unprocessed_pseudogene,
                             BioType.IG_C_pseudogene,
                             BioType.IG_D_pseudogene,
@@ -134,14 +158,11 @@ bioTypesPseudo = frozenset([BioType.IG_J_pseudogene,
                             BioType.translated_processed_pseudogene,
                             BioType.translated_unprocessed_pseudogene,
                             ])
-bioTypesProblem = frozenset([BioType.retained_intron,
-                             BioType.TEC,
-                             BioType.disrupted_domain,
-                             BioType.ambiguous_orf,
-                             BioType.artifact,
-                             BioType.artifactual_duplication])
+bioTypesTranscribedPseudo = frozenset([BioType.transcribed_processed_pseudogene,
+                                       BioType.transcribed_unprocessed_pseudogene,
+                                       BioType.transcribed_unitary_pseudogene])
 
-assert (bioTypesCoding | bioTypesNonCoding | bioTypesProblem | bioTypesPseudo) == frozenset(BioType)
+assert (bioTypesCoding | bioTypesNonCoding | bioTypesOther | bioTypesPseudo) == frozenset(BioType), "Missing: " + str(frozenset(BioType) - (bioTypesCoding | bioTypesNonCoding | bioTypesOther | bioTypesPseudo))
 
 bioTypesTR = frozenset((BioType.TR_C_gene,
                         BioType.TR_D_gene,
@@ -177,6 +198,41 @@ bioTypesNonCodingExternalDb = frozenset([BioType.miRNA,
                                          BioType.snoRNA,
                                          BioType.snRNA])
 
+# GENE category mappings
+gencodeCategoryProteinCoding = frozenset([BioType.protein_coding])
+gencodeCategoryLncRNA = frozenset([BioType.processed_transcript,
+                                   BioType.lincRNA,
+                                   BioType.overlapping_ncRNA_3prime,
+                                   BioType.antisense,
+                                   BioType.non_coding,
+                                   BioType.sense_intronic,
+                                   BioType.sense_overlapping,
+                                   BioType.TEC,
+                                   BioType.macro_lncRNA,
+                                   BioType.bidirectional_promoter_lncRNA,
+                                   BioType.lncRNA])
+gencodeCategorySmallRNA = frozenset([BioType.snRNA,
+                                     BioType.snoRNA,
+                                     BioType.rRNA,
+                                     BioType.Mt_tRNA,
+                                     BioType.Mt_rRNA,
+                                     BioType.misc_RNA,
+                                     BioType.miRNA,
+                                     BioType.ribozyme,
+                                     BioType.sRNA,
+                                     BioType.scaRNA,
+                                     BioType.vaultRNA])
+gencodeCategoryPseudoGene = bioTypesPseudo
+gencodeCategoryImmunoSegment = frozenset([BioType.IG_C_gene,
+                                          BioType.IG_D_gene,
+                                          BioType.IG_J_gene,
+                                          BioType.IG_V_gene,
+                                          BioType.IG_LV_gene,
+                                          BioType.TR_C_gene,
+                                          BioType.TR_D_gene,
+                                          BioType.TR_J_gene,
+                                          BioType.TR_V_gene])
+
 
 def getFunctionForBioType(bt):
     """map a raw biotype to a function.  Note that transcript
@@ -189,8 +245,8 @@ def getFunctionForBioType(bt):
         return GencodeFunction.nonCoding
     elif bt in bioTypesPseudo:
         return GencodeFunction.pseudo
-    elif bt in bioTypesProblem:
-        return GencodeFunction.problem
+    elif bt in bioTypesOther:
+        return GencodeFunction.other
     else:
         raise GencodeGenesException("unknown biotype: " + str(bt))
 
