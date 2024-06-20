@@ -19,3 +19,4 @@ clean:
 	(cd tests && ${MAKE} clean)
 	find lib tests -name '*.pyc' -exec rm -f '{}' ';'
 	find lib -depth -name '__pycache__' -exec rm -rf '{}' ';'
+	rm -rf dist build pycbio.egg-info lib/pycbio.egg-info
