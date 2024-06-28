@@ -145,6 +145,14 @@ class Para:
             if ex.stderr.find("Batch not found") < 0:
                 raise
 
+    def clearSickNodes(self):
+        "clearSickNodes for a batch, no-op if it doesn't exist"
+        try:
+            self._para("clearSickNodes")
+        except pipettor.exceptions.ProcessException as ex:
+            if ex.stderr.find("Batch not found") < 0:
+                raise
+
     def time(self):
         "run para check and return statistics as a list of lines"
         return self._para("time")
