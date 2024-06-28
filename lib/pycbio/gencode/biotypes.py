@@ -239,6 +239,7 @@ def getFunctionForBioType(bt):
     function isn't as simple as just translating this type,
     as gene biotype must be considered as well.
     """
+    assert isinstance(bt, BioType)
     if bt in bioTypesCoding:
         return GencodeFunction.coding
     elif bt in bioTypesNonCoding:
