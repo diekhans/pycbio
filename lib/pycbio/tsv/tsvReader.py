@@ -169,10 +169,27 @@ class TsvReader:
         elif defaultColType is not None:
             self._setDefaultColumnTypes(defaultColType)
 
+    def _parseColumnWithTypeMap(self, row, iCol):
+        ct = self.colTypes[iCol]
+        cv = ct[0] if isinstance(ct, tuple) else ct
+        try:
+            # can be None to have formatter but not parser
+            if cv is not None:
+                row[iCol] = cv(row[iCol])
+        except Exception as ex:
+            raise TsvError("Error converting TSV column {} ({}) to object, value \"{}\"".format(iCol, self.columns[iCol], row[iCol])) from ex
+
+    def _parseColumns(self, row):
+        "converts columns in row in-place, if needed"
+        for iCol in range(len(self.columns)):
+            self._parseColumnWithTypeMap(row, iCol)
+
     def _constructRow(self, row):
         if ((self.ignoreExtraCols and (len(row) < len(self.columns))) or ((not self.ignoreExtraCols) and (len(row) != len(self.columns)))):
             raise TsvError("row has {} columns, expected {}".format(len(row), len(self.columns)), reader=self)
         try:
+            if self.colTypes is not None:
+                self._parseColumns(row)
             return self.rowClass(self, row)
         except Exception as ex:
             raise TsvError("Error converting TSV row to object", self) from ex
@@ -185,3 +202,33 @@ class TsvReader:
             raise TsvError("Error reading TSV row", self) from ex
         finally:
             self._closeTsv()
+
+    def _fmtColWithTypes(self, row, iCol):
+        col = row[iCol]
+        if col is None:
+            return ""
+        ct = self.colTypes[iCol]
+        if type(ct) is tuple:
+            return ct[1](col)
+        else:
+            return str(col)
+
+    def _fmtRowWithTypes(self, row):
+        outrow = []
+        for iCol in range(len(self.columns)):
+            outrow.append(self._fmtColWithTypes(row, iCol))
+        return outrow
+
+    def _fmtRowNoTypes(self, row):
+        outrow = []
+        for iCol in range(len(self.columns)):
+            col = row[iCol]
+            outrow.append(str(col) if col is not None else '')
+        return outrow
+
+    def formatRow(self, row):
+        "format row to a list of strings given specified types"
+        if self.colTypes is not None:
+            return self._fmtRowWithTypes(row)
+        else:
+            return self._fmtRowNoTypes(row)

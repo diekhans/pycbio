@@ -7,12 +7,9 @@
 # FIXME: need way to get raw row with Nones for sql
 # FIXME: this could actually be a dict-like object since py3
 
-from pycbio.tsv import TsvError
-
-
 def tsvRowToDict(row):
     """convert a TSV row to a dict"""
-    return {col: getattr(row, col) for col in row._columns_}
+    return {col: getattr(row, col) for col in row._reader_.columns}
 
 
 class TsvRow:
@@ -21,43 +18,21 @@ class TsvRow:
     # places when they are stored as fields
 
     def __init__(self, reader, row):
-        # FIXMEL should reference one class
-        self._columns_ = reader.columns
-        self._colTypes_ = reader.colTypes
-        self._colMap_ = reader.colMap
-        if self._colTypes_:
-            self._parse(row)
-        else:
-            for i in range(len(self._columns_)):
-                setattr(self, self._columns_[i], row[i])
-
-    def _parseCol(self, row, i):
-        try:
-            col = row[i]
-            ct = self._colTypes_[i]
-            if type(ct) is tuple:
-                col = ct[0](col)
-            elif ct:
-                col = ct(col)
-            setattr(self, self._columns_[i], col)
-        except Exception as ex:
-            raise TsvError("Error converting TSV column {} ({}) to object, value \"{}\"".format(i, self._columns_[i], row[i])) from ex
-
-    def _parse(self, row):
-        for i in range(len(self._columns_)):
-            self._parseCol(row, i)
+        self._reader_ = reader
+        for i in range(len(self._reader_.columns)):
+            setattr(self, self._reader_.columns[i], row[i])
 
     def __getitem__(self, key):
         "access a column by string key or numeric index"
         if isinstance(key, int):
-            return getattr(self, self._columns_[key])
+            return getattr(self, self._reader_.columns[key])
         else:
             return getattr(self, key)
 
     def __setitem__(self, key, val):
         "set a column by string key or numeric index"
         if isinstance(key, int):
-            setattr(self, self._columns_[key], val)
+            setattr(self, self._reader_.columns[key], val)
         else:
             setattr(self, key, val)
 
@@ -65,49 +40,22 @@ class TsvRow:
         """Return the value for string key or numeric index, if key is in the
         dictionary, else default."""
         if isinstance(key, int):
-            return getattr(self, self._columns_[key]) if key < len(self._columns_) else default
+            return getattr(self, self._reader_.columns[key]) if key < len(self._reader_.columns) else default
         else:
             return getattr(self, key, default)
 
     def __len__(self):
-        return len(self._columns_)
+        return len(self._reader_.columns)
 
     def __iter__(self):
-        for col in self._columns_:
+        for col in self._reader_.columns:
             yield getattr(self, col)
 
     def __contains__(self, key):
-        return key in self._colMap_
-
-    def _fmtWithTypes(self):
-        row = []
-        for i in range(len(self._columns_)):
-            col = getattr(self, self._columns_[i])
-            ct = self._colTypes_[i]
-            if col is None:
-                col = ""
-            elif type(ct) is tuple:
-                col = ct[1](col)
-            else:
-                col = str(col)
-            row.append(col)
-        return row
-
-    def _fmtNoTypes(self):
-        row = []
-        for cn in self._columns_:
-            col = getattr(self, cn)
-            if col is None:
-                row.append("")
-            else:
-                row.append(str(col))
-        return row
+        return key in self._reader_.colMap
 
     def getRow(self):
-        if self._colTypes_:
-            return self._fmtWithTypes()
-        else:
-            return self._fmtNoTypes()
+        return self._reader_.formatRow(self)
 
     def __str__(self):
         return "\t".join(self.getRow())
@@ -131,7 +79,7 @@ class TsvRow:
         for col in self:
             if i > 0:
                 fh.write("\t")
-            fh.write(self._columns_[i])
+            fh.write(self._reader_.columns[i])
             fh.write(": ")
             fh.write(str(col))
             i += 1

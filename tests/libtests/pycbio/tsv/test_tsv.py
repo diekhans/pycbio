@@ -2,14 +2,31 @@
 # -*- coding: utf-8 -*-
 import unittest
 import sys
+import math
+from csv import excel_tab, excel
+import pipettor
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from collections import namedtuple
 from pycbio.tsv import TsvTable, TsvReader, TsvError, tsvRowToDict, printf_basic_dialect
-from csv import excel_tab, excel
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.hgdata.autoSql import intArrayType
-import pipettor
+
+def _onOffParse(str):
+    if str == "on":
+        return True
+    elif str == "off":
+        return False
+    else:
+        raise ValueError("invalid onOff value: " + str)
+
+def _onOffFmt(val):
+    if type(val) is not bool:
+        raise TypeError("onOff value not a bool: " + str(type(val)))
+    if val:
+        return "on"
+    else:
+        return "off"
 
 
 class ReadTests(TestCaseBase):
@@ -42,26 +59,8 @@ class ReadTests(TestCaseBase):
         self.assertEqual(len(rows), 5)
         self.assertEqual(rows[0].qName, "BC015400")
 
-    @staticmethod
-    def onOffParse(str):
-        if str == "on":
-            return True
-        elif str == "off":
-            return False
-        else:
-            raise ValueError("invalid onOff value: " + str)
-
-    @staticmethod
-    def onOffFmt(val):
-        if type(val) is not bool:
-            raise TypeError("onOff value not a bool: " + str(type(val)))
-        if val:
-            return "on"
-        else:
-            return "off"
-
     def doTestColType(self, inFile):
-        typeMap = {"intCol": int, "floatCol": float, "onOffCol": (self.onOffParse, self.onOffFmt)}
+        typeMap = {"intCol": int, "floatCol": float, "onOffCol": (_onOffParse, _onOffFmt)}
 
         tsv = TsvTable(self.getInputFile(inFile), typeMap=typeMap)
 
@@ -112,7 +111,7 @@ class ReadTests(TestCaseBase):
             self.assertEqual(cm.exception.cause.message, "key column \"noCol\" is not defined")
 
     def testColNameMap(self):
-        typeMap = {"int_col": int, "float_col": float, "onOff_col": (self.onOffParse, self.onOffFmt)}
+        typeMap = {"int_col": int, "float_col": float, "onOff_col": (_onOffParse, _onOffFmt)}
 
         tsv = TsvTable(self.getInputFile('typesColNameMap.tsv'), typeMap=typeMap, columnNameMapper=lambda s: s.replace(' ', '_'))
         self.assertEqual(tsv.columns, ['str_col', 'int_col', 'float_col', 'onOff_col'])
@@ -129,6 +128,19 @@ class ReadTests(TestCaseBase):
         self.assertEqual(r.int_col, 30)
         self.assertEqual(r.float_col, 30.555)
         self.assertEqual(str(r), "name3\t30\t30.555\toff")
+
+    def testColNameMapNoRowClass(self):
+        # check column conversion without a rowClass
+        typeMap = {"intCol": int, "floatCol": float, "onOffCol": (_onOffParse, _onOffFmt)}
+        tsvReader = TsvReader(self.getInputFile('typesNan.tsv'), typeMap=typeMap, rowClass=(lambda rdr, row: row))
+        tsv = [r for r in tsvReader]
+        r = tsv[1]
+        # will get ['name2', 20, math.nan, False], but nan != an
+        self.assertEqual(r[0:2], ['name2', 20])
+        self.assertTrue(math.isnan(r[2]))
+        self.assertEqual(r[3], False)
+
+        self.assertEqual(tsvReader.formatRow(r), ['name2', '20', 'nan', 'off'])
 
     def testWrite(self):
         tsv = TsvTable(self.getInputFile("mrna1.tsv"), uniqKeyCols="qName")

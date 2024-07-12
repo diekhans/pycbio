@@ -23,7 +23,7 @@ def defaultIfNone(v, dflt=""):
     return str(v) if v is not None else str(dflt)
 
 def encodeRow(row):
-    """convert a list of values to a list of strings, making None empty otherwise ensure it is
+    """convert a list of values to a list of strings, making None empty.
     """
     return [str(v) if v is not None else "" for v in row]
 

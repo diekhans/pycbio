@@ -1,0 +1,4 @@
+strCol	intCol	floatCol	onOffCol
+name1	10	10.01	on
+name2	20	nan	off
+name3	30	nan	off
