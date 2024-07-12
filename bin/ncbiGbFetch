@@ -18,6 +18,14 @@ host = "eutils.ncbi.nlm.nih.gov"
 
 verbose = False
 
+# efetch supported databases, from:
+#  https://www.ncbi.nlm.nih.gov/books/NBK25497/table/chapter2.T._entrez_unique_identifiers_ui/
+validDbs = ("bioproject", "biosample", "books", "cdd", "gap", "dbvar", "gene", "genome",
+            "gds", "geoprofiles", "homologene", "mesh", "toolkit", "nlmcatalog",
+            "nuccore", "popset", "probe", "protein", "proteinclusters", "pcassay",
+            "pccompound", "pcsubstance", "pubmed", "pmc", "snp", "sra", "structure",
+            "taxonomy")
+
 def parseArgs():
     desc = """Retrieve genbank records or sequences from NCBI nucleotide
     (GenBank/RefSeq), give accessions or other ids understood by efetch server."""
@@ -31,6 +39,8 @@ def parseArgs():
                        help="output each entry as files the directory named in the for id.gbff or id.fa")
     parser.add_argument("--fasta", "-f", action="store_true", default=False,
                         help="retrieve sequences in fasta format")
+    parser.add_argument("--db", choices=validDbs, default="nuccore",
+                        help="retrieve from this NCBI database; not all have been tested or will return fasta")
     parser.add_argument("--verbose", "-v", action="store_true", default=False,
                         help="verbose tracing")
     parser.add_argument("--debug", type=int, default=None,
@@ -58,14 +68,14 @@ def getEmail():
     except Exception as ex:
         raise PycbioException("unable to obtain email address, specify on command line") from ex
 
-def efetchRetried(email, gbid, fmt):
+def efetchRetried(email, db, gbid, fmt):
     "efetch, with sleeping and retry to deal with NCBI rate limit"
     triesLeft = 3
     if verbose:
         print(f"fetching: {gbid}", file=sys.stderr)
     while True:
         try:
-            return Entrez.efetch(db="nucleotide", id=gbid, rettype=fmt, retmode="text", email=email)
+            return Entrez.efetch(db=db, id=gbid, rettype=fmt, retmode="text", email=email)
         except HTTPError as err:
             if (429 <= err.code <= 599) and (triesLeft > 0):
                 if verbose:
@@ -75,7 +85,7 @@ def efetchRetried(email, gbid, fmt):
                 raise
         triesLeft -= 1
 
-def efetch(email, fastaFmt, gbid, outFh):
+def efetch(email, db, fastaFmt, gbid, outFh):
     "fetch a genbank entry or fasta"
     fmt = "fasta" if fastaFmt else "gbwithparts"
     resp = efetchRetried(email, gbid, fmt)
@@ -84,15 +94,15 @@ def efetch(email, fastaFmt, gbid, outFh):
         raise PycbioException("no entry found for \"{}\"".format(id))
     outFh.write(ent)
 
-def doFetchOutToFile(email, fastaFmt, ids, outFile):
+def doFetchOutToFile(email, db, fastaFmt, ids, outFile):
     with fileOps.opengz(outFile, "w") as outFh:
         for gbid in sorted(ids):
-            efetch(email, fastaFmt, gbid, outFh)
+            efetch(email, db, fastaFmt, gbid, outFh)
 
-def doFetchOneToFile(email, fastaFmt, gbid, outDir):
+def doFetchOneToFile(email, db, fastaFmt, gbid, outDir):
     outFile = osp.join(outDir, gbid + (".fa" if fastaFmt else ".gbff"))
     with fileOps.opengz(outFile, "w") as outFh:
-        efetch(email, fastaFmt, gbid, outFh)
+        efetch(email, db, fastaFmt, gbid, outFh)
 
 def doFetchOutToDir(email, fastaFmt, ids, outDir):
     for gbid in sorted(ids):
@@ -107,9 +117,9 @@ def ncbiGbFetch(opts):
         raise PycbioException("no ids specified on command line or with --idFile")
     email = opts.email if opts.email is not None else getEmail()
     if opts.outDir is not None:
-        doFetchOutToDir(email, opts.fasta, ids, opts.outDir)
+        doFetchOutToDir(email, opts.db, opts.fasta, ids, opts.outDir)
     else:
-        doFetchOutToFile(email, opts.fasta, ids, opts.out)
+        doFetchOutToFile(email, opts.db, opts.fasta, ids, opts.out)
 
 
 ncbiGbFetch(parseArgs())
