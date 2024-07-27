@@ -163,8 +163,8 @@ PrimerS-JuJu/lib/primersjuju/target_transcripts.py
   confusion arrived because strand in t-coords not t-strand in psl for blocks,
   tstrand gets revsered for block
 ** Coords.adjust is a horrible name
-** pair coords (Feature, see primers juju)
-** method to map frame
+** change parse to function
+
 
 * add AtomicFileOpen()
 
