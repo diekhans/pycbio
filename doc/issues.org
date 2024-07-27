@@ -2,56 +2,136 @@
 
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
-* drop pycbio/db/dbDict.py, never been used
-
-* add standard catch in programs
-** hide stack of some/all errors without debug
-ssl.SSLCertVerificationError ?
 
 * ncbiGbFetch - BioPython already has a retry loop
 
 * bx-python has an interval tree
 
-* Psl remove PslBlock back references, make named tuple
-
-* Bed add automatic conversions from std to int if needed.
-what does this even mean?
-
-* need to finish making tests run without mysql
+* testing
+** convert fully to pyttest
+** need to finish making tests run without mysql
 see decorator in tests/libtests/pycbio/hgdata/test_pslMySql.py
 this can be make general, for now in TestCaseBase.  Eventually
 isolate this more, we use it less and less.
-* move to more standard option naming
+** remove mysql stuff from TestCaseBase
+** reverse asserts so order is expect, got (corresponds to diff outout, see pslMapTests)
+** exceptTests has to hack around unit test _AssertRaisesContext not saving traceback
+see unittest/case.py: # store exception, without traceback, for later retrieval
+
+* commands
+** add standard catch in programs
+*** hide stack of some/all errors without debug
+ssl.SSLCertVerificationError ?
+*** be able to specify exceptions to not dump as an option
+
+** move to more standard option naming
 --syslog-debug instead of --syslogDebug
+** provide support for implementing commands that have optional stdin/stdout
+using /dev/stdout doesn't work, as it reset file to the beginning, rather
+that append to current location.  Doing:
+  fh = os.fdopen(os.dup(sys.stdout.fileno()), "w")
+works better
+partial test implemented here:
+tests/libtests/pycbio/sys/fileOpsTests.py::DISABLED_testOpengzDevStdout()
+bed-analysis-tools has some tools that were quickly hacked to compare mappings and alignments for the cactus paper.  It got rather hacky, but there might be some seeds of good commands here.
 
-* remove mysql stuff from TestCaseBase
 
-* should rmTree use shutil.rmtree
+* symEnum
+** symEnum is invasive to with Enum, can it be cleaner, like other derived enum class?
+
+* sys functions:
+** should rmTree use shutil.rmtree
 rmTree fails on errors other than missing files, but can do this with onerror
-** need more tests
+need more tests
 
-* create cigar iterator to track query and reference coordinates
+* cigar
+** create cigar iterator to track query and reference coordinates
 
-* symEnum is invasive to with Enum, can it be cleaner, like other derived enum class?
 
 * collect plot functions
 ~/compbio/kznf/projs/gene-homology/kznf-gene-homology/builds/2022-09/analysis/bin/geneAnnotPlot
 
-* make TsvReader a context manager
+* BED
+** if Bed is created without a score and with a strand, zero score is output and no strand
+(maybe fixed)
+** Bed extension needs work (see decoration.py)
+need to validate override function
+bed.encodeRow maybe in autoSql or tab modules
 
-* add TsvWriter
+** this is ugly, need a different approach
+ making parse a function outside of class might fix this
+class CatBed(Bed):
+    extra_names = ('name2', 'cdsStartStat', 'cdsEndStat', 'exonFrames', 'txId', 'type',  'extra_paralog')
+    _expected_row_len = len(extra_names) + 12
 
-* clean up TsvRow
+    @classmethod
+    def parse(cls, row, numStdCols=None):
+        if len(row) != cls._expected_row_len:
+            raise Exception(f"expected {cls._expected_row_len} columns in row, got {len(row)}: {row}")
+        bed = super(CatBed, cls).parse(row[0:12], 12)
+        for n, v in zip(cls.extra_names, row[12:]):
+            setattr(bed, n, v)
+        return bed
+
+** maybe store BED itemRgb, fillColor, as a Color and convert on format.
+or optional
+
+* TSVs
+** make TsvReader a context manager
+** add TsvWriter
+** clean up TsvRow
 could it be a ObjDict?  Functionally it already is, but doesn't use the code.
+** TsvReader count create named tuples.
+what about the class name and serialization
+maybe just make lighter weight?
+** TsvReader should use fspec stuff
+** tsvreader issues
+*** pass owndership of row to Row instead of having Row inherit from list?
+*** make rowClass (rename rowFactory) so that it can be able to construct and object.  Move parsing of columns outside of tsvRow (good for peewee)
+*** create error with file name/line number
+*** carefully consider naming of functions in Row, as they could conflict with fields.  Maybe put in a base-class??
+*** put in same module as TSV
+*** is colMap needed any more???
+*** need to add write stuff. (see GeneCheck), where str() is called for all column types
+*** add type mapping functions that gets column name
+*** rename  typeMap -> colTypes
+*** make a column object.
+*** document how colName mapping and type mappings works together
+*** check if column is a valid python field name
+*** switch to row derived from namedtuple
+*** rowClass interface is hacky.  It could be a keyword/value and not have to do column lookup.
+*** add default handling for column not in file to typemap
+** rename getRow() functions to toRow()
+
+
+
+* PSL
+** psl.repr less than idea, but block object makes it hard with back-reference
+** Psl remove PslBlock back references, make named tuple
+** changes Psl, ChromInfo to have parse functions instead of methods, as with genePred.
+** psl.tOverlap should consider strand?? how?
+osupport psl sqlite stuff to build query bin ranges
+
+* genePred
+** make genePred.Exon a named tuple and not reference gene
+it will have to contains its CDS bounds, or maybe CDS separate
+getting features can then be lazy and drop featureSplit
+** GenePred, etc should have abstraction around from dbColIdxMap, could be good
+switch to dictcursors
 
 * add functions to build bigBed stuff
-
-* RangeFinder.addCoords a bit klunky
 
 * rangefinder:
 ** make have-strand explict on creating finder
 ** might be easier to keep on SeqBins with strand as part of entry,
 or at least not part of the key, with another level
+** RangeFinder.addCoords a bit klunky
+** rangefinder: coords strand is like PSL strand, not BED= strand,
+but a lot overlap are strand on the chrom coords.  Make this clean
+and add a separate strand to rangefinder, maybe rename coords.strand
+to clear up confusion,  Maybe coords.orient?
+** rangeFinder need items() to get keys and values() for when values don't include range
+
 
 
 * HtmlPage
@@ -67,11 +147,24 @@ attributes.
 
 * Coords:
 ** total ordering tests disabled
-
-* rangefinder: coords strand is like PSL strand, not BED= strand,
-but a lot overlap are strand on the chrom coords.  Make this clean
-and add a separate strand to rangefinder, maybe rename coords.strand
-to clear up confusion,  Maybe coords.orient?
+** paired coordinates features for genome/transcript is really useful:
+PrimerS-JuJu/lib/primersjuju/target_transcripts.py
+** make genePred.Range a base class of Coords
+** look at biocantor
+** write a conceptual model; strand coordinate vs strand, different?
+  see isoseq-xspecies/bin/mappedAlignToAnnot got very confused by putting query strand
+  on target coordinates
+** add intersect function
+** add Region with just start, end
+** construction looks at object type and takes fields that make 
+  sense, so can make a Region from Coords.
+** should there be a type (abs vs strand) see isoseq-xspecies/bin/mappedAlignToAnnot
+  negative strand coordinates is not the same as negative strand
+  confusion arrived because strand in t-coords not t-strand in psl for blocks,
+  tstrand gets revsered for block
+** Coords.adjust is a horrible name
+** pair coords (Feature, see primers juju)
+** method to map frame
 
 * add AtomicFileOpen()
 
@@ -82,13 +175,10 @@ Happends with raw reads of PSL rows without cursorclass
 
 * Add functions to locate UCSC data
 some is already in kznf
-* TsvReader
-** could create named tuples.
-what about the class name and serialization
-maybe just make lighter weight
 
-* id pycbio.db.dbDict really useful?
-* for APSW, something like sqlite3.Row as; it is both a tuple and a dict
+* database
+** drop pycbio/db/dbDict.py, never been used
+** for APSW, something like sqlite3.Row as; it is both a tuple and a dict
 however, it can't be passed to apsw, as it expects a sqlite3 cursor.
 Either suggest as an addition to APSW or port to here
 cpython-main/Modules/_sqlite/row.{c,h}
@@ -96,45 +186,47 @@ cpython-main/Modules/_sqlite/row.{c,h}
 https://docs.python.org/3/howto/clinic.html
 Currently Argument Clinic is considered internal-only for CPython.
 
-* blob conversion doesn't work:
+** blob conversion doesn't work:
 see kznf-gene-homology/bin/refseqBuildGeneSet
 could it be dictionary cursor?
-* do away with sqlite weird interface. 
-* changes Psl, ChromInfo to have parse functions instead of methods, as with genePred.
-* add common program error handler
+** do away with sqlite weird interface.
+Not sure what this is
+** convert lib/pycbio/hgdata/binnerSA.py to peewee
+or just maybe make generic in some way or even drop
+
+* also custom cursors that work off of namedtuples would be great, especially to unify the sqlite/mysql interface stuff.
+* sqlite wrapper classes really are not that useful, they could just be functions instead.
+* hglite-split spliting up hglite stuff
+** ideas: 
+ - hglite* table -> model, not just a reader, not confusing with other tables.
+   but models are records in am ORM, 
+- get*() to read*() methods
+
 * make most classes pickle-friendly
-* configInPy.py _evalConfigFile doesn't give file name in errors:
+
+* config
+** configInPy.py _evalConfigFile doesn't give file name in errors:
 caused by: invalid syntax. Perhaps you forgot a comma? (<string>, line 22)
 
-* configInPy is not very elegant and hard to use
+** configInPy is not very elegant and hard to use
 should also handle config hierarchy (cmdline -> config file -> defaults)
-* paired coordinates features for genome/transcript is really useful:
-PrimerS-JuJu/lib/primersjuju/target_transcripts.py
+
 * __eq__ should return NotImplemented rather than raise?
-* could ObjDict be a types.SimpleNamespace ?
-* vars doesn't work with ObjDict
+* objdict
+** could ObjDict be a types.SimpleNamespace ?
+** vars doesn't work with ObjDict
+** DefaultObjDict jsonpickle doesn't work (see disabled in objDictTests.py)
+this is hard because one needs to be pickle default_factory, which can be
+a class or function.
+seems like you can: https://medium.com/@emlynoregan/serialising-all-the-functions-in-python-cd880a63b591
+
+** objDict.py remove dup code with a mixin?
+
 * build clustering module based on:
 t2t-chm13/gene-annotation/t2t-chm13-gene-analysis/bin/geneBoundsLib.py
 kznf-gene-homology/bin/paralogClassify
-* psl.tOverlap should consider strand?? how?
-* TsvReader should use fspec stuff
-* coords
-- make genePred.Range a base class of Coords
-- look at biocantor
-- write a conceptual model; strand coordinate vs strand, different?
-  see isoseq-xspecies/bin/mappedAlignToAnnot got very confused by putting query strand
-  on target coordinates
-- add intersect function
-- add Region with just start, end
-- construction looks at object type and takes fields that make 
-  sense, so can make a Region from Coords.
-- should there be a type (abs vs strand) see isoseq-xspecies/bin/mappedAlignToAnnot
-  negative strand coordinates is not the same as negative strand
-  confusion arrived because strand in t-coords not t-strand in psl for blocks,
-  tstrand gets revsered for block
-- Coords.adjust is a horrible name
-- pair coords (Feature, see primers juju)
-- method to map frame
+
+* coords:
 * create some common genome mapping functions related to
 isoseq-xspecies/bin/mappedAlignToAnnot
 * coords rich comparison not working
@@ -158,34 +250,27 @@ def add_mixing(obj, cls):
     obj.__class__ = type(base_cls_name, (cls, base_cls), {})
 but how does an existing instance get added?
 
-=======
 * create clustering library, see:
 t2t-chm13-gene-analysis/bin/geneBoundsLib.py
 * convert to use:
 import mysql.connector  # pip install mysql-connector-python
-* rangeFinder:
-need items() to get keys and values() for when values don't include range
 * way to determine primary assembly in a consistent way.
 including ungaped sizes
 see ~/compbio/kznf/projs/te-insertions/TEInsertions/bin/getRepGenomeCover
-=======
+
 * venn: add ability to output upset plot format
 gencode/meetings/2021/2021-03-30-gencode/ucsc/bin/plotGeneSetIntersections
 gencode/meetings/2021/2021-03-30-gencode/ucsc/data/hprc/gene-missing-venn.tsv
 * venn: easier to collect counts, although maybe existing this would have worked fine:
 ~/compbio/gencode/projs/nrcseq/response/bin/makeVennSets
-* if Bed is created without a score and with a strand, zero score is output and no strand
+
 * switch to pip install mysql-connector-python (has named tuple cursor, uses to kznf TE project)
-* venn doesn't document what inclusive really is
-* pycbio.stats.venn writeSets and writeCounts are the same
+* stats
+** venn doesn't document what inclusive really is
+** pycbio.stats.venn writeSets and writeCounts are the same
 is this even a useful format?
-* support psl sqlite stuff to build query bin ranges
+
 * modify lib/pycbio/hgdata/gff3 to use gencode gtf/gff paradigm
-* DefaultObjDict jsonpickle doesn't work (see disabled in objDictTests.py)
-this is hard because one needs to be pickle default_factory, which can be
-a class or function.
-seems like you can: https://medium.com/@emlynoregan/serialising-all-the-functions-in-python-cd880a63b591
-* objDict.py remove dup code with a mixin?
 * drop enumeration
 * nasty BUG:  calling pipeline in a loop agaisnt an open file truncates it each exec
     ouch, this happens with subprocess.call_check too
@@ -194,71 +279,22 @@ seems like you can: https://medium.com/@emlynoregan/serialising-all-the-function
   http://codespeak.net/~mwh/pydoctor/ - discussion of others
 
 * rename pycbio.sys, has caused problems with relative imports
-
-* reverse asserts so order is expect, got (corresponds to diff outout, see pslMapTests)
+forget relative imports
 
 * add function to init from __init__ args
-  http://code.activestate.com/recipes/286185-automatically-initializing-instance-variables-from/
+http://code.activestate.com/recipes/286185-automatically-initializing-instance-variables-from/
+
 * switch all function to use coords
-* exceptTests has to hack around unit test _AssertRaisesContext not saving traceback
-see unittest/case.py: # store exception, without traceback, for later retrieval
-
-* convert lib/pycbio/hgdata/binnerSA.py to peewee
-* GenePred, etc should have abstraction around from dbColIdxMap, could be good
-switch to dictcursors
-* also custom cursors that work off of namedtuples would be great, especially to unify the sqlite/mysql interface stuff.
-* sqlite wrapper classes really are not that useful, they could just be functions instead.
-* rename getRow() functions to toRow()
-* hglite-split spliting up hglite stuff
-** ideas: 
- - hglite* table -> model, not just a reader, not confusing with other tables.
-   but models are records in am ORM, 
-- get*() to read*() methods
-* provide support for implementing commands that have optional stdin/stdout
-using /dev/stdout doesn't work, as it reset file to the beginning, rather
-that append to current location.  Doing:
-  fh = os.fdopen(os.dup(sys.stdout.fileno()), "w")
-works better
-partial test implemented here:
-tests/libtests/pycbio/sys/fileOpsTests.py::DISABLED_testOpengzDevStdout()
-bed-analysis-tools has some tools that were quickly hacked to compare mappings and alignments for the cactus paper.  It got rather hacky, but there might be some seeds of good commands here.
-* psl.repr less than idea, but block object makes it hard with back-reference
-
-* make genePred.Exon a named tuple and not reference gene
-it will have to contains its CDS bounds
-getting features can then be lazy and drop featureSplit
 
 
-* clean up RGBA
+* color
+** clean up RGBA
 need fromRGA8Str
 maybe a single function to parse RGBA and RGB8 strs
-
-* color shouldn't have to store both RGB and HSV
+** color shouldn't have to store both RGB and HSV
 more rgba tests
+** need more Color and SvgColors tests
 
-* Bed extension needs work (see decoration.py)
-need to validate override function
-bed.encodeRow maybe in autoSql or tab modules
-
-* maybe store BED itemRgb, fillColor, as a Color and convert on format.
 
 * check this on the using realpath to find library: https://patmaddox.com/doc/trunk/www/2023-12-sh-relative-shell-script-includes-with-realpath-on-freebsd/
 
-* need more Color and SvgColors tests
-
-* tsvreader issues
-** pass owndership of row to Row instead of having Row inherit from list
-** make rowClass (rename rowFactory) so that it can be able to construct and object.  Move parsing of columns outside of tsvRow (good for peewee)
-** create error with file name/line number
-** carefully consider naming of functions in Row, as they could conflict with fields.  Maybe put in a base-class??
-** put in same module as TSV
-** is colMap needed any more???
-** need to add write stuff. (see GeneCheck), where str() is called for all column types
-** add type mapping functions that gets column name
-** rename  typeMap -> colTypes
-** make a column object.
-** document how colName mapping and type mappings works together
-** check if column is a valid python field name
-** switch to row derived from namedtuple
-** rowClass interface is hacky.  It could be a keyword/value and not have to do column lookup.
-** add default handling for column not in file to typemap
