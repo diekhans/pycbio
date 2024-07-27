@@ -70,7 +70,7 @@ class SvgColors:
     gold = _mkcolor(0xffd700)
     goldenrod = _mkcolor(0xdaa520)
     gray = _mkcolor(0x808080)
-    grey = _mkcolor(0x808080)
+    grey = gray
     green = _mkcolor(0x008000)
     greenyellow = _mkcolor(0xadff2f)
     honeydew = _mkcolor(0xf0fff0)
