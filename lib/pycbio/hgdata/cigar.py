@@ -8,27 +8,29 @@ from collections import namedtuple
 # SAM manual
 # https://github.com/NBISweden/GAAS/blob/master/annotation/knowledge/cigar.md
 
+CIGAR_DESC = """
+|----+-----------------------------------+---------+---------+----------------+-------|
+| OP | Description                       | Consume | Consume | Name           | index |
+|    |                                   | query   | ref     |                |       |
+|----+-----------------------------------+---------+---------+----------------+-------|
+| M  | alignment match/mismatch          | yes     | yes     | BAM_CMATCH     |     0 |
+| I  | insertion to the reference        | yes     | no      | BAM_CINS       |     1 |
+| D  | deletion from the reference       | no      | yes     | BAM_CDEL       |     2 |
+| N  | skipped region from the reference | no      | yes     | BAM_CREF_SKIP  |     3 |
+| S  | soft clipping                     | yes     | no      | BAM_CSOFT_CLIP |     4 |
+| H  | hard clipping                     | no      | no      | BAM_CHARD_CLIP |     5 |
+| P  | padding                           | no      | no      | BAM_CPAD       |     6 |
+| =  | sequence match                    | yes     | yes     | BAM_CEQUAL     |     7 |
+| X  | sequence mismatch                 | yes     | yes     | BAM_CDIFF      |     8 |
+| B  | in pysam, not specification       |         |         | BAM_CBACK      |     9 |
+|----+-----------------------------------+---------+---------+----------------+-------|
+"""
 
-# |----+-----------------------------------+---------+---------|
-# | OP | Description                       | consume | consume |
-# |    |                                   | query   | ref     |
-# |----+-----------------------------------+---------+---------|
-# | M  | alignment match/mismatch          | yes     | yes     |
-# | I  | insertion to the reference        | yes     | no      |
-# | D  | deletion from the reference       | no      | yes     |
-# | N  | skipped region from the reference | no      | yes     |
-# | S  | soft clipping                     | yes     | no      |
-# | H  | hard clipping                     | no      | no      |
-# | P  | padding                           | no      | no      |
-# | =  | sequence match                    | yes     | yes     |
-# | X  | sequence mismatch                 | yes     | yes     |
-# |----+-----------------------------------+---------+---------|
-
+CIGAR_OPS = "MIDNSHP=X"  # index order
 consumeQueryOps = frozenset(['M', 'I', 'S', '=', 'X'])
 consumeQueryHardOps = frozenset(consumeQueryOps | frozenset(['H']))
 consumeTargetOps = frozenset(['M', 'D', 'N', '=', 'X'])
-validOps = frozenset("MIDNSHP=X")
-
+validOps = frozenset(CIGAR_OPS)
 
 class CigarRun(namedtuple("CigarRun", ("code", "count"))):
     "CIGAR run-length encoding"
