@@ -289,13 +289,10 @@ http://code.activestate.com/recipes/286185-automatically-initializing-instance-v
 
 * color
 ** clean up RGBA
-need fromRGBA8Str
+need fromRGBA8Str?
 maybe a single function to parse RGBA and RGB8 strs
-** color shouldn't have to store both RGB and HSV
-more rgba tests
+** more rgba tests
 ** need more Color and SvgColors tests
-** make HSV conversion lazy
-
 
 * check this on the using realpath to find library: https://patmaddox.com/doc/trunk/www/2023-12-sh-relative-shell-script-includes-with-realpath-on-freebsd/
 

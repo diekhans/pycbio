@@ -2,7 +2,6 @@
 import re
 import colorsys
 import math
-from collections import namedtuple
 
 # FIXME: do we really need to store both RGB and HSV?, maybe cache HSV converson
 
@@ -14,26 +13,69 @@ def _int8ToReal(v):
 def _realToInt8(v):
     return int(round(v * 255))
 
-class Color(namedtuple("Color", ("red", "green", "blue",
-                                 "hue", "saturation", "value", "alpha"))):
+class Color:
     """Immutable color object with conversion to/from different formats.
     Don't construct directly use, factory (from*) static methods.
 
     :ivar red: red channel, in the range 0.0..1.0
     :ivar green: green channel, in the range 0.0..1.0
     :ivar blue: blue channel, in the range 0.0..1.0
-    :ivar hue: hue component, in the range 0.0..1.0
-    :ivar saturation: saturation component in the range 0.0..1.0
-    :ivar value: value component, in the range 0.0..1.0
     :ivar alpha: it not None, alpha value in the range 0.0..1.0
     """
-    __slots__ = ()
+    __slots__ = ("red", "green", "blue", "alpha", "_hsv")
+
+    def __init__(self, red, green, blue, alpha=None, *, hsv=None):
+        object.__setattr__(self, 'red', red)
+        object.__setattr__(self, 'green', green)
+        object.__setattr__(self, 'blue', blue)
+        object.__setattr__(self, 'alpha', alpha)
+        object.__setattr__(self, '_hsv', None)
 
     def __str__(self):
         if self.alpha is None:
             return str((self.red, self.green, self.blue))
         else:
             return str((self.red, self.green, self.blue, self.alpha))
+
+    def __repr__(self):
+        return f"Color({self.red}, {self.green}, {self.blue}, {self.alpha}"
+
+    def __setattr__(self, key, value):
+        raise AttributeError(f"{self.__class__.__name__} is immutable")
+
+    def __hash__(self):
+        return hash((self.red, self.green, self.blue, self.alpha))
+
+    def __eq__(self, other):
+        if isinstance(other, Color):
+            return (self.red, self.green, self.blue, self.alpha) == (other.red, other.green, other.blue, other.alpha)
+        return False
+
+    def _createHsvCache(self):
+        "create HSV cache;  idempotent so thread-safe"
+        object.__setattr__(self, '_hsv',
+                           colorsys.rgb_to_hsv(self.red, self.green, self.blue))
+
+    @property
+    def hue(self):
+        "get hue component, in the range 0.0..1.0"
+        if self._hsv is None:
+            self._createHsvCache()
+        return self._hsv[0]
+
+    @property
+    def saturation(self):
+        "get saturation component, in the range 0.0..1.0"
+        if self._hsv is None:
+            self._createHsvCache()
+        return self._hsv[1]
+
+    @property
+    def value(self):
+        "get value component, in the range 0.0..1.0"
+        if self._hsv is None:
+            self._createHsvCache()
+        return self._hsv[2]
 
     @property
     def alphaDflt(self):
@@ -183,8 +225,7 @@ class Color(namedtuple("Color", ("red", "green", "blue",
         assert (0.0 <= g <= 1.0)
         assert (0.0 <= b <= 1.0)
         assert (a is None) or (0.0 <= a <= 1.0)
-        h, s, v = colorsys.rgb_to_hsv(r, g, b)
-        return Color(r, g, b, h, s, v, a)
+        return Color(r, g, b, a)
 
     @staticmethod
     def fromRgb8(r, g, b, a=None):
@@ -223,7 +264,7 @@ class Color(namedtuple("Color", ("red", "green", "blue",
         assert (0.0 <= v <= 1.0)
         assert (a is None) or (0.0 <= a <= 1.0)
         r, g, b = colorsys.hsv_to_rgb(h, s, v)
-        return Color(r, g, b, h, s, v, a)
+        return Color(r, g, b, a, hsv=(h, s, v))
 
     @staticmethod
     def fromHsv8(h, s, v):
