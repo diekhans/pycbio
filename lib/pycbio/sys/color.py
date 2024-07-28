@@ -31,6 +31,16 @@ class Color:
         object.__setattr__(self, 'alpha', alpha)
         object.__setattr__(self, '_hsv', None)
 
+    def __getstate__(self):
+        return (self.red, self.green, self.blue, self.alpha)
+
+    def __setstate__(self, state):
+        object.__setattr__(self, 'red', state[0])
+        object.__setattr__(self, 'green', state[1])
+        object.__setattr__(self, 'blue', state[2])
+        object.__setattr__(self, 'alpha', state[3])
+        object.__setattr__(self, '_hsv', None)
+
     def __str__(self):
         if self.alpha is None:
             return str((self.red, self.green, self.blue))

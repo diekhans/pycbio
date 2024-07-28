@@ -1,6 +1,7 @@
 # Copyright 2006-2022 Mark Diekhans
 import unittest
 import sys
+import pickle
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio import PycbioException
@@ -151,6 +152,12 @@ class SvgColorsTests(TestCaseBase):
     def testComplementary(self):
         c1 = Color.fromRgb(0.5, 0.3, 0.4)
         self.assertEqual(c1.complementary(), Color.fromRgb(0.5, 0.7, 0.6))
+
+    def testPickle(self):
+        c1 = Color.fromRgb(0.5, 0.3, 0.4)
+        c1pkl = pickle.dumps(c1)
+        c2 = pickle.loads(c1pkl)
+        self.assertEqual(c1, c2)
 
 
 def suite():
