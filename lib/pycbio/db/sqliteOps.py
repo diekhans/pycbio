@@ -21,12 +21,16 @@ def objDictRowFactory(cur, row):
     name winning.  In sane cases, these will have the same value"""
     return ObjDict(zip((t[0] for t in cur.description), row))
 
-def _createSqlExcept(sql, args):
-    """create exception with SQL and optionally args, possibly truncating args to limit size"""
-    maxArgsLen = 500
+def _createSqlExcept(sql, args, maxErrorLenSql, maxErrorLenArgs):
+    """create exception with SQL and optionally args, possibly truncating sql
+    query and args to limit size"""
     argsStr = str(args)
-    if len(argsStr) > maxArgsLen:
-        argsStr = argsStr[0: maxArgsLen]
+    if maxErrorLenSql is not None:
+        if len(sql) > maxErrorLenSql:
+            sql = sql[0:maxErrorLenSql] + '...'
+    if maxErrorLenArgs is not None:
+        if len(argsStr) > maxErrorLenArgs:
+            argsStr = argsStr[0: maxErrorLenArgs] + '...'
     return SqliteOpsError(f"failed query: '{sql}' with '{argsStr}'")
 
 def connect(sqliteDb, create=False, readonly=True, timeout=None, synchronous=None, rowFactory=None):
@@ -94,33 +98,39 @@ def makeInSeqArg(vals):
     return "({})".format(','.join(apsw.format_sql_value(v) for v in vals))
 
 
-def execute(conn, sql, args=None):
-    "Run an SQL query on a connection that does not return rows"
+def execute(conn, sql, args=None, *, maxErrorLenSql=None, maxErrorLenArgs=200):
+    """Run an SQL query on a connection that does not return rows.  Use
+    maxErrorLenSql and maxErrorLenArgs to limit size of formatting of SQL and
+    arguments in error messages. Set to None to not limit."""
     with SqliteCursor(conn) as cur:
         try:
             cur.execute(sql, args)
         except apsw.Error as ex:
-            raise _createSqlExcept(sql, args) from ex
+            raise _createSqlExcept(sql, args, maxErrorLenSql, maxErrorLenArgs) from ex
 
 
-def executeMany(conn, sql, args=None):
-    "Run multiple SQL queries on a connection that does not return rows"
+def executeMany(conn, sql, args=None, *, maxErrorLenSql=None, maxErrorLenArgs=200):
+    """Run multiple SQL queries on a connection that does not return rows.
+    Use maxErrorLenSql and maxErrorLenArgs to limit size of formatting of SQL
+    and arguments in error messages. Set to None to not limit."""
     with SqliteCursor(conn) as cur:
         try:
             cur.executemany(sql, args)
         except apsw.Error as ex:
-            raise _createSqlExcept(sql, args) from ex
+            raise _createSqlExcept(sql, args, maxErrorLenSql, maxErrorLenArgs) from ex
 
 
-def query(conn, sql, args=None, *, rowFactory=None):
-    "generator to run an SQL query on a connection"
+def query(conn, sql, args=None, *, rowFactory=None, maxErrorLenSql=None, maxErrorLenArgs=200):
+    """generator to run an SQL query on a connection" Use maxErrorLenSql and
+    maxErrorLenArgs to limit size of formatting of SQL and arguments in error
+    messages. Set to None to not limit."""
     with SqliteCursor(conn, rowFactory=rowFactory) as cur:
         try:
             cur.execute(sql, args)
             for row in cur:
                 yield row
         except apsw.Error as ex:
-            raise _createSqlExcept(sql, args) from ex
+            raise _createSqlExcept(sql, args, maxErrorLenSql, maxErrorLenArgs) from ex
 
 def haveTable(conn, table):
     "check if a table exists"
