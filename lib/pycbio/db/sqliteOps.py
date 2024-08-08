@@ -15,22 +15,32 @@ class SqliteOpsError(Exception):
     "Error wrapped around sqlite exceptions to add information"
     pass
 
+class QueryOpts:
+    """Special options to control query. Use maxErrorLenSql and maxErrorLenArgs
+    to limit size of formatting of SQL and arguments in error messages.."""
+    def __init__(self, *, maxErrorLenSql=None, maxErrorLenArgs=200):
+        self.maxErrorLenSql = maxErrorLenSql
+        self.maxErrorLenArgs = maxErrorLenArgs
+
+
+DEFAULT_QUERY_OPTS = QueryOpts()
+
 def objDictRowFactory(cur, row):
     """Row factory to return a ObjDict of the result.  Note that non-unique
     names from multiple tables will end up with the last column of the same
     name winning.  In sane cases, these will have the same value"""
     return ObjDict(zip((t[0] for t in cur.description), row))
 
-def _createSqlExcept(sql, args, maxErrorLenSql, maxErrorLenArgs):
+def _createSqlExcept(sql, args, qopts):
     """create exception with SQL and optionally args, possibly truncating sql
     query and args to limit size"""
     argsStr = str(args)
-    if maxErrorLenSql is not None:
-        if len(sql) > maxErrorLenSql:
-            sql = sql[0:maxErrorLenSql] + '...'
-    if maxErrorLenArgs is not None:
-        if len(argsStr) > maxErrorLenArgs:
-            argsStr = argsStr[0: maxErrorLenArgs] + '...'
+    if qopts.maxErrorLenSql is not None:
+        if len(sql) > qopts.maxErrorLenSql:
+            sql = sql[0:qopts.maxErrorLenSql] + '...'
+    if qopts.maxErrorLenArgs is not None:
+        if len(argsStr) > qopts.maxErrorLenArgs:
+            argsStr = argsStr[0: qopts.maxErrorLenArgs] + '...'
     return SqliteOpsError(f"failed query: '{sql}' with '{argsStr}'")
 
 def connect(sqliteDb, create=False, readonly=True, timeout=None, synchronous=None, rowFactory=None):
@@ -98,7 +108,7 @@ def makeInSeqArg(vals):
     return "({})".format(','.join(apsw.format_sql_value(v) for v in vals))
 
 
-def execute(conn, sql, args=None, *, maxErrorLenSql=None, maxErrorLenArgs=200):
+def execute(conn, sql, args=None, *, qopts=DEFAULT_QUERY_OPTS):
     """Run an SQL query on a connection that does not return rows.  Use
     maxErrorLenSql and maxErrorLenArgs to limit size of formatting of SQL and
     arguments in error messages. Set to None to not limit."""
@@ -106,10 +116,10 @@ def execute(conn, sql, args=None, *, maxErrorLenSql=None, maxErrorLenArgs=200):
         try:
             cur.execute(sql, args)
         except apsw.Error as ex:
-            raise _createSqlExcept(sql, args, maxErrorLenSql, maxErrorLenArgs) from ex
+            raise _createSqlExcept(sql, args, qopts) from ex
 
 
-def executeMany(conn, sql, args=None, *, maxErrorLenSql=None, maxErrorLenArgs=200):
+def executeMany(conn, sql, args=None, *, qopts=DEFAULT_QUERY_OPTS):
     """Run multiple SQL queries on a connection that does not return rows.
     Use maxErrorLenSql and maxErrorLenArgs to limit size of formatting of SQL
     and arguments in error messages. Set to None to not limit."""
@@ -117,10 +127,10 @@ def executeMany(conn, sql, args=None, *, maxErrorLenSql=None, maxErrorLenArgs=20
         try:
             cur.executemany(sql, args)
         except apsw.Error as ex:
-            raise _createSqlExcept(sql, args, maxErrorLenSql, maxErrorLenArgs) from ex
+            raise _createSqlExcept(sql, args, qopts) from ex
 
 
-def query(conn, sql, args=None, *, rowFactory=None, maxErrorLenSql=None, maxErrorLenArgs=200):
+def query(conn, sql, args=None, *, rowFactory=None, qopts=DEFAULT_QUERY_OPTS):
     """generator to run an SQL query on a connection" Use maxErrorLenSql and
     maxErrorLenArgs to limit size of formatting of SQL and arguments in error
     messages. Set to None to not limit."""
@@ -130,7 +140,7 @@ def query(conn, sql, args=None, *, rowFactory=None, maxErrorLenSql=None, maxErro
             for row in cur:
                 yield row
         except apsw.Error as ex:
-            raise _createSqlExcept(sql, args, maxErrorLenSql, maxErrorLenArgs) from ex
+            raise _createSqlExcept(sql, args, qopts) from ex
 
 def haveTable(conn, table):
     "check if a table exists"
