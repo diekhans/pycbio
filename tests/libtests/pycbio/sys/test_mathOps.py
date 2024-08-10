@@ -1,6 +1,7 @@
 # Copyright 2006-2022 Mark Diekhans
 import unittest
 import sys
+import math
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys import mathOps
@@ -10,7 +11,7 @@ from pycbio.sys.testCaseBase import TestCaseBase
 class RoundToOrderOfMagnitudeTests(TestCaseBase):
     def _assertRound(self, expect, value):
         "asserted that value is same as expect when rounded to it's order of magnitude"
-        # FIXME: could this be done another way.
+        # FIXME: could this be done another way?
         self.assertEqual(expect, mathOps.roundToOrderOfMagnitude(value))
 
     def testMagnitudeFifty(self):
@@ -46,6 +47,12 @@ class RoundToOrderOfMagnitudeTests(TestCaseBase):
     def testMagnitudeZero(self):
         self._assertRound(1, 0)
 
+class TestMathOps(TestCaseBase):
+    def testSafeDiv0(self):
+        self.assertTrue(math.isnan(mathOps.safeDiv(10, 0)))
+
+    def testSafeDivNan(self):
+        self.assertTrue(math.isnan(mathOps.safeDiv(10, math.nan)))
 
 def suite():
     ts = unittest.TestSuite()
