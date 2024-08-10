@@ -48,11 +48,14 @@ class RoundToOrderOfMagnitudeTests(TestCaseBase):
         self._assertRound(1, 0)
 
 class TestMathOps(TestCaseBase):
-    def testSafeDiv0(self):
+    def testSafeDivInt0(self):
         self.assertTrue(math.isnan(mathOps.safeDiv(10, 0)))
 
-    def testSafeDivNan(self):
-        self.assertTrue(math.isnan(mathOps.safeDiv(10, math.nan)))
+    def testSafeDivFloat0(self):
+        self.assertTrue(math.isnan(mathOps.safeDiv(10.1, 0.0)))
+
+    def testSafeDivFloatNan(self):
+        self.assertTrue(math.isnan(mathOps.safeDiv(10.1, math.nan)))
 
 def suite():
     ts = unittest.TestSuite()
