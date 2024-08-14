@@ -39,6 +39,7 @@ bed-analysis-tools has some tools that were quickly hacked to compare mappings a
 
 * symEnum
 ** symEnum is invasive to with Enum, can it be cleaner, like other derived enum class?
+** The external name is returned with str(), but how to get internal name?
 
 * sys functions:
 ** should rmTree use shutil.rmtree
