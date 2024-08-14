@@ -54,5 +54,5 @@ def selectById(selectCol, selectTsv, inCol, inTsv, outTsv):
 
 
 raise Exception("FIXME: not done")
-opts = parseArgs()
-selectById(opts.selectCol, opts.selectTsv, opts.inCol, opts.inTsv, opts.outTsv)
+args = parseArgs()
+selectById(args.selectCol, args.selectTsv, args.inCol, args.inTsv, args.outTsv)

@@ -95,7 +95,9 @@ class CountChks:
                    self.probInstCnts[v])
         outFh.close()
 
+def main(args):
+    counter = CountChks(args.geneChks)
+    counter.count(args.statsOut)
 
-opts = parseArgs()
-counter = CountChks(opts.geneChks)
-counter.count(opts.statsOut)
+
+main(parseArgs())

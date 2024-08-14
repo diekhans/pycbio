@@ -88,13 +88,13 @@ def keysToStruct(keys):
     return keyStruct
 
 
-def jsonAnalyze(opts):
-    data = loadFromJson(opts.inJson)
+def jsonAnalyze(args):
+    data = loadFromJson(args.inJson)
     keys = getKeys(data)
-    if opts.printKeyPaths:
-        printKeys(opts.outfile, keys)
+    if args.printKeyPaths:
+        printKeys(args.outfile, keys)
     else:
-        saveToJson(opts.outfile, keysToStruct(keys))
+        saveToJson(args.outfile, keysToStruct(keys))
 
 
 jsonAnalyze(parseArgs())

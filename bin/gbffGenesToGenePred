@@ -98,30 +98,30 @@ You will also need to lift the contigs to chromosomes.
                         help="GENBANK flat file to process")
     parser.add_argument("genePredFile",
                         help="output file in genePred format")
-    opts = parser.parse_args()
-    if (opts.rnaq is not None) and (opts.mrnaProtMap is not None):
+    args = parser.parse_args()
+    if (args.rnaq is not None) and (args.mrnaProtMap is not None):
         parser.error("can only specify one of -rnaq or -mrnaProtMap")
-    if opts.allGenes:
-        opts.protGenes = opts.rnaGenes = opts.other = opts.immunoglobulins = True
-    elif not (opts.protGenes or opts.rnaGenes or opts.otherGenes or opts.immunoglobulins):
-        opts.protGenes = True
-    opts.selected = set()
-    if opts.protGenes:
-        opts.selected.add(GeneType.protGene)
-    if opts.rnaGenes:
-        opts.selected.add(GeneType.rnaGene)
-    if opts.otherGenes:
-        opts.selected.add(GeneType.other)
-    if opts.immunoglobulins:
-        opts.selected.add(GeneType.immunoglobulin)
-    opts.active = set()
-    if opts.live:
-        opts.active.add(ActiveType.live)
-    if opts.pseudo:
-        opts.active.add(ActiveType.pseudo)
-    if len(opts.active) == 0:
-        opts.active.add(ActiveType.live)
-    return opts
+    if args.allGenes:
+        args.protGenes = args.rnaGenes = args.other = args.immunoglobulins = True
+    elif not (args.protGenes or args.rnaGenes or args.otherGenes or args.immunoglobulins):
+        args.protGenes = True
+    args.selected = set()
+    if args.protGenes:
+        args.selected.add(GeneType.protGene)
+    if args.rnaGenes:
+        args.selected.add(GeneType.rnaGene)
+    if args.otherGenes:
+        args.selected.add(GeneType.other)
+    if args.immunoglobulins:
+        args.selected.add(GeneType.immunoglobulin)
+    args.active = set()
+    if args.live:
+        args.active.add(ActiveType.live)
+    if args.pseudo:
+        args.active.add(ActiveType.pseudo)
+    if len(args.active) == 0:
+        args.active.add(ActiveType.live)
+    return args
 
 
 def prWarn(*objs):
@@ -483,9 +483,9 @@ class GeneFeatures:
 class RecProcessor:
     "process a record from the file"
 
-    def __init__(self, rec, opts, rnaCdsMap=None):
+    def __init__(self, rec, args, rnaCdsMap=None):
         self.rec = rec
-        self.opts = opts
+        self.args = args
         # need to lookup both by id and sym, as sometimes mrna syms don't
         # match gene and exons don't have syms.  Also, sometimes a feature
         # proceeds the gene it references, so do this in two passes.
@@ -498,7 +498,7 @@ class RecProcessor:
             self._finishGene(gene, rnaCdsMap)
 
     def _finishGene(self, gene, rnaCdsMap):
-        gene.finish(self.opts.verbose, rnaCdsMap)
+        gene.finish(self.args.verbose, rnaCdsMap)
 
     def _findGenes(self, rec):
         for feat in rec.features:
@@ -523,7 +523,7 @@ class RecProcessor:
                 self._procFeat(feat)
             except gbff.GbffExcept as ex:
                 prWarn(ex)
-                if self.opts.verbose >= 2:
+                if self.args.verbose >= 2:
                     traceback.print_exc(None, sys.stderr)
                     prLine(sys.stderr)
 
@@ -536,7 +536,7 @@ class RecProcessor:
         self.genes.append(gene)
         self.genesById[geneId] = gene
         self.genesBySym[geneSym] = gene
-        if self.opts.verbose >= 3:
+        if self.args.verbose >= 3:
             prLine(sys.stderr, "parsing gene: ", str(gene))
 
     def _getGeneObjById(self, feat, required=True):
@@ -719,20 +719,20 @@ class GeneConverter:
 
 class GbffToGenes:
     "convert a genbank flat file object to genePreds"
-    def __init__(self, opts, rnaCdsMap):
-        self.opts = opts
+    def __init__(self, args, rnaCdsMap):
+        self.args = args
         self.rnaCdsMap = rnaCdsMap
 
     def _shouldConvert(self, gene):
-        return ((gene.geneType in self.opts.selected) and (gene.activeType in self.opts.active)
-                and ((not self.opts.refSeqOnly) or gene.isRefSeq()))
+        return ((gene.geneType in self.args.selected) and (gene.activeType in self.args.active)
+                and ((not self.args.refSeqOnly) or gene.isRefSeq()))
 
     def _trace(self, gene, keep):
         prLine(sys.stderr, ("converting" if keep else "skipping"),
                " gene: ", str(gene), " [", gene.geneType, ", ", gene.activeType, "]")
         for transId in gene.getTransIds():
             trans = gene.transTbl[transId]
-            if self.opts.verbose >= 2:
+            if self.args.verbose >= 2:
                 prLine(sys.stderr, "    trans: ", trans.getTransId(), " ",
                        (trans.getMRnaCoords() if trans.mrnaFt is not None else trans.getMiscRnaCoords()))
                 prLine(sys.stderr, "    CDS:   ", trans.getCdsId(), " ", trans.getCdsCoords())
@@ -741,47 +741,49 @@ class GbffToGenes:
 
     def _procGene(self, gene):
         keep = self._shouldConvert(gene)
-        if self.opts.verbose >= 1:
+        if self.args.verbose >= 1:
             self._trace(gene, keep)
         if keep:
-            cnv = GeneConverter(gene, self.opts.ext, self.opts.dropLocusVer)
+            cnv = GeneConverter(gene, self.args.ext, self.args.dropLocusVer)
             cnv.convert(self.outFh)
 
     def _procRec(self, rec):
-        if self.opts.verbose >= 3:
+        if self.args.verbose >= 3:
             prLine(sys.stderr, "parsing rec: ", rec.locus)
-        recProc = RecProcessor(rec, self.opts, self.rnaCdsMap)
+        recProc = RecProcessor(rec, self.args, self.rnaCdsMap)
         geneSyms = list(recProc.genesBySym.keys())
         geneSyms.sort()
         for geneSym in geneSyms:
             self._procGene(recProc.genesBySym[geneSym])
 
     def convert(self, genePredFile):
-        gbsFh = fileOps.opengz(self.opts.gbff)
+        gbsFh = fileOps.opengz(self.args.gbff)
         self.outFh = open(genePredFile, "w")
         for rec in SeqIO.parse(gbsFh, "genbank"):
             self._procRec(rec)
         self.outFh.close()
         gbsFh.close()
 
+def main(args):
+    if args.verbose >= 1:
+        prLine(sys.stderr, "selecting: genes: ", setOps.setJoin(args.selected), "  ", setOps.setJoin(args.active))
 
-opts = parseArgs()
-if opts.verbose >= 1:
-    prLine(sys.stderr, "selecting: genes: ", setOps.setJoin(opts.selected), "  ", setOps.setJoin(opts.active))
+    # Bio/GenBank/__init__.py issues UserWarning on problems rather than
+    # something more specific, mean we must filter for all types
+    # FIXME: report as bug that it isn't specific and not documented.
+    if args.ignoreShortSequence:
+        warnings.filterwarnings("ignore", ".*Expected sequence length.* found.*", UserWarning, "Bio.GenBank")
 
-# Bio/GenBank/__init__.py issues UserWarning on problems rather than
-# something more specific, mean we must filter for all types
-# FIXME: report as bug that it isn't specific and not documented.
-if opts.ignoreShortSequence:
-    warnings.filterwarnings("ignore", ".*Expected sequence length.* found.*", UserWarning, "Bio.GenBank")
+    rnaCdsMap = None
+    if args.rnaq is not None:
+        rnaCdsMap = RnaCdsMap(rnaqFile=args.rnaq)
+    elif args.mrnaProtMap is not None:
+        rnaCdsMap = RnaCdsMap(mrnaProtFile=args.mrnaProtMap)
+    gbffConvert = GbffToGenes(args, rnaCdsMap)
+    gbffConvert.convert(args.genePredFile)
+    if args.errorOnWarn and (warnCnt > 0):
+        sys.stderr.write("Error: " + str(warnCnt) + " warning(s) encountered\n")
+        sys.exit(1)
 
-rnaCdsMap = None
-if opts.rnaq is not None:
-    rnaCdsMap = RnaCdsMap(rnaqFile=opts.rnaq)
-elif opts.mrnaProtMap is not None:
-    rnaCdsMap = RnaCdsMap(mrnaProtFile=opts.mrnaProtMap)
-gbffConvert = GbffToGenes(opts, rnaCdsMap)
-gbffConvert.convert(opts.genePredFile)
-if opts.errorOnWarn and (warnCnt > 0):
-    sys.stderr.write("Error: " + str(warnCnt) + " warning(s) encountered\n")
-    sys.exit(1)
+
+main(parseArgs())

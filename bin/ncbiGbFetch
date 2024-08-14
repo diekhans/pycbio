@@ -49,12 +49,12 @@ def parseArgs():
                         help="override defaulting of email address")
     parser.add_argument("ids", nargs="*", default=[],
                         help="explicit list of ids to fetch")
-    opts = parser.parse_args()
-    if opts.email is None:
-        opts.email = getEmail()
+    args = parser.parse_args()
+    if args.email is None:
+        args.email = getEmail()
     global verbose
-    verbose = opts.verbose
-    return opts
+    verbose = args.verbose
+    return args
 
 def loadIdFiles(idFiles):
     ids = []
@@ -88,7 +88,7 @@ def efetchRetried(email, db, gbid, fmt):
 def efetch(email, db, fastaFmt, gbid, outFh):
     "fetch a genbank entry or fasta"
     fmt = "fasta" if fastaFmt else "gbwithparts"
-    resp = efetchRetried(email, gbid, fmt)
+    resp = efetchRetried(email, db, gbid, fmt)
     ent = resp.read()
     if len(ent) <= 1:
         raise PycbioException("no entry found for \"{}\"".format(id))
@@ -104,22 +104,22 @@ def doFetchOneToFile(email, db, fastaFmt, gbid, outDir):
     with fileOps.opengz(outFile, "w") as outFh:
         efetch(email, db, fastaFmt, gbid, outFh)
 
-def doFetchOutToDir(email, fastaFmt, ids, outDir):
+def doFetchOutToDir(email, db, fastaFmt, ids, outDir):
     for gbid in sorted(ids):
-        doFetchOneToFile(email, fastaFmt, gbid, outDir)
+        doFetchOneToFile(email, db, fastaFmt, gbid, outDir)
 
-def ncbiGbFetch(opts):
-    ids = opts.ids
-    if opts.idFiles is not None:
-        ids.extend(loadIdFiles(opts.idFiles))
+def ncbiGbFetch(args):
+    ids = args.ids
+    if args.idFiles is not None:
+        ids.extend(loadIdFiles(args.idFiles))
     ids = frozenset(ids)
     if len(ids) == 0:
         raise PycbioException("no ids specified on command line or with --idFile")
-    email = opts.email if opts.email is not None else getEmail()
-    if opts.outDir is not None:
-        doFetchOutToDir(email, opts.db, opts.fasta, ids, opts.outDir)
+    email = args.email if args.email is not None else getEmail()
+    if args.outDir is not None:
+        doFetchOutToDir(email, args.db, args.fasta, ids, args.outDir)
     else:
-        doFetchOutToFile(email, opts.db, opts.fasta, ids, opts.out)
+        doFetchOutToFile(email, args.db, args.fasta, ids, args.out)
 
 
 ncbiGbFetch(parseArgs())

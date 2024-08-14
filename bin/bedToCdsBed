@@ -44,9 +44,9 @@ def convertBedToCdsBed(bed):
     bed.chromEnd = bed.thickEnd
     return bed
 
-def bedToCdsBed(opts):
-    with open(opts.cdsBedFile, "w") as cdsBedFh:
-        for bed in BedReader(opts.inBedFile):
+def bedToCdsBed(args):
+    with open(args.cdsBedFile, "w") as cdsBedFh:
+        for bed in BedReader(args.inBedFile):
             cdsBed = convertBedToCdsBed(bed)
             if cdsBed is not None:
                 cdsBed.write(cdsBedFh)

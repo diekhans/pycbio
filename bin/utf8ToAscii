@@ -25,8 +25,8 @@ def utf8ToAscii(utf8InFile, asciiOutFile):
         with fileOps.opengz(asciiOutFile, "w") as outFh:
             outFh.write(asciitext)
 
-def main(opts):
-    utf8ToAscii(opts.utf8InFile, opts.asciiOutFile)
+def main(args):
+    utf8ToAscii(args.utf8InFile, args.asciiOutFile)
 
 
 main(parseArgs())

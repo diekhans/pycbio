@@ -49,11 +49,11 @@ def parseArgs():
                         help="profile log file input")
     parser.add_argument("statsOut",
                         help="statistics output")
-    opts = parser.parse_args()
-    if opts.sortKeys is None:
+    args = parser.parse_args()
+    if args.sortKeys is None:
         # can't do this with defaults, since it is a list.
-        opts.sortKeys = ["cumulative"]
-    return opts
+        args.sortKeys = ["cumulative"]
+    return args
 
 def generateReport(profLog, statsOut, sortKeys, reportType, stripDirs):
     statsOutFh = open(statsOut, "w")
@@ -69,8 +69,8 @@ def generateReport(profLog, statsOut, sortKeys, reportType, stripDirs):
         profStats.print_callees()
     statsOutFh.close()
 
-def main(opts):
-    generateReport(opts.profLog, opts.statsOut, opts.sortKeys, opts.reportType, opts.stripDirs)
+def main(args):
+    generateReport(args.profLog, args.statsOut, args.sortKeys, args.reportType, args.stripDirs)
 
 
 main(parseArgs())

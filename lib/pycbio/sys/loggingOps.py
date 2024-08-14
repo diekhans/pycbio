@@ -138,7 +138,7 @@ def addCmdOptions(parser, *, defaultLevel=logging.WARN):
                         help="short-cut that that sets --logStderr and --logLevel=DEBUG")
 
 
-def setupFromCmd(opts, *, logger=None, prog=None):
+def setupFromCmd(args, *, logger=None, prog=None):
     """configure logging based on command options. Prog is used it to set the
     syslog program name. If prog is not specified, it is obtained from sys.arg.
     Logger maybe a logger, logger name, or None for default logger, returns the logger.
@@ -147,19 +147,19 @@ def setupFromCmd(opts, *, logger=None, prog=None):
 
     N.B: logging must be initialized after daemonization
     """
-    if opts.logDebug:
-        opts.logStderr = True
-        opts.logLevel = logging.DEBUG
+    if args.logDebug:
+        args.logStderr = True
+        args.logLevel = logging.DEBUG
     if prog is None:
         prog = os.path.basename(sys.argv[0])
     logger = _loggerBySpec(logger)
-    level = _convertLevel(opts.logLevel) if opts.logLevel is not None else logging.WARN
-    if opts.syslogFacility is not None:
-        setupSyslogLogger(logger, opts.syslogFacility, level, prog=prog)
-    if (opts.syslogFacility is None) or opts.logStderr:
+    level = _convertLevel(args.logLevel) if args.logLevel is not None else logging.WARN
+    if args.syslogFacility is not None:
+        setupSyslogLogger(logger, args.syslogFacility, level, prog=prog)
+    if (args.syslogFacility is None) or args.logStderr:
         setupStderrLogger(logger, level)
-    if opts.logConfFile is not None:
-        logging.config.fileConfig(opts.logConfFile)
+    if args.logConfFile is not None:
+        logging.config.fileConfig(args.logConfFile)
     return logger
 
 

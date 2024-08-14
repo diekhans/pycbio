@@ -35,14 +35,14 @@ def parseArgs():
 
 
 class GenePredSelect:
-    def __init__(self, opts):
+    def __init__(self, args):
         self.geneIds = None
-        self.singleExon = opts.singleExon
-        self.multiExon = opts.multiExon
-        self.singleCdsExon = opts.singleCdsExon
-        self.multiCdsExon = opts.multiCdsExon
-        if opts.geneIdFiles is not None:
-            self.geneIds = self._loadIdFiles(opts.geneIdFiles)
+        self.singleExon = args.singleExon
+        self.multiExon = args.multiExon
+        self.singleCdsExon = args.singleCdsExon
+        self.multiCdsExon = args.multiCdsExon
+        if args.geneIdFiles is not None:
+            self.geneIds = self._loadIdFiles(args.geneIdFiles)
 
     def _loadIdFiles(self, idFiles):
         ids = set()
@@ -71,7 +71,9 @@ class GenePredSelect:
             if self._selected(gp):
                 fileOps.prRow(outFh, gp.getRow())
 
+def main(args):
+    gs = GenePredSelect(args)
+    gs.select(args.genePredIn, args.genePredOut)
 
-opts = parseArgs()
-gs = GenePredSelect(opts)
-gs.select(opts.genePredIn, opts.genePredOut)
+
+main(parseArgs())

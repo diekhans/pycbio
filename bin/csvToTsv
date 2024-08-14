@@ -26,10 +26,10 @@ def copyCsvToTsv(csvReader, tsvWriter):
             tsvWriter.writerow(row)
 
 
-def main(opts):
-    with fileOps.opengz(opts.inCsv) as csvFh:
+def main(args):
+    with fileOps.opengz(args.inCsv) as csvFh:
         csvReader = csv.reader(csvFh, dialect=csv.excel)
-        with fileOps.opengz(opts.outTsv, "w") as tsvFh:
+        with fileOps.opengz(args.outTsv, "w") as tsvFh:
             tsvWriter = csv.writer(tsvFh, dialect=csv.excel_tab, quoting=csv.QUOTE_MINIMAL,
                                    lineterminator="\n")
             copyCsvToTsv(csvReader, tsvWriter)

@@ -45,15 +45,15 @@ def parseArgs():
 
 
 class ClusterSelect:
-    def __init__(self, opts):
-        self.clusters = ClusterGenes(opts.clusterFile)
+    def __init__(self, args):
+        self.clusters = ClusterGenes(args.clusterFile)
 
-        self.trackSets = self._parseTrackSetList(opts.trackSet) if (opts.trackSet is not None) else None
-        self.notTrackSets = self._parseTrackSetList(opts.notTrackSet) if (opts.notTrackSet is not None) else None
-        self.onlyTrackSets = self._parseTrackSetList(opts.onlyTrackSet) if (opts.onlyTrackSet is not None) else None
-        self.notOnlyTrackSets = self._parseTrackSetList(opts.notOnlyTrackSet) if (opts.notOnlyTrackSet is not None) else None
-        self.geneIds = self._loadIdFiles(opts.geneIdFiles) if (opts.geneIdFiles is not None) else None
-        self.trackFilterSet = self._parseTrackSet(opts.trackFilterSet) if (opts.trackFilterSet is not None) else None
+        self.trackSets = self._parseTrackSetList(args.trackSet) if (args.trackSet is not None) else None
+        self.notTrackSets = self._parseTrackSetList(args.notTrackSet) if (args.notTrackSet is not None) else None
+        self.onlyTrackSets = self._parseTrackSetList(args.onlyTrackSet) if (args.onlyTrackSet is not None) else None
+        self.notOnlyTrackSets = self._parseTrackSetList(args.notOnlyTrackSet) if (args.notOnlyTrackSet is not None) else None
+        self.geneIds = self._loadIdFiles(args.geneIdFiles) if (args.geneIdFiles is not None) else None
+        self.trackFilterSet = self._parseTrackSet(args.trackFilterSet) if (args.trackFilterSet is not None) else None
 
     def _parseTrackSet(self, spec):
         selSet = set()
@@ -138,12 +138,12 @@ class ClusterSelect:
                 self._writeClusterBed(outFh, cl)
         outFh.close()
 
-def clusterGenesSelect(opts):
-    clSelect = ClusterSelect(opts)
-    if opts.clusterBedOutput:
-        clSelect.outClusterBed(opts.outFile)
+def clusterGenesSelect(args):
+    clSelect = ClusterSelect(args)
+    if args.clusterBedOutput:
+        clSelect.outClusterBed(args.outFile)
     else:
-        clSelect.outClusters(opts.outFile)
+        clSelect.outClusters(args.outFile)
 
 
 clusterGenesSelect(parseArgs())

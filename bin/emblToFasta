@@ -116,10 +116,10 @@ def emblToFasta(idNM, emblFh, faFh):
         if useRec(idNM, rec):
             writeFastaRec(rec, idNM, faFh)
 
-def main(opts):
-    with fileOps.opengz(opts.inEmbl) as emblFh:
-        with fileOps.opengz(opts.outFasta, "w") as faFh:
-            emblToFasta(opts.idNM, emblFh, faFh)
+def main(args):
+    with fileOps.opengz(args.inEmbl) as emblFh:
+        with fileOps.opengz(args.outFasta, "w") as faFh:
+            emblToFasta(args.idNM, emblFh, faFh)
 
 
 main(parseArgs())

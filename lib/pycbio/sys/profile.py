@@ -17,9 +17,9 @@ class Profile:
         parser = argparse.ArgumentParser(description=desc)
         profiler = Profile(parser)
         ...
-        opts = parser.parse_args()
+        args = parser.parse_args()
         ...
-        profiler.setup(opts)
+        profiler.setup(args)
 
     at the end of the program:
         profiler.finishup()
@@ -47,16 +47,16 @@ class Profile:
         self.signum = signum
         signal.signal(self.signum, self._sigHandler)
 
-    def setup(self, opts):
+    def setup(self, args):
         """initializing profiling, if requested"""
-        if opts.profile is None:
-            if opts.profileSignal is not None:
+        if args.profile is None:
+            if args.profileSignal is not None:
                 raise PycbioException("can't specify --profile-signal without --profile")
         else:
-            if opts.profileSignal is not None:
-                self._setupSignalHandler(opts.profileSignal)
+            if args.profileSignal is not None:
+                self._setupSignalHandler(args.profileSignal)
             atexit.register(self.finishup)
-            self.logFile = opts.profile
+            self.logFile = args.profile
             self.profiler = cProfile.Profile()
             self.profiler.enable()
 
