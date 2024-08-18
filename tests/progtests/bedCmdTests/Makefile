@@ -12,7 +12,8 @@ bedToIntronBed = ${binDir}/bedToIntronBed
 
 galGalDir = ./input
 
-test: targetBedTest mappedBedTest mappedBedTest bedIntronMinIntronTest
+test:   targetBedTest mappedBedTest mappedBedTest \
+	bedIntronMinIntronTest bedIntronNoUniqTest bedIntronNoUniqTest
 
 targetBedTest: mkdirs
 	${bedToCdsBed} input/galGal4.target.bed output/$@.bed
@@ -24,6 +25,10 @@ mappedBedTest: mkdirs
 
 bedIntronMinIntronTest: mkdirs
 	${bedToIntronBed} --minIntronSize=30 input/hg38-galGal4.halMap.bed output/$@.bed
+	diff expected/$@.bed output/$@.bed
+
+bedIntronNoUniqTest: mkdirs
+	${bedToIntronBed} --noUniqSuffix input/hg38-galGal4.halMap.bed output/$@.bed
 	diff expected/$@.bed output/$@.bed
 
 mkdirs:

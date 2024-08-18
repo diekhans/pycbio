@@ -6,7 +6,7 @@ from os import path as osp
 import argparse
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
-from pycbio.sys import fileOps
+from pycbio.sys import fileOps, cmdOps
 from pycbio.hgdata.bed import BedReader
 
 
@@ -17,30 +17,33 @@ def parseArgs():
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument("--minIntronSize", type=int, default=0,
                         help="minimum size of an intron")
+    parser.add_argument("--noUniqSuffix", action="store_true",
+                        help="don't add suffix, in the form '-N', to make names unique")
     parser.add_argument("inBedFile",
                         help="input BED")
     parser.add_argument("outBedFile",
                         help="output BED of introns")
-    return parser.parse_args()
+    args = parser.parse_args()
+    return args, cmdOps.getOptionalArgs(parser, args)
 
-def processBed(bed, minIntronSize, outFh):
+def processBed(bed, opts, outFh):
     prevBlk = bed.blocks[0]
     iIntron = 0
     for blk in bed.blocks[1:]:
-        if (blk.start - prevBlk.end) >= minIntronSize:
-            fileOps.prRowv(outFh, bed.chrom, prevBlk.end, blk.start, bed.name + '_' + str(iIntron),
-                           0, bed.strand)
+        if (blk.start - prevBlk.end) >= opts.minIntronSize:
+            name = bed.name if opts.noUniqSuffix else bed.name + '_' + str(iIntron)
+            fileOps.prRowv(outFh, bed.chrom, prevBlk.end, blk.start, name, 0, bed.strand)
             iIntron += 1
         prevBlk = blk
 
-def bedToIntronBed(inBedFile, outBedFile, minIntronSize):
+def bedToIntronBed(inBedFile, outBedFile, opts):
     with fileOps.opengz(outBedFile, 'w') as outFh:
         for bed in BedReader(inBedFile):
-            processBed(bed, minIntronSize, outFh)
+            processBed(bed, opts, outFh)
 
-def main(args):
-    bedToIntronBed(args.inBedFile, args.outBedFile,
-                   args.minIntronSize)
+def main():
+    args, opts = parseArgs()
+    bedToIntronBed(args.inBedFile, args.outBedFile, opts)
 
 
-main(parseArgs())
+main()
