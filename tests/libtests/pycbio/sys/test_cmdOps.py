@@ -19,6 +19,7 @@ def makeTrekParser():
     parser.add_argument('--spock', '-s', type=str)
     parser.add_argument('-m', '--mc-coy', dest='mc_coy', type=str)
     parser.add_argument('-u', dest='uhura', action='store_true')
+    parser.add_argument('barney')
     return parser
 
 class CmdOpsTests(TestCaseBase):
@@ -30,18 +31,17 @@ class CmdOpsTests(TestCaseBase):
 
     def testGetOptsLong(self):
         parser = makeTrekParser()
-        testargs = ('--kirk=10', '--spock=fred')
+        testargs = ('--kirk=10', '--spock=fred', 'foo')
         args = parser.parse_args(testargs)
         opts = cmdOps.getOptionalArgs(parser, args)
         self._checkTrekOpts(opts, 10, 'fred', None, False)
 
     def testGetOptsShort(self):
         parser = makeTrekParser()
-        testargs = ('-s' 'fred', '-m', 'barney', '-u')
+        testargs = ('-s' 'fred', '-m', 'barney', '-u', 'baz')
         args = parser.parse_args(testargs)
         opts = cmdOps.getOptionalArgs(parser, args)
         self._checkTrekOpts(opts, None, 'fred', 'barney', True)
-
 
 def suite():
     ts = unittest.TestSuite()

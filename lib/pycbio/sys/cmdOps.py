@@ -9,6 +9,6 @@ def getOptionalArgs(parser, args):
 
     opts = ObjDict()
     for act in parser._actions:
-        if act.option_strings[0].startswith('-') and (act.dest != 'help'):
+        if (len(act.option_strings) > 0) and (act.dest != 'help'):
             setattr(opts, act.dest, getattr(args, act.dest))
     return opts
