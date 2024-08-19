@@ -12,14 +12,15 @@ bedToIntronBed = ${binDir}/bedToIntronBed
 
 galGalDir = ./input
 
-test:   targetBedTest mappedBedTest mappedBedTest \
-	bedIntronMinIntronTest bedIntronNoUniqTest bedIntronNoUniqTest
+test:   targetCdsBedTest mappedCdsBedTest \
+	bedIntronMinIntronTest bedIntronNoUniqTest bedIntronNoUniqTest \
+	bedIntronBaseBoundsTest bedIntronExonBoundsTest
 
-targetBedTest: mkdirs
+targetCdsBedTest: mkdirs
 	${bedToCdsBed} input/galGal4.target.bed output/$@.bed
 	diff expected/$@.bed output/$@.bed
 
-mappedBedTest: mkdirs
+mappedCdsBedTest: mkdirs
 	${bedToCdsBed} input/hg38-galGal4.halMap.bed output/$@.bed
 	diff expected/$@.bed output/$@.bed
 
@@ -30,6 +31,17 @@ bedIntronMinIntronTest: mkdirs
 bedIntronNoUniqTest: mkdirs
 	${bedToIntronBed} --noUniqSuffix input/hg38-galGal4.halMap.bed output/$@.bed
 	diff expected/$@.bed output/$@.bed
+
+bedIntronBaseBoundsTest: mkdirs
+	${bedToIntronBed} --fmt=base-bounds input/hg38-galGal4.halMap.bed output/$@.bed
+	diff expected/$@.bed output/$@.bed
+
+
+bedIntronExonBoundsTest: mkdirs
+	${bedToIntronBed} --fmt=exon-bounds --noUniqSuffix input/hg38-galGal4.halMap.bed output/$@.bed
+	diff expected/$@.bed output/$@.bed
+
+
 
 mkdirs:
 	@mkdir -p output

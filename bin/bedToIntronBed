@@ -7,14 +7,24 @@ import argparse
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.sys import fileOps, cmdOps
-from pycbio.hgdata.bed import BedReader
+from pycbio.sys.symEnum import SymEnum, SymEnumValue
+from pycbio.hgdata.bed import BedReader, Bed, BedBlock
+
+class OutputFmt(SymEnum):
+    intron_blk = SymEnumValue(1, 'intron-blk')
+    base_bounds = SymEnumValue(2, 'base-bounds')
+    exon_bounds = SymEnumValue(3, 'exon-bounds')
 
 
 def parseArgs():
-    desc = """Convert a BED to a set of BED for each gaps intron
-    One record is created per intron.
+    desc = """Convert a BED to a set of BEDs for each `intron' between
+    BED blocks.  The BED can be a block per intron, a two block BED
+    with one base on each side of the intron, or it can include the adjacent
+    exons.
     """
     parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("--fmt", type=OutputFmt, choices=OutputFmt, default=OutputFmt.intron_blk,
+                        help="output format")
     parser.add_argument("--minIntronSize", type=int, default=0,
                         help="minimum size of an intron")
     parser.add_argument("--noUniqSuffix", action="store_true",
@@ -26,13 +36,34 @@ def parseArgs():
     args = parser.parse_args()
     return args, cmdOps.getOptionalArgs(parser, args)
 
+def makeIntronBed(bed, name, prevBlk, blk):
+    return Bed(bed.chrom, prevBlk.end, blk.start, name)
+
+def makeBaseBoundsBed(bed, name, prevBlk, blk):
+    return Bed(bed.chrom, prevBlk.end, blk.start, name,
+               blocks=(BedBlock(prevBlk.end - 1, prevBlk.end),
+                       BedBlock(blk.start, blk.start + 1)))
+
+def makeExonBoundsBed(bed, name, prevBlk, blk):
+    return Bed(bed.chrom, prevBlk.end, blk.start, name,
+               blocks=(prevBlk, blk))
+
+def makeIntron(bed, opts, iIntron, prevBlk, blk):
+    name = bed.name if opts.noUniqSuffix else bed.name + '_' + str(iIntron)
+    if opts.fmt is OutputFmt.intron_blk:
+        return makeIntronBed(bed, name, prevBlk, blk)
+    if opts.fmt is OutputFmt.base_bounds:
+        return makeBaseBoundsBed(bed, name, prevBlk, blk)
+    if opts.fmt is OutputFmt.exon_bounds:
+        return makeExonBoundsBed(bed, name, prevBlk, blk)
+    assert False, f"invalid fmt:{opts.fmt}"
+
 def processBed(bed, opts, outFh):
     prevBlk = bed.blocks[0]
     iIntron = 0
     for blk in bed.blocks[1:]:
         if (blk.start - prevBlk.end) >= opts.minIntronSize:
-            name = bed.name if opts.noUniqSuffix else bed.name + '_' + str(iIntron)
-            fileOps.prRowv(outFh, bed.chrom, prevBlk.end, blk.start, name, 0, bed.strand)
+            makeIntron(bed, opts, iIntron, prevBlk, blk).write(outFh)
             iIntron += 1
         prevBlk = blk
 
