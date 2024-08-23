@@ -82,16 +82,10 @@ class CoordsTests(TestCaseBase):
         c3 = Coords("chr22", 35000000, 45000000, strand='+', size=50818468)
         self.assertFalse(c1.overlaps(c3))
 
-        # overlap with None strand, is an error
-        c4 = Coords("chr22", 40000000, 50000000, strand=None, size=50818468)
-        with self.assertRaises(ValueError) as context:
-            c3.overlaps(c4)
-        self.assertEqual(str(context.exception),
-                         "overlap comparison when one has a strand of None and the other has a specified strand: Coords(name='chr22', start=35000000, end=45000000, strand='+', size=50818468).overlaps(Coords(name='chr22', start=40000000, end=50000000, strand=None, size=50818468)")
-        with self.assertRaises(ValueError) as context:
-            c4.overlaps(c2)
-        self.assertEqual(str(context.exception),
-                         "overlap comparison when one has a strand of None and the other has a specified strand: Coords(name='chr22', start=40000000, end=50000000, strand=None, size=50818468).overlaps(Coords(name='chr22', start=35000000, end=45000000, strand='-', size=50818468)")
+        # overlap with None strand, treated as positive
+        cp = Coords("chr22", 40000000, 45000000, strand='+', size=50818468)
+        cn = Coords("chr22", 35000000, 45000000, strand=None, size=50818468)
+        self.assertTrue(cn.overlaps(cp))
 
         # same-strand comparison without sizes works
         c5 = Coords("chr22", 40000000, 50000000, strand='-')

@@ -193,17 +193,17 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         return self.end - self.start
 
     def overlaps(self, other):
-        """Overlap regardless of strand.  If both strands are None, then compare ranges.
-        Error in one strand is None and other is not None.  Error if strands different and
-        sizes are not specified.
+        """Overlap regardless of strand, with lack strand treated as positive.
+        Error if strands different and sizes are not specified.
         """
         self._checkCmpType(other)
         if self.name != other.name:
             return False
-        if (self.strand == other.strand):  # will include both None
+        selfStrand = self.strand if self.strand is not None else '+'
+        otherStrand = other.strand if other.strand is not None else '+'
+        if (selfStrand == otherStrand):
             return (self.start < other.end) and (self.end > other.start)
-        if (self.strand is not None) != (other.strand is not None):
-            raise ValueError(f"overlap comparison when one has a strand of None and the other has a specified strand: {repr(self)}.overlaps({repr(other)}")
+
         # at this point, we have different, specified strands
         if (self.size is None) or (other.size is None):
             raise ValueError(f"overlap comparison when different strands and without size: {repr(self)}.overlaps({repr(other)}")
