@@ -19,6 +19,16 @@ class DnaOpsTests(TestCaseBase):
         rcSeq = dnaOps.reverseComplement(testSeq)
         self.assertEqual(rcSeq, b"aagagacaaatggccgcg")
 
+    def testIsValidStr(self):
+        self.assertTrue(dnaOps.isValidBase('a'))
+        self.assertTrue(dnaOps.isValidBase('C'))
+        self.assertFalse(dnaOps.isValidBase('@'))
+
+    def testIsValidByte(self):
+        self.assertTrue(dnaOps.isValidBase(b'a'))
+        self.assertTrue(dnaOps.isValidBase(b'C'))
+        self.assertFalse(dnaOps.isValidBase(b'@'))
+
 
 def suite():
     ts = unittest.TestSuite()
