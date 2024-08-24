@@ -27,6 +27,8 @@ def parseArgs():
                         help="output format")
     parser.add_argument("--minIntronSize", type=int, default=0,
                         help="minimum size of an intron")
+    parser.add_argument("--unique", action='store_true',
+                        help="don't output duplicate introns")
     parser.add_argument("--noUniqSuffix", action="store_true",
                         help="don't add suffix, in the form '-N', to make names unique")
     parser.add_argument("inBedFile",
@@ -37,15 +39,15 @@ def parseArgs():
     return args, cmdOps.getOptionalArgs(parser, args)
 
 def makeIntronBed(bed, name, prevBlk, blk):
-    return Bed(bed.chrom, prevBlk.end, blk.start, name)
+    return Bed(bed.chrom, prevBlk.end, blk.start, name, strand=bed.strand)
 
 def makeBaseBoundsBed(bed, name, prevBlk, blk):
-    return Bed(bed.chrom, prevBlk.end, blk.start, name,
+    return Bed(bed.chrom, prevBlk.end, blk.start, name, strand=bed.strand,
                blocks=(BedBlock(prevBlk.end - 1, prevBlk.end),
                        BedBlock(blk.start, blk.start + 1)))
 
 def makeExonBoundsBed(bed, name, prevBlk, blk):
-    return Bed(bed.chrom, prevBlk.end, blk.start, name,
+    return Bed(bed.chrom, prevBlk.end, blk.start, name, strand=bed.strand,
                blocks=(prevBlk, blk))
 
 def makeIntron(bed, opts, iIntron, prevBlk, blk):
@@ -58,19 +60,36 @@ def makeIntron(bed, opts, iIntron, prevBlk, blk):
         return makeExonBoundsBed(bed, name, prevBlk, blk)
     assert False, f"invalid fmt:{opts.fmt}"
 
-def processBed(bed, opts, outFh):
+def checkSeenIntrons(bed, prevBlk, blk, seenIntrons):
+    key = (prevBlk.end, blk.start, bed.strand)
+    if key in seenIntrons:
+        return False
+    else:
+        seenIntrons.add(key)
+        return True
+
+def maybeMakeIntron(bed, opts, iIntron, prevBlk, blk, seenIntrons):
+    if (seenIntrons is None) or checkSeenIntrons(bed, prevBlk, blk, seenIntrons):
+        return makeIntron(bed, opts, iIntron, prevBlk, blk)
+    else:
+        return None
+
+def processBed(bed, opts, seenIntrons, outFh):
     prevBlk = bed.blocks[0]
     iIntron = 0
     for blk in bed.blocks[1:]:
         if (blk.start - prevBlk.end) >= opts.minIntronSize:
-            makeIntron(bed, opts, iIntron, prevBlk, blk).write(outFh)
+            intronBed = maybeMakeIntron(bed, opts, iIntron, prevBlk, blk, seenIntrons)
+            if intronBed is not None:
+                intronBed.write(outFh)
             iIntron += 1
         prevBlk = blk
 
 def bedToIntronBed(inBedFile, outBedFile, opts):
+    seenIntrons = set() if opts.unique else None
     with fileOps.opengz(outBedFile, 'w') as outFh:
         for bed in BedReader(inBedFile):
-            processBed(bed, opts, outFh)
+            processBed(bed, opts, seenIntrons, outFh)
 
 def main():
     args, opts = parseArgs()
