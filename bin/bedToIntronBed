@@ -29,8 +29,8 @@ def parseArgs():
                         help="minimum size of an intron")
     parser.add_argument("--unique", action='store_true',
                         help="don't output duplicate introns")
-    parser.add_argument("--noUniqSuffix", action="store_true",
-                        help="don't add suffix, in the form '-N', to make names unique")
+    parser.add_argument("--uniqueName", action="store_true",
+                        help="make the names unique for a give BED, by added the intron number in the form '-N'")
     parser.add_argument("inBedFile",
                         help="input BED")
     parser.add_argument("outBedFile",
@@ -51,7 +51,7 @@ def makeExonBoundsBed(bed, name, prevBlk, blk):
                blocks=(prevBlk, blk))
 
 def makeIntron(bed, opts, iIntron, prevBlk, blk):
-    name = bed.name if opts.noUniqSuffix else bed.name + '_' + str(iIntron)
+    name = bed.name if not opts.uniqueName else bed.name + '_' + str(iIntron)
     if opts.fmt is OutputFmt.intron_blk:
         return makeIntronBed(bed, name, prevBlk, blk)
     if opts.fmt is OutputFmt.base_bounds:
