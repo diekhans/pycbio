@@ -298,7 +298,7 @@ def writeLines(fspec, lines):
     "write each line, followed by a newline"
     with FileAccessor(fspec, 'w') as fh:
         for l in lines:
-            fh.write(l)
+            fh.write(str(l))
             fh.write('\n')
 
 def writeRows(fspec, rows):
