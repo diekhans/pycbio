@@ -4,7 +4,6 @@
 
 
 * BED check for overlapping blocks.
-
 * sqliteOps error max len should be part of an options object
 
 * ncbiGbFetch - BioPython already has a retry loop

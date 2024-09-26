@@ -40,9 +40,9 @@ def _dehashHeader(row):
 class TsvReader:
     """Class for reading TSV files.  Reads header and builds column name to
     column index map.  After a next, object contains a row and each column
-    becomes a field name.  It is also indexable by column name or int index.
-    Columns can be automatically type converted by column name.  This can also
-    read from a dbapi cursor object (must set allowEmpty to true)
+    becomes a field name.  It is also can be indexed by column name or int
+    index.  Columns can be automatically type converted by column name.  This
+    can also read from a dbapi cursor object (must set allowEmpty to true)
 
     If the first character of the header is '#', the '#' and following spaces
     are ignored and not part of the first column name.
@@ -56,7 +56,7 @@ class TsvReader:
 
         fileName - name of file, opened unless inFh is specified
         rowClass - class or factory function to use for a row. Must take
-            TsvReader and list of string values of columns.
+            TsvReader and a list of columns values.
         typeMap - if specified, it maps column names to the type objects to
             use to convert the column.  Unspecified columns will not be
             converted. Key is the column name, value can be either a type
