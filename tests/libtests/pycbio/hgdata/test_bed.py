@@ -144,6 +144,13 @@ class BedTests(TestCaseBase):
         self.assertEqual(mergedBed.toRow(),
                          ['chr1', '148682028', '148712560', 'test1', '0', '-', '148712560', '148712560', '0', '5', '151,335,582,854,304,', '0,1264,23019,26177,30228,'])
 
+    def testFixScores(self):
+        with open(self.getOutputFile(".bed"), 'w') as fh:
+            for bed in BedReader(self.getInputFile("fixscores.bed"), numStdCols=5, fixScores=True):
+                bed.write(fh)
+        self.diffExpected(".bed")
+
+
 def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(BedTests))

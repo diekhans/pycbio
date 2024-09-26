@@ -168,7 +168,7 @@ class Bed:
         return blocks
 
     @classmethod
-    def _parse(cls, row, numStdCols=None):
+    def _parse(cls, row, numStdCols=None, *, fixScores=False):
         assert (numStdCols is None) or (3 <= numStdCols <= 12)
         if numStdCols is None:
             numStdCols = min(len(row), 12)
@@ -182,7 +182,14 @@ class Bed:
         else:
             name = None
         if numStdCols > 4:
-            score = int(row[4])
+            try:
+                # match browser behavior of converting to ints
+                score = int(float(row[4]))
+            except ValueError:
+                if fixScores:
+                    score = 0
+                else:
+                    raise
         else:
             score = None
         if numStdCols > 5:
@@ -212,12 +219,14 @@ class Bed:
                    extraCols=extraCols, numStdCols=numStdCols)
 
     @classmethod
-    def parse(cls, row, numStdCols=None):
+    def parse(cls, row, numStdCols=None, *, fixScores=False):
         """Parse bed string columns into a bed object.  If self.numStdCols
-        is specified, only those columns are parse and the remained goes
-        to extraCols."""
+        is specified, only those columns are parse and the remained goes.  If
+        to extraCols.  Floating point scores are convert to ints to match UCSC browser
+        behavior. If fixScores is True; non=numeric scores are converted to
+        0."""
         try:
-            return cls._parse(row, numStdCols=numStdCols)
+            return cls._parse(row, numStdCols=numStdCols, fixScores=fixScores)
         except Exception as ex:
             raise BedException(f"parsing of BED row failed: {row}") from ex
 
@@ -272,10 +281,10 @@ class Bed:
     def genome_sort_key(bed):
         return bed.chrom, bed.chromStart
 
-def BedReader(fspec, numStdCols=None, bedClass=Bed):
+def BedReader(fspec, numStdCols=None, bedClass=Bed, *, fixScores=False):
     """Generator to read BED objects loaded from a tab-file or file-like
     object.  See Bed.parse()."""
-    for bed in TabFileReader(fspec, rowClass=lambda r: bedClass.parse(r, numStdCols=numStdCols),
+    for bed in TabFileReader(fspec, rowClass=lambda r: bedClass.parse(r, numStdCols=numStdCols, fixScores=fixScores),
                              hashAreComments=True, skipBlankLines=True):
         yield bed
 
