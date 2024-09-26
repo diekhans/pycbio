@@ -170,6 +170,12 @@ def setFastLoadPragmas(conn):
     finally:
         cur.close()
 
+def optimize(conn):
+    """run database optimzations"""
+    conn.execute("ANALYZE;")
+    conn.execute("VACUUM;")
+    conn.execute("PRAGMA optimize;")
+
 def loadExtension(conn, lib):
     "load a sqlite3 extension"
     conn.enableloadextension(True)
