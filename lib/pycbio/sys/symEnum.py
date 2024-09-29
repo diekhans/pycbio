@@ -3,7 +3,17 @@ import sys
 from enum import Enum, EnumMeta, _EnumDict, auto
 from functools import total_ordering
 
-# FIXME: should really be built like other IntEnum, etc
+# FIXME: this is a complex relationship with Enum
+# see issues.org
+
+# EnumType (aka EnumMeta) has
+#    def __call__(cls, value, names=_not_given, ...)
+# which turns around and modify value before call __new__.  This
+# maintains compatibility with older version.
+if sys.version_info.minor >= 12:
+    from enum import _not_given
+else:
+    _not_given = None
 
 SymEnum = None  # class defined after use
 
@@ -47,7 +57,7 @@ class _SymEnumDict(_EnumDict):
     This must be done as a wrapper around _EnumDict instead of
     as an external edit, as _EnumDict.__setitem__ does the auto()
     assignment. This converts SymEnumValue(auto(), "ext") to
-    just auto() value
+    just the auto() value.
     """
     __slots__ = ("externalNameMap")
 
@@ -75,12 +85,13 @@ class SymEnumMeta(EnumMeta):
     """metaclass for SysEnumMeta that implements looking up of singleton members
     by string name."""
 
-    # WARNING: this is copied from EnumMeta in standard enum.py to use
-    # derived _EnumDict
     @classmethod
     def __prepare__(metacls, cls, bases, **kwds):
+        # WARNING: this is copied from EnumType (aka EnumMeta) in standard
+        # enum.py to use _SymEnumDict and replaces the EnumType
+
         # check that previous enum members do not exist
-        # NOTE: not in 3.7, name changed in 3.11
+        # not in 3.7, name changed in 3.11
         if hasattr(metacls, "_check_for_existing_members"):
             metacls._check_for_existing_members(cls, bases)  # 3.9
         elif hasattr(metacls, "_check_for_existing_members_"):
@@ -101,6 +112,10 @@ class SymEnumMeta(EnumMeta):
 
     def __new__(metacls, clsname, bases, classdict, *, boundary=None, _simple=False, **kwds):
         "store away externalNameMap from _SymEnumDict"
+        # from enum.py: all enum instances are actually created during class construction
+        # without calling this method; this method is called by the metaclass'
+        # __call__ (i.e. Color(3) ), and by pickle
+
         if SymEnum in bases:
             classdict["__externalNameMap__"] = classdict.externalNameMap
         # keyword arguments added in 3.10, boundary and _simple in 3.11, which get added to **kwds
@@ -120,9 +135,9 @@ class SymEnumMeta(EnumMeta):
         else:
             return member
 
-    def __call__(cls, value, names=None, module=None, typ=None):
+    def __call__(cls, value, names=_not_given, module=None, typ=None):
         "look up a value object, either by name or value"
-        if (names is None) and isinstance(value, str):
+        if (names is _not_given) and isinstance(value, str):
             return SymEnumMeta._lookUpByStr(cls, value)
         else:
             return EnumMeta.__call__(cls, value, names, module=module, type=typ)

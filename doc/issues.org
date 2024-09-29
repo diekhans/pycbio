@@ -40,7 +40,10 @@ bed-analysis-tools has some tools that were quickly hacked to compare mappings a
 
 
 * symEnum
-** symEnum is invasive to with Enum, can it be cleaner, like other derived enum class?
+** SymEnum is invasive to with Enum, can it be cleaner, like other derived enum class?
+Enum has gotten really complex, more so in 3.12. It isn't clear how to do this with
+a lot of the internal structures.  Perhaps just make a class independent of enum.
+Most of the complexity is in EnumType.__new__
 ** The external name is returned with str(), but how to get internal name?
 
 * sys functions:

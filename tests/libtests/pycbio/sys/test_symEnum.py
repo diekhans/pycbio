@@ -212,6 +212,11 @@ class SymEnumTests(TestCaseBase):
         for prot in range(0, pickle.HIGHEST_PROTOCOL + 1):
             self._testPickleProt(prot)
 
+    def testCall(self):
+        # this goes thought Enum.__new__ like pickle, and broken SymEnum in 3.12
+        c = Color(1)
+        self.assertEqual(c.red, Color.red)
+
 def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(SymEnumTests))
