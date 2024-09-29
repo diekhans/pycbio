@@ -8,11 +8,11 @@ from functools import total_ordering
 
 # EnumType (aka EnumMeta) has
 #    def __call__(cls, value, names=_not_given, ...)
-# which turns around and modify value before call __new__.  This
-# maintains compatibility with older version.
-if sys.version_info.minor >= 12:
+# which turns around and modify value before call __new__ if not set.
+# This was added somewhere in 12.x line, this compatibility with older version.
+try:
     from enum import _not_given
-else:
+except ImportError:
     _not_given = None
 
 SymEnum = None  # class defined after use
