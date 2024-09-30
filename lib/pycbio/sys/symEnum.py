@@ -167,49 +167,73 @@ class SymEnumMixin:
 
 
 class SymEnum(SymEnumMixin, Enum, metaclass=SymEnumMeta):  # noqa: F811
-    """
-    Metaclass for symbolic enumerations.  These are easily converted between
-    string values and Enum objects.  This support construction from string
-    values and str() returns value without class name.
+    """Class for symbolic enumerations. The field name is normally the
+    symbolic value. These can be converted between string values and SymEnum
+    objects.  This supports construction from string values and str() returns
+    the value without the class name.
+
+    This is useful for storing and parsing enums in files or databases as
+    strings and using enums as command-line argument values.
 
     For example:
-        class Color(SymEnum):
-            purple = 1
-            gold = 2
-            black = 3
 
+        >>> class Color(SymEnum):
+        ...     purple = 1
+        ...     gold = 2
+        ...     black = 3
 
-    Aliases can be added using the Enum approach of:
-        name = 1
-        namealias = 1
+        >>> Color("gold")
+        <Color.gold: 2>
+        >>> str(Color.purple)
+        'purple'
+        >>> Color(3)
+        <Color.black: 3>
 
-    The functional API works as with Enum. The auto() method of
-    field initialization works with limited functionality on Python2.
+    Aliases can be added using the Enum approach:
 
-    To handle string values that are not valid Python member names, an external
-    name maybe associated with a field using a SymEnumValue object
-        utr5 = SymEnumValue(1, "5'UTR")
+        >>> class DarkColor(SymEnum):
+        ...     gray = 1
+        ...     grey = 1  # alias for gray
+        ...     black = 2
+        ...     goth = 2  # alias for black
 
-    for example:
-        class GeneFeature(SymEnum):
-            promoter = 1
-            utr5 = SymEnumValue(2, "5'UTR")
-            cds = SymEnumValue(3, "CDS")
-            utr3 = SymEnumValue(4, "3'UTR")
-            coding = cds
+        >>> str(DarkColor.goth)
+        'black'
+        >>> DarkColor("grey")
+        <DarkColor.gray: 1>
 
-    Either field name or external name maybe used to obtain a value.  The external
-    name is returned with str().
+    A member can be looked up by alias name, but the main string name is
+    returned when accessed.
 
-    Instances of the enumerations are obtained by either string name or int
-    value:
-       SymEnum(strName)
-       SymEnum(intVal)
+    The functional API works as with Enum, and the auto() method of field
+    initialization may be used instead of integer constants.
 
-    To use as an argument type in argparser
-       type=Color, choices=Color
+    To handle string values that are not valid Python member names, an
+    external name can be associated with a field using a SymEnumValue object:
+
+        >>> class GeneFeature(SymEnum):
+        ...     promoter = 1
+        ...     utr5 = SymEnumValue(2, "5'UTR")
+        ...     cds = SymEnumValue(3, "CDS")
+        ...     utr3 = SymEnumValue(4, "3'UTR")
+        ...     coding = cds
+
+        >>> str(GeneFeature.utr5)
+        "5'UTR"
+        >>> GeneFeature("5'UTR")
+        <GeneFeature.utr5: 2>
+
+    Instances of a SymEnum are obtained by either string name or int value:
+
+        >>> Color("gold")
+        <Color.gold: 2>
+        >>> Color(2)
+        <Color.gold: 2>
+
+    To use as an argument type in argparse:
+        type=Color, choices=Color
+
     """
-
     def __str__(self):
         return self.__externalNameMap__.toExternalName(self.name)
 
