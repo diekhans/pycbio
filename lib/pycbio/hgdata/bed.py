@@ -136,7 +136,7 @@ class Bed:
         return str(len(self.blocks)), intArrayJoin(sizes), intArrayJoin(relStarts)
 
     def _defaultBlockColumns(self):
-        return "1", "0,", str(self.chromEnd - self.chromStart) + ','
+        return "1", str(self.chromEnd - self.chromStart) + ',', "0,"
 
     def toRow(self):
         row = [self.chrom, str(self.chromStart), str(self.chromEnd)]
