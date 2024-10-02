@@ -45,6 +45,10 @@ Enum has gotten really complex, more so in 3.12. It isn't clear how to do this w
 a lot of the internal structures.  Perhaps just make a class independent of enum.
 Most of the complexity is in EnumType.__new__
 ** The external name is returned with str(), but how to get internal name?
+** standard enum has gotten complex and (maybe) slow, some alternatives:
+*** https://pypi.org/project/fastenum/ - tiny
+*** https://github.com/python/cpython/issues/93910 - perf history, 3.12 speedup
+has speed test program
 
 * sys functions:
 ** should rmTree use shutil.rmtree
