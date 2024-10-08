@@ -152,13 +152,17 @@ def haveTable(conn, table):
 
 
 fastLoadPragmas = (
-    "PRAGMA cache_size = 1000000;"
+    f"PRAGMA cache_size = {64 * 1048576};"
     "PRAGMA synchronous = OFF;"
     "PRAGMA journal_mode = OFF;"
     "PRAGMA locking_mode = EXCLUSIVE;"
     "PRAGMA count_changes = OFF;"
     "PRAGMA temp_store = MEMORY;"
-    "PRAGMA auto_vacuum = NONE;")
+    "PRAGMA auto_vacuum = NONE;"
+    "PRAGMA cache_spill = OFF;"
+    f"PRAGMA mmap_size = {256 * 1048576};"
+    f"PRAGMA page_size = {16 * 1024};"
+)
 
 
 def setFastLoadPragmas(conn):
