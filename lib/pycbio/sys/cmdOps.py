@@ -12,3 +12,8 @@ def getOptionalArgs(parser, args):
         if (len(act.option_strings) > 0) and (act.dest != 'help'):
             setattr(opts, act.dest, getattr(args, act.dest))
     return opts
+
+def parse(parser):
+    """call argparse parse_args and return (args, opts)"""
+    args = parser.parse_args()
+    return args, getOptionalArgs(parser, args)
