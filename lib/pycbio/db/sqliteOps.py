@@ -180,10 +180,11 @@ def setFastLoadPragmas(conn):
     finally:
         cur.close()
 
-def optimize(conn):
+def optimize(conn, *, vacuum=False):
     """run database optimizations"""
+    if vacuum:
+        conn.execute("VACUUM;")
     conn.execute("ANALYZE;")
-    conn.execute("VACUUM;")
     conn.execute("PRAGMA optimize;")
 
 def loadExtension(conn, lib):
