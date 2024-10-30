@@ -31,17 +31,23 @@ def objDictRowFactory(cur, row):
     name winning.  In sane cases, these will have the same value"""
     return ObjDict(zip((t[0] for t in cur.description), row))
 
+def _trimMsgAsNeeded(qopts, msg):
+    if (qopts.maxErrorLenSql is not None) and (len(msg) > qopts.maxErrorLenSql):
+        msg = msg[0:qopts.maxErrorLenSql] + '...'
+    return msg
+
 def _createSqlExcept(sql, args, qopts):
     """create exception with SQL and optionally args, possibly truncating sql
     query and args to limit size"""
-    argsStr = str(args)
     if qopts.maxErrorLenSql is not None:
         if len(sql) > qopts.maxErrorLenSql:
             sql = sql[0:qopts.maxErrorLenSql] + '...'
-    if qopts.maxErrorLenArgs is not None:
-        if len(argsStr) > qopts.maxErrorLenArgs:
-            argsStr = argsStr[0: qopts.maxErrorLenArgs] + '...'
-    return SqliteOpsError(f"failed query: '{sql}' with '{argsStr}'")
+    msg = "failed query: '{}'".format(_trimMsgAsNeeded(qopts, sql))
+
+    if args is not None:
+        msg += ' with args {}'.format(_trimMsgAsNeeded(qopts, str(args)))
+
+    return SqliteOpsError(msg)
 
 def connect(sqliteDb, create=False, readonly=True, timeout=None, synchronous=None, rowFactory=None):
     """Connect to an sqlite3 database.  If create is specified, then database
