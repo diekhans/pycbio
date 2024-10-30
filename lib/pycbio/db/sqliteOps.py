@@ -181,7 +181,7 @@ def setFastLoadPragmas(conn):
         cur.close()
 
 def optimize(conn):
-    """run database optimzations"""
+    """run database optimizations"""
     conn.execute("ANALYZE;")
     conn.execute("VACUUM;")
     conn.execute("PRAGMA optimize;")
