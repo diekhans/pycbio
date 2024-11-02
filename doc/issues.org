@@ -113,6 +113,16 @@ maybe just make lighter weight?
 *** rowClass interface is hacky.  It could be a keyword/value and not have to do column lookup.
 *** add default handling for column not in file to typemap
 ** rename getRow() functions to toRow()
+** separate writing from row, have a TsvWriter class
+** create row factories for:
+    Python dict (the old standby)
+    Python class
+    Python class with __slots__ (this idea was added after suggestion from an engineer)
+    dataclass
+    recordclass (still beta)
+    NamedTuple an extension of collections
+https://tommyseattle.com/python-class-dict-named-tuple-performance-and-memory-usage/
+
 
 
 
