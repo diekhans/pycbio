@@ -2,7 +2,11 @@
 
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
-
+* can StrEnum replace SymNum?
+maybe with parse function for external values
+but lose numeric values, sometimes used for order.
+but look at StrEnum code in any case.
+or maybe just need a non-Enum based implement ions, because Enum has gotten heavy-weight?
 * BED check for overlapping blocks.
 * sqliteOps error max len should be part of an options object
 
