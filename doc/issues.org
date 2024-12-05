@@ -42,6 +42,9 @@ partial test implemented here:
 tests/libtests/pycbio/sys/fileOpsTests.py::DISABLED_testOpengzDevStdout()
 bed-analysis-tools has some tools that were quickly hacked to compare mappings and alignments for the cactus paper.  It got rather hacky, but there might be some seeds of good commands here.
 
+* threads:
+add wrapper for subprocess to propagate errors or find a package:
+uniprotFeatMap/bin/uniprotAnnotsToDecorators
 
 * symEnum
 ** SymEnum is invasive to with Enum, can it be cleaner, like other derived enum class?
@@ -136,6 +139,10 @@ https://tommyseattle.com/python-class-dict-named-tuple-performance-and-memory-us
 ** changes Psl, ChromInfo to have parse functions instead of methods, as with genePred.
 ** psl.tOverlap should consider strand?? how?
 osupport psl sqlite stuff to build query bin ranges
+
+* add PslMapInfo class from:
+uniprotFeatMap/lib/uniprotmap/mapping.py
+
 
 * genePred
 ** make genePred.Exon a named tuple and not reference gene
