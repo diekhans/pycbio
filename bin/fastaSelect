@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+
+import sys
+from os import path as osp
+import argparse
+from Bio import SeqIO
+sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
+from pycbio.sys import cmdOps, fileOps
+
+def parseArgs():
+    desc = """Select records from a FASTA file. ALso converting NCBI/EBI compount names separate with '|'
+    to having the in the list split by spaces.
+    """
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("--selectFile",
+                        help="file of ids to select")
+    parser.add_argument("inFasta",
+                        help="input FASTA file, maybe compressed ")
+    parser.add_argument("outFasta",
+                        help="output FASTA, may have compression extensions")
+    return cmdOps.parse(parser)
+
+def maybeLoadSelectIds(selectFile):
+    if selectFile is not None:
+        return frozenset(fileOps.readNonCommentLines(selectFile))
+    else:
+        return None
+
+def editHeaderIds(rec):
+    "convert >idA|idB|idC to >idA idB idC"
+    idParts = rec.id.split('|')
+    rec.id = idParts[0]
+    desc = idParts[1:]
+    if rec.description != "":
+        desc.append(rec.description)
+    rec.description = ' '.join(desc)
+
+def keepRec(rec, selectIds):
+    return (selectIds is None) or (rec.id in selectIds)
+
+def processFasta(inFh, outFh, selectIds):
+    for rec in SeqIO.parse(inFh, "fasta"):
+        editHeaderIds(rec)
+        if keepRec(rec, selectIds):
+            SeqIO.write(rec, outFh, "fasta")
+
+def fastaSelect(opts, inFasta, outFasta):
+    selectIds = maybeLoadSelectIds(opts.selectFile)
+    with fileOps.opengz(inFasta) as inFh:
+        with fileOps.opengz(outFasta, 'w') as outFh:
+            processFasta(inFh, outFh, selectIds)
+
+def main():
+    args, opts = parseArgs()
+    fastaSelect(opts, args.inFasta, args.outFasta)
+
+
+main()
