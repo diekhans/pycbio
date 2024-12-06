@@ -9,7 +9,7 @@ from pycbio.sys import cmdOps, fileOps
 
 def parseArgs():
     desc = """Select records from a FASTA file. ALso converting NCBI/EBI compount names separate with '|'
-    to having the in the list split by spaces.
+    to having the in the list split by spaces.  Drop records with duplicate ids.
     """
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument("--selectFile",
@@ -35,14 +35,17 @@ def editHeaderIds(rec):
         desc.append(rec.description)
     rec.description = ' '.join(desc)
 
-def keepRec(rec, selectIds):
-    return (selectIds is None) or (rec.id in selectIds)
+def keepRec(rec, selectIds, seen):
+    return (((selectIds is None) or (rec.id in selectIds)) and
+            (rec.id not in seen))
 
 def processFasta(inFh, outFh, selectIds):
+    seen = set()
     for rec in SeqIO.parse(inFh, "fasta"):
         editHeaderIds(rec)
-        if keepRec(rec, selectIds):
+        if keepRec(rec, selectIds, seen):
             SeqIO.write(rec, outFh, "fasta")
+            seen.add(rec.id)
 
 def fastaSelect(opts, inFasta, outFasta):
     selectIds = maybeLoadSelectIds(opts.selectFile)
