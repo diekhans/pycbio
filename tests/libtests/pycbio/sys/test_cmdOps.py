@@ -8,13 +8,13 @@ if __name__ == '__main__':
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.sys import cmdOps
 
-class TestArgParser(argparse.ArgumentParser):
+class ArgParserNoExit(argparse.ArgumentParser):
     "raises exception rather than exit"
     def error(self, message):
         raise argparse.ArgumentError(None, message)
 
 def makeTrekParser():
-    parser = TestArgParser(description='to go where no one has gone before')
+    parser = ArgParserNoExit(description='to go where no one has gone before')
     parser.add_argument('--kirk', type=int)
     parser.add_argument('--spock', '-s', type=str)
     parser.add_argument('-m', '--mc-coy', dest='mc_coy', type=str)
