@@ -220,11 +220,11 @@ class Bed:
 
     @classmethod
     def parse(cls, row, numStdCols=None, *, fixScores=False):
-        """Parse bed string columns into a bed object.  If self.numStdCols
-        is specified, only those columns are parse and the remained goes.  If
-        to extraCols.  Floating point scores are convert to ints to match UCSC browser
-        behavior. If fixScores is True; non=numeric scores are converted to
-        0."""
+        """Parse a list of BED columns, as strings, into a Bed object.  If
+        self.numStdCols is specified, only those columns are parsed and the
+        remainder goes into extraCols.  Floating point scores are converted to
+        ints to match UCSC browser behavior. If fixScores is True, non-numeric
+        scores are converted to zero rather than generating an error."""
         try:
             return cls._parse(row, numStdCols=numStdCols, fixScores=fixScores)
         except Exception as ex:

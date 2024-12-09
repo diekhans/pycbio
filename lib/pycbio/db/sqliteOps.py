@@ -115,9 +115,12 @@ def makeInSeqArg(vals):
 
 
 def execute(conn, sql, args=None, *, qopts=DEFAULT_QUERY_OPTS):
-    """Run an SQL query on a connection that does not return rows.  Use
-    maxErrorLenSql and maxErrorLenArgs to limit size of formatting of SQL and
-    arguments in error messages. Set to None to not limit."""
+    """Run an SQL query on a connection that does not return rows.
+    Args are formatted in sql using APWS format (? or :named).
+
+    Use maxErrorLenSql and maxErrorLenArgs to limit size of formatting of SQL
+    and arguments in error messages. Set to None to not limit.
+    """
     with SqliteCursor(conn) as cur:
         try:
             cur.execute(sql, args)
@@ -127,8 +130,12 @@ def execute(conn, sql, args=None, *, qopts=DEFAULT_QUERY_OPTS):
 
 def executeMany(conn, sql, args=None, *, qopts=DEFAULT_QUERY_OPTS):
     """Run multiple SQL queries on a connection that does not return rows.
+    Args are formatted in sql using APWS format (? or :named).
+
+
     Use maxErrorLenSql and maxErrorLenArgs to limit size of formatting of SQL
-    and arguments in error messages. Set to None to not limit."""
+    and arguments in error messages. Set to None to not limit.
+    """
     with SqliteCursor(conn) as cur:
         try:
             cur.executemany(sql, args)
@@ -137,9 +144,13 @@ def executeMany(conn, sql, args=None, *, qopts=DEFAULT_QUERY_OPTS):
 
 
 def query(conn, sql, args=None, *, rowFactory=None, qopts=DEFAULT_QUERY_OPTS):
-    """generator to run an SQL query on a connection" Use maxErrorLenSql and
-    maxErrorLenArgs to limit size of formatting of SQL and arguments in error
-    messages. Set to None to not limit."""
+    """Generator to run an SQL query on a connection"
+    Args are formatted in sql using APWS format (? or :named).
+
+
+    Use maxErrorLenSql and maxErrorLenArgs to limit size of formatting of SQL
+    and arguments in error messages. Set to None to not limit.
+    """
     with SqliteCursor(conn, rowFactory=rowFactory) as cur:
         try:
             cur.execute(sql, args)
