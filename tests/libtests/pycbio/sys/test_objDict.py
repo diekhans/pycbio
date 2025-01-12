@@ -5,7 +5,7 @@ import pickle
 import json
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
-from pycbio.sys.objDict import ObjDict, DefaultObjDict
+from pycbio.sys.objDict import ObjDict, DefaultObjDict, defaultObjDictJsonHook
 from pycbio.sys.testCaseBase import TestCaseBase
 try:
     import jsonpickle
@@ -54,13 +54,13 @@ nestedJson = """
 
 def editJsonPicklePath(inJson, outJson):
     "edit py/object entry in json file so it is independent on how this file is loaded"
-    # "py/object": "libtests.pycbio.sys.objDictTests.ObjDictDerived",
+    # "py/object": "libtests.pycbio.sys.test_objDict.ObjDictDerived",
     # or
     # "py/object": "__main__.ObjDictDerived",
     with open(inJson) as inFh:
         with open(outJson, "w") as outFh:
             for line in inFh:
-                line = line.replace("__main__.", "libtests.pycbio.sys.objDictTests.")
+                line = line.replace("__main__.", "libtests.pycbio.sys.test_objDict.")
                 outFh.write(line)
 
 
@@ -207,7 +207,7 @@ class DefaultObjDictTests(TestCaseBase, TestMixin):
             self._runJsonPickleTest(DefaultObjDict(list))
 
     def testJsonLoad(self):
-        objs = json.loads(simpleJson, object_pairs_hook=DefaultObjDict.jsonHook(list))
+        objs = json.loads(simpleJson, object_pairs_hook=defaultObjDictJsonHook(list))
         self.assertTrue(isinstance(objs, list))
         self.assertEqual(2, len(objs))
         obj = objs[0]

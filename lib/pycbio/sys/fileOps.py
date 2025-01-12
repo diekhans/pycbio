@@ -1,5 +1,5 @@
-# Copyright 2006-2022 Mark Diekhans
 """Miscellaneous file operations"""
+# Copyright 2006-2022 Mark Diekhans
 
 import os
 import os.path as osp

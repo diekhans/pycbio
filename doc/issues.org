@@ -9,7 +9,8 @@ but look at StrEnum code in any case.
 or maybe just need a non-Enum based implement ions, because Enum has gotten heavy-weight?
 * BED check for overlapping blocks.
 * sqliteOps error max len should be part of an options object
-
+* convert to pytest
+gi-cloud-bill-analyzer/tests/testsupport.py
 * ncbiGbFetch - BioPython already has a retry loop
 
 * bx-python has an interval tree
