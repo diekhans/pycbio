@@ -123,9 +123,6 @@ def _parseCigar(cigarStr):
 class Cigar(tuple):
     """Cigar parser and parsed representation."""
 
-    def __new__(cls, cigarStr):
-        return super(Cigar, cls).__new__(cls, _parseCigar(cigarStr))
-
     def __str__(self):
         return self.format()
 
@@ -138,3 +135,18 @@ class Cigar(tuple):
                 opStrs.append(str(op.count))
             opStrs.append(str(op.code))
         return "".join(opStrs)
+
+def cigarStringParse(cigarStr):
+    "parse a cigar string into a Cigar object"
+    # remove white space first, then convert to (count, op).  Re split will
+    # result in triples of ("", count, op), where count might be empty.
+    # Also as a trailing space.
+    parts = re.split("([0-9]*)([A-Za-z=])", re.sub("\\s+", "", cigarStr))
+    if ((len(parts) - 1) % 3) != 0:
+        raise TypeError("Invalid cigar string, doesn't parse into a valid cigar: {}".format(cigarStr))
+    return Cigar(_parseOp(cigarStr, parts[i:i + 3])
+                 for i in range(0, len(parts) - 1, 3))
+
+def cigarFromPysam(cigartuples):
+    "convert the value of pysam.AlignedSegment.cigartuples to a Cigar object"
+    return Cigar((CigarRun(CIGAR_OPS[ct[0]], ct[1]) for ct in cigartuples))

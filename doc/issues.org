@@ -329,3 +329,5 @@ maybe a single function to parse RGBA and RGB8 strs
 
 * check this on the using realpath to find library: https://patmaddox.com/doc/trunk/www/2023-12-sh-relative-shell-script-includes-with-realpath-on-freebsd/
 
+
+* pslFromCigar show have a direct function to create a cigar using the tuple

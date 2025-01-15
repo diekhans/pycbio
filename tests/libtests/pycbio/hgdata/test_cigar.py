@@ -1,10 +1,11 @@
 # Copyright 2006-2022 Mark Diekhans
 import unittest
 import sys
+import pysam
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.hgdata.cigar import Cigar
+from pycbio.hgdata.cigar import cigarStringParse, cigarFromPysam
 
 
 class CigarTests(TestCaseBase):
@@ -16,14 +17,14 @@ class CigarTests(TestCaseBase):
                  "115M",
                  "63M343I204M1378I72M1891I109M75I152M98I168M125I117M3561I78M1480I67M9974I274M2759I194M973I114M5057I76M230I83M489I125M101I133M976I81M5462I24M3278I131M621I85M4348I2254M8283I2490M",)
         for cigarStr in cases:
-            cigar = Cigar(cigarStr)
+            cigar = cigarStringParse(cigarStr)
             self.assertEqual(cigarStr, str(cigar))
 
     def testExonerateSpaceCigars(self):
         cases = (("235 4M D1 50M", "2354MD150M"),
                  ("175M 4D 832M	52516I1\n0M3I755M", "175M4D832M52516I10M3I755M"))
         for cigarStrSp, cigarStr in cases:
-            cigar = Cigar(cigarStrSp)
+            cigar = cigarStringParse(cigarStrSp)
             self.assertEqual(cigarStr, str(cigar))
 
     def testMinimapCigar(self):
@@ -35,8 +36,17 @@ class CigarTests(TestCaseBase):
             "76S52M5I138M1D109M1D54M2D1M1I57M1D10M140N69M757N71M1D2M1D33M1I13M1I1M1I5M2D23M659N8M2I2M1I149M88N37M1I165M177N136M237N85M2I52M172N50M2D15M1128S",
         )
         for cigarStr in cases:
-            cigar = Cigar(cigarStr)
+            cigar = cigarStringParse(cigarStr)
             self.assertEqual(cigarStr, cigar.format(inclOnes=True))
+
+    def testPysamToCigar(self):
+        with (pysam.AlignmentFile(self.getInputFile("ont-rna.sam"), "r") as samfh,
+              open(self.getOutputFile(".cigar"), 'w') as cigarfh):
+            for aln in samfh:
+                cigar = cigarFromPysam(aln.cigartuples)
+                print(str(cigar), file=cigarfh)
+        self.diffExpected(".cigar")
+
 
 def suite():
     ts = unittest.TestSuite()

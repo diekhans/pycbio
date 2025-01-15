@@ -3,7 +3,7 @@ import re
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin, strArraySplit, strArrayJoin
 from pycbio.tsv.tabFile import TabFileReader
 from pycbio.hgdata import dnaOps
-from pycbio.hgdata.cigar import Cigar
+from pycbio.hgdata.cigar import cigarStringParse, cigarFromPysam
 from collections import defaultdict
 from deprecation import deprecated
 
@@ -631,9 +631,8 @@ def _addCigarBlocks(cigar, psl, qNext, tNext):
             tNext += op.count
     return qNext, tNext
 
-def pslFromCigar(qName, qStrand, tName, tSize, tPos, cigarStr):
-    "create a PSL from an cigar string"
-    cigar = Cigar(cigarStr)
+def pslFromCigarObj(qName, qStrand, tName, tSize, tPos, cigar):
+    "create a PSL from an pycbio.hgdata.cigar.Cigar object"
     psl = Psl.create(qName=qName, qSize=None, qStart=None, qEnd=None,
                      tName=tName, tSize=tSize, tStart=None, tEnd=None,
                      strand=qStrand)
@@ -646,3 +645,16 @@ def pslFromCigar(qName, qStrand, tName, tSize, tPos, cigarStr):
         psl.qStart, psl.qEnd = reverseCoords(psl.qStart, psl.qEnd, psl.qSize)
     psl.tStart, psl.tEnd = psl.blocks[0].tStart, psl.blocks[-1].tEnd
     return psl
+
+def pslFromCigar(qName, qStrand, tName, tSize, tPos, cigarStr):
+    "create a PSL from an cigar string"
+    return pslFromCigarObj(qName, qStrand, tName, tSize, tPos, cigarStringParse(cigarStr))
+
+def pslFromPysam(samfh, aln):
+    "create a PSL from pysam.AlignedSegment object"
+    return pslFromCigarObj(aln.query_name,
+                           "-" if aln.is_reverse else "+",
+                           aln.reference_name,
+                           samfh.get_reference_length(aln.reference_name),
+                           aln.reference_start,
+                           cigarFromPysam(aln.cigartuples))

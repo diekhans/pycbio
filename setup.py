@@ -17,6 +17,7 @@ requirements = [
     'unidecode',
     'flake8',
     'pyBigWig',
+    'pysam',
 ]
 
 if have_mysql_client_lib():

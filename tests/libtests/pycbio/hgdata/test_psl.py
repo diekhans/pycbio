@@ -1,11 +1,12 @@
 # Copyright 2006-2022 Mark Diekhans
 import unittest
 import sys
+import pysam
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.sys import fileOps
-from pycbio.hgdata.psl import Psl, PslBlock, PslTbl, pslFromCigar
+from pycbio.hgdata.psl import Psl, PslBlock, PslTbl, pslFromCigar, pslFromPysam
 
 # test data as a string (ps = psl string)
 
@@ -139,16 +140,19 @@ class MiniMapCigarTests(TestCaseBase):
     "Minimap cigar to PSL tests"
 
     def testOntSam(self):
+        # use cigars from SMA file
         with open(self.getOutputFile(".psl"), 'w') as fh:
             for args in samReader(self.getInputFile("ont-rna.sam")):
                 pslFromCigar(*args).write(fh)
         self.diffExpected(".psl")
 
     def testMultiMapSam(self):
+        # use pysam
         # contains supplemental reads
-        with open(self.getOutputFile(".psl"), 'w') as fh:
-            for args in samReader(self.getInputFile("multimap.sam")):
-                pslFromCigar(*args).write(fh)
+        with (pysam.AlignmentFile(self.getInputFile("multimap.sam"), "r") as samfh,
+              open(self.getOutputFile(".psl"), 'w') as pslfh):
+            for aln in samfh:
+                pslFromPysam(samfh, aln).write(pslfh)
         self.diffExpected(".psl")
 
 def suite():
@@ -157,3 +161,8 @@ def suite():
     ts.addTest(unittest.makeSuite(OpsTests))
     ts.addTest(unittest.makeSuite(MiniMapCigarTests))
     return ts
+
+
+if __name__ == '__main__':
+    unittest.main()
+p
