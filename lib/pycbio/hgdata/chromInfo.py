@@ -2,7 +2,7 @@
 Object with chromosome information that can be loaded from a variety of
 sources.
 """
-# Copyright 2006-2022 Mark Diekhans
+# Copyright 2006-2025 Mark Diekhans
 from collections import namedtuple
 from pycbio.sys import fileOps
 import pipettor

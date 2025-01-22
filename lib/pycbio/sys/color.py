@@ -1,4 +1,4 @@
-# Copyright 2006-2022 Mark Diekhans
+# Copyright 2006-2025 Mark Diekhans
 import re
 import colorsys
 import math

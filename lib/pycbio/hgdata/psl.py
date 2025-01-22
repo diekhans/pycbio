@@ -1,4 +1,4 @@
-# Copyright 2006-2022 Mark Diekhans
+# Copyright 2006-2025 Mark Diekhans
 import re
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin, strArraySplit, strArrayJoin
 from pycbio.tsv.tabFile import TabFileReader

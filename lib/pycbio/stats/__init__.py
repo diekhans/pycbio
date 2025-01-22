@@ -1,4 +1,4 @@
-# Copyright 2006-2022 Mark Diekhans
+# Copyright 2006-2025 Mark Diekhans
 from pycbio.stats.venn import Venn
 from pycbio.stats.subsets import Subsets
 

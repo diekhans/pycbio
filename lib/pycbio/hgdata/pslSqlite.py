@@ -1,4 +1,4 @@
-# Copyright 2006-2022 Mark Diekhans
+# Copyright 2006-2025 Mark Diekhans
 """
 Storage of PSL format tables in sqlite for use in cluster jobs and other
 random access uses.

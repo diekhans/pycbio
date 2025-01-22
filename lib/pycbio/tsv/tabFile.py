@@ -1,4 +1,4 @@
-# Copyright 2006-2022 Mark Diekhans
+# Copyright 2006-2025 Mark Diekhans
 
 # FIXME: needed for faster readings, but needs cleaned up, need reader/writer
 # classes

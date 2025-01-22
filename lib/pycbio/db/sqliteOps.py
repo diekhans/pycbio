@@ -1,4 +1,4 @@
-# Copyright 2006-2022 Mark Diekhans
+# Copyright 2006-2025 Mark Diekhans
 """
 Functions and classes for working with Sqlite 3 databases.
 """

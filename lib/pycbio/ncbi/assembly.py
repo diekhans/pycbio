@@ -1,4 +1,4 @@
-# Copyright 2006-2022 Mark Diekhans
+# Copyright 2006-2025 Mark Diekhans
 """Parsing of NCBI assembly information files.
 """
 from collections import namedtuple

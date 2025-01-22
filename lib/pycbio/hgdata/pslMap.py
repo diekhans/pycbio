@@ -1,4 +1,4 @@
-# Copyright 2006-2022 Mark Diekhans
+# Copyright 2006-2025 Mark Diekhans
 from collections import namedtuple
 from pycbio.hgdata.psl import Psl, PslBlock, reverseCoords
 

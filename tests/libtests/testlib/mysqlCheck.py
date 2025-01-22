@@ -1,4 +1,4 @@
-# Copyright 2006-2024 Mark Diekhans
+# Copyright 2006-2025 Mark Diekhans
 """
 Functions to check for a for being on a system with UCSC browser database
 for testing.

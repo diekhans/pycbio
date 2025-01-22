@@ -1,4 +1,4 @@
-# Copyright 2006-2022 Mark Diekhans
+# Copyright 2006-2025 Mark Diekhans
 from pycbio import PycbioException
 
 # FIXME: distinction between subsets, subset, and elements not clear

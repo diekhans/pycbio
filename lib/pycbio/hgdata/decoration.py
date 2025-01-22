@@ -1,4 +1,4 @@
-# Copyright 2006-2023 Mark Diekhans
+# Copyright 2006-2025 Mark Diekhans
 from pycbio import PycbioException
 from pycbio.hgdata.bed import Bed, BedBlock
 from pycbio.sys.symEnum import SymEnum

@@ -1,4 +1,4 @@
-# Copyright 2006-2022 Mark Diekhans
+# Copyright 2006-2025 Mark Diekhans
 import sys
 from enum import Enum, EnumMeta, _EnumDict, auto
 from functools import total_ordering

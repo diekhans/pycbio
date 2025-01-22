@@ -1,4 +1,4 @@
-# Copyright 2006-2022 Mark Diekhans
+# Copyright 2006-2025 Mark Diekhans
 """Parsing of NCBI AGP files.
 """
 from pycbio import PycbioException
