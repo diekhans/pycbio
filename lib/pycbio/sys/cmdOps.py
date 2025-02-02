@@ -14,6 +14,6 @@ def getOptionalArgs(parser, args):
     return opts
 
 def parse(parser):
-    """call argparse parse_args and return (args, opts)"""
+    """call argparse parse_args and return (opts, args)"""
     args = parser.parse_args()
-    return args, getOptionalArgs(parser, args)
+    return getOptionalArgs(parser, args), args
