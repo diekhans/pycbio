@@ -97,6 +97,7 @@ or optional
 
 * TSVs
 ** make TsvReader a context manager
+** TsvReader inFh is annoy name
 ** add TsvWriter
 ** clean up TsvRow
 could it be a ObjDict?  Functionally it already is, but doesn't use the code.

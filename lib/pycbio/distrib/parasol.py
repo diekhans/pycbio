@@ -134,10 +134,10 @@ class Para:
 
     def check(self):
         "run para check and return statistics"
-        lines = self._para("make", self.jobFile)
+        lines = self._para("check", self.jobFile)
         return BatchStats(lines)
 
-    def free(self):
+    def freeBatch(self):
         "free the batch, no-op if it doesn't exist"
         try:
             self._para("freeBatch")
