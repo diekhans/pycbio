@@ -81,7 +81,7 @@ class BatchStats:
 
 class Para:
     "interface to the parasol para command"
-    def __init__(self, paraHost, *, jobFile=None, runDir=None, paraDir=None, cpu=None, mem=None, maxJobs=None, retries=None):
+    def __init__(self, *, paraHost=None, jobFile=None, runDir=None, paraDir=None, cpu=None, mem=None, maxJobs=None, retries=None):
         """"will chdir to runDir, which default to cwd.  paraDir should be relative
         to runDir or absolute, defaults to runDir to jobFile should be relative to runDir
         or absolute.
@@ -104,12 +104,12 @@ class Para:
             raise PycbioException("job file not found: {}".format(absJobFile))
         fileOps.ensureDir(_mkAbs(self.runDir, self.paraDir))
 
-    def _para(self, *paraArgs):
+    def _para(self, *paraArgs, stderr=pipettor.DataReader):
         """ssh to the remote machine and run the para command.  paraArgs are
         passed as arguments to the para command. Returns stdout as a list of
         lines, stderr in ProcException if the remote program encouners an
         error. There is a possibility for quoting hell here."""
-        paraCmd = ["para", "-batch={}".format(shlex.quote(self.paraDir))]
+        paraCmd = ["para", f"-batch={self.paraDir}"]
         for pa in paraArgs:
             paraCmd.append(shlex.quote(pa))
         if self.cpu is not None:
@@ -120,8 +120,12 @@ class Para:
             paraCmd.append("-maxJob={}".format(self.maxJobs))
         if self.retries is not None:
             paraCmd.append("-retries={}".format(self.retries))
-        remCmd = "cd {} && {}".format(shlex.quote(self.runDir), " ".join(paraCmd))
-        return pipettor.runout(["ssh", "-nx", "-o", "ClearAllForwardings=yes", self.paraHost, remCmd]).split('\n')
+        if self.paraHost is None:
+            cmd = paraCmd
+        else:
+            remCmd = "cd {} && {}".format(shlex.quote(self.runDir), shlex.join(paraCmd))
+            cmd = ["ssh", "-nx", "-o", "ClearAllForwardings=yes", self.paraHost, remCmd]
+        return pipettor.runout(cmd, stderr=stderr).split('\n')
 
     def wasStarted(self):
         """check to see if it appears that the batch was started; this doens't mean
@@ -130,7 +134,8 @@ class Para:
 
     def make(self):
         "run para make"
-        self._para("make", self.jobFile)
+        # want to keep status streaming to stderr
+        self._para("make", self.jobFile, stderr='/dev/stderr')
 
     def check(self):
         "run para check and return statistics"

@@ -100,6 +100,7 @@ class TestCaseBase(unittest.TestCase):
         an expected file between multiple tests."""
         return os.path.join(self.getTestDir(), "expected/{}{}".format(basename if basename is not None else self.getId(),
                                                                       ext))
+
     def _getLines(self, file):
         with open(file) as fh:
             return fh.readlines()
