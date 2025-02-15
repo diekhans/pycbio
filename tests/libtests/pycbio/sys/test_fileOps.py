@@ -3,7 +3,6 @@ import unittest
 import os
 import sys
 import shutil
-from contextlib import contextmanager
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
@@ -15,6 +14,7 @@ class FileOpsTests(TestCaseBase):
     def testOpengzReadPlain(self):
         inf = self.getInputFile("simple1.txt")
         outf = self.getOutputFile(".out")
+        fileOps.rmFiles(outf)
         with fileOps.opengz(inf) as inFh, open(outf, "w") as outFh:
             shutil.copyfileobj(inFh, outFh)
         self.diffFiles(inf, outf)
@@ -22,6 +22,7 @@ class FileOpsTests(TestCaseBase):
     def testOpengzWritePlain(self):
         inf = self.getInputFile("simple1.txt")
         outf = self.getOutputFile(".out")
+        fileOps.rmFiles(outf)
         with open(inf) as inFh, fileOps.opengz(outf, "w") as outFh:
             shutil.copyfileobj(inFh, outFh)
         self.diffFiles(inf, outf)
@@ -31,6 +32,7 @@ class FileOpsTests(TestCaseBase):
         infGz = self.getOutputFile(".out.gz")
         pipettor.run(("gzip", "-c", inf), stdout=infGz)
         outf = self.getOutputFile(".out")
+        fileOps.rmFiles(outf)
         with fileOps.opengz(infGz) as inFh, open(outf, "w") as outFh:
             shutil.copyfileobj(inFh, outFh)
         self.diffFiles(inf, outf)
@@ -39,6 +41,7 @@ class FileOpsTests(TestCaseBase):
         inf = self.getInputFile("simple1.txt")
         outf = self.getOutputFile(".out")
         outfGz = self.getOutputFile(".out.gz")
+        fileOps.rmFiles(outf, outfGz)
         with open(inf) as inFh, fileOps.opengz(outfGz, "w") as outFh:
             shutil.copyfileobj(inFh, outFh)
         pipettor.run(("gunzip", "-c", outfGz), stdout=outf)
@@ -49,6 +52,7 @@ class FileOpsTests(TestCaseBase):
         infBz2 = self.getOutputFile(".out.bz2")
         pipettor.run(("bzip2", "-c", inf), stdout=infBz2)
         outf = self.getOutputFile(".out")
+        fileOps.rmFiles(outf)
         with fileOps.opengz(infBz2) as inFh, open(outf, "w") as outFh:
             shutil.copyfileobj(inFh, outFh)
         self.diffFiles(inf, outf)
@@ -57,6 +61,7 @@ class FileOpsTests(TestCaseBase):
         inf = self.getInputFile("simple1.txt")
         outf = self.getOutputFile(".out")
         outfBz2 = self.getOutputFile(".out.bz2")
+        fileOps.rmFiles(outf, outfBz2)
         with open(inf) as inFh, fileOps.opengz(outfBz2, "w") as outFh:
             shutil.copyfileobj(inFh, outFh)
         pipettor.run(("bunzip2", "-c", outfBz2), stdout=outf)
@@ -65,6 +70,7 @@ class FileOpsTests(TestCaseBase):
     def testAtomicInstall(self):
         inf = self.getInputFile("simple1.txt")
         outf = self.getOutputFile(".out")
+        fileOps.rmFiles(outf)
         outfTmp = fileOps.atomicTmpFile(outf)
         shutil.copyfile(inf, outfTmp)
         fileOps.atomicInstall(outfTmp, outf)
@@ -79,6 +85,7 @@ class FileOpsTests(TestCaseBase):
     def testAtomicContextOk(self):
         inf = self.getInputFile("simple1.txt")
         outf = self.getOutputFile(".out")
+        fileOps.rmFiles(outf)
         with fileOps.AtomicFileCreate(outf) as outfTmp:
             shutil.copyfile(inf, outfTmp)
         self.diffFiles(inf, outf)
@@ -86,6 +93,7 @@ class FileOpsTests(TestCaseBase):
     def testAtomicContextError(self):
         inf = self.getInputFile("simple1.txt")
         outf = self.getOutputFile(".out")
+        fileOps.rmFiles(outf)
         try:
             with fileOps.AtomicFileCreate(outf) as outfTmp:
                 shutil.copyfile(inf, outfTmp)
@@ -94,22 +102,27 @@ class FileOpsTests(TestCaseBase):
             self.assertEqual(str(ex), "stop!")
         self.assertFalse(os.path.exists(outf))
 
-    @staticmethod
-    @contextmanager
-    def _atomicWriteContextOpen(fileName):
-        # does our context manger work inside of another
-        with fileOps.AtomicFileCreate(fileName) as tmpFileName:
-            with open(tmpFileName, 'wb') as f:
-                yield f
-
-    def testAtomicContextInContext(self):
-        # this crashed with hand written context manager vs context lib
+    def testAtomicOpenOk(self):
         inf = self.getInputFile("simple1.txt")
         outf = self.getOutputFile(".out")
-        with self._atomicWriteContextOpen(outf) as outFh:
-            with open(inf, "rb") as inFh:
-                shutil.copyfileobj(inFh, outFh)
+        fileOps.rmFiles(outf)
+        with fileOps.AtomicFileOpen(outf) as outfh:
+            with open(inf) as infh:
+                shutil.copyfileobj(infh, outfh)
         self.diffFiles(inf, outf)
+
+    def testAtomicOpenError(self):
+        inf = self.getInputFile("simple1.txt")
+        outf = self.getOutputFile(".out")
+        fileOps.rmFiles(outf)
+        try:
+            with fileOps.AtomicFileOpen(outf) as outfh:
+                with open(inf) as infh:
+                    shutil.copyfileobj(infh, outfh)
+                raise Exception("stop!")
+        except Exception as ex:
+            self.assertEqual(str(ex), "stop!")
+        self.assertFalse(os.path.exists(outf))
 
     simple1Lines = ['one', 'two', 'three', 'four', 'five', 'six']
 

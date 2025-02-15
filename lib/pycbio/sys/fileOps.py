@@ -371,7 +371,7 @@ def atomicInstall(tmpPath, finalPath):
 
 
 @contextmanager
-def AtomicFileCreate(finalPath, keep=False):
+def AtomicFileCreate(finalPath, *, keep=False):
     """Context manager to create a temporary file.  Entering returns path to
     the temporary file in the same directory as finalPath.  If the code in
     context succeeds, the file renamed to its actually name.  If an error
@@ -389,6 +389,19 @@ def AtomicFileCreate(finalPath, keep=False):
             except Exception:
                 pass
         raise
+
+@contextmanager
+def AtomicFileOpen(finalPath, mode='w', *, buffering=-1, encoding=None,
+                   errors=None, newline=None, keep=False):
+    """Context manager to open a temporary file.  Entering returns path to
+    the temporary file in the same directory as finalPath.  If the code in
+    context succeeds, the file renamed to its actually name.  If an error
+    occurs, the file is not installed and is removed unless keep is specified.
+    The output directory will be created if it doesn't exist.  Thread-safe.
+    """
+    with AtomicFileCreate(finalPath, keep=keep) as tmpFileName:
+        with open(tmpFileName, mode=mode, buffering=buffering, encoding=encoding, errors=errors, newline=newline) as fh:
+            yield fh
 
 def uncompressedBase(path):
     "return the file path, removing a compression extension if it exists"
