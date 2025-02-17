@@ -79,21 +79,24 @@ def isCompressed(path):
     return path.endswith(".gz") or path.endswith(".bz2") or path.endswith(".Z")
 
 
-def compressCmd(path):
+def compressCmd(path, *, bgzip=False):
     """return the command to compress the path, or default if not compressed, which defaults
     to the `cat' command, so that it just gets written through"""
     if path.endswith(".Z"):
         raise PycbioException("writing compress .Z files not supported")
-    elif path.endswith(".gz"):
-        if which("pigz"):
+    if path.endswith(".gz"):
+        if bgzip:
+            return ["bgzip"]
+        elif which("pigz"):
             return ["pigz"]
         else:
             return ["gzip"]
-    elif path.endswith(".bz2"):
+    if bgzip:
+        raise PycbioException(f"bgzip requested however file does not end in `.gz': `{path}'")
+    if path.endswith(".bz2"):
         return ["bzip2"]
     else:
         return ["cat"]
-
 
 def compressBaseName(path):
     """if a file is compressed, return the path without the compressed extension"""
@@ -101,7 +104,6 @@ def compressBaseName(path):
         return osp.splitext(path)[0]
     else:
         return path
-
 
 def decompressCmd(path):
     """"return the command to decompress the file to stdout, or default if not compressed, which defaults
@@ -116,20 +118,20 @@ def decompressCmd(path):
         return ["cat"]
 
 
-def opengz(fileName, mode="r", buffering=-1, encoding=None, errors=None):
+def opengz(fileName, mode="r", *, buffering=-1, encoding=None, errors=None, bgzip=False):
     """open a file, if it ends in an extension indicating compression, open
-    with a compression or decompression pipe."""
-    if isCompressed(fileName):
-        if mode.startswith("r"):
-            cmd = decompressCmd(fileName)
-            return pipettor.Popen(cmd + [fileName], mode=mode, buffering=buffering, encoding=encoding, errors=errors)
-        elif mode.startswith("w"):
-            cmd = compressCmd(fileName)
-            return pipettor.Popen(cmd, mode=mode, stdout=fileName, buffering=buffering, encoding=encoding, errors=errors)
-        else:
-            raise PycbioException("mode {} not support with compression for {}".format(mode, fileName))
-    else:
+    with a compression or decompression pipe.  If bgzip is specified for write,
+    it is used to writing"""
+    if not isCompressed(fileName):
         return open(fileName, mode, buffering=buffering, encoding=encoding, errors=errors)
+    elif mode.startswith("r"):
+        cmd = decompressCmd(fileName)
+        return pipettor.Popen(cmd + [fileName], mode=mode, buffering=buffering, encoding=encoding, errors=errors)
+    elif mode.startswith("w"):
+        cmd = compressCmd(fileName, bgzip=bgzip)
+        return pipettor.Popen(cmd, mode=mode, stdout=fileName, buffering=buffering, encoding=encoding, errors=errors)
+    else:
+        raise PycbioException("mode {} not support with compression for {}".format(mode, fileName))
 
 # FIXME: make these consistent and remove redundant code.  Maybe use
 # keyword for flush. Do we even need them with print function?

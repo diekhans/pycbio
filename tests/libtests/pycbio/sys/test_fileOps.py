@@ -67,6 +67,20 @@ class FileOpsTests(TestCaseBase):
         pipettor.run(("bunzip2", "-c", outfBz2), stdout=outf)
         self.diffFiles(inf, outf)
 
+    def testOpengzWriteBgzip(self):
+        # gzip is special
+        inf = self.getInputFile("simple1.txt")
+        outfGz = self.getOutputFile(".out.gz")
+        fileOps.rmFiles(outfGz)
+        with open(inf) as inFh, fileOps.opengz(outfGz, "w", bgzip=True) as outFh:
+            shutil.copyfileobj(inFh, outFh)
+        info = pipettor.runout(['file', outfGz])
+
+        # MacOS: gzip compressed data, extra field, original size modulo 2^32 0
+        # newer GNU: Blocked GNU Zip Format (BGZF; gzip compatible), block length 16437
+        # older GNU: gzip compressed data, extra field
+        self.assertRegex(info, r".*(extra field)|(BGZF).*")
+
     def testAtomicInstall(self):
         inf = self.getInputFile("simple1.txt")
         outf = self.getOutputFile(".out")
