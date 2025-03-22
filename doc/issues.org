@@ -305,7 +305,6 @@ gencode/meetings/2021/2021-03-30-gencode/ucsc/data/hprc/gene-missing-venn.tsv
 is this even a useful format?
 
 * modify lib/pycbio/hgdata/gff3 to use gencode gtf/gff paradigm
-* drop enumeration
 * nasty BUG:  calling pipeline in a loop agaisnt an open file truncates it each exec
     ouch, this happens with subprocess.call_check too
     does this happen in pipettor?
