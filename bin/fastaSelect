@@ -54,7 +54,7 @@ def fastaSelect(opts, inFasta, outFasta):
             processFasta(inFh, outFh, selectIds)
 
 def main():
-    args, opts = parseArgs()
+    opts, args = parseArgs()
     fastaSelect(opts, args.inFasta, args.outFasta)
 
 
