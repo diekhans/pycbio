@@ -5,6 +5,7 @@ export PYTHONPATH
 
 ncbiGbFetch = ${binDir}/ncbiGbFetch
 ncbiAssemblyReportConvert = ${binDir}/ncbiAssemblyReportConvert
+ncbiAssemblyReportToTsv = ${binDir}/ncbiAssemblyReportToTsv
 agpToPsl = ${binDir}/agpToPsl
 runPslCheck = ../../bin/runPslCheck
 
@@ -23,8 +24,11 @@ ifeq ($(findstring .,${hostname}),)
 endif
 
 
-test: fetchTests asmReportCnvTests agpToPslTests
+test: fetchTests asmReportCnvTests asmReportToTsvTests agpToPslTests
 
+##
+# ncbiGbFetch
+##
 fetchTests: \
 	gbffFetchTest gbffFetchIdOutTest faFetchTest faFetchIdOutTest
 
@@ -46,6 +50,9 @@ faFetchIdOutTest: mkdirs
 	${ncbiGbFetch} ${email} --fasta --outDir=output/$@ ${testAccver}
 	for acc in ${testAccver}; do ${diff} expected/$@/$${acc}.fa output/$@/$${acc}.fa ; done
 
+##
+# ncbiAssemblyReportConvert
+## 
 asmReportCnvTests: \
 	asmSeqNameUcscLiftTest asmRefSeqGencodeLiftTest \
 	asmSeqNameUcscPslTest asmRefSeqGencodePslTest \
@@ -103,6 +110,27 @@ asmUmappedErrTest: mkdirs
 	${ncbiAssemblyReportConvert} --fromIdType=ucscStyleName --toIdType=sequenceNameGenbankAccn idmap ${asmReportTestFile} output/$@.idmap 2>output/$@.err || true
 	${diff} expected/$@.err output/$@.err
 
+##
+# ncbiAssemblyReportToTsv
+##
+asmReportToTsvTests: asmReportToTsvBasicTest asmReportToTsvWithMetaTest asmReportToTsvMetaErrTest
+
+asmReportToTsvBasicTest: mkdirs
+	${ncbiAssemblyReportToTsv} ${asmReportTestFile} output/$@.tsv
+	diff expected/$@.tsv output/$@.tsv
+
+asmReportToTsvWithMetaTest: mkdirs
+	${ncbiAssemblyReportToTsv} --add-meta='taxid' --add-meta1='genbank_assembly_accession' ${asmReportTestFile} output/$@.tsv
+	diff expected/$@.tsv output/$@.tsv
+
+asmReportToTsvMetaErrTest: mkdirs
+	${ncbiAssemblyReportToTsv} --add-meta='Fred_Flintstone' ${asmReportTestFile} output/$@.tsv 2>output/$@.err || true
+	diff expected/$@.err output/$@.err
+
+
+##
+# agpToPsl
+##
 clintChimpAgp = input/GCA_002880755.3.chr10.comp.agp
 grch38Agp = ${ncbiTestInputDir}/GCA_000001305.2.chr22.agp
 

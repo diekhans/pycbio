@@ -116,6 +116,17 @@ class FileOpsTests(TestCaseBase):
             self.assertEqual(str(ex), "stop!")
         self.assertFalse(os.path.exists(outf))
 
+    def testAtomicContextNoOutError(self):
+        inf = self.getInputFile("simple1.txt")
+        outf = self.getOutputFile(".out")
+        fileOps.rmFiles(outf)
+        try:
+            with fileOps.AtomicFileCreate(outf) as outfTmp:
+                raise Exception("stop!")
+        except Exception as ex:
+            self.assertEqual(str(ex), "stop!")
+        self.assertFalse(os.path.exists(outf))
+
     def testAtomicOpenOk(self):
         inf = self.getInputFile("simple1.txt")
         outf = self.getOutputFile(".out")

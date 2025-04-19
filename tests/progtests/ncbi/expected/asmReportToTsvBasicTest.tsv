@@ -1,0 +1,12 @@
+sequenceName	sequenceRole	assignedMolecule	locationType	genBankAccn	relationship	refSeqAccn	assemblyUnit	sequenceLength	ucscStyleName
+1	assembled-molecule	1	Chromosome	CM000663.2	=	NC_000001.11	Primary Assembly	249698942	chr1
+2	assembled-molecule	2	Chromosome	CM000664.2	=	NC_000002.12	Primary Assembly	242508799	chr2
+3	assembled-molecule	3	Chromosome	CM000665.2	=	NC_000003.12	Primary Assembly	198450956	chr3
+Y	assembled-molecule	Y	Chromosome	CM000686.2	=	NC_000024.10	Primary Assembly	57264655	chrY
+HSCHR1_CTG1_UNLOCALIZED	unlocalized-scaffold	1	Chromosome	KI270706.1	=	NT_187361.1	Primary Assembly	175055	chr1_KI270706v1_random
+HSCHRUN_RANDOM_CTG34	unplaced-scaffold	na	na	KI270755.1	=	NT_187510.1	Primary Assembly	36723	chrUn_KI270755v1
+HG986_PATCH	fix-patch	1	Chromosome	KN196472.1	=	NW_009646194.1	PATCHES	186494	
+HSCHR5_7_CTG1	novel-patch	5	Chromosome	KN196477.1	=	NW_009646199.1	PATCHES	139087	
+HG2128_PATCH	fix-patch	6	Chromosome	KN196478.1	=	NW_009646200.1	PATCHES	268330	
+HSCHR19KIR_T7526_BDEL_HAP_CTG3_1	alt-scaffold	19	Chromosome	KI270916.1	=	NT_187670.1	ALT_REF_LOCI_22	184516	chr19_KI270916v1_alt
+MT	assembled-molecule	MT	Mitochondrion	J01415.2	=	NC_012920.1	non-nuclear	16569	chrM

@@ -8,7 +8,7 @@ from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin
 from collections import defaultdict, namedtuple
 
 # FIXME: not complete, needs tests
-# FIXME: really need a better way to deal with derived classes than extraArgs
+# FIXME: really need a better way to deal with derived classes than extraCols
 
 
 bed12Columns = ("chrom", "chromStart", "chromEnd", "name", "score", "strand", "thickStart",

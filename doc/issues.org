@@ -6,7 +6,13 @@
 maybe with parse function for external values
 but lose numeric values, sometimes used for order.
 but look at StrEnum code in any case.
-or maybe just need a non-Enum based implement ions, because Enum has gotten heavy-weight?
+or maybe just need a non-Enum based implementations, because Enum has gotten heavy-weight?
+
+* add retried NCBI query
+see hprc-year2-annotation/bin/ncbi-asm-query  
+maybe add for both biopytion and direct request
+biopyton doesn't retry timeouts, only network errors
+
 * BED check for overlapping blocks.
 * sqliteOps error max len should be part of an options object
 * convert to pytest
@@ -97,14 +103,14 @@ or optional
 
 * TSVs
 ** make TsvReader a context manager
-** TsvReader inFh is annoy name
+** TsvReader should use fspec stuff
+*** TsvReader inFh is annoy name and can go away if fspec is used
 ** add TsvWriter
 ** clean up TsvRow
 could it be a ObjDict?  Functionally it already is, but doesn't use the code.
-** TsvReader count create named tuples.
+** TsvReader could create named tuples.
 what about the class name and serialization
 maybe just make lighter weight?
-** TsvReader should use fspec stuff
 ** tsvreader issues
 *** pass owndership of row to Row instead of having Row inherit from list?
 *** make rowClass (rename rowFactory) so that it can be able to construct and object.  Move parsing of columns outside of tsvRow (good for peewee)

@@ -1,0 +1,64 @@
+#!/usr/bin/env python3
+# Copyright 2006-2025 Mark Diekhans
+
+import sys
+from os import path as osp
+import argparse
+
+sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
+from pycbio.ncbi.assembly import AssemblyReport
+from pycbio import PycbioException
+from pycbio.sys import fileOps, cmdOps
+
+def parseArgs():
+    desc = """
+Create a TSV file of sequences in a NCBI assembly report file.
+
+Files are available from:
+    ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_assembly_report.txt
+
+"""
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument('--add-meta', action='append', default=[],
+                        help="Add this metadata column to the TSV. Metadata names in the file are convert to lower cases and have spaces replaced with underscore")
+    parser.add_argument('--add-meta1', action='append', default=[],
+                        help="similar to --add-meta, only the value is only the white-space separated word in the column")
+    parser.add_argument('assemblyReport', type=str,
+                        help="NCBI assembly report file")
+    parser.add_argument('outTsv', type=str,
+                        help="TSV output, column name are convert to valid Python symbols")
+    return cmdOps.parse(parser)
+
+def checkMeta(opts, asmReport):
+    bad = set()
+    for meta in opts.add_meta + opts.add_meta1:
+        if meta not in asmReport.metaData:
+            bad.add(meta)
+    if len(bad) > 0:
+        badDesc = ','.join(bad)
+        raise PycbioException(f"metadata field(s) not in this assembly report: {badDesc}\n"
+                              "Note: Metadata names in the file are convert to lower cases and have spaces replaced with underscore")
+
+def getMetaHeaders(opts, asmReport):
+    return opts.add_meta + opts.add_meta1
+
+def getMetaValues(opts, asmReport):
+    return ([asmReport.metaData[col] for col in opts.add_meta] +
+            [asmReport.metaData[col].split()[0] for col in opts.add_meta1])
+
+def ncbiAssemblyReportToTsv(opts, assemblyReport, outTsv):
+    asmReport = AssemblyReport(assemblyReport)
+    checkMeta(opts, asmReport)
+    metaValues = tuple(getMetaValues(opts, asmReport))
+
+    with fileOps.opengz(outTsv, 'w') as fh:
+        fileOps.prRow(fh, tuple(getMetaHeaders(opts, asmReport)) + asmReport.seqs[0]._fields)
+        for seq in asmReport.seqs:
+            fileOps.prRow(fh, metaValues + seq)
+
+def main():
+    opts, args = parseArgs()
+    ncbiAssemblyReportToTsv(opts, args.assemblyReport, args.outTsv)
+
+
+main()

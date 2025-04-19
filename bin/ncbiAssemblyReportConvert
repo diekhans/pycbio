@@ -8,7 +8,7 @@ import argparse
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.ncbi.assembly import AssemblyReport
 from pycbio import PycbioException
-from pycbio.sys import fileOps
+from pycbio.sys import fileOps, cmdOps
 from pycbio.sys.symEnum import SymEnum, auto
 from pycbio.hgdata.psl import Psl, PslBlock
 
@@ -36,7 +36,7 @@ class OutputFilter(SymEnum):
 
 
 def parseArgs():
-    usage = """
+    desc = """
 Convert or extract information from an NCBI assembly report file.
 Id types based on columns in file, or special handling for gencode naming.
 
@@ -47,7 +47,7 @@ Special id types:
     - sequenceNameGenbankAccn - use sequenceName for primary assembly and genbank
       accession for other sequences.
 """
-    parser = argparse.ArgumentParser(description=usage)
+    parser = argparse.ArgumentParser(description=desc)
     parser.add_argument('--fromIdType', type=IdType, choices=IdType,
                         help="from sequence id type, also id type for sizes")
     parser.add_argument('--toIdType', type=IdType, choices=IdType,
@@ -64,16 +64,16 @@ Special id types:
                         help="NCBI assembly report file")
     parser.add_argument('outFile', type=str,
                         help="output of the specified type")
-    args = parser.parse_args()
-    if (args.outputType == OutputType.lift) or (args.outputType == OutputType.idmap):
-        if (args.fromIdType is None) or (args.toIdType is None):
+    opts, args = cmdOps.parse(parser)
+    if (opts.outputType == OutputType.lift) or (opts.outputType == OutputType.idmap):
+        if (opts.fromIdType is None) or (opts.toIdType is None):
             parser.error(f"output of {OutputType.lift} or {OutputType.idmap} requires --fromIdType and --toIdType")
-    elif args.outputType == OutputType.sizes:
-        if args.fromIdType is None:
+    elif opts.outputType == OutputType.sizes:
+        if opts.fromIdType is None:
             parser.error(f"output of {OutputType.sizes} requires --fromIdType")
-        if args.toIdType is not None:
-            parser.error("--toIdType not valid with output of {OutputType.sizes}")
-    return args
+        if opts.toIdType is not None:
+            parser.error(f"--toIdType not valid with output of {OutputType.sizes}")
+    return opts, args
 
 
 class CnvInfo:
@@ -196,26 +196,29 @@ class IncludeFilter:
         else:
             return seq.sequenceRole in self.keep
 
-
-def main(args):
-    asmReport = AssemblyReport(args.assemblyReport)
-    filterFn = IncludeFilter(args.include)
+def ncbiAssemblyReportConvert(opts, assemblyReport, outFile):
+    asmReport = AssemblyReport(assemblyReport)
+    filterFn = IncludeFilter(opts.include)
     # if skipping, print only if verbose
-    cnvInfo = CnvInfo(args.verbose or not args.skipUnmapped)
-    with open(args.outFile, "w") as outFh:
-        if args.outputType == OutputType.lift:
-            createLift(asmReport, filterFn, args.fromIdType, args.toIdType, cnvInfo, outFh)
-        if args.outputType == OutputType.psl:
-            createPsl(asmReport, filterFn, args.fromIdType, args.toIdType, cnvInfo, outFh)
-        elif args.outputType == OutputType.sizes:
-            createSizes(asmReport, filterFn, args.fromIdType, cnvInfo, outFh)
-        elif args.outputType == OutputType.idmap:
-            createIdmap(asmReport, filterFn, args.fromIdType, args.toIdType, cnvInfo, outFh)
+    cnvInfo = CnvInfo(opts.verbose or not opts.skipUnmapped)
+    with open(outFile, "w") as outFh:
+        if opts.outputType == OutputType.lift:
+            createLift(asmReport, filterFn, opts.fromIdType, opts.toIdType, cnvInfo, outFh)
+        if opts.outputType == OutputType.psl:
+            createPsl(asmReport, filterFn, opts.fromIdType, opts.toIdType, cnvInfo, outFh)
+        elif opts.outputType == OutputType.sizes:
+            createSizes(asmReport, filterFn, opts.fromIdType, cnvInfo, outFh)
+        elif opts.outputType == OutputType.idmap:
+            createIdmap(asmReport, filterFn, opts.fromIdType, opts.toIdType, cnvInfo, outFh)
     if cnvInfo.skipCnt > 0:
-        print("{}: {} sequences skip due to no mapping".format("Warning" if args.skipUnmapped else "Error",
+        print("{}: {} sequences skip due to no mapping".format("Warning" if opts.skipUnmapped else "Error",
                                                                cnvInfo.skipCnt), file=sys.stderr)
-        if not args.skipUnmapped:
+        if not opts.skipUnmapped:
             exit(1)
 
+def main():
+    opts, args = parseArgs()
+    ncbiAssemblyReportConvert(opts, args.assemblyReport, args.outFile)
 
-main(parseArgs())
+
+main()
