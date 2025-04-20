@@ -47,7 +47,7 @@ def _loggerBySpec(logger):
         logger = logging.getLogger(logger)
     return logger
 
-def setupLogger(logger, handler, formatter=None, level=None):
+def setupLogger(logger, handler, level=logging.INFO, *, formatter=None):
     """add handle to logger and set logger level to the minimum of it's current
     and the handler level.  Logger maybe a logger, logger name, or None for
     default logger, returns the logger.
@@ -63,19 +63,19 @@ def setupLogger(logger, handler, formatter=None, level=None):
         handler.setFormatter(formatter)
     return logger
 
-def setupStreamLogger(logger, fh, level, formatter=None):
+def setupStreamLogger(logger, fh, level, *, formatter=None):
     """Configure logging to a specified open file.  Logger maybe a logger or
     logger name, returns the logger."""
     level = _convertLevel(level)
     handler = logging.StreamHandler(stream=fh)
     handler.setLevel(level)
-    return setupLogger(logger, handler, formatter, level=level)
+    return setupLogger(logger, handler, formatter=formatter, level=level)
 
 
-def setupStderrLogger(logger, level, formatter=None):
+def setupStderrLogger(logger=None, level=logging.INFO, *, formatter=None):
     """configure logging to stderr.  Logger maybe a logger, logger name, or
     None for default logger, returns the logger."""
-    return setupStreamLogger(logger, sys.stderr, _convertLevel(level), formatter)
+    return setupStreamLogger(logger, sys.stderr, _convertLevel(level), formatter=formatter)
 
 
 def getSyslogAddress():
@@ -86,7 +86,7 @@ def getSyslogAddress():
     return ("localhost", 514)
 
 
-def setupSyslogLogger(logger, facility, level, prog=None, address=None, formatter=None):
+def setupSyslogLogger(logger, facility, level, *, prog=None, address=None, formatter=None):
     """configure logging to syslog based on the specified facility.  If prog
     specified, each line is prefixed with the name.  Logger maybe a logger or
     logger name, returns the logger."""
@@ -97,10 +97,10 @@ def setupSyslogLogger(logger, facility, level, prog=None, address=None, formatte
     if prog is not None:
         handler.setFormatter(logging.Formatter(fmt="{} %(message)s".format(prog)))
     handler.setLevel(level)
-    return setupLogger(logger, handler, formatter)
+    return setupLogger(logger, handler, formatter=formatter)
 
 
-def setupNullLogger(logger, level=None):
+def setupNullLogger(logger, level=logging.INFO):
     "configure discard logging.  Returns logger."
     handler = logging.NullHandler()
     if level is not None:
@@ -108,7 +108,7 @@ def setupNullLogger(logger, level=None):
     return setupLogger(logger, handler)
 
 
-def addCmdOptions(parser, *, defaultLevel=logging.WARN):
+def addCmdOptions(parser, *, defaultLevel=logging.INFO):
     """
     Add command line options related to logging.  None of these are defaulted,
     as one might need to determine if they were explicitly set. The use case
