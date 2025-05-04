@@ -6,12 +6,13 @@ from os import path as osp
 import argparse
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
-from pycbio.ncbi.assembly import AssemblyReport
+from pycbio.ncbi.assembly import AssemblyReport, AssemblyReportException, AssemblyReportNotFound
 from pycbio import PycbioException
-from pycbio.sys import fileOps, cmdOps
+from pycbio.sys import fileOps, cmdOps, loggingOps
 from pycbio.sys.symEnum import SymEnum, auto
 from pycbio.hgdata.psl import Psl, PslBlock
 
+NO_STACK_EXCEPTIONS = (AssemblyReportException, AssemblyReportNotFound)
 
 class IdType(SymEnum):
     "types of identifiers"
@@ -58,6 +59,7 @@ Special id types:
                         help="verbose tracing")
     parser.add_argument('--skipUnmapped', action="store_true",
                         help="skipUnmapped sequences")
+    loggingOps.addCmdOptions(parser)
     parser.add_argument('outputType', type=OutputType, choices=OutputType,
                         help="type of output to create; one of ")
     parser.add_argument('assemblyReport', type=str,
@@ -73,6 +75,7 @@ Special id types:
             parser.error(f"output of {OutputType.sizes} requires --fromIdType")
         if opts.toIdType is not None:
             parser.error(f"--toIdType not valid with output of {OutputType.sizes}")
+    loggingOps.setupFromCmd(opts)
     return opts, args
 
 
@@ -211,14 +214,16 @@ def ncbiAssemblyReportConvert(opts, assemblyReport, outputType, outFile):
         elif outputType == OutputType.idmap:
             createIdmap(asmReport, filterFn, opts.fromIdType, opts.toIdType, cnvInfo, outFh)
     if cnvInfo.skipCnt > 0:
-        print("{}: {} sequences skip due to no mapping".format("Warning" if opts.skipUnmapped else "Error",
-                                                               cnvInfo.skipCnt), file=sys.stderr)
-        if not opts.skipUnmapped:
-            exit(1)
+        msg = f"{cnvInfo.skipCnt} sequences skip due to no mapping"
+        if opts.skipUnmapped:
+            print("Warning:", msg, file=sys.stderr)
+        else:
+            raise AssemblyReportException(msg)
 
 def main():
     opts, args = parseArgs()
-    ncbiAssemblyReportConvert(opts, args.assemblyReport, args.outputType, args.outFile)
+    with cmdOps.ErrorHandler(noStackExcepts=NO_STACK_EXCEPTIONS):
+        ncbiAssemblyReportConvert(opts, args.assemblyReport, args.outputType, args.outFile)
 
 
 main()
