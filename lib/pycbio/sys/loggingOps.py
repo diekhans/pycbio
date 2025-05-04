@@ -4,6 +4,7 @@ Operations associated with logging
 import logging
 import os
 import sys
+import argparse
 from logging.handlers import SysLogHandler
 
 
@@ -125,17 +126,29 @@ def addCmdOptions(parser, *, defaultLevel=logging.INFO):
         parseLevel(levelStr)
         return levelStr
 
-    parser.add_argument("--syslogFacility", type=validateFacility,
+    parser.add_argument("--syslog-facility", type=validateFacility,
                         help="Set syslog facility to case-insensitive symbolic value, if not specified, logging is not done to stderr, "
                         " one of {}".format(", ".join(getFacilityNames())))
-    parser.add_argument("--logStderr", action="store_true",
+    parser.add_argument("--log-stderr", action="store_true",
                         help="also log to stderr, even when logging to syslog")
-    parser.add_argument("--logLevel", type=validateLevel, default=defaultLevel,
+    parser.add_argument("--log-level", type=validateLevel, default=defaultLevel,
                         help="Set level to case-insensitive symbolic value, one of {}".format(", ".join(getLevelNames())))
-    parser.add_argument("--logConfFile",
+    parser.add_argument("--log-conf",
                         help="Python logging configuration file, see logging.config.fileConfig()")
-    parser.add_argument("--logDebug", action="store_true",
-                        help="short-cut that that sets --logStderr and --logLevel=DEBUG")
+    parser.add_argument("--log-debug", action="store_true",
+                        help="short-cut that that sets --log-stderr and --log-level=DEBUG")
+
+    # deprecated names
+    parser.add_argument("--syslogFacility", type=validateFacility, dest="syslog_Facility",
+                        help=argparse.SUPPRESS)
+    parser.add_argument("--logStderr", action="store_true", dest="log_stderr",
+                        help=argparse.SUPPRESS)
+    parser.add_argument("--logLevel", type=validateLevel, default=defaultLevel, dest="log_level",
+                        help=argparse.SUPPRESS)
+    parser.add_argument("--logConfFile", dest="log_conf",
+                        help=argparse.SUPPRESS)
+    parser.add_argument("--logDebug", action="store_true", dest="log_debug",
+                        help=argparse.SUPPRESS)
 
 
 def setupFromCmd(args, *, logger=None, prog=None):
@@ -147,19 +160,19 @@ def setupFromCmd(args, *, logger=None, prog=None):
 
     N.B: logging must be initialized after daemonization
     """
-    if args.logDebug:
-        args.logStderr = True
-        args.logLevel = logging.DEBUG
+    if args.log_debug:
+        args.log_stderr = True
+        args.log_level = logging.DEBUG
     if prog is None:
         prog = os.path.basename(sys.argv[0])
     logger = _loggerBySpec(logger)
-    level = _convertLevel(args.logLevel) if args.logLevel is not None else logging.WARN
-    if args.syslogFacility is not None:
-        setupSyslogLogger(logger, args.syslogFacility, level, prog=prog)
-    if (args.syslogFacility is None) or args.logStderr:
+    level = _convertLevel(args.log_level) if args.log_level is not None else logging.WARN
+    if args.syslog_facility is not None:
+        setupSyslogLogger(logger, args.syslog_facility, level, prog=prog)
+    if (args.syslog_facility is None) or args.log_stderr:
         setupStderrLogger(logger, level)
-    if args.logConfFile is not None:
-        logging.config.fileConfig(args.logConfFile)
+    if args.log_conf is not None:
+        logging.config.fileConfig(args.log_conf)
     return logger
 
 

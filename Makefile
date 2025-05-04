@@ -1,8 +1,10 @@
 root = .
 include ${root}/defs.mk
 
-
-pyprogs = $(shell file -F '	' bin/* tests/*/bin/* | awk '/Python script/{print $$1}')
+bin_progs = $(wildcard bin/*)
+test_bin_progs = $(wildcard tests/bin/* tests/libtests/pycbio/sys/bin/*)
+all_progs = ${bin_progs} ${test_bin_progs}
+pyprogs = $(shell file -F '	' ${all_progs} | awk '/Python script/{print $$1}')
 
 all: libcomp
 

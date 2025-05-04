@@ -1,8 +1,10 @@
 # Copyright 2006-2025 Mark Diekhans
 """Miscellaneous command line parsing operations tests"""
 import sys
+import os.path as osp
 import unittest
 import argparse
+import pipettor
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
@@ -42,6 +44,50 @@ class CmdOpsTests(TestCaseBase):
         args = parser.parse_args(testargs)
         opts = cmdOps.getOptionalArgs(parser, args)
         self._checkTrekOpts(opts, None, 'fred', 'barney', True)
+
+    def _runCmdHandlerTestProg(self, *, noError=False, noStack=False, debugLog=False):
+        cmd = [sys.executable, osp.join(self.getTestDir(), "./bin/cmdOpsTestProg")]
+        if noError:
+            cmd.append("--no-error")
+        if noStack:
+            cmd.append("--no-stack")
+        if debugLog:
+            cmd.append("--log-level=DEBUG")
+        try:
+            pipettor.run(cmd)
+            return (0, None)
+        except pipettor.ProcessException as ex:
+            return ex.returncode, ex.stderr
+
+    def testCmdHanderOkay(self):
+        returncode, stderr = self._runCmdHandlerTestProg(noError=True)
+        self.assertEqual(None, stderr)
+        self.assertEqual(0, returncode)
+
+    def testCmdHanderUser(self):
+        expect = ("UserCausedException: bad user\n"
+                  "  Caused by: RuntimeError: two caught\n"
+                  "    Caused by: ValueError: bad, bad value\n")
+        returncode, stderr = self._runCmdHandlerTestProg(noStack=True)
+        self.assertEqual(expect, stderr)
+        self.assertEqual(1, returncode)
+
+    def testCmdHanderUserStack(self):
+        expect = (r'^Traceback.+cmdOpsTestProg.+ValueError: bad, bad value\n'
+                  r'.+the direct cause.+raise RuntimeError\("two caught"\) from ex'
+                  r'.+UserCausedException: bad user\n$')
+        returncode, stderr = self._runCmdHandlerTestProg(noStack=True, debugLog=True)
+        self.assertRegexDotAll(stderr, expect)
+        self.assertEqual(1, returncode)
+
+    def testCmdHanderBug(self):
+        expect = (r'^Traceback.+cmdOpsTestProg.+ValueError: bad, bad value\n'
+                  r'.+the direct cause.+raise RuntimeError\("two caught"\) from ex'
+                  r'.+BugException: bad software\n$')
+        returncode, stderr = self._runCmdHandlerTestProg(noStack=False)
+        self.assertRegexDotAll(stderr, expect)
+        self.assertEqual(1, returncode)
+
 
 def suite():
     ts = unittest.TestSuite()

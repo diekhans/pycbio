@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+"Test program to use when testing cmdOps"
+
+
+import sys
+from os import path as osp
+import argparse
+
+sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../../../../lib")))
+from pycbio import NoStackError
+from pycbio.sys import cmdOps, loggingOps
+
+def parseArgs():
+    usage = """Program to use in test command error handling"""
+    parser = argparse.ArgumentParser(description=usage)
+    loggingOps.addCmdOptions(parser)
+    parser.add_argument('--no-error', action='store_true',
+                        help="don't generate an error")
+    parser.add_argument('--no-stack', action='store_true',
+                        help="generate error that doesn't print stack trace by default")
+    opts, args = cmdOps.parse(parser)
+    loggingOps.setupFromCmd(opts)
+    return opts, args
+
+class UserCausedException(Exception, NoStackError):
+    pass
+
+class BugException(Exception):
+    pass
+
+def three(opts):
+    if not opts.no_error:
+        raise ValueError("bad, bad value")
+
+def two(opts):
+    try:
+        three(opts)
+    except Exception as ex:
+        raise RuntimeError("two caught") from ex
+
+def one(opts):
+    try:
+        two(opts)
+    except Exception as ex:
+        if opts.no_stack:
+            raise UserCausedException("bad user") from ex
+        else:
+            raise BugException("bad software") from ex
+
+def cmdOpsTestProg(opts):
+    with cmdOps.ErrorHandler():
+        one(opts)
+
+def main():
+    opts, _ = parseArgs()
+    cmdOpsTestProg(opts)
+
+
+main()
