@@ -1,11 +1,11 @@
 Traceback (most recent call last):
-  File "/cluster/home/markd/compbio/code/pycbio/tests/progtests/ncbi/../../../bin/ncbiAssemblyReportToTsv", line 56, in <module>
+  File "/cluster/home/markd/compbio/code/pycbio/tests/progtests/ncbi/../../../bin/ncbiAssemblyReportToTsv", line 64, in <module>
     main()
-  File "/cluster/home/markd/compbio/code/pycbio/tests/progtests/ncbi/../../../bin/ncbiAssemblyReportToTsv", line 53, in main
+  File "/cluster/home/markd/compbio/code/pycbio/tests/progtests/ncbi/../../../bin/ncbiAssemblyReportToTsv", line 61, in main
     ncbiAssemblyReportToTsv(opts, args.assemblyReport, args.outTsv)
-  File "/cluster/home/markd/compbio/code/pycbio/tests/progtests/ncbi/../../../bin/ncbiAssemblyReportToTsv", line 43, in ncbiAssemblyReportToTsv
-    checkMeta(opts.add_meta, asmReport)
-  File "/cluster/home/markd/compbio/code/pycbio/tests/progtests/ncbi/../../../bin/ncbiAssemblyReportToTsv", line 38, in checkMeta
+  File "/cluster/home/markd/compbio/code/pycbio/tests/progtests/ncbi/../../../bin/ncbiAssemblyReportToTsv", line 51, in ncbiAssemblyReportToTsv
+    checkMeta(opts, asmReport)
+  File "/cluster/home/markd/compbio/code/pycbio/tests/progtests/ncbi/../../../bin/ncbiAssemblyReportToTsv", line 39, in checkMeta
     raise PycbioException(f"metadata field(s) not in this assembly report: {badDesc}\n"
 pycbio.PycbioException: metadata field(s) not in this assembly report: Fred_Flintstone
 Note: Metadata names in the file are convert to lower cases and have spaces replaced with underscore

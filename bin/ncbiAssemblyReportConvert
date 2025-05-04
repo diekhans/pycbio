@@ -65,10 +65,10 @@ Special id types:
     parser.add_argument('outFile', type=str,
                         help="output of the specified type")
     opts, args = cmdOps.parse(parser)
-    if (opts.outputType == OutputType.lift) or (opts.outputType == OutputType.idmap):
+    if (args.outputType == OutputType.lift) or (args.outputType == OutputType.idmap):
         if (opts.fromIdType is None) or (opts.toIdType is None):
             parser.error(f"output of {OutputType.lift} or {OutputType.idmap} requires --fromIdType and --toIdType")
-    elif opts.outputType == OutputType.sizes:
+    elif args.outputType == OutputType.sizes:
         if opts.fromIdType is None:
             parser.error(f"output of {OutputType.sizes} requires --fromIdType")
         if opts.toIdType is not None:
@@ -196,19 +196,19 @@ class IncludeFilter:
         else:
             return seq.sequenceRole in self.keep
 
-def ncbiAssemblyReportConvert(opts, assemblyReport, outFile):
+def ncbiAssemblyReportConvert(opts, assemblyReport, outputType, outFile):
     asmReport = AssemblyReport(assemblyReport)
     filterFn = IncludeFilter(opts.include)
     # if skipping, print only if verbose
     cnvInfo = CnvInfo(opts.verbose or not opts.skipUnmapped)
     with open(outFile, "w") as outFh:
-        if opts.outputType == OutputType.lift:
+        if outputType == OutputType.lift:
             createLift(asmReport, filterFn, opts.fromIdType, opts.toIdType, cnvInfo, outFh)
-        if opts.outputType == OutputType.psl:
+        if outputType == OutputType.psl:
             createPsl(asmReport, filterFn, opts.fromIdType, opts.toIdType, cnvInfo, outFh)
-        elif opts.outputType == OutputType.sizes:
+        elif outputType == OutputType.sizes:
             createSizes(asmReport, filterFn, opts.fromIdType, cnvInfo, outFh)
-        elif opts.outputType == OutputType.idmap:
+        elif outputType == OutputType.idmap:
             createIdmap(asmReport, filterFn, opts.fromIdType, opts.toIdType, cnvInfo, outFh)
     if cnvInfo.skipCnt > 0:
         print("{}: {} sequences skip due to no mapping".format("Warning" if opts.skipUnmapped else "Error",
@@ -218,7 +218,7 @@ def ncbiAssemblyReportConvert(opts, assemblyReport, outFile):
 
 def main():
     opts, args = parseArgs()
-    ncbiAssemblyReportConvert(opts, args.assemblyReport, args.outFile)
+    ncbiAssemblyReportConvert(opts, args.assemblyReport, args.outputType, args.outFile)
 
 
 main()
