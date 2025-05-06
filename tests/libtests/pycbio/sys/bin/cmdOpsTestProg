@@ -5,10 +5,18 @@
 import sys
 from os import path as osp
 import argparse
+from functools import partial
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../../../../lib")))
 from pycbio import NoStackError
 from pycbio.sys import cmdOps, loggingOps
+
+PRINT_STACK_TRUE = "True"
+PRINT_STACK_FALSE = "False"
+PRINT_STACK_NONE = "None"
+PRINT_STACK_RETURNS = (PRINT_STACK_TRUE,
+                       PRINT_STACK_FALSE,
+                       PRINT_STACK_NONE)
 
 def parseArgs():
     usage = """Program to use in test command error handling"""
@@ -16,8 +24,12 @@ def parseArgs():
     loggingOps.addCmdOptions(parser)
     parser.add_argument('--no-error', action='store_true',
                         help="don't generate an error")
-    parser.add_argument('--no-stack', action='store_true',
-                        help="generate error that doesn't print stack trace by default")
+    parser.add_argument('--no-stack-error', action='store_true',
+                        help="generate error that inherits from NoStackError")
+    parser.add_argument('--no-stack-excepts', action='store_true',
+                        help="generate error that is in the list of noStackExcepts")
+    parser.add_argument('--print-stack-filter', choices=PRINT_STACK_RETURNS,
+                        help="add a printStackFilter that returns this value")
     opts, args = cmdOps.parse(parser)
     loggingOps.setupFromCmd(opts)
     return opts, args
@@ -42,13 +54,31 @@ def one(opts):
     try:
         two(opts)
     except Exception as ex:
-        if opts.no_stack:
+        if opts.no_stack_error:
             raise UserCausedException("bad user") from ex
         else:
             raise BugException("bad software") from ex
 
+
+def printStackFitler(val, exc_val):
+    return val
+
+def getPrintStackFilter(opts):
+    if opts.print_stack_filter is None:
+        return None
+    if opts.print_stack_filter == PRINT_STACK_TRUE:
+        return partial(printStackFitler, True)
+    if opts.print_stack_filter == PRINT_STACK_FALSE:
+        return partial(printStackFitler, False)
+    if opts.print_stack_filter == PRINT_STACK_NONE:
+        return partial(printStackFitler, None)
+
+def getNoStackExcepts(opts):
+    return (BugException,) if opts.no_stack_excepts else None
+
 def cmdOpsTestProg(opts):
-    with cmdOps.ErrorHandler():
+    with cmdOps.ErrorHandler(noStackExcepts=getNoStackExcepts(opts),
+                             printStackFilter=getPrintStackFilter(opts)):
         one(opts)
 
 def main():
