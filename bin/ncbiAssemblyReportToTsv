@@ -7,7 +7,6 @@ import argparse
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.ncbi.assembly import AssemblyReport, AssemblyReportException, AssemblyReportNotFound
-from pycbio import PycbioException
 from pycbio.sys import fileOps, cmdOps
 
 NO_STACK_EXCEPTIONS = (AssemblyReportException, AssemblyReportNotFound)
