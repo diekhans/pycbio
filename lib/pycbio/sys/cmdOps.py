@@ -54,12 +54,6 @@ class ErrorHandler:
     def __enter__(self):
         pass
 
-    def _handleNoStackTrace(self, logger, exc_val):
-        logger.error(exceptionFormat(showTraceback=False))
-
-    def _handleStackTrace(self, logger, exc_val, exc_tb):
-        logger.error(exceptionFormat(showTraceback=True))
-
     def _showTraceBack(self, exc_val):
         if self.logger.getEffectiveLevel() <= logging.DEBUG:
             return True
@@ -74,7 +68,10 @@ class ErrorHandler:
         return not isinstance(exc_val, self.noStackExcepts)
 
     def _handleError(self, exc_val):
-        msg = exceptionFormat(exc_val, showTraceback=self._showTraceBack(exc_val))
+        showTraceback = self._showTraceBack(exc_val)
+        msg = exceptionFormat(exc_val, showTraceback=showTraceback)
+        if not showTraceback:
+            msg += "Specify --log-debug for details"
         self.logger.error(msg.rstrip('\n'))
 
     def __exit__(self, exc_type, exc_val, exc_tb):

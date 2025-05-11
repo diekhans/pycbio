@@ -52,9 +52,10 @@ class ErrorHandlerTests(TestCaseBase):
     # matches to cmdOpsTestProg output
     ##
     _userCausedMsgExpect = (
-        "UserCausedException: bad user\n"
-        "  Caused by: RuntimeError: two caught\n"
-        "    Caused by: ValueError: bad, bad value\n")
+        'UserCausedException: bad user\n'
+        '  Caused by: RuntimeError: two caught\n'
+        '    Caused by: ValueError: bad, bad value\n'
+        'Specify --log-debug for details\n')
     _userCausedStackExpect = (
         r'^Traceback.+cmdOpsTestProg.+ValueError: bad, bad value\n'
         r'.+the direct cause.+raise RuntimeError\("two caught"\) from ex'
@@ -62,7 +63,8 @@ class ErrorHandlerTests(TestCaseBase):
     _bugMsgExpect = (
         'BugException: bad software\n'
         '  Caused by: RuntimeError: two caught\n'
-        '    Caused by: ValueError: bad, bad value\n')
+        '    Caused by: ValueError: bad, bad value\n'
+        'Specify --log-debug for details\n')
     _bugStackExpect = (
         r'^Traceback.+cmdOpsTestProg.+ValueError: bad, bad value\n'
         r'.+the direct cause.+raise RuntimeError\("two caught"\) from ex'
@@ -70,13 +72,15 @@ class ErrorHandlerTests(TestCaseBase):
     _annoyMsgExpect = (
         'AnnoyingException: very annoying\n'
         '  Caused by: RuntimeError: two caught\n'
-        '    Caused by: ValueError: bad, bad value\n')
+        '    Caused by: ValueError: bad, bad value\n'
+        'Specify --log-debug for details\n')
     _annoyStackExpect = (
         r'^Traceback.+cmdOpsTestProg.+ValueError: bad, bad value\n'
         r'.+the direct cause.+raise RuntimeError\("two caught"\) from ex'
         r'.+AnnoyingException: very annoying' '\n$')
     _fileNotFoundMsgExpect = (
-        'FileNotFoundError: /dev/fred/barney\n')
+        'FileNotFoundError: /dev/fred/barney\n'
+        'Specify --log-debug for details\n')
 
     def _runCmdHandlerTestProg(self, errorWrap, *, errorClass=None,
                                printStackFilter=None, debugLog=False):
