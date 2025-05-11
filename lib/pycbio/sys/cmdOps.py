@@ -32,7 +32,7 @@ class ErrorHandler:
     indicates is should not be printed.
 
     logger - use this logger if specified, otherwise the default logger.
-    noStackExcepts  - if specified, these are list of addition exceptions class beyond NoStackError
+    noStackExcepts  - if not None, exceptions classes to not print, defaults to (OSError, ImportError).
     printStackFilter - a function that is called with the exception object. If it returns
     True, the stack is printed, False it is not printed, and None, it defers to the noStackExcepts
     checks.
@@ -44,14 +44,11 @@ class ErrorHandler:
               real_prog(opts, args.one, args.two)
 
     """
-    DEFAULT_NO_STACK_EXCEPTS = (NoStackError,)
+    DEFAULT_NO_STACK_EXCEPTS = (OSError, ImportError)
 
-    def __init__(self, *, logger=None, noStackExcepts=None, printStackFilter=None):
+    def __init__(self, *, logger=None, noStackExcepts=DEFAULT_NO_STACK_EXCEPTS, printStackFilter=None):
         self.logger = logger if logger is not None else logging.getLogger()
-        if noStackExcepts is None:
-            self.noStackExcepts = self.DEFAULT_NO_STACK_EXCEPTS
-        else:
-            self.noStackExcepts = self.DEFAULT_NO_STACK_EXCEPTS + tuple(noStackExcepts)
+        self.noStackExcepts = tuple(noStackExcepts) if noStackExcepts is not None else None
         self.printStackFilter = printStackFilter
 
     def __enter__(self):
@@ -70,6 +67,10 @@ class ErrorHandler:
             filt = self.printStackFilter(exc_val)
             if filt is not None:
                 return filt
+        if isinstance(exc_val, NoStackError):
+            return False
+        if self.noStackExcepts is None:
+            return True
         return not isinstance(exc_val, self.noStackExcepts)
 
     def _handleError(self, exc_val):

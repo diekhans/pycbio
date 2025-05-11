@@ -45,30 +45,8 @@ class CmdOpsTests(TestCaseBase):
         opts = cmdOps.getOptionalArgs(parser, args)
         self._checkTrekOpts(opts, None, 'fred', 'barney', True)
 
-    def _runCmdHandlerTestProg(self, *, noError=False, noStackError=False,
-                               noStackExcepts=False, printStackFilter=None,
-                               debugLog=False):
-        cmd = [sys.executable, osp.join(self.getTestDir(), "./bin/cmdOpsTestProg")]
-        if noError:
-            cmd.append("--no-error")
-        if noStackError:
-            cmd.append("--no-stack-error")
-        if noStackExcepts:
-            cmd.append("--no-stack-excepts")
-        if printStackFilter is not None:
-            cmd.append("--print-stack-filter=" + printStackFilter)
-        if debugLog:
-            cmd.append("--log-level=DEBUG")
-        try:
-            pipettor.run(cmd)
-            return (0, None)
-        except pipettor.ProcessException as ex:
-            return ex.returncode, ex.stderr
-
-    def testCmdHanderOkay(self):
-        returncode, stderr = self._runCmdHandlerTestProg(noError=True)
-        self.assertEqual(None, stderr)
-        self.assertEqual(0, returncode)
+class ErrorHandlerTests(TestCaseBase):
+    PRINT_CMD = True
 
     ##
     # matches to cmdOpsTestProg output
@@ -89,54 +67,90 @@ class CmdOpsTests(TestCaseBase):
         r'^Traceback.+cmdOpsTestProg.+ValueError: bad, bad value\n'
         r'.+the direct cause.+raise RuntimeError\("two caught"\) from ex'
         r'.+BugException: bad software' '\n$')
+    _annoyMsgExpect = (
+        'AnnoyingException: very annoying\n'
+        '  Caused by: RuntimeError: two caught\n'
+        '    Caused by: ValueError: bad, bad value\n')
+    _annoyStackExpect = (
+        r'^Traceback.+cmdOpsTestProg.+ValueError: bad, bad value\n'
+        r'.+the direct cause.+raise RuntimeError\("two caught"\) from ex'
+        r'.+AnnoyingException: very annoying' '\n$')
+    _fileNotFoundMsgExpect = (
+        'FileNotFoundError: /dev/fred/barney\n')
+
+    def _runCmdHandlerTestProg(self, errorWrap, *, errorClass=None,
+                               printStackFilter=None, debugLog=False):
+        cmd = [sys.executable, osp.join(self.getTestDir(), "bin/cmdOpsTestProg")]
+        if errorClass is not None:
+            cmd.append("--error-class=" + errorClass)
+        if printStackFilter is not None:
+            cmd.append("--print-stack-filter=" + printStackFilter)
+        if debugLog:
+            cmd.append("--log-level=DEBUG")
+        cmd.append(errorWrap)
+        try:
+            if self.PRINT_CMD:
+                print("DEBUG", ' '.join(cmd), file=sys.stderr)
+            pipettor.run(cmd)
+            return (0, None)
+        except pipettor.ProcessException as ex:
+            return ex.returncode, ex.stderr
+
+    def testCmdHanderOkay(self):
+        returncode, stderr = self._runCmdHandlerTestProg('no_wrap', errorClass='no_error')
+        self.assertEqual(None, stderr)
+        self.assertEqual(0, returncode)
 
     def testCmdHanderUser(self):
-        returncode, stderr = self._runCmdHandlerTestProg(noStackError=True)
+        returncode, stderr = self._runCmdHandlerTestProg('no_stack')
         self.assertEqual(self._userCausedMsgExpect, stderr)
         self.assertEqual(1, returncode)
 
     def testCmdHanderUserStack(self):
-        returncode, stderr = self._runCmdHandlerTestProg(noStackError=True, debugLog=True)
+        returncode, stderr = self._runCmdHandlerTestProg('no_stack', debugLog=True)
         self.assertRegexDotAll(stderr, self._userCausedStackExpect)
         self.assertEqual(1, returncode)
 
     def testCmdHanderBug(self):
-        returncode, stderr = self._runCmdHandlerTestProg(noStackError=False)
+        returncode, stderr = self._runCmdHandlerTestProg('with_stack')
         self.assertRegexDotAll(stderr, self._bugStackExpect)
         self.assertEqual(1, returncode)
 
     def testCmdHanderNoStackExcepts(self):
-        returncode, stderr = self._runCmdHandlerTestProg(noStackExcepts=True)
-        self.assertEqual(stderr, self._bugMsgExpect)
+        returncode, stderr = self._runCmdHandlerTestProg('no_stack_excepts')
+        self.assertEqual(stderr, self._annoyMsgExpect)
+        self.assertEqual(1, returncode)
+
+    def testCmdHanderFileNotFound(self):
+        returncode, stderr = self._runCmdHandlerTestProg('no_wrap', errorClass='file_not_found')
+        self.assertEqual(stderr, self._fileNotFoundMsgExpect)
         self.assertEqual(1, returncode)
 
     def testCmdHanderFilterTrue(self):
-        returncode, stderr = self._runCmdHandlerTestProg(printStackFilter="True")
+        returncode, stderr = self._runCmdHandlerTestProg('with_stack', printStackFilter="True")
         self.assertRegexDotAll(stderr, self._bugStackExpect)
         self.assertEqual(1, returncode)
 
     def testCmdHanderFilterTrue2(self):
         # force even with NoStackError
-        returncode, stderr = self._runCmdHandlerTestProg(printStackFilter="True",
-                                                         noStackError=True)
+        returncode, stderr = self._runCmdHandlerTestProg('no_stack', printStackFilter="True")
         self.assertRegexDotAll(stderr, self._userCausedStackExpect)
         self.assertEqual(1, returncode)
 
     def testCmdHanderFilterFalse(self):
-        returncode, stderr = self._runCmdHandlerTestProg(printStackFilter="False")
+        returncode, stderr = self._runCmdHandlerTestProg('with_stack', printStackFilter="False")
         self.assertEqual(stderr, self._bugMsgExpect)
         self.assertEqual(1, returncode)
 
     def testCmdHanderFilterNone(self):
         # all through to default handling
-        returncode, stderr = self._runCmdHandlerTestProg(printStackFilter="None")
+        returncode, stderr = self._runCmdHandlerTestProg('with_stack', printStackFilter="None")
         self.assertRegexDotAll(stderr, self._bugStackExpect)
         self.assertEqual(1, returncode)
 
     def testCmdHanderFilterNone2(self):
         # all through to default handling NoStackError
-        returncode, stderr = self._runCmdHandlerTestProg(printStackFilter="None",
-                                                         noStackError=True)
+        returncode, stderr = self._runCmdHandlerTestProg('no_stack', printStackFilter="None")
         self.assertEqual(stderr, self._userCausedMsgExpect)
         self.assertEqual(1, returncode)
 
@@ -144,6 +158,7 @@ class CmdOpsTests(TestCaseBase):
 def suite():
     ts = unittest.TestSuite()
     ts.addTest(unittest.makeSuite(CmdOpsTests))
+    ts.addTest(unittest.makeSuite(ErrorHandlerTests))
     return ts
 
 

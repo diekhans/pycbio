@@ -10,6 +10,7 @@ from functools import partial
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../../../../lib")))
 from pycbio import NoStackError
 from pycbio.sys import cmdOps, loggingOps
+from pycbio.sys.symEnum import SymEnum, auto
 
 PRINT_STACK_TRUE = "True"
 PRINT_STACK_FALSE = "False"
@@ -18,18 +19,27 @@ PRINT_STACK_RETURNS = (PRINT_STACK_TRUE,
                        PRINT_STACK_FALSE,
                        PRINT_STACK_NONE)
 
+class ErrorClass(SymEnum):
+    no_error = auto()
+    value_error = auto()
+    file_not_found = auto()
+
+class ErrorWrap(SymEnum):
+    no_wrap = auto()
+    no_stack = auto()
+    with_stack = auto()
+    no_stack_excepts = auto()
+
 def parseArgs():
     usage = """Program to use in test command error handling"""
     parser = argparse.ArgumentParser(description=usage)
     loggingOps.addCmdOptions(parser)
-    parser.add_argument('--no-error', action='store_true',
-                        help="don't generate an error")
-    parser.add_argument('--no-stack-error', action='store_true',
-                        help="generate error that inherits from NoStackError")
-    parser.add_argument('--no-stack-excepts', action='store_true',
-                        help="generate error that is in the list of noStackExcepts")
+    parser.add_argument('--error-class', type=ErrorClass, choices=ErrorClass, default=ErrorClass.value_error,
+                        help="class to exception (or no error)")
     parser.add_argument('--print-stack-filter', choices=PRINT_STACK_RETURNS,
                         help="add a printStackFilter that returns this value")
+    parser.add_argument('error_wrap', type=ErrorWrap, choices=ErrorWrap,
+                        help="how to wrap error cause")
     opts, args = cmdOps.parse(parser)
     loggingOps.setupFromCmd(opts)
     return opts, args
@@ -37,28 +47,39 @@ def parseArgs():
 class UserCausedException(Exception, NoStackError):
     pass
 
+class AnnoyingException(Exception):
+    pass
+
 class BugException(Exception):
     pass
 
 def three(opts):
-    if not opts.no_error:
+    if opts.error_class is ErrorClass.value_error:
         raise ValueError("bad, bad value")
+    elif opts.error_class is ErrorClass.file_not_found:
+        raise FileNotFoundError("/dev/fred/barney")
 
-def two(opts):
+def two(opts, error_wrap):
     try:
         three(opts)
     except Exception as ex:
-        raise RuntimeError("two caught") from ex
-
-def one(opts):
-    try:
-        two(opts)
-    except Exception as ex:
-        if opts.no_stack_error:
-            raise UserCausedException("bad user") from ex
+        if error_wrap is not ErrorWrap.no_wrap:
+            raise RuntimeError("two caught") from ex
         else:
-            raise BugException("bad software") from ex
+            raise
 
+def one(opts, error_wrap):
+    try:
+        two(opts, error_wrap)
+    except Exception as ex:
+        if error_wrap is ErrorWrap.no_stack_excepts:
+            raise AnnoyingException("very annoying") from ex
+        elif error_wrap is ErrorWrap.no_stack:
+            raise UserCausedException("bad user") from ex
+        elif error_wrap is ErrorWrap.with_stack:
+            raise BugException("bad software") from ex
+        else:
+            raise
 
 def printStackFitler(val, exc_val):
     return val
@@ -73,17 +94,20 @@ def getPrintStackFilter(opts):
     if opts.print_stack_filter == PRINT_STACK_NONE:
         return partial(printStackFitler, None)
 
-def getNoStackExcepts(opts):
-    return (BugException,) if opts.no_stack_excepts else None
+def getNoStackExcepts(opts, error_wrap):
+    if error_wrap is error_wrap is ErrorWrap.no_stack_excepts:
+        return (AnnoyingException,)
+    else:
+        return cmdOps.ErrorHandler.DEFAULT_NO_STACK_EXCEPTS
 
-def cmdOpsTestProg(opts):
-    with cmdOps.ErrorHandler(noStackExcepts=getNoStackExcepts(opts),
+def cmdOpsTestProg(opts, error_wrap):
+    with cmdOps.ErrorHandler(noStackExcepts=getNoStackExcepts(opts, error_wrap),
                              printStackFilter=getPrintStackFilter(opts)):
-        one(opts)
+        one(opts, error_wrap)
 
 def main():
-    opts, _ = parseArgs()
-    cmdOpsTestProg(opts)
+    opts, args = parseArgs()
+    cmdOpsTestProg(opts, args.error_wrap)
 
 
 main()
