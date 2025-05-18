@@ -6,7 +6,7 @@ from pycbio.sys.objDict import ObjDict
 
 def getOptionalArgs(parser, args):
     """Get the parse command line option arguments (-- or - options) as an
-    object were the options are fields in the object.  Useful for packaging up
+    object where the options are fields in the object.  Useful for packaging up
     a large number of options to pass around."""
 
     opts = ObjDict()
@@ -16,7 +16,7 @@ def getOptionalArgs(parser, args):
     return opts
 
 def parse(parser):
-    """call argparse parse_args and return (opts, args)"""
+    """Call argparse parse_args and return (opts, args)"""
     args = parser.parse_args()
     return getOptionalArgs(parser, args), args
 
