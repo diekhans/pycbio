@@ -110,7 +110,7 @@ class OpsTests(TestCaseBase):
         psl.addBlock(PslBlock(0, 65418, 15))
         psl.addBlock(PslBlock(15, 65519, 54))
         psl.addBlock(PslBlock(69, 69036, 2549))
-        psl.computeCounts()
+        psl.updateCounts()
         self.assertEqual(psl.match, 2618)
         self.assertEqual(psl.tNumInsert, 2)
         self.assertEqual(psl.tBaseInsert, 3549)

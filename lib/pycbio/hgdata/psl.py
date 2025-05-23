@@ -220,7 +220,7 @@ class Psl:
         return psl
 
     @classmethod
-    def create(cls,
+    def create(cls, *,
                qName=None, qSize=0, qStart=0, qEnd=0,
                tName=None, tSize=0, tStart=0, tEnd=0,
                strand=None):
@@ -235,14 +235,6 @@ class Psl:
         blk.iBlk = len(self.blocks)
         self.blocks.append(blk)
 
-    def _updateIndelCnts(self, prevBlk, blk):
-        if blk.qStart > prevBlk.qEnd:
-            self.qNumInsert += 1
-            self.qBaseInsert += blk.qStart - prevBlk.qEnd
-        if blk.tStart > prevBlk.tEnd:
-            self.tNumInsert += 1
-            self.tBaseInsert += blk.tStart - prevBlk.tEnd
-
     def updateBounds(self):
         "update bounds from the blocks"
         self.qStart = self.blocks[0].qStart
@@ -254,12 +246,20 @@ class Psl:
         if self.tStrand == '-':
             self.tStart, self.tEnd = reverseCoords(self.tStart, self.tEnd, self.tSize)
 
+    def _updateIndelCnts(self, prevBlk, blk):
+        if blk.qStart > prevBlk.qEnd:
+            self.qNumInsert += 1
+            self.qBaseInsert += blk.qStart - prevBlk.qEnd
+        if blk.tStart > prevBlk.tEnd:
+            self.tNumInsert += 1
+            self.tBaseInsert += blk.tStart - prevBlk.tEnd
+
     def updateCounts(self):
         "compute counts, calling everything a match"
-        self.match = self.misMatch = self.repMatch = self.nCount = self.qNumInsert = self.qBaseInsert = self.tNumInsert = self.tBaseInsert = 0
+        self._zeroStats()
         prevBlk = self.blocks[0]
         self.match = len(prevBlk)
-        for blk in self.blocks:
+        for blk in self.blocks[1:]:
             self.match += len(blk)
             self._updateIndelCnts(prevBlk, blk)
             prevBlk = blk
@@ -515,24 +515,6 @@ class Psl:
             for i in range(self.blockCount):
                 swap.addBlock(self.blocks[i].swapSides())
         return swap
-
-    def computeCounts(self):
-        """Compute counts from alignments block for a constructed PSL.  Assumes all matches"""
-        # FIXME could compute base counts if for pslx
-        self._zeroStats()
-        prevBlk = self.blocks[0]
-        self.match += prevBlk.size
-        for blk in self.blocks[1:]:
-            self.match += blk.size
-            qGap = blk.qStart - prevBlk.qEnd
-            if qGap > 0:
-                self.qNumInsert += 1
-                self.qBaseInsert += qGap
-            tGap = blk.tStart - prevBlk.tEnd
-            if tGap > 0:
-                self.tNumInsert += 1
-                self.tBaseInsert += tGap
-            prevBlk = blk
 
 class PslReader:
     """Generator to read PSLs from a tab file or file-like object"""
