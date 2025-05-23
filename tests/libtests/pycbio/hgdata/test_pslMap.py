@@ -25,22 +25,22 @@ def _mapToTuple(pmr):
     typ = "blk" if (pmr.qStart is not None) and (pmr.tStart is not None) else "gap"
     return (typ, pmr.qPrevEnd, pmr.qStart, pmr.qEnd, pmr.qNextStart, pmr.qStrand, pmr.tPrevEnd, pmr.tStart, pmr.tEnd, pmr.tNextStart, pmr.tStrand)
 
-def _targetToQueryMap(mapPsl, tRngStart, tRngEnd, tStrand=None):
+def _targetToQueryMap(mapPsl, tRngStart, tRngEnd, tStrand):
     return tuple([_mapToTuple(m) for m in PslMap(mapPsl).targetToQueryMap(tRngStart, tRngEnd, tStrand)])
 
-def _queryToTargetMap(mapPsl, qRngStart, qRngEnd, qStrand=None):
+def _queryToTargetMap(mapPsl, qRngStart, qRngEnd, qStrand):
     return tuple([_mapToTuple(m) for m in PslMap(mapPsl).queryToTargetMap(qRngStart, qRngEnd, qStrand)])
 
 class TargetToQueryTests(TestCaseBase):
     def testPosMRna(self):
         psl = splitToPsl(_pslPosMRna)
         # within a single block
-        got = _targetToQueryMap(psl, 1024444, 1024445)
+        got = _targetToQueryMap(psl, 1024444, 1024445, '+')
         self.assertEqual((('blk', None, 96, 97, None, '+', None, 1024444, 1024445, None, '+'),),
                          got)
 
         # crossing gaps
-        got = _targetToQueryMap(psl, 1024398, 1031918)
+        got = _targetToQueryMap(psl, 1024398, 1031918, '+')
         self.assertEqual((('blk', None, 50, 119, None, '+', None, 1024398, 1024467, None, '+'),
                           ('gap', 119, None, None, 119, '+', None, 1024467, 1028428, None, '+'),
                           ('blk', None, 119, 290, None, '+', None, 1028428, 1028599, None, '+'),
@@ -49,7 +49,7 @@ class TargetToQueryTests(TestCaseBase):
                          got)
 
         # crossing gaps, with strand reversal
-        got = _targetToQueryMap(psl, 134342819, 134350339, tStrand='-')  # 1024398-1031918 on - strand
+        got = _targetToQueryMap(psl, 134342819, 134350339, '-')  # 1024398-1031918 on - strand
         self.assertEqual((('blk', None, 50, 119, None, '+', None, 134350270, 134350339, None, '-'),
                           ('gap', 119, None, None, 119, '+', None, 134346309, 134350270, None, '-'),
                           ('blk', None, 119, 290, None, '+', None, 134346138, 134346309, None, '-'),
@@ -58,13 +58,13 @@ class TargetToQueryTests(TestCaseBase):
                          got)
 
         # gap before
-        got = _targetToQueryMap(psl, 1024309, 1028420)
+        got = _targetToQueryMap(psl, 1024309, 1028420, '+')
         self.assertEqual(got, (('gap', None, None, None, 0, '+', None, 1024309, 1024348, None, '+'),
                                ('blk', None, 0, 119, None, '+', None, 1024348, 1024467, None, '+'),
                                ('gap', 119, None, None, 119, '+', None, 1024467, 1028420, None, '+')))
 
         # gap after
-        got = _targetToQueryMap(psl, 1051793, 1053908)
+        got = _targetToQueryMap(psl, 1051793, 1053908, '+')
         self.assertEqual((('blk', None, 1780, 1823, None, '+', None, 1051793, 1051836, None, '+'),
                           ('gap', 1823, None, None, 1823, '+', None, 1051836, 1053014, None, '+'),
                           ('blk', None, 1823, 2517, None, '+', None, 1053014, 1053708, None, '+'),
@@ -74,14 +74,14 @@ class TargetToQueryTests(TestCaseBase):
     def testDoubleDel1(self):
         "gap with deletions on both sizes, query one a single base"
         psl = splitToPsl(_pslDoubleDel1)
-        got = _targetToQueryMap(psl, 151283730, 151370810)
+        got = _targetToQueryMap(psl, 151283730, 151370810, '+')
         self.assertEqual((('blk', None, 1580, 1590, None, '-', None, 151283730, 151283740, None, '+'),
                           ('gap', 1590, None, None, 1591, '-', None, 151283740, 151370804, None, '+'),
                           ('blk', None, 1591, 1593, None, '-', None, 151370804, 151370806, None, '+'),
                           ('gap', 1593, None, None, 1593, '-', None, 151370806, 151370807, None, '+'),
                           ('blk', None, 1593, 1596, None, '-', None, 151370807, 151370810, None, '+')),
                          got)
-        got = _queryToTargetMap(psl, 1408, 1784)
+        got = _queryToTargetMap(psl, 1408, 1784, '-')
         self.assertEqual((('blk', None, 1408, 1590, None, '-', None, 151283558, 151283740, None, '+'),
                           ('gap', None, 1590, 1591, None, '-', 151283740, None, None, 151370804, '+'),
                           ('blk', None, 1591, 1593, None, '-', None, 151370804, 151370806, None, '+'),
@@ -93,28 +93,28 @@ class TargetToQueryTests(TestCaseBase):
     def testDoubleDel1ToPsl(self):
         "gap with deletions on both sizes, query one a single base, to a PSL"
         mapPsl = splitToPsl(_pslDoubleDel1)
-        gotPsl = PslMap(mapPsl).targetToQueryMapPsl(151283730, 151370810)
+        gotPsl = PslMap(mapPsl).targetToQueryMapPsl(151283730, 151370810, '+')
         self.assertEqual(['15', '0', '0', '0', '1', '1', '2', '87065', '-', 'NM_017069.1-1.1', '1792', '196', '212', 'chrX', '154913754', '151283730', '151370810', '3', '10,2,3,', '1580,1591,1593,', '151283730,151370804,151370807,'],
                          gotPsl.toRow())
-        gotPsl = PslMap(mapPsl).queryToTargetMapPsl(151283730, 151370810)
+        gotPsl = PslMap(mapPsl).queryToTargetMapPsl(151283730, 151370810, '-')
         self.assertEqual(None, gotPsl)
 
 class QueryToTargetTests(TestCaseBase):
     def testPosMRna(self):
         psl = splitToPsl(_pslPosMRna)
         # within a single block
-        got = _queryToTargetMap(psl, 96, 97)
+        got = _queryToTargetMap(psl, 96, 97, '+')
         self.assertEqual(got, (('blk', None, 96, 97, None, '+', None, 1024444, 1024445, None, '+'),))
 
         # crossing gaps
-        got = _queryToTargetMap(psl, 50, 340)
+        got = _queryToTargetMap(psl, 50, 340, '+')
         self.assertEqual((('blk', None, 50, 119, None, '+', None, 1024398, 1024467, None, '+'),
                           ('blk', None, 119, 290, None, '+', None, 1028428, 1028599, None, '+'),
                           ('blk', None, 290, 340, None, '+', None, 1031868, 1031918, None, '+')),
                          got)
 
         # gap after
-        got = _queryToTargetMap(psl, 1780, 2537)
+        got = _queryToTargetMap(psl, 1780, 2537, '+')
         self.assertEqual((('blk', None, 1780, 1823, None, '+', None, 1051793, 1051836, None, '+'),
                           ('blk', None, 1823, 2517, None, '+', None, 1053014, 1053708, None, '+'),
                           ('gap', None, 2517, 2537, None, '+', 1053708, None, None, None, '+')),
@@ -126,7 +126,7 @@ class QueryToTargetTests(TestCaseBase):
 
         # within a single block and on neg strand
         pslNegMrna = splitToPsl(_pslNegMrna)
-        got = _queryToTargetMap(pslNegMrna, 0, 100)
+        got = _queryToTargetMap(pslNegMrna, 0, 100, '-')
         self.assertEqual((('gap', None, 0, 1, None, '-', None, None, None, 135605109, '+'),
                           ('blk', None, 1, 100, None, '-', None, 135605109, 135605208, None, '+')),
                          got)
@@ -134,7 +134,7 @@ class QueryToTargetTests(TestCaseBase):
     def testNegMRnaToPsl(self):
         # within a single block and on neg strand
         pslNegMrna = splitToPsl(_pslNegMrna)
-        gotPsl = PslMap(pslNegMrna).queryToTargetMapPsl(0, 100)
+        gotPsl = PslMap(pslNegMrna).queryToTargetMapPsl(0, 100, '-')
         self.assertEqual(['99', '0', '0', '0', '0', '0', '0', '0', '-', 'NM_017651', '5564', '5464', '5563', 'chr6', '171115067', '135605109', '135605208', '1', '99,', '1,', '135605109,'],
                          gotPsl.toRow())
 
@@ -142,7 +142,7 @@ class QueryToTargetTests(TestCaseBase):
         "gap with deletions on both sizes, query one a single base"
         psl = splitToPsl(_pslDoubleDel1)
         # this includes query deletion on either end
-        got = _queryToTargetMap(psl, 3, 1790, qStrand='+')
+        got = _queryToTargetMap(psl, 3, 1790, '+')
         self.assertEqual((('gap', None, 1387, 1790, None, '+', None, None, None, 151108857, '+'),
                           ('blk', None, 1175, 1387, None, '+', None, 151108857, 151109069, None, '+'),
                           ('blk', None, 1022, 1175, None, '+', None, 151116760, 151116913, None, '+'),
@@ -160,7 +160,7 @@ class QueryToTargetTests(TestCaseBase):
                           ('blk', None, 8, 28, None, '+', None, 151370976, 151370996, None, '+'),
                           ('gap', None, 3, 8, None, '+', 151370996, None, None, None, '+')),
                          got)
-        got = _queryToTargetMap(psl, 2, 1789)  # same range as 3-1790 on - strand
+        got = _queryToTargetMap(psl, 2, 1789, '-')  # same range as 3-1790 on + strand
         self.assertEqual((('gap', None, 2, 405, None, '-', None, None, None, 151108857, '+'),
                           ('blk', None, 405, 617, None, '-', None, 151108857, 151109069, None, '+'),
                           ('blk', None, 617, 770, None, '-', None, 151116760, 151116913, None, '+'),
@@ -189,7 +189,7 @@ class QueryToTargetTests(TestCaseBase):
         mapper = PslMap(splitToPsl(_pslAugustusBlat))
         got = []
         for rng in queryExonRanges:
-            got.extend([_mapToTuple(m) for m in mapper.queryToTargetMap(rng[0], rng[1])])
+            got.extend([_mapToTuple(m) for m in mapper.queryToTargetMap(rng[0], rng[1], '-')])
         got = tuple(got)
         self.assertEqual((('gap', None, 0, 810, None, '-', None, None, None, 38013595, '+'),
                           ('blk', None, 810, 828, None, '-', None, 38013595, 38013613, None, '+'),

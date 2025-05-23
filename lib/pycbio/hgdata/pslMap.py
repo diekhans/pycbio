@@ -2,6 +2,8 @@
 from collections import namedtuple
 from pycbio.hgdata.psl import Psl, PslBlock
 
+_validStrands = ('+', '-')
+
 def _reverseRange(start, end, size):
     "reverse range, if start or end is None, return that value swapped but None"
     return (size - end if end is not None else None,
@@ -120,14 +122,12 @@ class PslMap:
                           None, tRngNext, tRngNextNext, None, tStrand)
         return tRngNextNext, pmr
 
-    def targetToQueryMap(self, tRngStart, tRngEnd, tStrand=None):
-        """Generator map a target range to query ranges using a PSL.  If tStrand is not
-        specified, target range must be match mapping PSL"""
+    def targetToQueryMap(self, tRngStart, tRngEnd, tStrand='+'):
+        """Generator map a target range to query ranges using a PSL."""
+        assert tStrand in _validStrands
         qStrand = self.mapPsl.qStrand
-        if (tStrand is not None) and (tStrand != self.mapPsl.tStrand):
+        if tStrand != self.mapPsl.tStrand:
             tRngStart, tRngEnd = _reverseRange(tRngStart, tRngEnd, self.mapPsl.tSize)
-        else:
-            tStrand = self.mapPsl.tStrand
 
         # deal with gap at beginning
         tRngNext = tRngStart
@@ -190,13 +190,11 @@ class PslMap:
                           None, tRngNext, tRngNextNext, None, tStrand)
         return qRngNextNext, pmr
 
-    def queryToTargetMap(self, qRngStart, qRngEnd, qStrand=None):
-        """Map a query range to target ranges using a PSL.  If qStrand is not
-        specified, query range must match mapping PSL"""
-        if (qStrand is not None) and (qStrand != self.mapPsl.qStrand):
+    def queryToTargetMap(self, qRngStart, qRngEnd, qStrand='+'):
+        """Map a query range to target ranges using a PSL."""
+        assert qStrand in _validStrands
+        if qStrand != self.mapPsl.qStrand:
             qRngStart, qRngEnd = _reverseRange(qRngStart, qRngEnd, self.mapPsl.qSize)
-        else:
-            qStrand = self.mapPsl.qStrand
         tStrand = self.mapPsl.tStrand
 
         # deal with gap at beginning
@@ -227,12 +225,12 @@ class PslMap:
             yield PslMapRange(self.mapPsl, None, max(qRngStart, lastBlk.qEnd), qRngEnd, None, qStrand,
                               lastBlk.tEnd, None, None, None, tStrand)
 
-    def targetToQueryMapPsl(self, tRngStart, tRngEnd, tStrand=None):
-        """Map a target range to query ranges using a PSL and output a PSL. If tStrand is not
-        specified, target range must be match mapping PSL.   Return None if range not mapped."""
+    def targetToQueryMapPsl(self, tRngStart, tRngEnd, tStrand='+'):
+        """Map a target range to query ranges using a PSL and output a PSL.
+        Return None if range not mapped."""
         return _rangesToPsl(self.mapPsl, self.targetToQueryMap(tRngStart, tRngEnd, tStrand))
 
-    def queryToTargetMapPsl(self, qRngStart, qRngEnd, qStrand=None):
-        """Map a query range to query ranges using a PSL and output a PSL. If qStrand is not
-        specified, query range must be match mapping PSL.  Return None if range not mapped."""
+    def queryToTargetMapPsl(self, qRngStart, qRngEnd, qStrand='+'):
+        """Map a query range to query ranges using a PSL and output a PSL.
+        Return None if range not mapped."""
         return _rangesToPsl(self.mapPsl, self.queryToTargetMap(qRngStart, qRngEnd, qStrand))
