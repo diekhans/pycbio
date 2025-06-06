@@ -126,8 +126,9 @@ def createLift(asmReport, filterFn, fromIdType, toIdType, cnvInfo, outFh):
             createLiftRec(seq, fromIdType, toIdType, cnvInfo, outFh)
 
 def makePsl(seq, qName, tName):
-    psl = Psl.create(qName, seq.sequenceLength, 0, seq.sequenceLength,
-                     tName, seq.sequenceLength, 0, seq.sequenceLength, '+')
+    psl = Psl.create(qName=qName, qSize=seq.sequenceLength, qStart=0, qEnd=seq.sequenceLength,
+                     tName=tName, tSize=seq.sequenceLength, tStart=0, tEnd=seq.sequenceLength,
+                     strand='+')
     psl.addBlock(PslBlock(0, 0, seq.sequenceLength))
     psl.match = seq.sequenceLength
     return psl

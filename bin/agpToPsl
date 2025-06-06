@@ -93,8 +93,9 @@ def loadComponentLocalIdMap(componentLocalId2Acc):
 
 def recToPsl(rec, objectSizeMap, componentSizeMap, componentLocalIdMap):
     compName = componentLocalIdMap(rec.component.name)
-    psl = Psl.create(compName, componentSizeMap(compName), rec.component.start, rec.component.end,
-                     rec.object.name, objectSizeMap(rec.object.name), rec.object.start, rec.object.end, rec.component.strand)
+    psl = Psl.create(qName=compName, qSize=componentSizeMap(compName), qStart=rec.component.start, qEnd=rec.component.end,
+                     tName=rec.object.name, tSize=objectSizeMap(rec.object.name), tStart=rec.object.start, tEnd=rec.object.end,
+                     strand=rec.component.strand)
     psl.match = len(rec.object)
     blk = PslBlock(rec.component.start, rec.object.start, len(rec.object))
     psl.blocks.append(blk)

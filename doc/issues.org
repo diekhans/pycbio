@@ -2,6 +2,11 @@
 
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
+
+* should PslReader, etc be __call__ rather than __iter__??
+
+
+
 * can StrEnum replace SymNum?
 maybe with parse function for external values
 but lose numeric values, sometimes used for order.
@@ -108,6 +113,7 @@ or optional
 ** add TsvWriter
 ** clean up TsvRow
 could it be a ObjDict?  Functionally it already is, but doesn't use the code.
+** TsvRow can't be pickled due to link to reader
 ** TsvReader could create named tuples.
 what about the class name and serialization
 maybe just make lighter weight?

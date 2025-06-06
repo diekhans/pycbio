@@ -4,6 +4,7 @@
 
 PYTHON = python3
 FLAKE8 = python3 -m flake8
+PYTEST = pytest
 
 export PYTHONPATH:=${root}/lib:${PYTHONPATH}
 ifeq (${PYTHONWARNINGS},)

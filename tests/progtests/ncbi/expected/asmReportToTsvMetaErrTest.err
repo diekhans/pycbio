@@ -1,2 +1,3 @@
 AssemblyReportException: metadata field(s) not in this assembly report: Fred_Flintstone
 Note: Metadata names in the file are convert to lower cases and have spaces replaced with underscore
+Specify --log-debug for details
