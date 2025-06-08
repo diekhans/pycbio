@@ -68,10 +68,10 @@ def _initObjDict(od):
     od.three = "value 3"
 
 def _checkObjDict(od):
-    assert od.one, "value 1"
-    assert od["one"], "value 1"
-    assert od.two, "value 2"
-    assert od["two"], "value 2"
+    assert od.one == "value 1"
+    assert od["one"] == "value 1"
+    assert od.two == "value 2"
+    assert od["two"] == "value 2"
     assert tuple(od.items()) == (('one', 'value 1'), ('two', 'value 2'), ('three', 'value 3'))
     with pytest.raises(AttributeError):
         od.ten
@@ -124,11 +124,11 @@ def test_json_pickle_derived(request):
 def test_json_load():
     objs = json.loads(simpleJson, object_pairs_hook=ObjDict)
     assert isinstance(objs, list)
-    assert 2, len(objs)
+    assert len(objs) == 2
     obj = objs[0]
     assert isinstance(obj, ObjDict)
-    assert 'value 1', obj['one']
-    assert 'value 2', obj.two
+    assert obj['one'] == 'value 1'
+    assert obj.two == 'value 2'
 
 def test_recursive_obj_dict():
     # ObjDict with dict sub objects being turned into ObjDicts
@@ -137,8 +137,8 @@ def test_recursive_obj_dict():
     assert isinstance(obj.fldA, ObjDict)
     assert isinstance(obj.fldA.fldB, ObjDict)
     fldB = obj.fldA.fldB
-    assert fldB.first, "Fred"
-    assert fldB.last, "Flintstone"
+    assert fldB.first == "Fred"
+    assert fldB.last == "Flintstone"
 
 ####
 # DefaultObjDict tests
@@ -148,10 +148,10 @@ def _initDefaultObjDict(od):
     od["two"].append("value 2.1")
 
 def _checkDefaultObjDict(od):
-    assert od.one, ["value 1.1"]
-    assert od["one"], ["value 1.1"]
-    assert od.two, ["value 2.1"]
-    assert od["two"], ["value 2.1"]
+    assert od.one == ["value 1.1"]
+    assert od["one"] == ["value 1.1"]
+    assert od.two == ["value 2.1"]
+    assert od["two"] == ["value 2.1"]
     assert tuple(od.items()) == (('one', ['value 1.1']), ('two', ['value 2.1']))
 
 def _runDefaultObjDictTest(od):
@@ -164,7 +164,7 @@ def _runDefaultObjDictTest(od):
     del od.two
     assert tuple(od.items()) == (('one', ['value 1.1']),)
 
-    assert "value 1.1", od.one[0]
+    assert od.one[0] == "value 1.1"
     assert od.ten == []    # creates default
 
 def test_default_list():
@@ -196,8 +196,8 @@ def X_test_default_json_pickle(request):
 def test_default_json_load():
     objs = json.loads(simpleJson, object_pairs_hook=defaultObjDictJsonHook(list))
     assert isinstance(objs, list)
-    assert 2, len(objs)
+    assert len(objs) == 2
     obj = objs[0]
     assert isinstance(obj, DefaultObjDict)
-    assert 'value 1', obj['one']
-    assert 'value 2', obj.two
+    assert obj['one'] == 'value 1'
+    assert obj.two == 'value 2'
