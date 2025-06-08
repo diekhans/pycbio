@@ -1,3 +1,34 @@
+"""
+Various functions to support testing with pytest
+
+Copyright (c) 2024-2025, Mark Diekhans
+Copyright (c) 2024-2025, The Regents of the University of California
+"""
+import pytest
+import sys
+import os
+import os.path as osp
+import re
+import difflib
+
+def safe_test_id(in_id):
+    """clean up a test id so it can be used as a file name on output
+    by changing `/' to `_'"""
+    return in_id.replace('/', '_')
+
+
+def get_test_id(request):
+    """request object is a standard parameter that can added to a test function"""
+    return osp.basename(request.node.nodeid)
+
+def get_test_dir(request):
+    """Find test directory, which is were the current test_* file is at"""
+    return os.path.dirname(str(request.node.fspath))
+
+def get_test_input_file(request, fname):
+    """Get a path to a file in the test input directory"""
+    return osp.join(get_test_dir(request), "input", fname)
+
 def get_test_output_dir(request):
     """get the path to the output directory to use for this test, create if it doesn't exist"""
     outdir = osp.join(get_test_dir(request), "output")
