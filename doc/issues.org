@@ -262,9 +262,23 @@ should also handle config hierarchy (cmdline -> config file -> defaults)
 ** could ObjDict be a types.SimpleNamespace ?
 ** vars doesn't work with ObjDict
 ** DefaultObjDict jsonpickle doesn't work (see disabled in objDictTests.py)
-this is hard because one needs to be pickle default_factory, which can be
+*** this is hard because one needs to be pickle default_factory, which can be
 a class or function.
 seems like you can: https://medium.com/@emlynoregan/serialising-all-the-functions-in-python-cd880a63b591
+*** when jsonpickle loaded, it adds fields
+ ('__dict__', []), ('__getnewargs__', []), ('__getnewargs_ex__', []), ('__getinitargs__', []), ('_jsonpickle_exclude', []), ('default_factory', <class 'list'>))
+ not sure why.  
+
+**** Can handle default_factory with
+def __getstate__(self):
+    return {'default_factory': self.default_factory, **dict(self)}
+
+def __setstate__(self, state):
+    factory = state.pop('default_factory', None)
+    self.__init__(factory)
+    self.update(state)
+
+
 
 ** objDict.py remove dup code with a mixin?
 

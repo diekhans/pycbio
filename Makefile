@@ -14,6 +14,12 @@ libcomp:
 test:
 	cd tests && ${MAKE} test
 
+libtest:
+	cd tests && ${MAKE} libtest
+
+progtest:
+	cd tests && ${MAKE} progtest
+
 lint:
 	${FLAKE8} --color=never lib/pycbio tests/libtests ${pyprogs}
 

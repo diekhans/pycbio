@@ -11,15 +11,9 @@ import os.path as osp
 import re
 import difflib
 
-def safe_test_id(in_id):
-    """clean up a test id so it can be used as a file name on output
-    by changing `/' to `_'"""
-    return in_id.replace('/', '_')
-
-
 def get_test_id(request):
     """request object is a standard parameter that can added to a test function"""
-    return osp.basename(request.node.nodeid)
+    return osp.basename(request.node.nodeid).replace("/", "_")
 
 def get_test_dir(request):
     """Find test directory, which is were the current test_* file is at"""
@@ -40,12 +34,17 @@ def get_test_output_file(request, ext=""):
     which should contain a dot."""
     return osp.join(get_test_output_dir(request), get_test_id(request) + ext)
 
+def get_test_expect_dir(request):
+    """get the path to the expected directory for this test"""
+    expectdir = osp.join(get_test_dir(request), "expected")
+    return expectdir
+
 def get_test_expect_file(request, ext="", *, basename=None):
     """Get path to the expected file, using the current test id and append
     ext. If basename is used, it is instead of the test id, allowing share an
     expected file between multiple tests."""
     fname = basename if basename is not None else get_test_id(request)
-    return osp.join("expected", fname + ext)
+    return osp.join(get_test_expect_dir(request), fname + ext)
 
 def _get_lines(fname):
     with open(fname) as fh:

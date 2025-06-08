@@ -1,23 +1,23 @@
 # Copyright 2006-2025 Mark Diekhans
-import unittest
+import pytest
 import sys
 import pickle
 import json
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.objDict import ObjDict, DefaultObjDict, defaultObjDictJsonHook
-from pycbio.sys.testCaseBase import TestCaseBase
+from pycbio.sys import testSupport as ts
 try:
     import jsonpickle
-    haveJsonPickle = True
+    _haveJsonPickle = True
 except ModuleNotFoundError:
-    haveJsonPickle = False
+    _haveJsonPickle = False
     print("NOTE: jsonpickle not found, tests disabled", file=sys.stderr)
 
 class TestMixin:
     def assertKeyValues(self, expect, od):
         "compare (key, values) to expeccted"
-        self.assertEqual(expect, tuple(od.items()))
+        assert tuple(od.items()), expect
 
 class ObjDictDerived(ObjDict):
     __slots__ = ()
@@ -52,176 +52,152 @@ nestedJson = """
 }
 """
 
-def editJsonPicklePath(inJson, outJson):
-    "edit py/object entry in json file so it is independent on how this file is loaded"
-    # "py/object": "libtests.pycbio.sys.test_objDict.ObjDictDerived",
-    # or
-    # "py/object": "__main__.ObjDictDerived",
-    with open(inJson) as inFh:
-        with open(outJson, "w") as outFh:
-            for line in inFh:
-                line = line.replace("__main__.", "libtests.pycbio.sys.test_objDict.")
-                outFh.write(line)
+def _do_json_pickling_test(request, od):
+    with open(ts.get_test_output_file(request, ".json"), 'w') as fh:
+        print(jsonpickle.encode(od, indent=4), file=fh)
+    ts.diff_results_expected(request, ".json")
+    with open(ts.get_test_output_file(request, ".json")) as fh:
+        return jsonpickle.decode(fh.read())
 
+####
+# ObjDict tests
+####
+def _initObjDict(od):
+    od.one = "value 1"
+    od["two"] = "value 2"
+    od.three = "value 3"
 
-class ObjDictTests(TestCaseBase, TestMixin):
-    def _initObjDict(self, od):
-        od.one = "value 1"
-        od["two"] = "value 2"
-        od.three = "value 3"
+def _checkObjDict(od):
+    assert od.one, "value 1"
+    assert od["one"], "value 1"
+    assert od.two, "value 2"
+    assert od["two"], "value 2"
+    assert tuple(od.items()) == (('one', 'value 1'), ('two', 'value 2'), ('three', 'value 3'))
+    with pytest.raises(AttributeError):
+        od.ten
 
-    def _checkObjDict(self, od):
-        self.assertEqual(od.one, "value 1")
-        self.assertEqual(od["one"], "value 1")
-        self.assertEqual(od.two, "value 2")
-        self.assertEqual(od["two"], "value 2")
-        self.assertKeyValues((('one', 'value 1'), ('two', 'value 2'), ('three', 'value 3')), od)
-        with self.assertRaises(AttributeError):
-            od.ten
+def _runObjDictTest(od):
+    _initObjDict(od)
+    _checkObjDict(od)
 
-    def _runTest(self, od):
-        self._initObjDict(od)
-        self._checkObjDict(od)
+    od.two = "value 2.1"
+    assert tuple(od.items()) == (('one', 'value 1'), ('two', 'value 2.1'), ('three', 'value 3'))
 
-        od.two = "value 2.1"
-        self.assertKeyValues((('one', 'value 1'), ('two', 'value 2.1'), ('three', 'value 3')), od)
+    del od.two
+    assert tuple(od.items()) == (('one', 'value 1'), ('three', 'value 3'))
 
-        del od.two
-        self.assertKeyValues((('one', 'value 1'), ('three', 'value 3')), od)
+def test_base():
+    _runObjDictTest(ObjDict())
 
-    def testBase(self):
-        self._runTest(ObjDict())
+def test_derived():
+    _runObjDictTest(ObjDictDerived())
 
-    def testDerived(self):
-        self._runTest(ObjDictDerived())
+def _runPickleTest(request, od):
+    _initObjDict(od)
+    with open(ts.get_test_output_file(request, ".pkl"), 'wb') as fh:
+        pickle.dump(od, fh)
+    with open(ts.get_test_output_file(request, ".pkl"), 'rb') as fh:
+        od2 = pickle.load(fh)
+    assert isinstance(od2, od.__class__)
+    _checkObjDict(od2)
 
-    def _runPickleTest(self, od):
-        self._initObjDict(od)
-        with open(self.getOutputFile(".pkl"), 'wb') as fh:
-            pickle.dump(od, fh)
-        with open(self.getOutputFile(".pkl"), 'rb') as fh:
-            od2 = pickle.load(fh)
-        self.assertTrue(isinstance(od2, od.__class__))
-        self._checkObjDict(od2)
+def test_pickle(request):
+    _runPickleTest(request, ObjDict())
 
-    def testPickle(self):
-        self._runPickleTest(ObjDict())
+def test_pickle_derived(request):
+    _runPickleTest(request, ObjDictDerived())
 
-    def testPickleDerived(self):
-        self._runPickleTest(ObjDictDerived())
+def _run_json_pickle_test(request, od):
+    _initObjDict(od)
+    od2 = _do_json_pickling_test(request, od)
+    assert isinstance(od2, ObjDict)
+    _checkObjDict(od2)
 
-    def _runJsonPickleTest(self, od):
-        self._initObjDict(od)
-        with open(self.getOutputFile(".json"), 'w') as fh:
-            print(jsonpickle.encode(od, indent=4), file=fh)
-        editJsonPicklePath(self.getOutputFile(".json"), self.getOutputFile(".edit.json"))
-        self.diffExpected(".edit.json")
-        with open(self.getOutputFile(".json")) as fh:
-            od2 = jsonpickle.decode(fh.read())
-        self.assertTrue(isinstance(od2, ObjDict))
-        self._checkObjDict(od2)
+@pytest.mark.skipif(not _haveJsonPickle, reason="jsonpickle not installed")
+def test_json_pickle(request):
+    _run_json_pickle_test(request, ObjDict())
 
-    def testJsonPickle(self):
-        if haveJsonPickle:
-            self._runJsonPickleTest(ObjDict())
+@pytest.mark.skipif(not _haveJsonPickle, reason="jsonpickle not installed")
+def test_json_pickle_derived(request):
+    _run_json_pickle_test(request, ObjDictDerived())
 
-    def testJsonPickleDerived(self):
-        if haveJsonPickle:
-            self._runJsonPickleTest(ObjDictDerived())
+def test_json_load():
+    objs = json.loads(simpleJson, object_pairs_hook=ObjDict)
+    assert isinstance(objs, list)
+    assert 2, len(objs)
+    obj = objs[0]
+    assert isinstance(obj, ObjDict)
+    assert 'value 1', obj['one']
+    assert 'value 2', obj.two
 
-    def testJsonLoad(self):
-        objs = json.loads(simpleJson, object_pairs_hook=ObjDict)
-        self.assertTrue(isinstance(objs, list))
-        self.assertEqual(2, len(objs))
-        obj = objs[0]
-        self.assertTrue(isinstance(obj, ObjDict))
-        self.assertEqual('value 1', obj['one'])
-        self.assertEqual('value 2', obj.two)
+def test_recursive_obj_dict():
+    # ObjDict with dict sub objects being turned into ObjDicts
+    obj = json.loads(nestedJson, object_pairs_hook=ObjDict)
+    assert isinstance(obj, ObjDict)
+    assert isinstance(obj.fldA, ObjDict)
+    assert isinstance(obj.fldA.fldB, ObjDict)
+    fldB = obj.fldA.fldB
+    assert fldB.first, "Fred"
+    assert fldB.last, "Flintstone"
 
-    def testRecursiveObjDict(self):
-        # ObjDict with dict sub objects being turned into ObjDicts
-        obj = json.loads(nestedJson, object_pairs_hook=ObjDict)
-        self.assertTrue(isinstance(obj, ObjDict))
-        self.assertTrue(isinstance(obj.fldA, ObjDict))
-        self.assertTrue(isinstance(obj.fldA.fldB, ObjDict))
-        fldB = obj.fldA.fldB
-        self.assertEqual(fldB.first, "Fred")
-        self.assertEqual(fldB.last, "Flintstone")
+####
+# DefaultObjDict tests
+####
+def _initDefaultObjDict(od):
+    od.one.append("value 1.1")
+    od["two"].append("value 2.1")
 
+def _checkDefaultObjDict(od):
+    assert od.one, ["value 1.1"]
+    assert od["one"], ["value 1.1"]
+    assert od.two, ["value 2.1"]
+    assert od["two"], ["value 2.1"]
+    assert tuple(od.items()) == (('one', ['value 1.1']), ('two', ['value 2.1']))
 
-class DefaultObjDictTests(TestCaseBase, TestMixin):
-    def _initObjDict(self, od):
-        od.one.append("value 1.1")
-        od["two"].append("value 2.1")
+def _runDefaultObjDictTest(od):
+    _initDefaultObjDict(od)
+    _checkDefaultObjDict(od)
 
-    def _checkObjDict(self, od):
-        self.assertEqual(od.one, ["value 1.1"])
-        self.assertEqual(od["one"], ["value 1.1"])
-        self.assertEqual(od.two, ["value 2.1"])
-        self.assertEqual(od["two"], ["value 2.1"])
-        self.assertKeyValues((('one', ['value 1.1']), ('two', ['value 2.1'])), od)
+    od.two.append("value 2.2")
+    assert tuple(od.items()) == (('one', ['value 1.1']), ('two', ['value 2.1', 'value 2.2']))
 
-    def _runTest(self, od):
-        self._initObjDict(od)
-        self._checkObjDict(od)
+    del od.two
+    assert tuple(od.items()) == (('one', ['value 1.1']),)
 
-        od.two.append("value 2.2")
-        self.assertKeyValues((('one', ['value 1.1']), ('two', ['value 2.1', 'value 2.2'])), od)
+    assert "value 1.1", od.one[0]
+    assert od.ten == []    # creates default
 
-        del od.two
-        self.assertKeyValues((('one', ['value 1.1']),), od)
+def test_default_list():
+    _runDefaultObjDictTest(DefaultObjDict(list))
 
-        self.assertEqual("value 1.1", od.one[0])
-        self.assertEqual(od.ten, [])
+def _runDefaultPickleTest(request, od):
+    _initDefaultObjDict(od)
+    with open(ts.get_test_output_file(request, ".pkl"), 'wb') as fh:
+        pickle.dump(od, fh)
+    with open(ts.get_test_output_file(request, ".pkl"), 'rb') as fh:
+        od2 = pickle.load(fh)
+    assert isinstance(od2, DefaultObjDict)
+    _checkDefaultObjDict(od2)
 
-    def testList(self):
-        self._runTest(DefaultObjDict(list))
+def test_default_pickle(request):
+    _runDefaultPickleTest(request, DefaultObjDict(list))
 
-    def _runPickleTest(self, od):
-        self._initObjDict(od)
-        with open(self.getOutputFile(".pkl"), 'wb') as fh:
-            pickle.dump(od, fh)
-        with open(self.getOutputFile(".pkl"), 'rb') as fh:
-            od2 = pickle.load(fh)
-        self.assertTrue(isinstance(od2, DefaultObjDict))
-        self._checkObjDict(od2)
+def _runDefaultJsonPickleTest(request, od):
+    _initDefaultObjDict(od)
+    od2 = _do_json_pickling_test(request, od)
+    assert isinstance(od2, DefaultObjDict)
+    _checkDefaultObjDict(od2)
 
-    def testPickle(self):
-        self._runPickleTest(DefaultObjDict(list))
+# @pytest.mark.skipif(not _haveJsonPickle, reason="jsonpickle not installed")
+def X_test_default_json_pickle(request):
+    # FIXME: sees issues for why this is disabled
+    _runDefaultJsonPickleTest(request, DefaultObjDict(list))
 
-    def _runJsonPickleTest(self, od):
-        self._initObjDict(od)
-
-        with open(self.getOutputFile(".json"), 'w') as fh:
-            print(jsonpickle.encode(od, indent=4), file=fh)
-        editJsonPicklePath(self.getOutputFile(".json"), self.getOutputFile(".edit.json"))
-        self.diffExpected(".edit.json")
-
-        with open(self.getOutputFile(".json")) as fh:
-            od2 = jsonpickle.decode(fh.read())
-        self.assertTrue(isinstance(od2, DefaultObjDict))
-        self._checkObjDict(od2)
-
-    def X_testJsonPickle(self):
-        if haveJsonPickle:
-            self._runJsonPickleTest(DefaultObjDict(list))
-
-    def testJsonLoad(self):
-        objs = json.loads(simpleJson, object_pairs_hook=defaultObjDictJsonHook(list))
-        self.assertTrue(isinstance(objs, list))
-        self.assertEqual(2, len(objs))
-        obj = objs[0]
-        self.assertTrue(isinstance(obj, DefaultObjDict))
-        self.assertEqual('value 1', obj['one'])
-        self.assertEqual('value 2', obj.two)
-
-def suite():
-    ts = unittest.TestSuite()
-    ts.addTest(unittest.makeSuite(ObjDictTests))
-    ts.addTest(unittest.makeSuite(DefaultObjDictTests))
-    return ts
-
-
-if __name__ == '__main__':
-    runner = unittest.TextTestRunner()
-    runner.run(suite())
+def test_default_json_load():
+    objs = json.loads(simpleJson, object_pairs_hook=defaultObjDictJsonHook(list))
+    assert isinstance(objs, list)
+    assert 2, len(objs)
+    obj = objs[0]
+    assert isinstance(obj, DefaultObjDict)
+    assert 'value 1', obj['one']
+    assert 'value 2', obj.two

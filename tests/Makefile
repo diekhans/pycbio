@@ -20,18 +20,16 @@ traceback = --tb=native
 # used to find source of ResourceWarning
 # export PYTHONTRACEMALLOC = 20
 
-subdirs = libtests progtests
+all: libtest progtest
 
-all:
+test: libtest progtest
 
-test: ${subdirs:%=%}
-
-.PHONY: libtests
-libtests:
+.PHONY: libtest
+libtest:
 	${PYTEST} --capture=no ${traceback} --numprocesses=${nproc} --log-cli-level=${loglevel} ${pytest_extra} libtests 
 
-.PHONY: progtests
-progtests:
+.PHONY: progtest
+progtest:
 	(cd progtests && ${MAKE} test)
 
 clean:

@@ -1,0 +1,19 @@
+{
+    "py/object": "pycbio.sys.objDict.DefaultObjDict",
+    "one": [
+        "value 1.1"
+    ],
+    "two": [
+        "value 2.1"
+    ],
+    "__dict__": {
+        "py/id": 3
+    },
+    "__getnewargs__": [],
+    "__getnewargs_ex__": [],
+    "__getinitargs__": [],
+    "_jsonpickle_exclude": [],
+    "default_factory": {
+        "py/type": "builtins.list"
+    }
+}
