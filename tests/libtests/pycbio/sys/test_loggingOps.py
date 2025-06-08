@@ -24,5 +24,5 @@ def testLevelUpper():
     assert loggingOps.parseLevel("INFO") == logging.INFO
 
 def testLevelInvalid():
-    with pytest.raises(ValueError, march='^invalid logging level: "Fred"$'):
+    with pytest.raises(ValueError, match='^invalid logging level: "Fred"$'):
         loggingOps.parseLevel("Fred")
