@@ -1,41 +1,28 @@
 # Copyright 2006-2025 Mark Diekhans
-import unittest
 import sys
+import logging
+import pytest
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
-import logging
 from logging.handlers import SysLogHandler
 from pycbio.sys import loggingOps
-from pycbio.sys.testCaseBase import TestCaseBase
 
+def testFacilityLower():
+    assert loggingOps.parseFacility("daemon") == SysLogHandler.LOG_DAEMON
 
-class LoggingOpsTests(TestCaseBase):
-    def testFacilityLower(self):
-        self.assertEqual(loggingOps.parseFacility("daemon"), SysLogHandler.LOG_DAEMON)
+def testFacilityUpper():
+    assert loggingOps.parseFacility("DAEMON") == SysLogHandler.LOG_DAEMON
 
-    def testFacilityUpper(self):
-        self.assertEqual(loggingOps.parseFacility("DAEMON"), SysLogHandler.LOG_DAEMON)
+def testFacilityInvalid():
+    with pytest.raises(ValueError, match='^invalid syslog facility: "Fred"$'):
+        loggingOps.parseFacility("Fred")
 
-    def testFacilityInvalid(self):
-        with self.assertRaisesRegex(ValueError, '^invalid syslog facility: "Fred"$'):
-            loggingOps.parseFacility("Fred")
+def testLevelLower():
+    assert loggingOps.parseLevel("info") == logging.INFO
 
-    def testLevelLower(self):
-        self.assertEqual(loggingOps.parseLevel("info"), logging.INFO)
+def testLevelUpper():
+    assert loggingOps.parseLevel("INFO") == logging.INFO
 
-    def testLevelUpper(self):
-        self.assertEqual(loggingOps.parseLevel("INFO"), logging.INFO)
-
-    def testLevelInvalid(self):
-        with self.assertRaisesRegex(ValueError, '^invalid logging level: "Fred"$'):
-            loggingOps.parseLevel("Fred")
-
-
-def suite():
-    ts = unittest.TestSuite()
-    ts.addTest(unittest.makeSuite(LoggingOpsTests))
-    return ts
-
-
-if __name__ == '__main__':
-    unittest.main()
+def testLevelInvalid():
+    with pytest.raises(ValueError, march='^invalid logging level: "Fred"$'):
+        loggingOps.parseLevel("Fred")
