@@ -1,40 +1,27 @@
 # Copyright 2006-2025 Mark Diekhans
-import unittest
 import os
 import sys
 import subprocess
+import re
 myDir = os.path.normpath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(myDir, "../../../../lib"))
-from pycbio.sys.testCaseBase import TestCaseBase
+from pycbio.sys import testSupport as ts
 
-class DumpStackTests(TestCaseBase):
-    def testDumpStack(self):
-        outf = self.getOutputFile('err')
-        with open(outf, "w") as outfh:
-            subprocess.check_call([sys.executable, os.path.join(myDir, "tryDumpStack.py")], stderr=outfh)
-        with open(outf) as outfh:
-            errout = outfh.read()
-        self.assertRegex(errout, ".*foo2.*")
-        self.assertRegex(errout, ".*foo3.*")
-        self.assertRegex(errout, ".*stack traces.*")
+def _runTestCmd(request, prog):
+    outf = ts.get_test_output_file(request, 'err')
+    with open(outf, "w") as outfh:
+        subprocess.check_call([sys.executable, os.path.join(myDir, prog)], stderr=outfh)
+    with open(outf) as outfh:
+        return outfh.read()
 
-class TraceTests(TestCaseBase):
-    def testTrace(self):
-        outf = self.getOutputFile('err')
-        with open(outf, "w") as outfh:
-            subprocess.check_call([sys.executable, os.path.join(myDir, "tryTrace.py")], stderr=outfh)
-        with open(outf) as outfh:
-            errout = outfh.read()
-        self.assertRegex(errout, "foo2()")
-        self.assertRegex(errout, "foo3()")
-        self.assertRegex(errout, "cnt5 = cnt4 \\+ 1")
+def testDumpStack(request):
+    errout = _runTestCmd(request, "tryDumpStack.py")
+    assert re.search(".*foo2.*", errout)
+    assert re.search(".*foo3.*", errout)
+    assert re.search(".*stack traces.*", errout)
 
-def suite():
-    ts = unittest.TestSuite()
-    ts.addTest(unittest.makeSuite(DumpStackTests))
-    ts.addTest(unittest.makeSuite(TraceTests))
-    return ts
-
-
-if __name__ == '__main__':
-    unittest.main()
+def testTrace(request):
+    errout = _runTestCmd(request, "tryTrace.py")
+    assert re.search("foo2()", errout)
+    assert re.search("foo3()", errout)
+    assert re.search("cnt5 = cnt4 \\+ 1", errout)
