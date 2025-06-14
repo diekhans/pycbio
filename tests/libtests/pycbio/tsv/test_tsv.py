@@ -4,11 +4,12 @@ import unittest
 import sys
 import math
 from csv import excel_tab, excel
+import pickle
 import pipettor
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from collections import namedtuple
-from pycbio.tsv import TsvTable, TsvReader, TsvError, tsvRowToDict, printf_basic_dialect
+from pycbio.tsv import TsvReader, tsvRowToDict, printf_basic_dialect
 from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.hgdata.autoSql import intArrayType
 
@@ -31,11 +32,11 @@ def _onOffFmt(val):
 
 class ReadTests(TestCaseBase):
     def testLoad(self):
-        tsv = TsvTable(self.getInputFile("mrna1.tsv"))
-        self.assertEqual(len(tsv), 10)
-        for r in tsv:
+        rows = [r for r in TsvReader(self.getInputFile("mrna1.tsv"))]
+        self.assertEqual(len(rows), 10)
+        for r in rows:
             self.assertEqual(len(r), 22)
-        r = tsv[0]
+        r = rows[0]
         self.assertEqual(r["qName"], "BC032353")
         self.assertEqual(r[10], "BC032353")
         self.assertEqual(r.qName, "BC032353")
@@ -49,38 +50,37 @@ class ReadTests(TestCaseBase):
         d = tsvRowToDict(r)
         self.assertEqual(d["qName"], "BC032353")
 
-    def testMultiIdx(self):
-        tsv = TsvTable(self.getInputFile("mrna1.tsv"), multiKeyCols=("tName", "tStart"))
-        rows = tsv.idx.tName["chr1"]
-        self.assertEqual(len(rows), 10)
-        self.assertEqual(rows[1].qName, "AK095183")
-
-        rows = tsv.idx.tStart["4268"]
-        self.assertEqual(len(rows), 5)
-        self.assertEqual(rows[0].qName, "BC015400")
-
-    def doTestColType(self, inFile):
+    def _doReadColTypes(self, inFile):
         typeMap = {"intCol": int, "floatCol": float, "onOffCol": (_onOffParse, _onOffFmt)}
+        return [r for r in TsvReader(self.getInputFile(inFile), typeMap=typeMap)]
 
-        tsv = TsvTable(self.getInputFile(inFile), typeMap=typeMap)
-
-        r = tsv[0]
+    def _doCheckColTypes(self, rows):
+        r = rows[0]
         self.assertEqual(r.strCol, "name1")
         self.assertEqual(r.intCol, 10)
         self.assertEqual(r.floatCol, 10.01)
         self.assertEqual(str(r), "name1\t10\t10.01\ton")
 
-        r = tsv[2]
+        r = rows[2]
         self.assertEqual(r.strCol, "name3")
         self.assertEqual(r.intCol, 30)
         self.assertEqual(r.floatCol, 30.555)
         self.assertEqual(str(r), "name3\t30\t30.555\toff")
 
+    def _doTestColType(self, inFile):
+        rows = self._doReadColTypes(inFile)
+        self._doCheckColTypes(rows)
+
     def testColType(self):
-        self.doTestColType("types.tsv")
+        self._doTestColType("types.tsv")
 
     def testColCommentType(self):
-        self.doTestColType("typesComment.tsv")
+        self._doTestColType("typesComment.tsv")
+
+    def testColTypePickle(self):
+        rows = self._doReadColTypes("types.tsv")
+        rowsp = pickle.loads(pickle.dumps(rows))
+        self._doCheckColTypes(rowsp)
 
     def testColTypeDefault(self):
         # default to int type
@@ -88,9 +88,9 @@ class ReadTests(TestCaseBase):
                    "blockSizes": intArrayType,
                    "qStarts": intArrayType, "tStarts": intArrayType}
 
-        tsv = TsvTable(self.getInputFile("mrna1.tsv"), uniqKeyCols="qName",
-                       typeMap=typeMap, defaultColType=int)
-        r = tsv.idx.qName["AK095183"]
+        rowTbl = {r.qName: r for r in TsvReader(self.getInputFile("mrna1.tsv"),
+                                                typeMap=typeMap, defaultColType=int)}
+        r = rowTbl["AK095183"]
         self.assertEqual(r.tStart, 4222)
         self.assertEqual(r.tEnd, 19206)
         self.assertEqual(r.tName, "chr1")
@@ -101,29 +101,22 @@ class ReadTests(TestCaseBase):
         for i in range(len(tStarts)):
             self.assertEqual(r.tStarts[i], tStarts[i])
 
-    def testMissingIdxCol(self):
-        with self.assertRaises(TsvError) as cm:
-            TsvTable(self.getInputFile("mrna1.tsv"), multiKeyCols=("noCol",))
-        if False:
-            # FIXME: need to deal with chained exception compatiblity
-            # should have chained exception
-            self.assertNotEqual(cm.exception.cause, None)
-            self.assertEqual(cm.exception.cause.message, "key column \"noCol\" is not defined")
-
     def testColNameMap(self):
         typeMap = {"int_col": int, "float_col": float, "onOff_col": (_onOffParse, _onOffFmt)}
 
-        tsv = TsvTable(self.getInputFile('typesColNameMap.tsv'), typeMap=typeMap, columnNameMapper=lambda s: s.replace(' ', '_'))
-        self.assertEqual(tsv.columns, ['str_col', 'int_col', 'float_col', 'onOff_col'])
-        self.assertEqual(tsv.extColumns, ['str col', 'int col', 'float col', 'onOff col'])
+        rows = [r for r in TsvReader(self.getInputFile('typesColNameMap.tsv'), typeMap=typeMap,
+                                     columnNameMapper=lambda s: s.replace(' ', '_'))]
+        specs = rows[0]._columnSpecs_
+        self.assertEqual(specs.columns, ['str_col', 'int_col', 'float_col', 'onOff_col'])
+        self.assertEqual(specs.extColumns, ['str col', 'int col', 'float col', 'onOff col'])
 
-        r = tsv[0]
+        r = rows[0]
         self.assertEqual(r.str_col, "name1")
         self.assertEqual(r.int_col, 10)
         self.assertEqual(r.float_col, 10.01)
         self.assertEqual(str(r), "name1\t10\t10.01\ton")
 
-        r = tsv[2]
+        r = rows[2]
         self.assertEqual(r.str_col, "name3")
         self.assertEqual(r.int_col, 30)
         self.assertEqual(r.float_col, 30.555)
@@ -133,8 +126,8 @@ class ReadTests(TestCaseBase):
         # check column conversion without a rowClass
         typeMap = {"intCol": int, "floatCol": float, "onOffCol": (_onOffParse, _onOffFmt)}
         tsvReader = TsvReader(self.getInputFile('typesNan.tsv'), typeMap=typeMap, rowClass=(lambda rdr, row: row))
-        tsv = [r for r in tsvReader]
-        r = tsv[1]
+        rows = [r for r in tsvReader]
+        r = rows[1]
         # will get ['name2', 20, math.nan, False], but nan != an
         self.assertEqual(r[0:2], ['name2', 20])
         self.assertTrue(math.isnan(r[2]))
@@ -143,22 +136,11 @@ class ReadTests(TestCaseBase):
         self.assertEqual(tsvReader.formatRow(r), ['name2', '20', 'nan', 'off'])
 
     def testWrite(self):
-        tsv = TsvTable(self.getInputFile("mrna1.tsv"), uniqKeyCols="qName")
-        fh = open(self.getOutputFile(".tsv"), "w")
-        tsv.write(fh)
-        fh.close()
-        self.diffExpected(".tsv")
-
-    def testAddColumn(self):
-        tsv = TsvTable(self.getInputFile("mrna1.tsv"), uniqKeyCols="qName")
-        tsv.addColumn("joke")
-        i = 0
-        for row in tsv:
-            row.joke = i
-            i += 1
-        fh = open(self.getOutputFile(".tsv"), "w")
-        tsv.write(fh)
-        fh.close()
+        rows = [r for r in TsvReader(self.getInputFile("mrna1.tsv"))]
+        with open(self.getOutputFile(".tsv"), "w") as fh:
+            rows[0].writeHeader(fh)
+            for r in rows:
+                r.write(fh)
         self.diffExpected(".tsv")
 
     def readMRna1(self, inFile):
@@ -182,20 +164,11 @@ class ReadTests(TestCaseBase):
         pipettor.run(["bzip2", "-c", self.getInputFile("mrna1.tsv")], stdout=tsvBz)
         self.readMRna1(tsvBz)
 
-    def testDupColumn(self):
-        with self.assertRaises(TsvError) as cm:
-            TsvTable(self.getInputFile("dupCol.tsv"))
-        self.assertEqual(str(cm.exception.__cause__), "Duplicate column name: 'col1'")
-
     def testAllowEmptyReader(self):
         cnt = 0
         for row in TsvReader("/dev/null", allowEmpty=True):
             cnt += 1
         self.assertEqual(cnt, 0)
-
-    def testAllowEmptyTbl(self):
-        tbl = TsvTable("/dev/null", allowEmpty=True)
-        self.assertEqual(len(tbl), 0)
 
     def testPrintfed(self):
         # created with escaped quotes in data

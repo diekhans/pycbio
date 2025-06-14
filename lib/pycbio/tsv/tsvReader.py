@@ -37,6 +37,80 @@ def _dehashHeader(row):
         # sometimes there is a space after #
         row[0] = row[0][1:].strip()
 
+class ColumnSpecs:
+    """Information about columns that is disconnect from the reader.
+    This allows rows to pickled with minimal inforation."""
+    __slots = ("columns", "extColumns", "columnMap", "colTypes")
+
+    def __init__(self, columns, extColumns, columnMap, types):
+        self.columns = columns
+        self.extColumns = extColumns
+        self.columnMap = columnMap
+        self.types = types
+
+    def _fmtColWithTypes(self, row, iCol):
+        col = row[iCol]
+        if col is None:
+            return ""
+        ct = self.types[iCol]
+        if type(ct) is tuple:
+            return ct[1](col)
+        else:
+            return str(col)
+
+    def _fmtRowWithTypes(self, row):
+        outrow = []
+        for iCol in range(len(self.columns)):
+            outrow.append(self._fmtColWithTypes(row, iCol))
+        return outrow
+
+    def _fmtRowNoTypes(self, row):
+        outrow = []
+        for iCol in range(len(self.columns)):
+            col = row[iCol]
+            outrow.append(str(col) if col is not None else '')
+        return outrow
+
+    def formatRow(self, row):
+        "format row to a list of strings given specified types"
+        if self.types is not None:
+            return self._fmtRowWithTypes(row)
+        else:
+            return self._fmtRowNoTypes(row)
+
+def _getColTypes(columns, typeMap, defaultColType):
+    "save col types as column indexed list"
+    if typeMap is not None:
+        return [typeMap.get(col, defaultColType) for col in columns]
+    elif defaultColType is not None:
+        return len(columns) * [defaultColType]
+    else:
+        return None
+
+def _setupColumns(columnNames, columnNameMapper):
+    # n.b. columns could be passed in from client, must copy
+    i = 0
+    columns = []
+    extColumns = [] if columnNameMapper is not None else columns
+    colMap = {}
+    for col in columnNames:
+        if columnNameMapper is not None:
+            extColumns.append(col)
+            col = columnNameMapper(col)
+        columns.append(col)
+        if col in colMap:
+            raise TsvError("Duplicate column name: '{}'".format(col))
+        colMap[col] = i
+        i += 1
+    return columns, extColumns, colMap
+
+def _columnsSpecBuild(columnNames, typeMap, defaultColType, columnNameMapper):
+    "columns maybe either specified or from the header"
+    columns, extColumns, columnMap = _setupColumns(columnNames, columnNameMapper)
+    colTypes = _getColTypes(columns, typeMap, defaultColType)
+    return ColumnSpecs(columns, extColumns, columnMap, colTypes)
+
+
 class TsvReader:
     """Class for reading TSV files.  Reads header and builds column name to
     column index map.  After a next, object contains a row and each column
@@ -48,57 +122,58 @@ class TsvReader:
     are ignored and not part of the first column name.
     """
 
-    def __init__(self, fileName, *, rowClass=None, typeMap=None, defaultColType=None, columns=None, columnNameMapper=None,
-                 ignoreExtraCols=False, inFh=None, allowEmpty=False, dialect=csv.excel_tab,
+    def __init__(self, fileName, *, rowClass=None, typeMap=None, defaultColType=None,
+                 columns=None, columnNameMapper=None, ignoreExtraCols=False,
+                 inFh=None, allowEmpty=False, dialect=csv.excel_tab,
                  encoding=None, errors=None):
-        """Open TSV file and read header into object.  Removes leading # from
-        UCSC header.
+        """
+        Open TSV file and read header into object. Removes leading '#' from
+        UCSC-style headers.
 
-        fileName - name of file, opened unless inFh is specified
-        rowClass - class or factory function to use for a row. Must take
-            TsvReader and a list of columns values.
-        typeMap - if specified, it maps column names to the type objects to
-            use to convert the column.  Unspecified columns will not be
-            converted. Key is the column name, value can be either a type
-            or a tuple of (parseFunc, formatFunc).  If a type is use,
-            str() is used to convert to a printable value.
-        defaultColType - if specified, type of unspecified columns
-        columns - if specified, the column names to use.  The header
-            should not be in the file.
-        columnNameMapper - function to map column names to the internal name.
-        ignoreExtraCols - should extra columns be ignored?
-        inFh - If not None, this is used as the open file, rather than
-          opening it.  Will not be closed.
-        allowEmpty - an empty input results in an EOF rather than an error.
-        dialect - a csv dialect object or name.
+        :param fileName: Path to the TSV file, unless `inFh` is provided.
+        :param rowClass: Class or factory to construct a row. Called with the
+            TsvReader instance and a list of string column values.
+        :param typeMap: Dictionary mapping column names to either a type or a
+            (parseFunc, formatFunc) tuple. Unlisted columns are left as strings.
+            If `columnNameMapper` is used, the keys should be mapped names.
+        :param defaultColType: Type to use for columns not listed in `typeMap`.
+        :param columns: List of column names to use if no header is present in
+            the file.
+        :param columnNameMapper: Function to map raw column names to internal
+            names before applying `typeMap`.
+        :param ignoreExtraCols: If True, extra columns in rows are ignored.
+        :param inFh: An open file-like object to read from instead of `fileName`.
+            It will not be closed automatically.
+        :param allowEmpty: If True, treat empty input as EOF rather than error.
+        :param dialect: A `csv.Dialect` instance or dialect name.
+        :param encoding: Optional text encoding (e.g., 'utf-8').
+        :param errors: Optional error handling strategy (e.g., 'strict',
+            'replace', 'ignore').
         """
         self.fileName = fileName
-        self.columns = []
-        # external column name, before mapping with columnNameMapper
-        if columnNameMapper is None:
-            self.extColumns = self.columns
-        else:
-            self.extColumns = []
-        self.colMap = {}
-        self.fileName = fileName
-        self.rowClass = rowClass
-        if rowClass is None:
-            self.rowClass = TsvRow
-        self.colTypes = None
-        self.ignoreExtraCols = ignoreExtraCols
         self.inFh = None
         self._shouldClose = False
         self._reader = None
-
+        self.rowClass = rowClass
+        if rowClass is None:
+            self.rowClass = TsvRow
+        self.ignoreExtraCols = ignoreExtraCols
         try:
-            self._openTsv(fileName, typeMap, defaultColType, columns, columnNameMapper, inFh,
-                          allowEmpty, dialect, encoding, errors)
+            self._openTsv(fileName, inFh, dialect, encoding, errors)
         except Exception as ex:
             self._closeTsv()
             raise TsvError(f"open of TSV failed {fileName}") from ex
 
-    def _openTsv(self, fileName, typeMap, defaultColType, columns, columnNameMapper, inFh,
-                 allowEmpty, dialect, encoding, errors):
+        if columns is None:
+            columns = self._readHeader(allowEmpty)
+        self.columnSpecs = _columnsSpecBuild(columns, typeMap, defaultColType, columnNameMapper)
+
+    @property
+    def columns(self):
+        "column names after name mapping"
+        return self.columnSpecs.columns
+
+    def _openTsv(self, fileName, inFh, dialect, encoding, errors):
         if inFh is not None:
             self.inFh = inFh
             self._shouldClose = False
@@ -106,10 +181,6 @@ class TsvReader:
             self.inFh = fileOps.opengz(fileName, encoding=encoding, errors=errors)
             self._shouldClose = True
         self._reader = csv.reader(self.inFh, dialect=dialect)
-        if columns is None:
-            columns = self._readHeader(allowEmpty)
-        self._setupColumns(columns, columnNameMapper)
-        self._initColTypes(typeMap, defaultColType)
 
     def _closeTsv(self):
         "close if we opened the file"
@@ -137,58 +208,31 @@ class TsvReader:
                 raise TsvError("empty TSV file", reader=self)
             return []
 
-    def _setupColumns(self, columns, columnNameMapper):
-        # n.b. columns could be passed in from client, must copy
-        i = 0
-        for col in columns:
-            if columnNameMapper is not None:
-                self.extColumns.append(col)
-                col = columnNameMapper(col)
-            self.columns.append(col)
-            if col in self.colMap:
-                raise TsvError("Duplicate column name: '{}'".format(col))
-            self.colMap[col] = i
-            i += 1
-
-    def _setColumnTypes(self, typeMap, defaultColType):
-        "build from type map"
-        self.colTypes = []
-        for col in self.columns:
-            self.colTypes.append(typeMap.get(col, defaultColType))
-
-    def _setDefaultColumnTypes(self, defaultColType):
-        "default all colums"
-        self.colTypes = []
-        for i in range(len(self.columns)):
-            self.colTypes.append(defaultColType)
-
-    def _initColTypes(self, typeMap, defaultColType):
-        "save col types as column indexed list"
-        if typeMap is not None:
-            self._setColumnTypes(typeMap, defaultColType)
-        elif defaultColType is not None:
-            self._setDefaultColumnTypes(defaultColType)
-
     def _parseColumnWithTypeMap(self, row, iCol):
-        ct = self.colTypes[iCol]
+        ct = self.columnSpecs.types[iCol]
         cv = ct[0] if isinstance(ct, tuple) else ct
         try:
             # can be None to have formatter but not parser
             if cv is not None:
                 row[iCol] = cv(row[iCol])
         except Exception as ex:
-            raise TsvError("Error converting TSV column {} ({}) to object, value \"{}\"".format(iCol, self.columns[iCol], row[iCol])) from ex
+            raise TsvError(f"Error converting TSV column {iCol} ({self.columns[iCol]}) to object, value \"{row[iCol]}\"") from ex
 
     def _parseColumns(self, row):
         "converts columns in row in-place, if needed"
-        for iCol in range(len(self.columns)):
+        for iCol in range(len(self.columnSpecs.columns)):
             self._parseColumnWithTypeMap(row, iCol)
 
     def _constructRow(self, row):
-        if ((self.ignoreExtraCols and (len(row) < len(self.columns))) or ((not self.ignoreExtraCols) and (len(row) != len(self.columns)))):
-            raise TsvError("row has {} columns, expected {}".format(len(row), len(self.columns)), reader=self)
+        if self.ignoreExtraCols:
+            if len(row) < len(self.columns):
+                raise TsvError(f"row has {len(row)} columns, expected at least {len(self.columns)}", reader=self)
+        else:
+            if len(row) != len(self.columns):
+                raise TsvError(f"row has {len(row)} columns, expected exactly {len(self.columns)}", reader=self)
+
         try:
-            if self.colTypes is not None:
+            if self.columnSpecs.types is not None:
                 self._parseColumns(row)
             return self.rowClass(self, row)
         except Exception as ex:
@@ -203,32 +247,6 @@ class TsvReader:
         finally:
             self._closeTsv()
 
-    def _fmtColWithTypes(self, row, iCol):
-        col = row[iCol]
-        if col is None:
-            return ""
-        ct = self.colTypes[iCol]
-        if type(ct) is tuple:
-            return ct[1](col)
-        else:
-            return str(col)
-
-    def _fmtRowWithTypes(self, row):
-        outrow = []
-        for iCol in range(len(self.columns)):
-            outrow.append(self._fmtColWithTypes(row, iCol))
-        return outrow
-
-    def _fmtRowNoTypes(self, row):
-        outrow = []
-        for iCol in range(len(self.columns)):
-            col = row[iCol]
-            outrow.append(str(col) if col is not None else '')
-        return outrow
-
     def formatRow(self, row):
         "format row to a list of strings given specified types"
-        if self.colTypes is not None:
-            return self._fmtRowWithTypes(row)
-        else:
-            return self._fmtRowNoTypes(row)
+        return self.columnSpecs.formatRow(row)

@@ -113,13 +113,14 @@ or optional
 ** add TsvWriter
 ** clean up TsvRow
 could it be a ObjDict?  Functionally it already is, but doesn't use the code.
-** TsvRow can't be pickled due to link to reader
+** TsvRow carries around two fields from reader, could this be one object?
 ** TsvReader could create named tuples.
 what about the class name and serialization
 maybe just make lighter weight?
 ** tsvreader issues
-*** pass owndership of row to Row instead of having Row inherit from list?
 *** make rowClass (rename rowFactory) so that it can be able to construct and object.  Move parsing of columns outside of tsvRow (good for peewee)
+*** extColumns is not used for writing.  The ColumnSpecs header should be used.
+*** extColumns behavior is not clear, for instance with type map, is it internal or external?
 *** create error with file name/line number
 *** carefully consider naming of functions in Row, as they could conflict with fields.  Maybe put in a base-class??
 *** put in same module as TSV

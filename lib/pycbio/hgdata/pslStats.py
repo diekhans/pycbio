@@ -64,9 +64,9 @@ class PslStats(list):
 
     @staticmethod
     def _determineType(tsv):
-        if "totalAlignedSize" in tsv.colMap:
+        if "totalAlignedSize" in tsv.columnSpecs.columnMap:
             return PslStatsType.OVERALL
-        elif "alnCnt" in tsv.colMap:
+        elif "alnCnt" in tsv.columnSpecs.columnMap:
             return PslStatsType.QUERY
         else:
             return PslStatsType.ALIGN
