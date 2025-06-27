@@ -2,6 +2,7 @@
 """Miscellaneous type operations"""
 # FIXME: move to other modules or move set stuff in here.
 from collections import abc
+from weakref import WeakKeyDictionary
 from pycbio import PycbioException
 
 def isListLike(obj):

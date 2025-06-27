@@ -2,6 +2,7 @@
 import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
+from collections import namedtuple
 from pycbio.sys import typeOps
 
 # FIXME: many more tests needed

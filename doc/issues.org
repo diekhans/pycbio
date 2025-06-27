@@ -358,3 +358,38 @@ maybe a single function to parse RGBA and RGB8 strs
 
 
 * pslFromCigar show have a direct function to create a cigar using the tuple
+
+* creating a memoized property function of a namedtuple immutable derived class
+None of these work, since it needs __slots__('__weakref__') but can't
+slows when deriving from named tuple
+
+#+begin_src python
+# cache for instance to dict of memoized properties
+_memo_cache = WeakKeyDictionary()
+
+def cached_immutable_property(method):
+    """
+    This works like functools.cached_property, however
+    it can be used with a class that is immutable. For
+    example, a class derived from a namedtuple with
+    an empty __slots__.
+    """
+    def wrapper(self):
+        cache = _memo_cache.setdefault(self, {})
+        if method.__name__ not in cache:
+            cache[method.__name__] = method(self)
+        return cache[method.__name__]
+    return property(wrapper)
+
+class Point(namedtuple('point', ('x', 'y'))):
+    __slots__ = ()
+
+    @typeOps.cached_immutable_property
+    def norm(self):
+        return (self.x ** 2 + self.y ** 2) ** 0.5
+
+def testNameTupleMemoize():
+    pt = Point(10, 20)
+    print("@@@pt", pt.norm)
+
+#+end_src python
