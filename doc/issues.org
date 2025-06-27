@@ -363,9 +363,25 @@ maybe a single function to parse RGBA and RGB8 strs
 None of these work, since it needs __slots__('__weakref__') but can't
 slows when deriving from named tuple
 
+No method seems to work
+
+** this gets
+Your setup is almost correct, but the TypeError: cannot create weak reference to 'Point' object occurs because:
+• You’re subclassing the result of namedtuple('point', ...), which is a concrete class that does not support weak references.
+• Adding a mixin like CachedImmutablePropertyBase does not help, unless the actual class being returned allows weakrefs (i.e., defines __weakref__ in the same layer).
+
+
+
 #+begin_src python
+from collections import namedtuple
+from weakref import WeakKeyDictionary
+
 # cache for instance to dict of memoized properties
 _memo_cache = WeakKeyDictionary()
+
+class CachedImmutablePropertyBase:
+    #__slots__ = ('__weakref__',)
+    pass
 
 def cached_immutable_property(method):
     """
@@ -381,10 +397,10 @@ def cached_immutable_property(method):
         return cache[method.__name__]
     return property(wrapper)
 
-class Point(namedtuple('point', ('x', 'y'))):
+class Point(namedtuple('point', ('x', 'y')), CachedImmutablePropertyBase):
     __slots__ = ()
 
-    @typeOps.cached_immutable_property
+    @cached_immutable_property
     def norm(self):
         return (self.x ** 2 + self.y ** 2) ** 0.5
 
@@ -392,4 +408,5 @@ def testNameTupleMemoize():
     pt = Point(10, 20)
     print("@@@pt", pt.norm)
 
+testNameTupleMemoize()
 #+end_src python
