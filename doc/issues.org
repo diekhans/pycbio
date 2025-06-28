@@ -357,20 +357,13 @@ maybe a single function to parse RGBA and RGB8 strs
 * check this on the using realpath to find library: https://patmaddox.com/doc/trunk/www/2023-12-sh-relative-shell-script-includes-with-realpath-on-freebsd/
 
 
-* pslFromCigar show have a direct function to create a cigar using the tuple
+* pslFromCigar should have a direct function to create a cigar using the tuple
 
 * creating a memoized property function of a namedtuple immutable derived class
 None of these work, since it needs __slots__('__weakref__') but can't
-slows when deriving from named tuple
+have when deriving from named tuple
 
-See method 2 seems to work
-
-** method 1 does not work:
-Your setup is almost correct, but the TypeError: cannot create weak reference to 'Point' object occurs because:
-• You’re subclassing the result of namedtuple('point', ...), which is a concrete class that does not support weak references.
-• Adding a mixin like CachedImmutablePropertyBase does not help, unless the actual class being returned allows weakrefs (i.e., defines __weakref__ in the same layer).
-
-
+this is seems impossible, GPT claims named tuple is implemented in C
 
 #+begin_src python
 from collections import namedtuple
@@ -411,34 +404,3 @@ def testNameTupleMemoize():
 testNameTupleMemoize()
 #+end_src python
 
-** method 2 from GPT, seems to work, can even add a tuple to cleanup table
-
-#+begin_src python
-import weakref
-
-# Object you can't modify (e.g., a namedtuple or frozen dataclass)
-class ExternalThing:
-    def __init__(self, name):
-        self.name = name
-
-# Side table to track extra data
-cleanup_table = weakref.WeakKeyDictionary()
-
-def track(obj):
-    def cleanup():
-        print(f"{obj.name} is gone (cleanup triggered)")
-    # Wrap cleanup in a weakref finalizer on a proxy object
-    #cleanup_table[obj] = weakref.finalize(obj, cleanup)
-    #cleanup_table[obj] = (weakref.finalize(obj, cleanup), 1)
-    cleanup_table[obj] = {1: weakref.finalize(obj, cleanup), 2:3}
-
-# Example usage1
-x = ExternalThing("Alpha")
-track(x)
-
-y = ExternalThing("Beta")
-track(y)
-
-# Now delete one
-del x  # 🔥 Triggers cleanup when collected
-#+end_src python
