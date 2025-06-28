@@ -3,6 +3,9 @@ include ${root}/defs.mk
 
 export PYTHONPATH:=${root}/lib:libtests:${PYTHONPATH}
 
+# keep pytest xdist from complaining about the terminal
+export TERM=dumb
+
 # override number of process with nproc=0 to run
 # in main process.
 # stdout not echo with mulitple processes

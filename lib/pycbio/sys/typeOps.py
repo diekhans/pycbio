@@ -103,3 +103,39 @@ def attrdict(obj):
         return vars(obj)
     except TypeError:
         return {a: getattr(obj, a) for a in dir(obj)}
+
+
+# Cache for instance to dict of memoized properties. It is keyed by object id
+# and each value is a dict with method name mapped to value
+_memo_cache = dict()
+
+def _obtain_memo_cache_entry(obj):
+    objid = id(obj)
+    entry = _memo_cache.get(objid)
+    if entry is None:
+        entry = _memo_cache[objid] = {}
+    return entry
+
+def cached_immutable_property(method):
+    """
+    This works like functools.cached_property, however
+    it can be used with a class that is immutable, particular
+    namedtuple based class
+
+    The should also be a __del__ function that calls
+    cached_immutable_property_free(self).
+    """
+    def wrapper(self):
+        entry = _obtain_memo_cache_entry(self)
+        # must check, as memo value could be None
+        if method.__name__ in entry:
+            return entry[method.__name__]
+        else:
+            value = entry[method.__name__] = method(self)
+            return value
+    return property(wrapper)
+
+def cached_immutable_property_free(obj):
+    """free memoized values for the object.  Call from __del__"""
+    if id(obj) in _memo_cache:
+        del _memo_cache[id(obj)]
