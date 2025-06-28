@@ -5,8 +5,9 @@ random access uses.
 """
 from pycbio.hgdata.hgSqlite import HgSqliteTable
 from collections import namedtuple
-from pycbio import PycbioException
 from Bio import SeqIO
+from pycbio import PycbioException
+from pycbio.sys import fileOps
 
 
 class Sequence(namedtuple("Sequence",
@@ -50,8 +51,9 @@ class SequenceSqliteTable(HgSqliteTable):
 
     def loadFastaFile(self, faFile):
         """load a FASTA file"""
-        rows = [(faRec.id, str(faRec.seq))
-                for faRec in SeqIO.parse(faFile, "fasta")]
+        with fileOps.opengz(faFile) as fh:
+            rows = [(faRec.id, str(faRec.seq))
+                    for faRec in SeqIO.parse(fh, "fasta")]
         self.loads(rows)
 
     def names(self):
