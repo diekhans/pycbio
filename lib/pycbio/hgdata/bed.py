@@ -1,11 +1,10 @@
 # Copyright 2006-2025 Mark Diekhans
 import copy
-from collections import deque
+from collections import deque, defaultdict, namedtuple
 from pycbio import PycbioException
 from pycbio.sys.color import Color
 from pycbio.tsv.tabFile import TabFile, TabFileReader
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin
-from collections import defaultdict, namedtuple
 
 # FIXME: not complete, needs tests
 # FIXME: really need a better way to deal with derived classes than extraCols
