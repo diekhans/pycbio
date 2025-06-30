@@ -1,5 +1,5 @@
 # Copyright 2006-2025 Mark Diekhans
-"""Miscellaneous command line parsing operations"""
+"""Support for command line parsing"""
 import argparse
 import logging
 from pycbio import NoStackError, exceptionFormat
@@ -16,11 +16,6 @@ def getOptionalArgs(parser, args):
         if (len(act.option_strings) > 0) and (act.dest != 'help'):
             setattr(opts, act.dest, getattr(args, act.dest))
     return opts
-
-def parse(parser):
-    """Call argparse parse_args and return (opts, args)"""
-    args = parser.parse_args()
-    return getOptionalArgs(parser, args), args
 
 class ArgumentParserExtras(argparse.ArgumentParser):
     """Wrapper around ArgumentParser that adds logging
@@ -69,7 +64,7 @@ class ErrorHandler:
     Example:
         def main():
            opts, args = cmd_line_parse()
-           with cmdOps.ErrorHandler():
+           with cli.ErrorHandler():
               real_prog(opts, args.one, args.two)
 
     """

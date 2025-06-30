@@ -5,7 +5,7 @@ import sys
 from os import path as osp
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
-from pycbio.sys import fileOps, cmdOps
+from pycbio.sys import fileOps, cli
 from pycbio.sys.symEnum import SymEnum, SymEnumValue
 from pycbio.hgdata.bed import BedReader, Bed, BedBlock
 
@@ -21,7 +21,7 @@ def parseArgs():
     with one base on each side of the intron, or it can include the adjacent
     exons.
     """
-    parser = cmdOps.ArgumentParserExtras(description=desc)
+    parser = cli.ArgumentParserExtras(description=desc)
     parser.add_argument("--fmt", type=OutputFmt, choices=OutputFmt, default=OutputFmt.intron_blk,
                         help="output format")
     parser.add_argument("--minIntronSize", type=int, default=0,

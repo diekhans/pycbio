@@ -7,7 +7,7 @@ from os import path as osp
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.ncbi.assembly import AssemblyReport, AssemblyReportException, AssemblyReportNotFound
 from pycbio import PycbioException
-from pycbio.sys import fileOps, cmdOps
+from pycbio.sys import fileOps, cli
 from pycbio.sys.symEnum import SymEnum, auto
 from pycbio.hgdata.psl import Psl, PslBlock
 
@@ -47,7 +47,7 @@ Special id types:
     - sequenceNameGenbankAccn - use sequenceName for primary assembly and genbank
       accession for other sequences.
 """
-    parser = cmdOps.ArgumentParserExtras(description=desc)
+    parser = cli.ArgumentParserExtras(description=desc)
     parser.add_argument('--fromIdType', type=IdType, choices=IdType,
                         help="from sequence id type, also id type for sizes")
     parser.add_argument('--toIdType', type=IdType, choices=IdType,
@@ -220,7 +220,7 @@ def ncbiAssemblyReportConvert(opts, assemblyReport, outputType, outFile):
 
 def main():
     opts, args = parseArgs()
-    with cmdOps.ErrorHandler(noStackExcepts=NO_STACK_EXCEPTIONS):
+    with cli.ErrorHandler(noStackExcepts=NO_STACK_EXCEPTIONS):
         ncbiAssemblyReportConvert(opts, args.assemblyReport, args.outputType, args.outFile)
 
 

@@ -6,7 +6,7 @@ from os import path as osp
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.ncbi.assembly import AssemblyReport, AssemblyReportException, AssemblyReportNotFound
-from pycbio.sys import fileOps, cmdOps
+from pycbio.sys import fileOps, cli
 
 NO_STACK_EXCEPTIONS = (AssemblyReportException, AssemblyReportNotFound)
 
@@ -18,7 +18,7 @@ Files are available from:
     ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.36_GRCh38.p10/GCF_000001405.36_GRCh38.p10_assembly_report.txt
 
 """
-    parser = cmdOps.ArgumentParserExtras(description=desc)
+    parser = cli.ArgumentParserExtras(description=desc)
     parser.add_argument('--add-meta', action='append', default=[],
                         help="Add this metadata column to the TSV. Metadata names in the file are convert to lower cases and have spaces replaced with underscore")
     parser.add_argument('--add-meta1', action='append', default=[],
@@ -58,7 +58,7 @@ def ncbiAssemblyReportToTsv(opts, assemblyReport, outTsv):
 
 def main():
     opts, args = parseArgs()
-    with cmdOps.ErrorHandler(noStackExcepts=NO_STACK_EXCEPTIONS):
+    with cli.ErrorHandler(noStackExcepts=NO_STACK_EXCEPTIONS):
         ncbiAssemblyReportToTsv(opts, args.assemblyReport, args.outTsv)
 
 

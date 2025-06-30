@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"Test program to use when testing cmdOps"
+"Test program to use when testing cli support"
 
 
 import sys
@@ -8,7 +8,7 @@ from functools import partial
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../../../../lib")))
 from pycbio import NoStackError
-from pycbio.sys import cmdOps
+from pycbio.sys import cli
 from pycbio.sys.symEnum import SymEnum, auto
 
 PRINT_STACK_TRUE = "True"
@@ -31,7 +31,7 @@ class ErrorWrap(SymEnum):
 
 def parseArgs():
     usage = """Program to use in test command error handling"""
-    parser = cmdOps.ArgumentParserExtras(description=usage)
+    parser = cli.ArgumentParserExtras(description=usage)
     parser.add_argument('--error-class', type=ErrorClass, choices=ErrorClass, default=ErrorClass.value_error,
                         help="class to exception (or no error)")
     parser.add_argument('--print-stack-filter', choices=PRINT_STACK_RETURNS,
@@ -94,16 +94,16 @@ def getNoStackExcepts(opts, error_wrap):
     if error_wrap is error_wrap is ErrorWrap.no_stack_excepts:
         return (AnnoyingException,)
     else:
-        return cmdOps.ErrorHandler.DEFAULT_NO_STACK_EXCEPTS
+        return cli.ErrorHandler.DEFAULT_NO_STACK_EXCEPTS
 
-def cmdOpsTestProg(opts, error_wrap):
-    with cmdOps.ErrorHandler(noStackExcepts=getNoStackExcepts(opts, error_wrap),
+def cliTestProg(opts, error_wrap):
+    with cli.ErrorHandler(noStackExcepts=getNoStackExcepts(opts, error_wrap),
                              printStackFilter=getPrintStackFilter(opts)):
         one(opts, error_wrap)
 
 def main():
     opts, args = parseArgs()
-    cmdOpsTestProg(opts, args.error_wrap)
+    cliTestProg(opts, args.error_wrap)
 
 
 main()

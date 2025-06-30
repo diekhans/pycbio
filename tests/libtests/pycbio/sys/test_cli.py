@@ -8,7 +8,7 @@ import pipettor
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testCaseBase import TestCaseBase
-from pycbio.sys import cmdOps
+from pycbio.sys import cli
 
 class ArgParserNoExit(argparse.ArgumentParser):
     "raises exception rather than exit"
@@ -35,21 +35,21 @@ class CmdOpsTests(TestCaseBase):
         parser = makeTrekParser()
         testargs = ('--kirk=10', '--spock=fred', 'foo')
         args = parser.parse_args(testargs)
-        opts = cmdOps.getOptionalArgs(parser, args)
+        opts = cli.getOptionalArgs(parser, args)
         self._checkTrekOpts(opts, 10, 'fred', None, False)
 
     def testGetOptsShort(self):
         parser = makeTrekParser()
         testargs = ('-s' 'fred', '-m', 'barney', '-u', 'baz')
         args = parser.parse_args(testargs)
-        opts = cmdOps.getOptionalArgs(parser, args)
+        opts = cli.getOptionalArgs(parser, args)
         self._checkTrekOpts(opts, None, 'fred', 'barney', True)
 
 class ErrorHandlerTests(TestCaseBase):
     PRINT_CMD = True
 
     ##
-    # matches to cmdOpsTestProg output
+    # matches to cliTestProg output
     ##
     _userCausedMsgExpect = (
         'UserCausedException: bad user\n'
@@ -57,7 +57,7 @@ class ErrorHandlerTests(TestCaseBase):
         '    Caused by: ValueError: bad, bad value\n'
         'Specify --log-debug for details\n')
     _userCausedStackExpect = (
-        r'^Traceback.+cmdOpsTestProg.+ValueError: bad, bad value\n'
+        r'^Traceback.+cliTestProg.+ValueError: bad, bad value\n'
         r'.+the direct cause.+raise RuntimeError\("two caught"\) from ex'
         r'.+UserCausedException: bad user' '\n$')
     _bugMsgExpect = (
@@ -66,7 +66,7 @@ class ErrorHandlerTests(TestCaseBase):
         '    Caused by: ValueError: bad, bad value\n'
         'Specify --log-debug for details\n')
     _bugStackExpect = (
-        r'^Traceback.+cmdOpsTestProg.+ValueError: bad, bad value\n'
+        r'^Traceback.+cliTestProg.+ValueError: bad, bad value\n'
         r'.+the direct cause.+raise RuntimeError\("two caught"\) from ex'
         r'.+BugException: bad software' '\n$')
     _annoyMsgExpect = (
@@ -75,7 +75,7 @@ class ErrorHandlerTests(TestCaseBase):
         '    Caused by: ValueError: bad, bad value\n'
         'Specify --log-debug for details\n')
     _annoyStackExpect = (
-        r'^Traceback.+cmdOpsTestProg.+ValueError: bad, bad value\n'
+        r'^Traceback.+cliTestProg.+ValueError: bad, bad value\n'
         r'.+the direct cause.+raise RuntimeError\("two caught"\) from ex'
         r'.+AnnoyingException: very annoying' '\n$')
     _fileNotFoundMsgExpect = (
@@ -84,7 +84,7 @@ class ErrorHandlerTests(TestCaseBase):
 
     def _runCmdHandlerTestProg(self, errorWrap, *, errorClass=None,
                                printStackFilter=None, debugLog=False):
-        cmd = [sys.executable, osp.join(self.getTestDir(), "bin/cmdOpsTestProg")]
+        cmd = [sys.executable, osp.join(self.getTestDir(), "bin/cliTestProg")]
         if errorClass is not None:
             cmd.append("--error-class=" + errorClass)
         if printStackFilter is not None:
