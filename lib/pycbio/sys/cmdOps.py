@@ -1,8 +1,10 @@
 # Copyright 2006-2025 Mark Diekhans
 """Miscellaneous command line parsing operations"""
+import argparse
 import logging
 from pycbio import NoStackError, exceptionFormat
 from pycbio.sys.objDict import ObjDict
+from pycbio.sys import loggingOps
 
 def getOptionalArgs(parser, args):
     """Get the parse command line option arguments (-- or - options) as an
@@ -20,18 +22,45 @@ def parse(parser):
     args = parser.parse_args()
     return getOptionalArgs(parser, args), args
 
+class ArgumentParserExtras(argparse.ArgumentParser):
+    """Wrapper around ArgumentParser that adds logging
+    related options.  Also can parse splitting options and arguments
+    into separate objects"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def _add_extras(self):
+        """Extras are added to just before parsing, so they are last in the help list."""
+        loggingOps.addCmdOptions(self)
+
+    def _process_extras(self, args):
+        loggingOps.setupFromCmd(args, prog=self.prog)
+
+    def parse_known_args(self, *args, **kwargs):
+        # parse args goes through parse_known_args
+        self._add_extras()
+        cmdargs, cmdargv = super().parse_known_args(*args, **kwargs)
+        self._process_extras(cmdargs)
+        return cmdargs, cmdargv
+
+    def parse_opts_args(self):
+        """Get the parse command line option arguments (-- or - options) as an
+        object where the options are fields in the object.  Useful for packaging up
+        a large number of options to pass around. Returns (opts, args)"""
+        args = self.parse_args()
+        return getOptionalArgs(self, args), args
+
 class ErrorHandler:
     """Command line error handling. This is a context manager that wraps execution
     of a program.  This is called after command line parsing has been done.
     If an exception is caught, it handles printing the error via logging, normally
     to stderr, and exits non-zero.
 
-    If DEBUG log level is set, the call stack traceback will always be
-    logged.  Otherwise, the stack is not print if the Exception inherits from
+    If DEBUG log level is set, the call stack traceback will always be logged.
+    Otherwise, the stack is not print if the Exception inherits from
     NoStackError, or its class is in the noStackExcepts, or printStackFilter
     indicates is should not be printed.
 
-    logger - use this logger if specified, otherwise the default logger.
     noStackExcepts  - if not None, exceptions classes to not print, defaults to (OSError, ImportError).
     printStackFilter - a function that is called with the exception object. If it returns
     True, the stack is printed, False it is not printed, and None, it defers to the noStackExcepts
@@ -46,16 +75,15 @@ class ErrorHandler:
     """
     DEFAULT_NO_STACK_EXCEPTS = (OSError, ImportError)
 
-    def __init__(self, *, logger=None, noStackExcepts=DEFAULT_NO_STACK_EXCEPTS, printStackFilter=None):
-        self.logger = logger if logger is not None else logging.getLogger()
+    def __init__(self, *, noStackExcepts=DEFAULT_NO_STACK_EXCEPTS, printStackFilter=None):
         self.noStackExcepts = tuple(noStackExcepts) if noStackExcepts is not None else None
         self.printStackFilter = printStackFilter
 
     def __enter__(self):
         pass
 
-    def _showTraceBack(self, exc_val):
-        if self.logger.getEffectiveLevel() <= logging.DEBUG:
+    def _showTraceBack(self, logger, exc_val):
+        if logger.getEffectiveLevel() <= logging.DEBUG:
             return True
         if self.printStackFilter is not None:
             filt = self.printStackFilter(exc_val)
@@ -68,11 +96,12 @@ class ErrorHandler:
         return not isinstance(exc_val, self.noStackExcepts)
 
     def _handleError(self, exc_val):
-        showTraceback = self._showTraceBack(exc_val)
+        logger = logging.getLogger()
+        showTraceback = self._showTraceBack(logger, exc_val)
         msg = exceptionFormat(exc_val, showTraceback=showTraceback)
         if not showTraceback:
             msg += "Specify --log-debug for details"
-        self.logger.error(msg.rstrip('\n'))
+        logger.error(msg.rstrip('\n'))
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is not None:

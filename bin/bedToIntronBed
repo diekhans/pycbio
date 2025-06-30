@@ -3,7 +3,6 @@
 
 import sys
 from os import path as osp
-import argparse
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.sys import fileOps, cmdOps
@@ -22,7 +21,7 @@ def parseArgs():
     with one base on each side of the intron, or it can include the adjacent
     exons.
     """
-    parser = argparse.ArgumentParser(description=desc)
+    parser = cmdOps.ArgumentParserExtras(description=desc)
     parser.add_argument("--fmt", type=OutputFmt, choices=OutputFmt, default=OutputFmt.intron_blk,
                         help="output format")
     parser.add_argument("--minIntronSize", type=int, default=0,
@@ -35,8 +34,7 @@ def parseArgs():
                         help="input BED")
     parser.add_argument("outBedFile",
                         help="output BED of introns")
-    args = parser.parse_args()
-    return args, cmdOps.getOptionalArgs(parser, args)
+    return parser.parse_opts_args()
 
 def makeIntronBed(bed, name, prevBlk, blk):
     return Bed(bed.chrom, prevBlk.end, blk.start, name, strand=bed.strand)
@@ -92,7 +90,7 @@ def bedToIntronBed(inBedFile, outBedFile, opts):
             processBed(bed, opts, seenIntrons, outFh)
 
 def main():
-    args, opts = parseArgs()
+    opts, args = parseArgs()
     bedToIntronBed(args.inBedFile, args.outBedFile, opts)
 
 

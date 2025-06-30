@@ -3,12 +3,11 @@
 
 import sys
 from os import path as osp
-import argparse
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.ncbi.assembly import AssemblyReport, AssemblyReportException, AssemblyReportNotFound
 from pycbio import PycbioException
-from pycbio.sys import fileOps, cmdOps, loggingOps
+from pycbio.sys import fileOps, cmdOps
 from pycbio.sys.symEnum import SymEnum, auto
 from pycbio.hgdata.psl import Psl, PslBlock
 
@@ -48,7 +47,7 @@ Special id types:
     - sequenceNameGenbankAccn - use sequenceName for primary assembly and genbank
       accession for other sequences.
 """
-    parser = argparse.ArgumentParser(description=desc)
+    parser = cmdOps.ArgumentParserExtras(description=desc)
     parser.add_argument('--fromIdType', type=IdType, choices=IdType,
                         help="from sequence id type, also id type for sizes")
     parser.add_argument('--toIdType', type=IdType, choices=IdType,
@@ -59,14 +58,13 @@ Special id types:
                         help="verbose tracing")
     parser.add_argument('--skipUnmapped', action="store_true",
                         help="skipUnmapped sequences")
-    loggingOps.addCmdOptions(parser)
     parser.add_argument('outputType', type=OutputType, choices=OutputType,
                         help="type of output to create; one of ")
     parser.add_argument('assemblyReport', type=str,
                         help="NCBI assembly report file")
     parser.add_argument('outFile', type=str,
                         help="output of the specified type")
-    opts, args = cmdOps.parse(parser)
+    opts, args = parser.parse_opts_args()
     if (args.outputType == OutputType.lift) or (args.outputType == OutputType.idmap):
         if (opts.fromIdType is None) or (opts.toIdType is None):
             parser.error(f"output of {OutputType.lift} or {OutputType.idmap} requires --fromIdType and --toIdType")
@@ -75,7 +73,6 @@ Special id types:
             parser.error(f"output of {OutputType.sizes} requires --fromIdType")
         if opts.toIdType is not None:
             parser.error(f"--toIdType not valid with output of {OutputType.sizes}")
-    loggingOps.setupFromCmd(opts)
     return opts, args
 
 

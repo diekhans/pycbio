@@ -4,12 +4,11 @@
 
 import sys
 from os import path as osp
-import argparse
 from functools import partial
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../../../../lib")))
 from pycbio import NoStackError
-from pycbio.sys import cmdOps, loggingOps
+from pycbio.sys import cmdOps
 from pycbio.sys.symEnum import SymEnum, auto
 
 PRINT_STACK_TRUE = "True"
@@ -32,17 +31,14 @@ class ErrorWrap(SymEnum):
 
 def parseArgs():
     usage = """Program to use in test command error handling"""
-    parser = argparse.ArgumentParser(description=usage)
-    loggingOps.addCmdOptions(parser)
+    parser = cmdOps.ArgumentParserExtras(description=usage)
     parser.add_argument('--error-class', type=ErrorClass, choices=ErrorClass, default=ErrorClass.value_error,
                         help="class to exception (or no error)")
     parser.add_argument('--print-stack-filter', choices=PRINT_STACK_RETURNS,
                         help="add a printStackFilter that returns this value")
     parser.add_argument('error_wrap', type=ErrorWrap, choices=ErrorWrap,
                         help="how to wrap error cause")
-    opts, args = cmdOps.parse(parser)
-    loggingOps.setupFromCmd(opts)
-    return opts, args
+    return parser.parse_opts_args()
 
 class UserCausedException(Exception, NoStackError):
     pass
