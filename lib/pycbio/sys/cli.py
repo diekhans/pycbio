@@ -26,7 +26,7 @@ class ArgumentParserExtras(argparse.ArgumentParser):
         super().__init__(*args, **kwargs)
         self.add_profiler = add_profiler
 
-    def _add_extras(self):
+    def add_extras(self):
         """Add extra options to parser, done just before parse
         so they are last in the help list.  Override to add other options.
         """

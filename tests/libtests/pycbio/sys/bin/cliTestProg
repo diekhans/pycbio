@@ -98,7 +98,7 @@ def getNoStackExcepts(opts, error_wrap):
 
 def cliTestProg(opts, error_wrap):
     with cli.ErrorHandler(noStackExcepts=getNoStackExcepts(opts, error_wrap),
-                             printStackFilter=getPrintStackFilter(opts)):
+                          printStackFilter=getPrintStackFilter(opts)):
         one(opts, error_wrap)
 
 def main():
