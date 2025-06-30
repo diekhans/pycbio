@@ -30,7 +30,11 @@ ReportType = SymEnum("ReportType", ("basic", "callers", "callees"))
 
 
 def parseArgs():
-    desc = """format python profile logs from cProfile, etc."""
+    desc = """Format python profile logs from cProfile.
+
+    To generate profile without modifying code, you can just using
+        python -m cProfile -o mine.prof myscript.py
+    ."""
 
     sortKeyDesc = "\n".join([f"   {key: <12} {sortKeys[key]}" for key in sortKeys.keys()])
 

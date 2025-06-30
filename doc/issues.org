@@ -5,8 +5,6 @@
 
 * should PslReader, etc be __call__ rather than __iter__??
 
-
-
 * can StrEnum replace SymNum?
 maybe with parse function for external values
 but lose numeric values, sometimes used for order.
