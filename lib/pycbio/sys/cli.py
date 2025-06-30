@@ -20,28 +20,36 @@ def getOptionalArgs(parser, args):
 class ArgumentParserExtras(argparse.ArgumentParser):
     """Wrapper around ArgumentParser that adds logging
     related options.  Also can parse splitting options and arguments
-    into separate objects"""
-    def __init__(self, *args, **kwargs):
+    into separate objects.
+    """
+    def __init__(self, *args, add_profiler=False, **kwargs):
         super().__init__(*args, **kwargs)
+        self.add_profiler = add_profiler
 
     def _add_extras(self):
-        """Extras are added to just before parsing, so they are last in the help list."""
+        """Add extra options to parser, done just before parse
+        so they are last in the help list.  Override to add other options.
+        """
         loggingOps.addCmdOptions(self)
 
-    def _process_extras(self, args):
+    def process_extras(self, args):
+        """Process extras after argments have been parsed"""
         loggingOps.setupFromCmd(args, prog=self.prog)
 
     def parse_known_args(self, *args, **kwargs):
         # parse args goes through parse_known_args
-        self._add_extras()
+        self.add_extras()
         cmdargs, cmdargv = super().parse_known_args(*args, **kwargs)
-        self._process_extras(cmdargs)
+        self.process_extras(cmdargs)
         return cmdargs, cmdargv
 
     def parse_opts_args(self):
-        """Get the parse command line option arguments (-- or - options) as an
+        """Get the parse command line option arguments (-- or - arguments) as an
         object where the options are fields in the object.  Useful for packaging up
-        a large number of options to pass around. Returns (opts, args)"""
+        a large number of options to pass around without the temptation to pass
+        the positional args as well. Returns (opts, args).  The options are not
+        removed from args.
+        """
         args = self.parse_args()
         return getOptionalArgs(self, args), args
 
