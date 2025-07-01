@@ -79,6 +79,11 @@ def _print_err_spec(setname, expect_spec, got_chain):
     for got in got_chain:
         print(f"  {got[0].__name__}", repr(got[1]), file=sys.stderr)
 
+def assert_regex_dotall(obj, expectRe, msg=None):
+    """Fail if the str(obj) does not match expectRe operator, including `.' matching newlines"""
+    assert re.match(expectRe, str(obj), re.DOTALL), \
+        msg or "regexp '{}' does not match '{}'".format(expectRe, str(obj))
+
 class CheckRaisesCauses:
     """
     Validate exception chain against  [(exception, regex), ...].

@@ -2,13 +2,14 @@
 """Miscellaneous command line parsing operations tests"""
 import sys
 import os.path as osp
-import unittest
 import argparse
 import pipettor
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
-from pycbio.sys.testCaseBase import TestCaseBase
+from pycbio.sys.testSupport import assert_regex_dotall, get_test_dir
 from pycbio.sys import cli
+
+DEBUG = False
 
 class ArgParserNoExit(argparse.ArgumentParser):
     "raises exception rather than exit"
@@ -21,150 +22,139 @@ def makeTrekParser():
     parser.add_argument('--spock', '-s', type=str)
     parser.add_argument('-m', '--mc-coy', dest='mc_coy', type=str)
     parser.add_argument('-u', dest='uhura', action='store_true')
-    parser.add_argument('barney')
+    parser.add_argument('pike')
     return parser
 
-class CmdOpsTests(TestCaseBase):
-    def _checkTrekOpts(self, opts, kirk, spock, mc_coy, uhura):
-        self.assertEqual(opts.kirk, kirk)
-        self.assertEqual(opts.spock, spock)
-        self.assertEqual(opts.mc_coy, mc_coy)
-        self.assertEqual(opts.uhura, uhura)
+def _checkTrekOpts(opts, args, kirk, spock, mc_coy, uhura, pike):
+    assert opts.kirk == kirk
+    assert opts.spock == spock
+    assert opts.mc_coy == mc_coy
+    assert opts.uhura == uhura
+    assert args.pike == pike
+    assert "pike" not in opts
+    assert "spock" not in args
 
-    def testGetOptsLong(self):
-        parser = makeTrekParser()
-        testargs = ('--kirk=10', '--spock=fred', 'foo')
-        args = parser.parse_args(testargs)
-        opts = cli.getOptionalArgs(parser, args)
-        self._checkTrekOpts(opts, 10, 'fred', None, False)
+def testGetOptsLong():
+    parser = makeTrekParser()
+    testargs = ('--kirk=10', '--spock=fred', 'foo')
+    args = parser.parse_args(testargs)
+    opts, args = cli.splitOptionsArgs(parser, args)
+    _checkTrekOpts(opts, args, 10, 'fred', None, False, 'foo')
 
-    def testGetOptsShort(self):
-        parser = makeTrekParser()
-        testargs = ('-s' 'fred', '-m', 'barney', '-u', 'baz')
-        args = parser.parse_args(testargs)
-        opts = cli.getOptionalArgs(parser, args)
-        self._checkTrekOpts(opts, None, 'fred', 'barney', True)
-
-class ErrorHandlerTests(TestCaseBase):
-    PRINT_CMD = True
-
-    ##
-    # matches to cliTestProg output
-    ##
-    _userCausedMsgExpect = (
-        'UserCausedException: bad user\n'
-        '  Caused by: RuntimeError: two caught\n'
-        '    Caused by: ValueError: bad, bad value\n'
-        'Specify --log-debug for details\n')
-    _userCausedStackExpect = (
-        r'^Traceback.+cliTestProg.+ValueError: bad, bad value\n'
-        r'.+the direct cause.+raise RuntimeError\("two caught"\) from ex'
-        r'.+UserCausedException: bad user' '\n$')
-    _bugMsgExpect = (
-        'BugException: bad software\n'
-        '  Caused by: RuntimeError: two caught\n'
-        '    Caused by: ValueError: bad, bad value\n'
-        'Specify --log-debug for details\n')
-    _bugStackExpect = (
-        r'^Traceback.+cliTestProg.+ValueError: bad, bad value\n'
-        r'.+the direct cause.+raise RuntimeError\("two caught"\) from ex'
-        r'.+BugException: bad software' '\n$')
-    _annoyMsgExpect = (
-        'AnnoyingException: very annoying\n'
-        '  Caused by: RuntimeError: two caught\n'
-        '    Caused by: ValueError: bad, bad value\n'
-        'Specify --log-debug for details\n')
-    _annoyStackExpect = (
-        r'^Traceback.+cliTestProg.+ValueError: bad, bad value\n'
-        r'.+the direct cause.+raise RuntimeError\("two caught"\) from ex'
-        r'.+AnnoyingException: very annoying' '\n$')
-    _fileNotFoundMsgExpect = (
-        'FileNotFoundError: /dev/fred/barney\n'
-        'Specify --log-debug for details\n')
-
-    def _runCmdHandlerTestProg(self, errorWrap, *, errorClass=None,
-                               printStackFilter=None, debugLog=False):
-        cmd = [sys.executable, osp.join(self.getTestDir(), "bin/cliTestProg")]
-        if errorClass is not None:
-            cmd.append("--error-class=" + errorClass)
-        if printStackFilter is not None:
-            cmd.append("--print-stack-filter=" + printStackFilter)
-        if debugLog:
-            cmd.append("--log-level=DEBUG")
-        cmd.append(errorWrap)
-        try:
-            if self.PRINT_CMD:
-                print("DEBUG", ' '.join(cmd), file=sys.stderr)
-            pipettor.run(cmd)
-            return (0, None)
-        except pipettor.ProcessException as ex:
-            return ex.returncode, ex.stderr
-
-    def testCmdHanderOkay(self):
-        returncode, stderr = self._runCmdHandlerTestProg('no_wrap', errorClass='no_error')
-        self.assertEqual(None, stderr)
-        self.assertEqual(0, returncode)
-
-    def testCmdHanderUser(self):
-        returncode, stderr = self._runCmdHandlerTestProg('no_stack')
-        self.assertEqual(self._userCausedMsgExpect, stderr)
-        self.assertEqual(1, returncode)
-
-    def testCmdHanderUserStack(self):
-        returncode, stderr = self._runCmdHandlerTestProg('no_stack', debugLog=True)
-        self.assertRegexDotAll(stderr, self._userCausedStackExpect)
-        self.assertEqual(1, returncode)
-
-    def testCmdHanderBug(self):
-        returncode, stderr = self._runCmdHandlerTestProg('with_stack')
-        self.assertRegexDotAll(stderr, self._bugStackExpect)
-        self.assertEqual(1, returncode)
-
-    def testCmdHanderNoStackExcepts(self):
-        returncode, stderr = self._runCmdHandlerTestProg('no_stack_excepts')
-        self.assertEqual(stderr, self._annoyMsgExpect)
-        self.assertEqual(1, returncode)
-
-    def testCmdHanderFileNotFound(self):
-        returncode, stderr = self._runCmdHandlerTestProg('no_wrap', errorClass='file_not_found')
-        self.assertEqual(stderr, self._fileNotFoundMsgExpect)
-        self.assertEqual(1, returncode)
-
-    def testCmdHanderFilterTrue(self):
-        returncode, stderr = self._runCmdHandlerTestProg('with_stack', printStackFilter="True")
-        self.assertRegexDotAll(stderr, self._bugStackExpect)
-        self.assertEqual(1, returncode)
-
-    def testCmdHanderFilterTrue2(self):
-        # force even with NoStackError
-        returncode, stderr = self._runCmdHandlerTestProg('no_stack', printStackFilter="True")
-        self.assertRegexDotAll(stderr, self._userCausedStackExpect)
-        self.assertEqual(1, returncode)
-
-    def testCmdHanderFilterFalse(self):
-        returncode, stderr = self._runCmdHandlerTestProg('with_stack', printStackFilter="False")
-        self.assertEqual(stderr, self._bugMsgExpect)
-        self.assertEqual(1, returncode)
-
-    def testCmdHanderFilterNone(self):
-        # all through to default handling
-        returncode, stderr = self._runCmdHandlerTestProg('with_stack', printStackFilter="None")
-        self.assertRegexDotAll(stderr, self._bugStackExpect)
-        self.assertEqual(1, returncode)
-
-    def testCmdHanderFilterNone2(self):
-        # all through to default handling NoStackError
-        returncode, stderr = self._runCmdHandlerTestProg('no_stack', printStackFilter="None")
-        self.assertEqual(stderr, self._userCausedMsgExpect)
-        self.assertEqual(1, returncode)
+def testGetOptsShort():
+    parser = makeTrekParser()
+    testargs = ('-s' 'fred', '-m', 'barney', '-u', 'baz')
+    args = parser.parse_args(testargs)
+    opts, args = cli.splitOptionsArgs(parser, args)
+    _checkTrekOpts(opts, args, None, 'fred', 'barney', True, 'baz')
 
 
-def suite():
-    ts = unittest.TestSuite()
-    ts.addTest(unittest.makeSuite(CmdOpsTests))
-    ts.addTest(unittest.makeSuite(ErrorHandlerTests))
-    return ts
+##
+# matches to cliTestProg output
+##
+_userCausedMsgExpect = (
+    'UserCausedException: bad user\n'
+    '  Caused by: RuntimeError: two caught\n'
+    '    Caused by: ValueError: bad, bad value\n'
+    'Specify --log-debug for details\n')
+_userCausedStackExpectRe = (
+    r'^Traceback.+cliTestProg.+ValueError: bad, bad value\n'
+    r'.+the direct cause.+raise RuntimeError\("two caught"\) from ex'
+    r'.+UserCausedException: bad user' '\n$')
+_bugMsgExpect = (
+    'BugException: bad software\n'
+    '  Caused by: RuntimeError: two caught\n'
+    '    Caused by: ValueError: bad, bad value\n'
+    'Specify --log-debug for details\n')
+_bugStackExpectRe = (
+    r'^Traceback.+cliTestProg.+ValueError: bad, bad value\n'
+    r'.+the direct cause.+raise RuntimeError\("two caught"\) from ex'
+    r'.+BugException: bad software' '\n$')
+_annoyMsgExpect = (
+    'AnnoyingException: very annoying\n'
+    '  Caused by: RuntimeError: two caught\n'
+    '    Caused by: ValueError: bad, bad value\n'
+    'Specify --log-debug for details\n')
+_annoyStackExpectRe = (
+    r'^Traceback.+cliTestProg.+ValueError: bad, bad value\n'
+    r'.+the direct cause.+raise RuntimeError\("two caught"\) from ex'
+    r'.+AnnoyingException: very annoying' '\n$')
+_fileNotFoundMsgExpect = (
+    'FileNotFoundError: /dev/fred/barney\n'
+    'Specify --log-debug for details\n')
 
+def _runCmdHandlerTestProg(request, errorWrap, *, errorClass=None,
+                           printStackFilter=None, debugLog=False):
+    cmd = [sys.executable, osp.join(get_test_dir(request), "bin/cliTestProg")]
+    if errorClass is not None:
+        cmd.append("--error-class=" + errorClass)
+    if printStackFilter is not None:
+        cmd.append("--print-stack-filter=" + printStackFilter)
+    if debugLog:
+        cmd.append("--log-level=DEBUG")
+    cmd.append(errorWrap)
+    try:
+        if DEBUG:
+            print("DEBUG", ' '.join(cmd), file=sys.stderr)
+        pipettor.run(cmd)
+        return (0, None)
+    except pipettor.ProcessException as ex:
+        return ex.returncode, ex.stderr
 
-if __name__ == '__main__':
-    unittest.main()
+def testCmdHanderOkay(request):
+    returncode, stderr = _runCmdHandlerTestProg(request, 'no_wrap', errorClass='no_error')
+    assert stderr is None
+    assert returncode == 0
+
+def testCmdHanderUser(request):
+    returncode, stderr = _runCmdHandlerTestProg(request, 'no_stack')
+    assert stderr == _userCausedMsgExpect
+    assert returncode == 1
+
+def testCmdHanderUserStack(request):
+    returncode, stderr = _runCmdHandlerTestProg(request, 'no_stack', debugLog=True)
+    assert_regex_dotall(stderr, _userCausedStackExpectRe)
+    assert returncode == 1
+
+def testCmdHanderBug(request):
+    returncode, stderr = _runCmdHandlerTestProg(request, 'with_stack')
+    assert_regex_dotall(stderr, _bugStackExpectRe)
+    assert returncode == 1
+
+def testCmdHanderNoStackExcepts(request):
+    returncode, stderr = _runCmdHandlerTestProg(request, 'no_stack_excepts')
+    assert stderr == _annoyMsgExpect
+    assert returncode == 1
+
+def testCmdHanderFileNotFound(request):
+    returncode, stderr = _runCmdHandlerTestProg(request, 'no_wrap', errorClass='file_not_found')
+    assert stderr == _fileNotFoundMsgExpect
+    assert returncode == 1
+
+def testCmdHanderFilterTrue(request):
+    returncode, stderr = _runCmdHandlerTestProg(request, 'with_stack', printStackFilter="True")
+    assert_regex_dotall(stderr, _bugStackExpectRe)
+    assert returncode == 1
+
+def testCmdHanderFilterTrue2(request):
+    # force even with NoStackError
+    returncode, stderr = _runCmdHandlerTestProg(request, 'no_stack', printStackFilter="True")
+    assert_regex_dotall(stderr, _userCausedStackExpectRe)
+    assert returncode == 1
+
+def testCmdHanderFilterFalse(request):
+    returncode, stderr = _runCmdHandlerTestProg(request, 'with_stack', printStackFilter="False")
+    assert stderr == _bugMsgExpect
+    assert returncode == 1
+
+def testCmdHanderFilterNone(request):
+    # all through to default handling
+    returncode, stderr = _runCmdHandlerTestProg(request, 'with_stack', printStackFilter="None")
+    assert_regex_dotall(stderr, _bugStackExpectRe)
+    assert returncode == 1
+
+def testCmdHanderFilterNone2(request):
+    # all through to default handling NoStackError
+    returncode, stderr = _runCmdHandlerTestProg(request, 'no_stack', printStackFilter="None")
+    assert stderr == _userCausedMsgExpect
+    assert returncode == 1
