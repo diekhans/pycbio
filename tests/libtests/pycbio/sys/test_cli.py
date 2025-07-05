@@ -95,10 +95,12 @@ def _runCmdHandlerTestProg(request, errorWrap, *, errorClass=None,
     cmd.append(errorWrap)
     try:
         if DEBUG:
-            print("DEBUG", ' '.join(cmd), file=sys.stderr)
+            print("DEBUG run:", ' '.join(cmd), file=sys.stderr)
         pipettor.run(cmd)
         return (0, None)
     except pipettor.ProcessException as ex:
+        if DEBUG:
+            print("DEBUG err:", ex.stderr, file=sys.stderr)
         return ex.returncode, ex.stderr
 
 def testCmdHanderOkay(request):
