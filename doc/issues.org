@@ -2,6 +2,11 @@
 
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
+* formatting of exception with newlines doesn't format as multiple lines
+msg=f"FOOO:\n`" + str(1), "',\n and `" + str(1) + "'"
+e=Exception(msg)
+print(e)
+('FOOO:\n`1', "',\n and `1'")
 
 * should PslReader, etc be __call__ rather than __iter__??
 

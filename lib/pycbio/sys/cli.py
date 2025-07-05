@@ -2,7 +2,9 @@
 """Support for command line parsing"""
 import argparse
 import logging
-from pycbio import NoStackError, exceptionFormat
+import traceback
+from io import StringIO
+from pycbio import NoStackError
 from pycbio.sys.objDict import ObjDict
 from pycbio.sys import loggingOps
 
@@ -57,6 +59,30 @@ class ArgumentParserExtras(argparse.ArgumentParser):
         args = self.parse_args()
         return splitOptionsArgs(self, args)
 
+def _exceptionPrintNoTraceback(exc, file, indent):
+    depth = 0
+    while exc:
+        if depth > 0:
+            prefix = depth * '  ' if indent else ''
+            file.write(f"{prefix}Caused by: ")
+        file.write(f"{type(exc).__name__}: {str(exc)}\n")
+        exc = exc.__cause__ or exc.__context__
+        depth += 1
+
+def _exceptionPrint(exc, *, file=None, showTraceback=True, indent=True):
+    """print a chained exception following causal chain"""
+    if showTraceback:
+        traceback.print_exception(exc, file=file)
+    else:
+        _exceptionPrintNoTraceback(exc, file, indent)
+
+def _exceptionFormat(exc, *, showTraceback=True, indent=True):
+    """format a chained exception following causal chain"""
+    fh = StringIO()
+    _exceptionPrint(exc, file=fh, showTraceback=showTraceback, indent=indent)
+    return fh.getvalue()
+
+
 class ErrorHandler:
     """Command line error handling. This is a context manager that wraps execution
     of a program.  This is called after command line parsing has been done.
@@ -105,7 +131,7 @@ class ErrorHandler:
     def _handleError(self, exc_val):
         logger = logging.getLogger()
         showTraceback = self._showTraceBack(logger, exc_val)
-        msg = exceptionFormat(exc_val, showTraceback=showTraceback)
+        msg = _exceptionFormat(exc_val, showTraceback=showTraceback)
         if not showTraceback:
             msg += "Specify --log-debug for details"
         logger.error(msg.rstrip('\n'))
