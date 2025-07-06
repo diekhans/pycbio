@@ -2,13 +2,8 @@
 
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
-* formatting of exception with newlines doesn't format as multiple lines
-msg=f"FOOO:\n`" + str(1), "',\n and `" + str(1) + "'"
-e=Exception(msg)
-print(e)
-('FOOO:\n`1', "',\n and `1'")
-
-* should PslReader, etc be __call__ rather than __iter__??
+* have cli exceptionPrint indent continuation lines message
+./bin/cliTestProg --error-class=new_line_msg no_stack
 
 * can StrEnum replace SymNum?
 maybe with parse function for external values

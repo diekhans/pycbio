@@ -82,6 +82,12 @@ _annoyStackExpectRe = (
 _fileNotFoundMsgExpect = (
     'FileNotFoundError: /dev/fred/barney\n'
     'Specify --log-debug for details\n')
+_newLineMsgExpect = (
+    'UserCausedException: bad user\n'
+    '  Caused by: RuntimeError: two caught\n'
+    '    Caused by: ValueError: Space\n'
+    'the final\n'
+    'frontier\n')
 
 def _runCmdHandlerTestProg(request, errorWrap, *, errorClass=None,
                            printStackFilter=None, debugLog=False):
@@ -159,4 +165,10 @@ def testCmdHanderFilterNone2(request):
     # all through to default handling NoStackError
     returncode, stderr = _runCmdHandlerTestProg(request, 'no_stack', printStackFilter="None")
     assert stderr == _userCausedMsgExpect
+    assert returncode == 1
+
+def testCmdHanderNewlineMsg(request):
+    returncode, stderr = _runCmdHandlerTestProg(request, 'no_stack',
+                                                errorClass='new_line_msg')
+    assert_regex_dotall(stderr, _newLineMsgExpect)
     assert returncode == 1

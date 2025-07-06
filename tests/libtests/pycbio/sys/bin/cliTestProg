@@ -22,6 +22,7 @@ class ErrorClass(SymEnum):
     no_error = auto()
     value_error = auto()
     file_not_found = auto()
+    new_line_msg = auto()
 
 class ErrorWrap(SymEnum):
     no_wrap = auto()
@@ -52,6 +53,8 @@ class BugException(Exception):
 def three(opts):
     if opts.error_class is ErrorClass.value_error:
         raise ValueError("bad, bad value")
+    if opts.error_class is ErrorClass.new_line_msg:
+        raise ValueError("Space\nthe final\nfrontier")
     elif opts.error_class is ErrorClass.file_not_found:
         raise FileNotFoundError("/dev/fred/barney")
 
