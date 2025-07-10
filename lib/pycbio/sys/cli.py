@@ -107,7 +107,6 @@ class ErrorHandler:
 
     """
     DEFAULT_NO_STACK_EXCEPTS = (OSError, ImportError)
-    ALWAYS_NO_STACK_EXCEPTS = (SystemExit,)
 
     def __init__(self, *, noStackExcepts=DEFAULT_NO_STACK_EXCEPTS, printStackFilter=None):
         self.noStackExcepts = tuple(noStackExcepts) if noStackExcepts is not None else None
@@ -117,8 +116,6 @@ class ErrorHandler:
         pass
 
     def _showTraceBack(self, logger, exc_val):
-        if isinstance(exc_val, self.ALWAYS_NO_STACK_EXCEPTS):
-            return False
         if logger.getEffectiveLevel() <= logging.DEBUG:
             return True
         if self.printStackFilter is not None:
@@ -141,5 +138,8 @@ class ErrorHandler:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is not None:
-            self._handleError(exc_val)
-            exit(1)
+            if isinstance(exc_val, SystemExit):
+                raise exc_val
+            else:
+                self._handleError(exc_val)
+                exit(1)

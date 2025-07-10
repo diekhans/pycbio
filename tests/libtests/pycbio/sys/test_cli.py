@@ -90,7 +90,8 @@ _newLineMsgExpect = (
     'frontier\n')
 
 def _runCmdHandlerTestProg(request, errorWrap, *, errorClass=None,
-                           printStackFilter=None, debugLog=False):
+                           printStackFilter=None, sysExit=None,
+                           debugLog=False):
     cmd = [sys.executable, osp.join(get_test_dir(request), "bin/cliTestProg")]
     if errorClass is not None:
         cmd.append("--error-class=" + errorClass)
@@ -98,6 +99,8 @@ def _runCmdHandlerTestProg(request, errorWrap, *, errorClass=None,
         cmd.append("--print-stack-filter=" + printStackFilter)
     if debugLog:
         cmd.append("--log-level=DEBUG")
+    if sysExit is not None:
+        cmd.append(f"--system-exit={sysExit}")
     cmd.append(errorWrap)
     try:
         if DEBUG:
@@ -172,3 +175,15 @@ def testCmdHanderNewlineMsg(request):
                                                 errorClass='new_line_msg')
     assert_regex_dotall(stderr, _newLineMsgExpect)
     assert returncode == 1
+
+def testCmdHanderSysExit0(request):
+    returncode, stderr = _runCmdHandlerTestProg(request, 'no_stack',
+                                                sysExit=0)
+    assert stderr is None
+    assert returncode == 0
+
+def testCmdHanderSysExit100(request):
+    returncode, stderr = _runCmdHandlerTestProg(request, 'no_stack',
+                                                sysExit=100)
+    assert stderr == ""
+    assert returncode == 100

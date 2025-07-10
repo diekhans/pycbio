@@ -37,6 +37,8 @@ def parseArgs():
                         help="class to exception (or no error)")
     parser.add_argument('--print-stack-filter', choices=PRINT_STACK_RETURNS,
                         help="add a printStackFilter that returns this value")
+    parser.add_argument('--system-exit', type=int, default=None,
+                        help="SystemExit with this code")
     parser.add_argument('error_wrap', type=ErrorWrap, choices=ErrorWrap,
                         help="how to wrap error cause")
     return parser.parse_opts_args()
@@ -51,9 +53,11 @@ class BugException(Exception):
     pass
 
 def three(opts):
-    if opts.error_class is ErrorClass.value_error:
+    if opts.system_exit is not None:
+        raise SystemExit(opts.system_exit)
+    elif opts.error_class is ErrorClass.value_error:
         raise ValueError("bad, bad value")
-    if opts.error_class is ErrorClass.new_line_msg:
+    elif opts.error_class is ErrorClass.new_line_msg:
         raise ValueError("Space\nthe final\nfrontier")
     elif opts.error_class is ErrorClass.file_not_found:
         raise FileNotFoundError("/dev/fred/barney")
