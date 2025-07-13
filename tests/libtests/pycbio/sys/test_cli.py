@@ -48,6 +48,12 @@ def testGetOptsShort():
     opts, args = cli.splitOptionsArgs(parser, args)
     _checkTrekOpts(opts, args, None, 'fred', 'barney', True, 'baz')
 
+def testParseOptsArgs():
+    parser = makeTrekParser()
+    testargs = ('-s' 'fred', '-m', 'barney', '-u', 'baz')
+    opts, args = cli.parseOptsArgs(parser, testargs)
+    _checkTrekOpts(opts, args, None, 'fred', 'barney', True, 'baz')
+
 
 ##
 # matches to cliTestProg output

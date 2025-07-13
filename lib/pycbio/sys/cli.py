@@ -24,6 +24,10 @@ def splitOptionsArgs(parser, inargs):
             args[name] = value
     return opts, args
 
+def parseOptsArgs(parser, args=None, namespace=None):
+    """Call argparse parse_args and return (opts, args)"""
+    return splitOptionsArgs(parser, parser.parse_args(args=args, namespace=namespace))
+
 class ArgumentParserExtras(argparse.ArgumentParser):
     """Wrapper around ArgumentParser that adds logging
     related options.  Also can parse splitting options and positional
@@ -50,14 +54,13 @@ class ArgumentParserExtras(argparse.ArgumentParser):
         self.process_extras(cmdargs)
         return cmdargs, cmdargv
 
-    def parse_opts_args(self):
+    def parse_opts_args(self, args=None, namespace=None):
         """Get the parse command line option arguments (-- or - arguments) as an
         object where the options are fields in the object.  Useful for packaging up
         a large number of options to pass around without the temptation to pass
         the positional args as well. Returns (opts, args).
         """
-        args = self.parse_args()
-        return splitOptionsArgs(self, args)
+        return splitOptionsArgs(self, self.parse_args(args=args, namespace=namespace))
 
 def _exceptionPrintNoTraceback(exc, file, indent):
     depth = 0
