@@ -2,7 +2,6 @@
 """Miscellaneous command line parsing operations tests"""
 import sys
 import os.path as osp
-import argparse
 import pipettor
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
@@ -11,18 +10,17 @@ from pycbio.sys import cli
 
 DEBUG = False
 
-class ArgParserNoExit(argparse.ArgumentParser):
-    "raises exception rather than exit"
-    def error(self, message):
-        raise argparse.ArgumentError(None, message)
-
-def makeTrekParser():
-    parser = ArgParserNoExit(description='to go where no one has gone before')
+def _addTrekOpts(parser):
     parser.add_argument('--kirk', type=int)
     parser.add_argument('--spock', '-s', type=str)
     parser.add_argument('-m', '--mc-coy', dest='mc_coy', type=str)
     parser.add_argument('-u', dest='uhura', action='store_true')
     parser.add_argument('pike')
+
+def _makeTrekParser():
+    parser = cli.ArgumentParserExtras(description='to go where no one has gone before',
+                                      exit_on_error=False)
+    _addTrekOpts(parser)
     return parser
 
 def _checkTrekOpts(opts, args, kirk, spock, mc_coy, uhura, pike):
@@ -35,23 +33,48 @@ def _checkTrekOpts(opts, args, kirk, spock, mc_coy, uhura, pike):
     assert "spock" not in args
 
 def testGetOptsLong():
-    parser = makeTrekParser()
+    parser = _makeTrekParser()
     testargs = ('--kirk=10', '--spock=fred', 'foo')
-    args = parser.parse_args(testargs)
-    opts, args = cli.splitOptionsArgs(parser, args)
+    opts, args = parser.parse_opts_args(testargs)
     _checkTrekOpts(opts, args, 10, 'fred', None, False, 'foo')
 
 def testGetOptsShort():
-    parser = makeTrekParser()
+    parser = _makeTrekParser()
     testargs = ('-s' 'fred', '-m', 'barney', '-u', 'baz')
-    args = parser.parse_args(testargs)
-    opts, args = cli.splitOptionsArgs(parser, args)
+    opts, args = parser.parse_opts_args(testargs)
     _checkTrekOpts(opts, args, None, 'fred', 'barney', True, 'baz')
 
 def testParseOptsArgs():
-    parser = makeTrekParser()
+    parser = _makeTrekParser()
     testargs = ('-s' 'fred', '-m', 'barney', '-u', 'baz')
-    opts, args = cli.parseOptsArgs(parser, testargs)
+    opts, args = parser.parse_opts_args(testargs)
+    _checkTrekOpts(opts, args, None, 'fred', 'barney', True, 'baz')
+
+def testParseSubcommand():
+    # standard add all subcommand arguments up front
+    parser = cli.ArgumentParserExtras(description='subspace communication',
+                                      exit_on_error=False)
+    subparsers = parser.add_subparsers(dest='craft', required=True)
+    shuttle_parser = subparsers.add_parser('shuttle', help='Shuttle craft')
+    _addTrekOpts(shuttle_parser)
+
+    testargs = ('shuttle', '-s', 'fred', '-m', 'barney', '-u', 'baz')
+    opts, args = parser.parse_opts_args(testargs)
+    assert args.craft == "shuttle"
+    _checkTrekOpts(opts, args, None, 'fred', 'barney', True, 'baz')
+
+def testParseSubcommandTwoPass():
+    # parse to find subcommand, then add arguments
+    parser = cli.ArgumentParserExtras(description='subspace communication',
+                                      exit_on_error=False)
+    subparsers = parser.add_subparsers(dest='craft', required=True)
+    shuttle_parser = subparsers.add_parser('shuttle', help='Shuttle craft')
+    _addTrekOpts(shuttle_parser)
+
+    testargs = ('shuttle', '-s', 'fred', '-m', 'barney', '-u', 'baz')
+    args0 = parser.parse_args(testargs)
+    assert args0.craft == "shuttle"
+    opts, args = parser.parse_opts_args(testargs)
     _checkTrekOpts(opts, args, None, 'fred', 'barney', True, 'baz')
 
 

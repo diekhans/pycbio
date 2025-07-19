@@ -17,7 +17,7 @@ loglevel = INFO
 # override with pytest_extra=-v or what ever
 pytest_extra = 
 
-# to get less verbose traceback
+# standard traceback, less decoration, but lots pytest internal
 traceback = --tb=native
 
 # used to find source of ResourceWarning

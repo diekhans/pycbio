@@ -2,6 +2,20 @@
 
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
+
+* file an enhancement on argparse with the issues extending it.
+- find arguments argument types for splitting options and arguments,
+  find the subparser that actually parsed the options
+  look in side for definitions
+- extending to add options on parse and then process then after parsing
+  can't do per options, as need multiple options as input
+
+* capture=no on test_cli
+pytest  --verbose --capture=no test_cli.py
+prints logging message and stack traces for unknown reasons however
+test succeed.  running tests individually doesn't do this
+
+
 * have cli exceptionPrint indent continuation lines message
 ./bin/cliTestProg --error-class=new_line_msg no_stack
 

@@ -137,10 +137,15 @@ def addCmdOptions(parser, *, defaultLevel=logging.INFO, inclSyslog=False):
     parser.add_argument("--log-debug", action="store_true",
                         help="short-cut that that sets --log-stderr and --log-level=DEBUG")
 
+def haveCmdOptions(parser):
+    """Check if an logging options have been added to this parser."""
+    return "--log-debug" in parser._option_string_actions
+
 def setupFromCmd(args, *, logger=None, prog=None):
     """configure logging based on command options. Prog is used it to set the
-    syslog program name. If prog is not specified, it is obtained from sys.arg.
-    Logger maybe a logger, logger name, or None for default logger, returns the logger.
+    syslog program name. If prog is not specified, it is obtained from
+    sys.arg.  Logger maybe a logger, logger name, or None for default logger,
+    returns the logger.
 
     Will log to stderr if not other login option is specified.
 
