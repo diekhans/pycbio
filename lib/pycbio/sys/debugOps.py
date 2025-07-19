@@ -3,6 +3,7 @@
 import os.path
 import sys
 import posix
+import traceback
 from enum import Enum
 
 
@@ -73,4 +74,12 @@ def prettyPrint(obj, *, label=None, indent=4, fh=sys.stderr, filter_func=None):
     _prettyPrint(obj, set(), indent, 0, filter_func, fh)
 
 
-__all__ = [lsOpen.__name__, prettyPrint.__name__]
+def printCurrentStack(msg=None, *, file=sys.stderr):
+    "print the stack trace from where called"
+    stack_trace = "".join(traceback.format_stack())
+    if msg is not None:
+        print(msg, file=file)
+    print("Stack trace:\n", stack_trace, file=file)
+
+
+__all__ = [lsOpen.__name__, prettyPrint.__name__, printCurrentStack]
