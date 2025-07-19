@@ -1,7 +1,6 @@
 # Copyright 2006-2025 Mark Diekhans
 """Support for command line parsing"""
-#import argparse
-from pycbio import argparse
+import argparse
 import logging
 import traceback
 from functools import partial
