@@ -3,7 +3,6 @@
 import argparse
 import logging
 import traceback
-from functools import partial
 from io import StringIO
 from pycbio import NoStackError
 from pycbio.sys.objDict import ObjDict
@@ -106,9 +105,6 @@ class ArgumentParserExtras(argparse.ArgumentParser):
         loggingOps.setupFromCmd(parsed_args, prog=self.prog)
 
     def add_subparsers(self, **kwargs):
-        # need to create new parser including parent to pass through
-        parser_factory = partial(ArgumentParserExtras, parent=self)
-
         # save of _SubParsersAction object to find subparser use
         action = super().add_subparsers(**kwargs)
         self._subparsers_action = action

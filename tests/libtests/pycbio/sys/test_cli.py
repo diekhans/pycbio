@@ -2,6 +2,8 @@
 """Miscellaneous command line parsing operations tests"""
 import sys
 import os.path as osp
+import logging
+import io
 import pipettor
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
@@ -10,6 +12,47 @@ from pycbio.sys import cli
 
 DEBUG = False
 
+###
+# logging support
+###
+def _removeLogHandlers(logger):
+    for handler in list(logger.handlers):
+        logger.removeHandler(handler)
+
+def _resetLogger():
+    "set to default state before parsing command line"
+    logger = logging.getLogger()
+    _removeLogHandlers(logger)
+    logger.setLevel(logging.WARNING)
+    logging.basicConfig()
+
+class MemoryLogHandler(logging.Handler):
+    "capture log to memory"
+    def __init__(self):
+        super().__init__()
+        self.stream = io.StringIO()
+
+    def emit(self, record):
+        log_entry = self.format(record)
+        self.stream.write(log_entry + "\n")
+
+    def get_logs(self):
+        return self.stream.getvalue()
+
+def _confTestLogger():
+    "configure after using command line option to set level, dropping other handlers"
+    logger = logging.getLogger()
+    _removeLogHandlers(logger)
+    formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+    memory_handler = MemoryLogHandler()
+    memory_handler.setFormatter(formatter)
+    logger.addHandler(memory_handler)
+    return memory_handler
+
+
+###
+# test command line parsing with log setup
+###
 def _addTrekOpts(parser):
     parser.add_argument('--kirk', type=int)
     parser.add_argument('--spock', '-s', type=str)
@@ -34,15 +77,29 @@ def _checkTrekOpts(opts, args, kirk, spock, mc_coy, uhura, pike):
 
 def testGetOptsLong():
     parser = _makeTrekParser()
-    testargs = ('--kirk=10', '--spock=fred', 'foo')
+    testargs = ('--log-level=DEBUG', '--kirk=10', '--spock=fred', 'foo')
+    _resetLogger()
     opts, args = parser.parse_opts_args(testargs)
+    memory_handler = _confTestLogger()
     _checkTrekOpts(opts, args, 10, 'fred', None, False, 'foo')
+    logging.debug("testGetOptsLong")
+    logging.info("testGetOptsLong")
+    logging.warning("testGetOptsLong")
+    assert memory_handler.get_logs() == ("root - DEBUG - testGetOptsLong\n"
+                                         "root - INFO - testGetOptsLong\n"
+                                         "root - WARNING - testGetOptsLong\n")
 
 def testGetOptsShort():
     parser = _makeTrekParser()
-    testargs = ('-s' 'fred', '-m', 'barney', '-u', 'baz')
+    testargs = ('--log-level=WARN', '-s' 'fred', '-m', 'barney', '-u', 'baz')
+    _resetLogger()
     opts, args = parser.parse_opts_args(testargs)
+    memory_handler = _confTestLogger()
     _checkTrekOpts(opts, args, None, 'fred', 'barney', True, 'baz')
+    logging.debug("testGetOptsShort")
+    logging.info("testGetOptsShort")
+    logging.warning("testGetOptsShort")
+    assert memory_handler.get_logs() == "root - WARNING - testGetOptsShort\n"
 
 def testParseOptsArgs():
     parser = _makeTrekParser()
@@ -58,10 +115,17 @@ def testParseSubcommand():
     shuttle_parser = subparsers.add_parser('shuttle', help='Shuttle craft')
     _addTrekOpts(shuttle_parser)
 
-    testargs = ('shuttle', '-s', 'fred', '-m', 'barney', '-u', 'baz')
+    testargs = ('--log-level=INFO', 'shuttle', '-s', 'fred', '-m', 'barney', '-u', 'baz')
+    _resetLogger()
     opts, args = parser.parse_opts_args(testargs)
+    memory_handler = _confTestLogger()
     assert args.craft == "shuttle"
     _checkTrekOpts(opts, args, None, 'fred', 'barney', True, 'baz')
+    logging.debug("testParseSubcommand")
+    logging.info("testParseSubcommand")
+    logging.warning("testParseSubcommand")
+    assert memory_handler.get_logs() == ("root - INFO - testParseSubcommand\n"
+                                         "root - WARNING - testParseSubcommand\n")
 
 def testParseSubcommandTwoPass():
     # parse to find subcommand, then add arguments
@@ -77,10 +141,14 @@ def testParseSubcommandTwoPass():
     opts, args = parser.parse_opts_args(testargs)
     _checkTrekOpts(opts, args, None, 'fred', 'barney', True, 'baz')
 
+###
+# test command line error handling
+###
 
-##
+
+#
 # matches to cliTestProg output
-##
+#
 _userCausedMsgExpect = (
     'UserCausedException: bad user\n'
     '  Caused by: RuntimeError: two caught\n'
