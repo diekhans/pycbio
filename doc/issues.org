@@ -3,7 +3,12 @@
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
 
-* file an enhancement on argparse with the issues extending it.
+* ArgumentParserExtras
+** saved in branch expr-config-logging-with-parser
+** gave up on configuring logging in a derived class
+- in flair logging being enabled four time
+- logging has to be enable after daemonization.
+**  argparse with the issues extending it.
 - find arguments argument types for splitting options and arguments,
   find the subparser that actually parsed the options
   look in side for definitions

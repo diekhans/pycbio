@@ -76,30 +76,33 @@ def _checkTrekOpts(opts, args, kirk, spock, mc_coy, uhura, pike):
     assert "spock" not in args
 
 def testGetOptsLong():
+    _resetLogger()
     parser = _makeTrekParser()
     testargs = ('--log-level=DEBUG', '--kirk=10', '--spock=fred', 'foo')
-    _resetLogger()
     opts, args = parser.parse_opts_args(testargs)
-    memory_handler = _confTestLogger()
     _checkTrekOpts(opts, args, 10, 'fred', None, False, 'foo')
+    memory_handler = _confTestLogger()
     logging.debug("testGetOptsLong")
     logging.info("testGetOptsLong")
     logging.warning("testGetOptsLong")
+    logging.error("testGetOptsLong")
     assert memory_handler.get_logs() == ("root - DEBUG - testGetOptsLong\n"
                                          "root - INFO - testGetOptsLong\n"
-                                         "root - WARNING - testGetOptsLong\n")
+                                         "root - WARNING - testGetOptsLong\n"
+                                         "root - ERROR - testGetOptsLong\n")
 
 def testGetOptsShort():
-    parser = _makeTrekParser()
-    testargs = ('--log-level=WARN', '-s' 'fred', '-m', 'barney', '-u', 'baz')
     _resetLogger()
+    parser = _makeTrekParser()
+    testargs = ('--log-level=INFO', '-s' 'fred', '-m', 'barney', '-u', 'baz')
     opts, args = parser.parse_opts_args(testargs)
-    memory_handler = _confTestLogger()
     _checkTrekOpts(opts, args, None, 'fred', 'barney', True, 'baz')
+    memory_handler = _confTestLogger()
     logging.debug("testGetOptsShort")
     logging.info("testGetOptsShort")
     logging.warning("testGetOptsShort")
-    assert memory_handler.get_logs() == "root - WARNING - testGetOptsShort\n"
+    assert memory_handler.get_logs() == ("root - INFO - testGetOptsShort\n"
+                                         "root - WARNING - testGetOptsShort\n")
 
 def testParseOptsArgs():
     parser = _makeTrekParser()
@@ -116,18 +119,20 @@ def testParseSubcommand():
     _addTrekOpts(shuttle_parser)
 
     testargs = ('--log-level=INFO', 'shuttle', '-s', 'fred', '-m', 'barney', '-u', 'baz')
-    _resetLogger()
     opts, args = parser.parse_opts_args(testargs)
-    memory_handler = _confTestLogger()
     assert args.craft == "shuttle"
     _checkTrekOpts(opts, args, None, 'fred', 'barney', True, 'baz')
+    memory_handler = _confTestLogger()
     logging.debug("testParseSubcommand")
     logging.info("testParseSubcommand")
     logging.warning("testParseSubcommand")
+    logging.error("testParseSubcommand")
     assert memory_handler.get_logs() == ("root - INFO - testParseSubcommand\n"
-                                         "root - WARNING - testParseSubcommand\n")
+                                         "root - WARNING - testParseSubcommand\n"
+                                         "root - ERROR - testParseSubcommand\n")
 
 def testParseSubcommandTwoPass():
+    _resetLogger()
     # parse to find subcommand, then add arguments
     parser = cli.ArgumentParserExtras(description='subspace communication',
                                       exit_on_error=False)
@@ -135,11 +140,20 @@ def testParseSubcommandTwoPass():
     shuttle_parser = subparsers.add_parser('shuttle', help='Shuttle craft')
     _addTrekOpts(shuttle_parser)
 
-    testargs = ('shuttle', '-s', 'fred', '-m', 'barney', '-u', 'baz')
+    testargs = ('--log-level=INFO', 'shuttle', '-s', 'fred', '-m', 'barney', '-u', 'baz')
+    #
     args0 = parser.parse_args(testargs)
     assert args0.craft == "shuttle"
     opts, args = parser.parse_opts_args(testargs)
     _checkTrekOpts(opts, args, None, 'fred', 'barney', True, 'baz')
+    memory_handler = _confTestLogger()
+    logging.debug("testParseSubcommand")
+    logging.info("testParseSubcommand")
+    logging.warning("testParseSubcommand")
+    logging.error("testParseSubcommand")
+    assert memory_handler.get_logs() == ("root - INFO - testParseSubcommand\n"
+                                         "root - WARNING - testParseSubcommand\n"
+                                         "root - ERROR - testParseSubcommand\n")
 
 ###
 # test command line error handling

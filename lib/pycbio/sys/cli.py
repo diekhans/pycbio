@@ -102,6 +102,7 @@ class ArgumentParserExtras(argparse.ArgumentParser):
         return parser
 
     def _enable_logging(self, parsed_args):
+        assert self.parent is None
         loggingOps.setupFromCmd(parsed_args, prog=self.prog)
 
     def add_subparsers(self, **kwargs):
