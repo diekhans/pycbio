@@ -61,6 +61,8 @@ def parseArgsWithLogging(parser, args=None, namespace=None):
     """Call argparse.parse_args and return args. Add logging command options
     if they are not already there and configuring logging after parsing.  This
     handles common cases.
+
+    WARNING: this does not work with sub-parsers
     """
     if not loggingOps.haveCmdOptions(parser):
         loggingOps.addCmdOptions(parser)
@@ -71,7 +73,10 @@ def parseArgsWithLogging(parser, args=None, namespace=None):
 def parseOptsArgsWithLogging(parser, args=None, namespace=None):
     """Call argparse.parse_args and return (opts, args). Add logging command options
     if they are not already there and configuring logging after parsing.  This
-    handles common cases."""
+    handles common cases.
+
+    WARNING: this does not work with sub-parsers
+    """
     return splitOptionsArgs(parser, parseArgsWithLogging(parser, args, namespace))
 
 

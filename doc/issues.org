@@ -3,6 +3,10 @@
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
 
+* ArgumentParser need introspection
+write ticket
+implementation makes this hard with subparsers
+
 * ArgumentParserExtras
 ** saved in branch expr-config-logging-with-parser
 ** gave up on configuring logging in a derived class
