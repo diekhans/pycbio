@@ -2,7 +2,9 @@
 
 import sys
 from os import path as osp
+import argparse
 from Bio import SeqIO
+
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.sys import cli, fileOps
 
@@ -10,14 +12,14 @@ def parseArgs():
     desc = """Select records from a FASTA file. ALso converting NCBI/EBI compount names separate with '|'
     to having the in the list split by spaces.  Drop records with duplicate ids.
     """
-    parser = cli.ArgumentParserExtras(description=desc)
+    parser = argparse.ArgumentParser(description=desc)
     parser.add_argument("--selectFile",
                         help="file of ids to select")
     parser.add_argument("inFasta",
                         help="input FASTA file, maybe compressed ")
     parser.add_argument("outFasta",
                         help="output FASTA, may have compression extensions")
-    return parser.parse_opts_args()
+    return cli.parseOptsArgsWithLogging(parser)
 
 def maybeLoadSelectIds(selectFile):
     if selectFile is not None:

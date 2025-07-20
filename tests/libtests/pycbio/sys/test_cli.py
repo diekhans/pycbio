@@ -2,13 +2,14 @@
 """Miscellaneous command line parsing operations tests"""
 import sys
 import os.path as osp
+import argparse
 import logging
 import io
 import pipettor
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.testSupport import assert_regex_dotall, get_test_dir
-from pycbio.sys import cli
+from pycbio.sys import cli, loggingOps
 
 DEBUG = False
 
@@ -61,8 +62,8 @@ def _addTrekOpts(parser):
     parser.add_argument('pike')
 
 def _makeTrekParser():
-    parser = cli.ArgumentParserExtras(description='to go where no one has gone before',
-                                      exit_on_error=False)
+    parser = argparse.ArgumentParser(description='to go where no one has gone before',
+                                     exit_on_error=False)
     _addTrekOpts(parser)
     return parser
 
@@ -79,7 +80,7 @@ def testGetOptsLong():
     _resetLogger()
     parser = _makeTrekParser()
     testargs = ('--log-level=DEBUG', '--kirk=10', '--spock=fred', 'foo')
-    opts, args = parser.parse_opts_args(testargs)
+    opts, args = cli.parseOptsArgsWithLogging(parser, testargs)
     _checkTrekOpts(opts, args, 10, 'fred', None, False, 'foo')
     memory_handler = _confTestLogger()
     logging.debug("testGetOptsLong")
@@ -95,7 +96,7 @@ def testGetOptsShort():
     _resetLogger()
     parser = _makeTrekParser()
     testargs = ('--log-level=INFO', '-s' 'fred', '-m', 'barney', '-u', 'baz')
-    opts, args = parser.parse_opts_args(testargs)
+    opts, args = cli.parseOptsArgsWithLogging(parser, testargs)
     _checkTrekOpts(opts, args, None, 'fred', 'barney', True, 'baz')
     memory_handler = _confTestLogger()
     logging.debug("testGetOptsShort")
@@ -107,19 +108,19 @@ def testGetOptsShort():
 def testParseOptsArgs():
     parser = _makeTrekParser()
     testargs = ('-s' 'fred', '-m', 'barney', '-u', 'baz')
-    opts, args = parser.parse_opts_args(testargs)
+    opts, args = cli.parseOptsArgsWithLogging(parser, testargs)
     _checkTrekOpts(opts, args, None, 'fred', 'barney', True, 'baz')
 
 def testParseSubcommand():
     # standard add all subcommand arguments up front
-    parser = cli.ArgumentParserExtras(description='subspace communication',
-                                      exit_on_error=False)
+    parser = argparse.ArgumentParser(description='subspace communication',
+                                     exit_on_error=False)
     subparsers = parser.add_subparsers(dest='craft', required=True)
     shuttle_parser = subparsers.add_parser('shuttle', help='Shuttle craft')
     _addTrekOpts(shuttle_parser)
 
     testargs = ('--log-level=INFO', 'shuttle', '-s', 'fred', '-m', 'barney', '-u', 'baz')
-    opts, args = parser.parse_opts_args(testargs)
+    opts, args = cli.parseOptsArgsWithLogging(parser, testargs)
     assert args.craft == "shuttle"
     _checkTrekOpts(opts, args, None, 'fred', 'barney', True, 'baz')
     memory_handler = _confTestLogger()
@@ -134,17 +135,20 @@ def testParseSubcommand():
 def testParseSubcommandTwoPass():
     _resetLogger()
     # parse to find subcommand, then add arguments
-    parser = cli.ArgumentParserExtras(description='subspace communication',
-                                      exit_on_error=False)
+    parser = argparse.ArgumentParser(description='subspace communication',
+                                     exit_on_error=False)
+    loggingOps.addCmdOptions(parser)
     subparsers = parser.add_subparsers(dest='craft', required=True)
     shuttle_parser = subparsers.add_parser('shuttle', help='Shuttle craft')
-    _addTrekOpts(shuttle_parser)
 
     testargs = ('--log-level=INFO', 'shuttle', '-s', 'fred', '-m', 'barney', '-u', 'baz')
-    #
-    args0 = parser.parse_args(testargs)
+
+    args0, argv = parser.parse_known_args(testargs)
     assert args0.craft == "shuttle"
-    opts, args = parser.parse_opts_args(testargs)
+
+    _addTrekOpts(shuttle_parser)
+
+    opts, args = cli.parseOptsArgsWithLogging(parser, testargs)
     _checkTrekOpts(opts, args, None, 'fred', 'barney', True, 'baz')
     memory_handler = _confTestLogger()
     logging.debug("testParseSubcommand")

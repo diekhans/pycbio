@@ -1,15 +1,42 @@
 # Copyright 2006-2025 Mark Diekhans
 """Support for command line parsing"""
-import argparse
 import logging
 import traceback
-from io import StringIO
+import io
+import argparse
 from pycbio import NoStackError
-from pycbio.sys.objDict import ObjDict
 from pycbio.sys import loggingOps
+from pycbio.sys.objDict import ObjDict
 
+def _find_subparser_action(parser):
+    """Find subparser action in a parser"""
+    for action in parser._actions:
+        if isinstance(action, argparse._SubParsersAction):
+            return action
+    return None
 
-def splitOptionsArgs(parser, inargs):
+def _findParserUsed(parser, parsed_args):
+    """Find the parser object used to parse the arguments; required for subparsers.
+    """
+    # Traverse through the subparser hierarchy using parsed argument values
+    while parser:
+        subparsers_action = _find_subparser_action(parser)
+        if subparsers_action is None:
+            break
+
+        # Find the next command in parsed args
+        cmd_name = getattr(parsed_args, subparsers_action.dest, None)
+        if (cmd_name is None) or (cmd_name not in subparsers_action.choices):
+            break
+        parser = subparsers_action.choices[cmd_name]
+    return parser
+
+def _findOptNames(parser, parsed_args):
+    "Find option names"
+    parser = _findParserUsed(parser, parsed_args)
+    return {a.dest for a in parser._actions if a.option_strings}
+
+def splitOptionsArgs(parser, parsed_args):
     """Split command line arguments into two objects one of option arguments
     (-- or - options) and one of positional arguments.  Useful for packaging up
     a large number of options to pass around.  This does not handle subparsers
@@ -18,8 +45,8 @@ def splitOptionsArgs(parser, inargs):
 
     opts = ObjDict()
     args = ObjDict()
-    optnames = set([a.dest for a in parser._actions if a.option_strings])
-    for name, value in vars(inargs).items():
+    optnames = _findOptNames(parser, parsed_args)
+    for name, value in vars(parsed_args).items():
         if name in optnames:
             opts[name] = value
         else:
@@ -28,113 +55,24 @@ def splitOptionsArgs(parser, inargs):
 
 def parseOptsArgs(parser, args=None, namespace=None):
     """Call argparse parse_args and return (opts, args)"""
-    return splitOptionsArgs(parser, parser.parse_args(args=args, namespace=namespace))
+    return splitOptionsArgs(parser, parser.parse_args(args, namespace))
 
-class _SubparsersActionWrapper:
-    """Used to pass through the pointer to the parent parser in ArgumentParserExtras"""
-    def __init__(self, subparsers_action, parent):
-        self._action = subparsers_action
-        self._parent = parent
-
-        # parser creation from action
-        def factory(*args, **kwargs):
-            return type(parent)(*args, parent=self._parent, **kwargs)
-        self._action._parser_class = factory
-
-    def add_parser(self, name, **kwargs):
-        return self._action.add_parser(name, **kwargs)
-
-    def __getattr__(self, attr):
-        return getattr(self._action, attr)
-
-class ArgumentParserExtras(argparse.ArgumentParser):
-    """Wrapper around ArgumentParser that adds logging
-    related extra options.  Also can parse splitting options and positional
-    arguments into separate objects.
+def parseArgsWithLogging(parser, args=None, namespace=None):
+    """Call argparse.parse_args and return args. Add logging command options
+    if they are not already there and configuring logging after parsing.  This
+    handles common cases.
     """
+    if not loggingOps.haveCmdOptions(parser):
+        loggingOps.addCmdOptions(parser)
+    args = parser.parse_args(args, namespace)
+    loggingOps.setupFromCmd(args)
+    return args
 
-    ###
-    # This is a bit tricky because of sub-parsers and uses too much
-    # internal knowledge of argparse.
-    #
-    # Want to add the logging options to the top-level parent parser.  This is
-    # done by adding pointer to the parent parser at in each object.  It
-    # requires a wrapper for the action object returned by add_subparsers()
-    # to pass though the parent information
-    #
-    # In order to be able to split options, we have to find the leaf
-    # sub-parser to get all of option definitions
-    #
-    # This also intercepts the functions to parser arguments to enable
-    # logging based on the logging arguments.
-    ##
-
-    def __init__(self, *args, parent=None, incl_syslog=False, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.parent = parent
-        self._subparser_map = {}
-        if parent is None:
-            loggingOps.addCmdOptions(self, inclSyslog=incl_syslog)
-
-    def _find_subparser_action(self):
-        for action in self._actions:
-            if isinstance(action, argparse._SubParsersAction):
-                return action
-        return None
-
-    def _find_parser_used(self, parsed_args):
-        """Find the parser object used to parse the arguments.
-        """
-        parser = self
-
-        # Traverse through the subparser hierarchy using parsed argument values
-        while parser:
-            subparsers_action = parser._find_subparser_action()
-            if subparsers_action is None:
-                break
-
-            # Find the next command in parsed args
-            cmd_name = getattr(parsed_args, subparsers_action.dest, None)
-            if (cmd_name is None) or (cmd_name not in subparsers_action.choices):
-                break
-            parser = subparsers_action.choices[cmd_name]
-
-        return parser
-
-    def _enable_logging(self, parsed_args):
-        assert self.parent is None
-        loggingOps.setupFromCmd(parsed_args, prog=self.prog)
-
-    def add_subparsers(self, **kwargs):
-        # save of _SubParsersAction object to find subparser use
-        action = super().add_subparsers(**kwargs)
-        self._subparsers_action = action
-        return self._subparsers_action
-
-    def parse_known_args(self, args=None, namespace=None):
-        "wrapper around parse_known_args to setup logging"
-        # parse_args() goes through this function
-
-        parsed_args, argv = super().parse_known_args(args, namespace)
-        self._enable_logging(parsed_args)
-        return parsed_args, argv
-
-    def parse_known_intermixed_args(self, args=None, namespace=None):
-        "wrapper around parse_known_intermixed_args to setup logging"
-        # parse_intermixed_args goes through this function
-
-        parsed_args, argv = super().parse_known_intermixed_args(args, namespace)
-        self._enable_logging(parsed_args)
-        return parsed_args, argv
-
-    def parse_opts_args(self, args=None, namespace=None):
-        """Return the parse command line option arguments (-- or - arguments) as an
-        object where the options are fields in the object.  Useful for packaging up
-        a large number of options to pass around without the temptation to pass
-        the positional args as well. Returns (opts, args).
-        """
-        parsed_args = self.parse_args(args, namespace)
-        return splitOptionsArgs(self._find_parser_used(parsed_args), parsed_args)
+def parseOptsArgsWithLogging(parser, args=None, namespace=None):
+    """Call argparse.parse_args and return (opts, args). Add logging command options
+    if they are not already there and configuring logging after parsing.  This
+    handles common cases."""
+    return splitOptionsArgs(parser, parseArgsWithLogging(parser, args, namespace))
 
 
 def _exceptionPrintNoTraceback(exc, file, indent):
@@ -156,7 +94,7 @@ def _exceptionPrint(exc, *, file=None, showTraceback=True, indent=True):
 
 def _exceptionFormat(exc, *, showTraceback=True, indent=True):
     """format a chained exception following causal chain"""
-    fh = StringIO()
+    fh = io.StringIO()
     _exceptionPrint(exc, file=fh, showTraceback=showTraceback, indent=indent)
     return fh.getvalue()
 

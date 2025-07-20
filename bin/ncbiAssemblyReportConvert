@@ -3,6 +3,7 @@
 
 import sys
 from os import path as osp
+import argparse
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.ncbi.assembly import AssemblyReport, AssemblyReportException, AssemblyReportNotFound
@@ -47,7 +48,7 @@ Special id types:
     - sequenceNameGenbankAccn - use sequenceName for primary assembly and genbank
       accession for other sequences.
 """
-    parser = cli.ArgumentParserExtras(description=desc)
+    parser = argparse.ArgumentParser(description=desc)
     parser.add_argument('--fromIdType', type=IdType, choices=IdType,
                         help="from sequence id type, also id type for sizes")
     parser.add_argument('--toIdType', type=IdType, choices=IdType,
@@ -64,7 +65,7 @@ Special id types:
                         help="NCBI assembly report file")
     parser.add_argument('outFile', type=str,
                         help="output of the specified type")
-    opts, args = parser.parse_opts_args()
+    opts, args = cli.parseOptsArgsWithLogging(parser)
     if (args.outputType == OutputType.lift) or (args.outputType == OutputType.idmap):
         if (opts.fromIdType is None) or (opts.toIdType is None):
             parser.error(f"output of {OutputType.lift} or {OutputType.idmap} requires --fromIdType and --toIdType")

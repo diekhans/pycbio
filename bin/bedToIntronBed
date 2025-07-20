@@ -2,6 +2,7 @@
 # Copyright 2006-2025 Mark Diekhans
 
 import sys
+import argparse
 from os import path as osp
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
@@ -21,7 +22,7 @@ def parseArgs():
     with one base on each side of the intron, or it can include the adjacent
     exons.
     """
-    parser = cli.ArgumentParserExtras(description=desc)
+    parser = argparse.ArgumentParser(description=desc)
     parser.add_argument("--fmt", type=OutputFmt, choices=OutputFmt, default=OutputFmt.intron_blk,
                         help="output format")
     parser.add_argument("--minIntronSize", type=int, default=0,
@@ -34,7 +35,7 @@ def parseArgs():
                         help="input BED")
     parser.add_argument("outBedFile",
                         help="output BED of introns")
-    return parser.parse_opts_args()
+    return cli.parseOptsArgsWithLogging(parser)
 
 def makeIntronBed(bed, name, prevBlk, blk):
     return Bed(bed.chrom, prevBlk.end, blk.start, name, strand=bed.strand)
