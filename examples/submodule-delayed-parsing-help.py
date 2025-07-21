@@ -26,29 +26,19 @@
 import argparse
 import sys
 
-class SilentExitParser(argparse.ArgumentParser):
-    def error(self, message):
-        # Suppress error on first pass
-        raise argparse.ArgumentError(None, message)
-
-    def exit(self, status=0, message=None):
-        raise argparse.ArgumentError(None, message or "")
-
 def make_common_args():
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--kirk", action="store_true", help="Enable Kirk mode")
     return common
 
-def main(argv=None):
-    argv = argv or sys.argv[1:]
-
-    # Step 1: Dummy parse just to extract known_args.cmd, safely
-    dummy = SilentExitParser(add_help=False, parents=[make_common_args()])
-    dummy_sub = dummy.add_subparsers(dest="cmd", required=True)
-    dummy_sub.add_parser("align", add_help=False)
+def main():
+    # Step 1: pre-parse just to extract known_args.cmd, safely
+    pre_parser = argparse.ArgumentParser(add_help=False, parents=[make_common_args()], exit_on_error=False)
+    pre_parser_sub = pre_parser.add_subparsers(dest="cmd", required=True)
+    pre_parser_sub.add_parser("align", add_help=False)
 
     try:
-        known_args, _ = dummy.parse_known_args(argv)
+        known_args, _ = pre_parser.parse_known_args()
         subcmd = known_args.cmd
     except argparse.ArgumentError:
         subcmd = None  # fall through to full parser
@@ -63,8 +53,7 @@ def main(argv=None):
         align.add_argument("--reads", required=True, help="Input reads file")
         align.add_argument("--genome", required=True, help="Genome reference")
 
-    args = parser.parse_args(argv)
+    args = parser.parse_args()
     print(args)
 
-if __name__ == "__main__":
-    main()
+main()
