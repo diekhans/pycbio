@@ -102,7 +102,7 @@ def setupSyslogLogger(logger, facility, level, *, prog=None, address=None, forma
 
 def setupNullLogger(logger, level=logging.INFO):
     "configure discard logging.  Returns logger."
-v    handler = logging.NullHandler()
+    handler = logging.NullHandler()
     if level is not None:
         handler.setLevel(_convertLevel(level))
     return setupLogger(logger, handler)

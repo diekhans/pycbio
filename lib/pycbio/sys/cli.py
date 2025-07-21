@@ -127,7 +127,7 @@ class ErrorHandler:
               real_prog(opts, args.one, args.two)
 
     """
-    DEFAULT_NO_STACK_EXCEPTS = (OSError, ImportError)
+    DEFAULT_NO_STACK_EXCEPTS = (OSError, ImportError, KeyboardInterrupt)
 
     def __init__(self, *, noStackExcepts=DEFAULT_NO_STACK_EXCEPTS, printStackFilter=None):
         self.noStackExcepts = tuple(noStackExcepts) if noStackExcepts is not None else None
