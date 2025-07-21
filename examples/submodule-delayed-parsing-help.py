@@ -56,9 +56,10 @@ def main(argv=None):
     # Step 2: Build real parser with full help support
     parser = argparse.ArgumentParser(prog="flair", parents=[make_common_args()])
     subparsers = parser.add_subparsers(dest="cmd", required=True)
+    subparsers.add_parser("align", parents=[make_common_args()])
 
     if subcmd == "align":
-        align = subparsers.add_parser("align", parents=[make_common_args()])
+        align = subparsers.choices["align"]
         align.add_argument("--reads", required=True, help="Input reads file")
         align.add_argument("--genome", required=True, help="Genome reference")
 
