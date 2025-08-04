@@ -42,18 +42,21 @@ def main():
         subcmd = known_args.cmd
     except argparse.ArgumentError:
         subcmd = None  # fall through to full parser
+    print(f"@ Step 1: {subcmd}", file=sys.stderr)
 
     # Step 2: Build real parser with full help support
     parser = argparse.ArgumentParser(prog="flair", parents=[make_common_args()])
     subparsers = parser.add_subparsers(dest="cmd", required=True)
     subparsers.add_parser("align", parents=[make_common_args()])
+    print("@ Step 2: parser built", file=sys.stderr)
 
     if subcmd == "align":
         align = subparsers.choices["align"]
         align.add_argument("--reads", required=True, help="Input reads file")
         align.add_argument("--genome", required=True, help="Genome reference")
+        print("@ Step 3: subparser initalized", file=sys.stderr)
 
     args = parser.parse_args()
-    print(args)
+    print(args, file=sys.stderr)
 
 main()

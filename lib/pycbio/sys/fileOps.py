@@ -76,7 +76,7 @@ def rmTree(root):
 
 def isCompressed(path):
     "determine if a file appears to be compressed by extension"
-    return path.endswith(".gz") or path.endswith(".bz2") or path.endswith(".Z")
+    return path.endswith(".gz") or path.endswith(".bgz") or path.endswith(".bz2") or path.endswith(".Z")
 
 
 def compressCmd(path, *, bgzip=False):
@@ -84,15 +84,14 @@ def compressCmd(path, *, bgzip=False):
     to the `cat' command, so that it just gets written through"""
     if path.endswith(".Z"):
         raise PycbioException("writing compress .Z files not supported")
+
+    if path.endswith(".bgz") or bgzip:
+        return ["bgzip"]
     if path.endswith(".gz"):
-        if bgzip:
-            return ["bgzip"]
-        elif which("pigz"):
+        if which("pigz"):
             return ["pigz"]
         else:
             return ["gzip"]
-    if bgzip:
-        raise PycbioException(f"bgzip requested however file does not end in `.gz': `{path}'")
     if path.endswith(".bz2"):
         return ["bzip2"]
     else:
@@ -108,9 +107,14 @@ def compressBaseName(path):
 def decompressCmd(path):
     """"return the command to decompress the file to stdout, or default if not compressed, which defaults
     to the `cat' command, so that it just gets written through"""
-    if path.endswith(".gz") and which("unpigz"):
-        return ["unpigz", "-c"]
-    elif path.endswith(".Z") or path.endswith(".gz"):
+    # .bgz extension not supported by unpigz
+
+    if path.endswith(".gz"):
+        if which("unpigz"):
+            return ["unpigz", "-c"]
+        else:
+            return ["zcat"]
+    elif path.endswith(".bgz") or path.endswith(".Z"):
         return ["zcat"]
     elif path.endswith(".bz2"):
         return ["bzcat"]

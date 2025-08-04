@@ -66,6 +66,14 @@ def testOpengzWriteBz2(request):
     pipettor.run(("bunzip2", "-c", outfBz2), stdout=outf)
     ts.diff_test_files(inf, outf)
 
+def _checkBgzipType(outfGz):
+    info = pipettor.runout(['file', outfGz])
+
+    # MacOS: gzip compressed data, extra field, original size modulo 2^32 0
+    # newer GNU: Blocked GNU Zip Format (BGZF; gzip compatible), block length 16437
+    # older GNU: gzip compressed data, extra field
+    assert re.search(r".*(extra field)|(BGZF).*", info)
+
 def testOpengzWriteBgzip(request):
     # gzip is special
     inf = ts.get_test_input_file(request, "simple1.txt")
@@ -73,12 +81,24 @@ def testOpengzWriteBgzip(request):
     fileOps.rmFiles(outfGz)
     with open(inf) as inFh, fileOps.opengz(outfGz, "w", bgzip=True) as outFh:
         shutil.copyfileobj(inFh, outFh)
-    info = pipettor.runout(['file', outfGz])
+    _checkBgzipType(outfGz)
 
-    # MacOS: gzip compressed data, extra field, original size modulo 2^32 0
-    # newer GNU: Blocked GNU Zip Format (BGZF; gzip compatible), block length 16437
-    # older GNU: gzip compressed data, extra field
-    assert re.search(r".*(extra field)|(BGZF).*", info)
+def testOpengzWriteBgzipExt(request):
+    inf = ts.get_test_input_file(request, "simple1.txt")
+    outfGz = ts.get_test_output_file(request, ".out.bgz")
+    fileOps.rmFiles(outfGz)
+    with open(inf) as inFh, fileOps.opengz(outfGz, "w") as outFh:
+        shutil.copyfileobj(inFh, outFh)
+    _checkBgzipType(outfGz)
+
+def testOpengzReadBgzipExt(request):
+    inf = ts.get_test_input_file(request, "simple1.txt")
+    infGz = ts.get_test_output_file(request, ".out.bgz")
+    pipettor.run(("bgzip", "-c", inf), stdout=infGz)
+    outf = ts.get_test_output_file(request, ".out")
+    with fileOps.opengz(infGz) as inFh, open(outf, "w") as outFh:
+        shutil.copyfileobj(inFh, outFh)
+    ts.diff_test_files(inf, outf)
 
 def testAtomicInstall(request):
     inf = ts.get_test_input_file(request, "simple1.txt")
