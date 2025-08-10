@@ -1,13 +1,11 @@
 # Copyright 2006-2025 Mark Diekhans
 import sys
 import os.path as osp
-import unittest
 import glob
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
-
+import pycbio.sys.testingSupport as ts
 from pycbio.hgbrowser import browserDir
-from pycbio.sys.testCaseBase import TestCaseBase
 
 ##
 # basic set of pages
@@ -44,24 +42,15 @@ def _basicTest(outDir):
         _basicAddRow(brDir, row)
     brDir.write(outDir)
 
-class BrowserDirTests(TestCaseBase):
-    def _diffDir(self):
-        expectHtmlFiles = sorted(glob.glob(osp.join(self.getExpectedFile(""), "*.html")))
-        outputHtmlFiles = sorted(glob.glob(osp.join(self.getOutputFile(""), "*.html")))
-        self.assertEqual(len(expectHtmlFiles), len(outputHtmlFiles))
-        for i in range(len(expectHtmlFiles)):
-            self.diffFiles(expectHtmlFiles[i], outputHtmlFiles[i])
+def _diffDir(request):
+    expectHtmlFiles = sorted(glob.glob(osp.join(ts.get_test_expect_file(request), "*.html")))
+    outputHtmlFiles = sorted(glob.glob(osp.join(ts.get_test_output_file(request), "*.html")))
+    assert len(expectHtmlFiles) > 0
+    assert len(expectHtmlFiles) == len(outputHtmlFiles)
+    for expectHtmlFile, outputHtmlFile in zip(expectHtmlFiles, outputHtmlFiles):
+        ts.diff_test_files(expectHtmlFile, outputHtmlFile)
 
-    def testBasic(self):
-        outDir = self.getOutputFile("")
-        _basicTest(outDir)
-        self._diffDir()
-
-def suite():
-    ts = unittest.TestSuite()
-    ts.addTest(unittest.makeSuite(BrowserDirTests))
-    return ts
-
-
-if __name__ == '__main__':
-    unittest.main()
+def testBasic(request):
+    outDir = ts.get_test_output_file(request)
+    _basicTest(outDir)
+    _diffDir(request)
