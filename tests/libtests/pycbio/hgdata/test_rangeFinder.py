@@ -68,7 +68,7 @@ def dataMergeFunc(values):
     value = ",".join(sorted(vals))
     return Data(seqIds[0], start, end, strand, value)
 
-def mkRangeFinder(self, data, useStrand):
+def mkRangeFinder(data, useStrand):
     rf = RangeFinder()
     for row in data:
         if useStrand:
@@ -77,105 +77,105 @@ def mkRangeFinder(self, data, useStrand):
             rf.add(row.seqId, row.start, row.end, row.value)
     return rf
 
-def doQuery(self, rf, seqId, start, end, strand):
+def doQuery(rf, seqId, start, end, strand):
     "do query and sort results, returning tuple result"
     val = list(rf.overlapping(seqId, start, end, strand))
     val.sort()
     return tuple(val)
 
-def doStrandQuery(self, rf, query):
+def doStrandQuery(rf, query):
     if rf.haveStrand:
         expect = query.expectWithStrand
     else:
         expect = query.expectWithOutStrand
-    val = self.doQuery(rf, query.seqId, query.start, query.end, query.strand)
+    val = doQuery(rf, query.seqId, query.start, query.end, query.strand)
     assert val == expect
 
-def doNoStrandQuery(self, rf, query):
+def doNoStrandQuery(rf, query):
     expect = query.expectWithOutStrand
-    val = self.doQuery(rf, query.seqId, query.start, query.end, None)
+    val = doQuery(rf, query.seqId, query.start, query.end, None)
     assert val == expect
 
-def doQueries(self, rf, queries, useStrand):
+def doQueries(rf, queries, useStrand):
     for query in queries:
         if useStrand:
-            self.doStrandQuery(rf, query)
+            doStrandQuery(rf, query)
         else:
-            self.doNoStrandQuery(rf, query)
+            doNoStrandQuery(rf, query)
 
-def testOverlapStrand(self):
+def testOverlapStrand():
     "stranded queries of have-strand RangeFinder"
-    rf = self.mkRangeFinder(data1, True)
-    self.doQueries(rf, queries1, True)
+    rf = mkRangeFinder(data1, True)
+    doQueries(rf, queries1, True)
 
-def testOverlapStrandNoStrand(self):
+def testOverlapStrandNoStrand():
     "stranded queries of no-strand RangeFinder"
-    rf = self.mkRangeFinder(data1, False)
-    self.doQueries(rf, queries1, True)
+    rf = mkRangeFinder(data1, False)
+    doQueries(rf, queries1, True)
 
-def testOverlapNoStrand(self):
+def testOverlapNoStrand():
     "no-stranded queries of no-strand RangeFinder"
-    rf = self.mkRangeFinder(data1, False)
-    self.doQueries(rf, queries1, False)
+    rf = mkRangeFinder(data1, False)
+    doQueries(rf, queries1, False)
 
-def testOverlapNoStrandStrand(self):
+def testOverlapNoStrandStrand():
     "no-stranded queries of have-strand RangeFinder"
-    rf = self.mkRangeFinder(data1, True)
-    self.doQueries(rf, queries1, False)
+    rf = mkRangeFinder(data1, True)
+    doQueries(rf, queries1, False)
 
-def testExactRange(self):
+def testExactRange():
     "exact range matches"
-    rf = self.mkRangeFinder(data2, True)
-    self.doQueries(rf, queries2, True)
-    self.doQueries(rf, queries2, False)
+    rf = mkRangeFinder(data2, True)
+    doQueries(rf, queries2, True)
+    doQueries(rf, queries2, False)
 
-def testValues(self):
+def testValues():
     "test listing all values"
-    rf = self.mkRangeFinder(data1, True)
+    rf = mkRangeFinder(data1, True)
     vals = sorted(rf.values())
     assert ['val1.1', 'val1.2', 'val1.3', 'val1.4', 'val1.5', 'val1.6'] == vals
 
-def testRemoveNoStrand(self):
+def testRemoveNoStrand():
     "exact range matches"
-    rf = self.mkRangeFinder(data1, False)
+    rf = mkRangeFinder(data1, False)
     ent = data1[1]  # val1.2
     rf.remove(ent.seqId, ent.start, ent.end, ent.value)
     left = sorted(rf.values())
     expect = ['val1.1', 'val1.3', 'val1.4', 'val1.5', 'val1.6']
     assert left == expect
 
-def testRemoveStrand(self):
+def testRemoveStrand():
     "exact range matches"
-    rf = self.mkRangeFinder(data1, False)
+    rf = mkRangeFinder(data1, False)
     ent = data1[1]  # val1.2
     rf.remove(ent.seqId, ent.start, ent.end, ent.value, ent.strand)
     left = sorted(rf.values())
     expect = ['val1.1', 'val1.3', 'val1.4', 'val1.5', 'val1.6']
     assert left == expect
 
-def testGetSeqsStrand(self):
-    rf = self.mkRangeFinder(data1, True)
+def testGetSeqsStrand():
+    rf = mkRangeFinder(data1, True)
     assert rf.getSeqIds() == frozenset([d.seqId for d in data1])
 
-def testGetSeqsNoStrand(self):
-    rf = self.mkRangeFinder(data1, False)
+def testGetSeqsNoStrand():
+    rf = mkRangeFinder(data1, False)
     assert rf.getSeqIds() == frozenset([d.seqId for d in data1])
 
-def testGetSeqRangeStrand(self):
-    rf = self.mkRangeFinder(data1, True)
+def testGetSeqRangeStrand():
+    rf = mkRangeFinder(data1, True)
     assert rf.getSeqRange("chr12") == (100, 10000)  # both strands
     assert rf.getSeqRange("chr12", '-') == (100, 500)  # this strand
     assert rf.getSeqRange("chr55") == (None, None)
     assert rf.getSeqRange("chr55", '-') == (None, None)
 
-def testGetSeqRangeNoStrand(self):
-    rf = self.mkRangeFinder(data1, False)
+def testGetSeqRangeNoStrand():
+    rf = mkRangeFinder(data1, False)
     assert rf.getSeqRange("chr12") == (100, 10000)  # both strands
     assert rf.getSeqRange("chr12", '-') == (100, 10000)  # also for both
     assert rf.getSeqRange("chr55") == (None, None)
     assert rf.getSeqRange("chr55", '-') == (None, None)
 
-def mkRangeFinderMerge(self, data, useStrand):
+def mkRangeFinderMerge(data, useStrand):
     rf = RangeFinder(mergeFunc=dataMergeFunc)
     for row in data:
         if useStrand:
@@ -184,8 +184,8 @@ def mkRangeFinderMerge(self, data, useStrand):
             rf.addMerge(row.seqId, row.start, row.end, row)
     return rf
 
-def testMergerStrand1(self):
-    rf = self.mkRangeFinderMerge(data1, True)
+def testMergerStrand1():
+    rf = mkRangeFinderMerge(data1, True)
     values = sorted(rf.values())
     assert values == [
         Data(seqId='chr12', start=100, end=500, strand='-', value='val1.3'),
@@ -195,8 +195,8 @@ def testMergerStrand1(self):
         Data(seqId='chr32', start=1000000000, end=2000000000, strand='+', value='val1.5')
     ]
 
-def testMergerNoStrand1(self):
-    rf = self.mkRangeFinderMerge(data1, False)
+def testMergerNoStrand1():
+    rf = mkRangeFinderMerge(data1, False)
     values = sorted(rf.values())
     assert values == [
         Data(seqId='chr12', start=100, end=10000, strand='+,-', value='val1.2,val1.3,val1.4'),
@@ -204,8 +204,8 @@ def testMergerNoStrand1(self):
         Data(seqId='chr32', start=100000, end=2000000000, strand='+,-', value='val1.5,val1.6')
     ]
 
-def testMergerStrand3(self):
-    rf = self.mkRangeFinderMerge(data3, True)
+def testMergerStrand3():
+    rf = mkRangeFinderMerge(data3, True)
     values = sorted(rf.values())
     assert values == [
         Data(seqId='chr12', start=100, end=500, strand='-', value='val1.3'),
@@ -214,8 +214,8 @@ def testMergerStrand3(self):
         Data(seqId='chr12', start=1000000000, end=2000000000, strand='+', value='val1.5')
     ]
 
-def testMergerNoStrand3(self):
-    rf = self.mkRangeFinderMerge(data3, False)
+def testMergerNoStrand3():
+    rf = mkRangeFinderMerge(data3, False)
     values = sorted(rf.values())
     assert values == [
         Data(seqId='chr12', start=100, end=10000, strand='+,-', value='val1.1,val1.2,val1.3,val1.4'),

@@ -18,8 +18,8 @@ def _connect():
     return hgDb.connect(db=testDb, hgConf=hgConf)
 
 @skip_if_no_mysql()
-def testDbQueryLoad(self):
-    conn = self._connect()
+def testDbQueryLoad():
+    conn = _connect()
     try:
         # just read 10 PSLs
         pslCnt = 0
@@ -30,8 +30,8 @@ def testDbQueryLoad(self):
         conn.close()
 
 @skip_if_no_mysql()
-def testDbRangeLoad(self):
-    conn = self._connect()
+def testDbRangeLoad():
+    conn = _connect()
     qNames = set()
     try:
         for psl in PslMySqlReader.targetRangeQuery(conn, testTbl, "chr22", 16650000, 20470000):
