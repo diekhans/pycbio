@@ -243,7 +243,6 @@ Happends with raw reads of PSL rows without cursorclass
 some is already in kznf
 
 * database
-** drop pycbio/db/dbDict.py, never been used
 ** for APSW, something like sqlite3.Row as; it is both a tuple and a dict
 however, it can't be passed to apsw, as it expects a sqlite3 cursor.
 Either suggest as an addition to APSW or port to here
