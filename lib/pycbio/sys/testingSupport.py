@@ -8,8 +8,26 @@ import pytest
 import sys
 import os
 import os.path as osp
+import errno
+import threading
 import re
 import difflib
+import io
+import logging
+import signal
+
+# this keeps OS/X crash reporter from popping up on test error
+def sigquit_handler(signum, frame):
+    sys.exit(os.EX_SOFTWARE)
+
+
+signal.signal(signal.SIGQUIT, sigquit_handler)
+signal.signal(signal.SIGABRT, sigquit_handler)
+
+try:
+    MAXFD = os.sysconf("SC_OPEN_MAX")
+except ValueError:
+    MAXFD = 256
 
 def get_test_id(request):
     """request object is a standard parameter that can added to a test function"""
@@ -50,6 +68,14 @@ def _get_lines(fname):
     with open(fname) as fh:
         return fh.readlines()
 
+def _get_bytes(fname):
+    with open(fname, "rb") as fh:
+        return fh.read()
+
+def must_exist(fname):
+    if not osp.exists(fname):
+        pytest.fail(f"file does not exist: {fname}")
+
 def diff_test_files(exp_file, out_file):
     """diff expected and output files."""
 
@@ -63,10 +89,23 @@ def diff_test_files(exp_file, out_file):
     if len(diffs) > 0:
         pytest.fail(f"test output differed  expected: '{exp_file}', got: '${out_file}'")
 
-def diff_results_expected(request, ext="", *, basename=None):
+def diff_results_expected(request, ext="", *, expect_basename=None):
     """diff expected and output files, with names computed from test id."""
-    diff_test_files(get_test_expect_file(request, ext, basename=basename),
+    diff_test_files(get_test_expect_file(request, ext, basename=expect_basename),
                     get_test_output_file(request, ext))
+
+def diff_results_binary_expected(request, ext, expect_basename=None):
+    """diff expected and output binary files.  If expect_basename is
+    used, it is used insted of the test id to find the expected file,
+    allowing share an expected file between multiple tests."""
+
+    expFile = get_test_expect_file(request, ext, basename=expect_basename)
+    expBytes = _get_bytes(expFile)
+
+    outFile = get_test_output_file(request, ext)
+    outBytes = _get_bytes(outFile)
+
+    assert outBytes == expBytes
 
 def _mk_err_spec(re_part, const_part):
     """Generate an exception matching regexp with a re part and an escaped static part
@@ -83,6 +122,44 @@ def assert_regex_dotall(obj, expectRe, msg=None):
     """Fail if the str(obj) does not match expectRe operator, including `.' matching newlines"""
     assert re.match(expectRe, str(obj), re.DOTALL), \
         msg or "regexp '{}' does not match '{}'".format(expectRe, str(obj))
+
+def get_num_running_threads():
+    "get the number of threads that are running"
+    n = 0
+    for t in threading.enumerate():
+        if t.is_alive():
+            n += 1
+    return n
+
+def assert_single_thread():
+    "fail if more than one thread is running"
+    assert get_num_running_threads() == 1
+
+def assert_no_child_procs():
+    "fail if there are any running or zombie child process"
+    try:
+        s = os.waitpid(0, os.WNOHANG)
+        pytest.fail(f"pending child processes or zombies: {s}")
+    except OSError as ex:
+        if ex.errno != errno.ECHILD:
+            raise
+
+def get_num_open_files():
+    "count the number of open files"
+    n = 0
+    for fd in range(0, MAXFD):
+        try:
+            os.fstat(fd)
+        except OSError:
+            n += 1
+    return MAXFD - n
+
+def assert_num_open_files_same(prev_num_open):
+    "assert that the number of open files has not changed"
+    num_open = get_num_open_files()
+    if num_open != prev_num_open:
+        pytest.fail(f"number of open files changed, was {prev_num_open} now it is {num_open}")
+
 
 class CheckRaisesCauses:
     """
@@ -128,3 +205,15 @@ class CheckRaisesCauses:
             raise AssertionError(f"Expect exception cause chain of {len(self.expect_chain)}, got {len(got_chain)}: {got_chain}")
 
         return True
+
+class LoggerForTests():
+    """test logger that logs to memory, each instance has a new logger"""
+    def __init__(self, level=logging.DEBUG):
+        self.logger = logging.getLogger(str(id(self)))
+        self.logger.setLevel(level)
+        self.__buffer = io.StringIO()
+        self.logger.addHandler(logging.StreamHandler(self.__buffer))
+
+    @property
+    def data(self):
+        return self.__buffer.getvalue()

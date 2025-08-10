@@ -6,7 +6,7 @@ import json
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.objDict import ObjDict, DefaultObjDict, defaultObjDictJsonHook
-from pycbio.sys import testSupport as ts
+from pycbio.sys import testingSupport as ts
 try:
     import jsonpickle
     _haveJsonPickle = True

@@ -5,7 +5,7 @@ import subprocess
 import re
 myDir = os.path.normpath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(myDir, "../../../../lib"))
-from pycbio.sys import testSupport as ts
+from pycbio.sys import testingSupport as ts
 
 def _runTestCmd(request, prog):
     outf = ts.get_test_output_file(request, 'err')

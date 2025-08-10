@@ -8,7 +8,7 @@ import io
 import pipettor
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
-from pycbio.sys.testSupport import assert_regex_dotall, get_test_dir
+import pycbio.sys.testingSupport as ts
 from pycbio.sys import cli, loggingOps
 
 DEBUG = False
@@ -207,7 +207,7 @@ _newLineMsgExpect = (
 def _runCmdHandlerTestProg(request, errorWrap, *, errorClass=None,
                            printStackFilter=None, sysExit=None,
                            debugLog=False):
-    cmd = [sys.executable, osp.join(get_test_dir(request), "bin/cliTestProg")]
+    cmd = [sys.executable, osp.join(ts.get_test_dir(request), "bin/cliTestProg")]
     if errorClass is not None:
         cmd.append("--error-class=" + errorClass)
     if printStackFilter is not None:
@@ -239,12 +239,12 @@ def testCmdHanderUser(request):
 
 def testCmdHanderUserStack(request):
     returncode, stderr = _runCmdHandlerTestProg(request, 'no_stack', debugLog=True)
-    assert_regex_dotall(stderr, _userCausedStackExpectRe)
+    ts.assert_regex_dotall(stderr, _userCausedStackExpectRe)
     assert returncode == 1
 
 def testCmdHanderBug(request):
     returncode, stderr = _runCmdHandlerTestProg(request, 'with_stack')
-    assert_regex_dotall(stderr, _bugStackExpectRe)
+    ts.assert_regex_dotall(stderr, _bugStackExpectRe)
     assert returncode == 1
 
 def testCmdHanderNoStackExcepts(request):
@@ -259,13 +259,13 @@ def testCmdHanderFileNotFound(request):
 
 def testCmdHanderFilterTrue(request):
     returncode, stderr = _runCmdHandlerTestProg(request, 'with_stack', printStackFilter="True")
-    assert_regex_dotall(stderr, _bugStackExpectRe)
+    ts.assert_regex_dotall(stderr, _bugStackExpectRe)
     assert returncode == 1
 
 def testCmdHanderFilterTrue2(request):
     # force even with NoStackError
     returncode, stderr = _runCmdHandlerTestProg(request, 'no_stack', printStackFilter="True")
-    assert_regex_dotall(stderr, _userCausedStackExpectRe)
+    ts.assert_regex_dotall(stderr, _userCausedStackExpectRe)
     assert returncode == 1
 
 def testCmdHanderFilterFalse(request):
@@ -276,7 +276,7 @@ def testCmdHanderFilterFalse(request):
 def testCmdHanderFilterNone(request):
     # all through to default handling
     returncode, stderr = _runCmdHandlerTestProg(request, 'with_stack', printStackFilter="None")
-    assert_regex_dotall(stderr, _bugStackExpectRe)
+    ts.assert_regex_dotall(stderr, _bugStackExpectRe)
     assert returncode == 1
 
 def testCmdHanderFilterNone2(request):
@@ -288,7 +288,7 @@ def testCmdHanderFilterNone2(request):
 def testCmdHanderNewlineMsg(request):
     returncode, stderr = _runCmdHandlerTestProg(request, 'no_stack',
                                                 errorClass='new_line_msg')
-    assert_regex_dotall(stderr, _newLineMsgExpect)
+    ts.assert_regex_dotall(stderr, _newLineMsgExpect)
     assert returncode == 1
 
 def testCmdHanderSysExit0(request):
