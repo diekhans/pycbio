@@ -1,9 +1,8 @@
 # Copyright 2006-2025 Mark Diekhans
-import unittest
 import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
-from pycbio.sys.testCaseBase import TestCaseBase
+import pycbio.sys.testingSupport as ts
 from pycbio.sys import fileOps
 from pycbio.hgdata.genePred import GenePredTbl, genePredFromBigGenePred, GenePredReader
 
@@ -68,80 +67,69 @@ def featureExpectedSwap(expected, chromSize):
                       featureExpectedSwap1(feat[2], chromSize)))
     return tuple(reved)
 
+def chkFeatures(gene, expect):
+    feats = gene.getFeatures()
+    assert len(feats) == len(expect)
+    for i in range(len(feats)):
+        assert featureEq(feats[i], expect[i])
 
-class ReadTests(TestCaseBase):
-    def chkFeatures(self, gene, expect):
-        feats = gene.getFeatures()
-        self.assertEqual(len(feats), len(expect))
-        for i in range(len(feats)):
-            self.assertTrue(featureEq(feats[i], expect[i]))
+def testLoadMin(request):
+    gpTbl = GenePredTbl(ts.get_test_input_file(request, "fromPslMinTest.gp"))
+    assert len(gpTbl) == 9
+    r = gpTbl[0]
+    assert len(r.exons) == 10
+    assert r.name == "NM_000017.1"
+    assert r.exons[9].start == 119589051
+    assert not r.hasExonFrames
 
-    def testLoadMin(self):
-        gpTbl = GenePredTbl(self.getInputFile("fromPslMinTest.gp"))
-        self.assertEqual(len(gpTbl), 9)
-        r = gpTbl[0]
-        self.assertEqual(len(r.exons), 10)
-        self.assertEqual(r.name, "NM_000017.1")
-        self.assertEqual(r.exons[9].start, 119589051)
-        self.assertTrue(not r.hasExonFrames)
+    # positive strand features
+    chkFeatures(r, featsNM_000017)
 
-        # positive strand features
-        self.chkFeatures(r, featsNM_000017)
+    # negative strand features
+    r = gpTbl[1]
+    assert r.name == "NM_000066.1"
+    chkFeatures(r, featsNM_000066)
 
-        # negative strand features
-        r = gpTbl[1]
-        self.assertEqual(r.name, "NM_000066.1")
-        self.chkFeatures(r, featsNM_000066)
+def testLoadFrameStat(request):
+    gpTbl = GenePredTbl(ts.get_test_input_file(request, "fileFrameStatTest.gp"))
+    assert len(gpTbl) == 5
+    r = gpTbl[0]
+    assert len(r.exons) == 10
+    assert r.name == "NM_000017.1"
+    assert r.exons[9].start == 119589051
+    assert r.hasExonFrames
 
-    def testLoadFrameStat(self):
-        gpTbl = GenePredTbl(self.getInputFile("fileFrameStatTest.gp"))
-        self.assertEqual(len(gpTbl), 5)
-        r = gpTbl[0]
-        self.assertEqual(len(r.exons), 10)
-        self.assertEqual(r.name, "NM_000017.1")
-        self.assertEqual(r.exons[9].start, 119589051)
-        self.assertTrue(r.hasExonFrames)
+def testStrandRelative(request):
+    gpTbl = GenePredTbl(ts.get_test_input_file(request, "fromPslMinTest.gp"))
+    assert len(gpTbl) == 9
+    r = gpTbl[0]
+    r = r.getStrandRelative(chromSizes[r.chrom])
+    assert r.strandRel
+    assert len(r.exons) == 10
+    assert r.name == "NM_000017.1"
+    assert not r.hasExonFrames
 
-    def testStrandRelative(self):
-        gpTbl = GenePredTbl(self.getInputFile("fromPslMinTest.gp"))
-        self.assertEqual(len(gpTbl), 9)
-        r = gpTbl[0]
-        r = r.getStrandRelative(chromSizes[r.chrom])
-        self.assertTrue(r.strandRel)
-        self.assertEqual(len(r.exons), 10)
-        self.assertEqual(r.name, "NM_000017.1")
-        self.assertTrue(not r.hasExonFrames)
+    # positive strand features
+    chkFeatures(r, featsNM_000017)
 
-        # positive strand features
-        self.chkFeatures(r, featsNM_000017)
+    # negative strand features
+    r = gpTbl[1]
+    r = r.getStrandRelative(chromSizes[r.chrom])
+    assert r.strandRel
+    assert r.name == "NM_000066.1"
+    chkFeatures(r, featureExpectedSwap(featsNM_000066, chromSizes[r.chrom]))
 
-        # negative strand features
-        r = gpTbl[1]
-        r = r.getStrandRelative(chromSizes[r.chrom])
-        self.assertTrue(r.strandRel)
-        self.assertEqual(r.name, "NM_000066.1")
-        self.chkFeatures(r, featureExpectedSwap(featsNM_000066, chromSizes[r.chrom]))
+def testFromBigGenePred(request):
+    with open(ts.get_test_output_file(request, ".gp"), "w") as outFh:
+        for row in fileOps.iterRows(ts.get_test_input_file(request, "cat-consensus.bonobo.bigGenePred.txt")):
+            if not row[0].startswith('#'):
+                genePredFromBigGenePred(row).write(outFh)
+    ts.diff_results_expected(request, ".gp")
 
-    def testFromBigGenePred(self):
-        with open(self.getOutputFile(".gp"), "w") as outFh:
-            for row in fileOps.iterRows(self.getInputFile("cat-consensus.bonobo.bigGenePred.txt")):
-                if not row[0].startswith('#'):
-                    genePredFromBigGenePred(row).write(outFh)
-        self.diffExpected(".gp")
-
-    def testReadWrite(self):
-        inFile = self.getInputFile("fileFrameStatTest.gp")
-        outFile = self.getOutputFile(".gp")
-        with open(outFile, "w") as outFh:
-            for gp in GenePredReader(inFile):
-                gp.write(outFh)
-        self.diffFiles(inFile, outFile)
-
-def suite():
-    ts = unittest.TestSuite()
-    ts.addTest(unittest.makeSuite(ReadTests))
-    return ts
-
-
-if __name__ == '__main__':
-    unittest.main()
+def testReadWrite(request):
+    inFile = ts.get_test_input_file(request, "fileFrameStatTest.gp")
+    outFile = ts.get_test_output_file(request, ".gp")
+    with open(outFile, "w") as outFh:
+        for gp in GenePredReader(inFile):
+            gp.write(outFh)
+    ts.diff_test_files(inFile, outFile)

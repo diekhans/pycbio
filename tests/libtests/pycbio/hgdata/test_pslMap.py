@@ -1,9 +1,7 @@
 # Copyright 2006-2025 Mark Diekhans
-import unittest
 import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
-from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.hgdata.psl import Psl
 from pycbio.hgdata.pslMap import PslMap
 
@@ -32,194 +30,169 @@ def _targetToQueryMap(mapPsl, tRngStart, tRngEnd, tStrand):
 def _queryToTargetMap(mapPsl, qRngStart, qRngEnd, qStrand):
     return tuple([_mapToTuple(m) for m in PslMap(mapPsl).queryToTargetMap(qRngStart, qRngEnd, qStrand)])
 
-class TestPslMap(TestCaseBase):
-    def testT2QPosMRnaContig(self):
-        # within a single block
-        got = _targetToQueryMap(_pslPosMRna, 1024444, 1024445, '+')
-        self.assertEqual((('blk', None, 96, 97, None, '+', None, 1024444, 1024445, None, '+'),),
-                         got)
+def testT2QPosMRnaContig():
+    # within a single block
+    got = _targetToQueryMap(_pslPosMRna, 1024444, 1024445, '+')
+    assert (('blk', None, 96, 97, None, '+', None, 1024444, 1024445, None, '+'),) == got
 
-    def testT2QPosMRnaGaps(self):
-        # crossing gaps
-        got = _targetToQueryMap(_pslPosMRna, 1024398, 1031918, '+')
-        self.assertEqual((('blk', None, 50, 119, None, '+', None, 1024398, 1024467, None, '+'),
-                          ('gap', 119, None, None, 119, '+', None, 1024467, 1028428, None, '+'),
-                          ('blk', None, 119, 290, None, '+', None, 1028428, 1028599, None, '+'),
-                          ('gap', 290, None, None, 290, '+', None, 1028599, 1031868, None, '+'),
-                          ('blk', None, 290, 340, None, '+', None, 1031868, 1031918, None, '+')),
-                         got)
+def testT2QPosMRnaGaps():
+    # crossing gaps
+    got = _targetToQueryMap(_pslPosMRna, 1024398, 1031918, '+')
+    assert (('blk', None, 50, 119, None, '+', None, 1024398, 1024467, None, '+'),
+            ('gap', 119, None, None, 119, '+', None, 1024467, 1028428, None, '+'),
+            ('blk', None, 119, 290, None, '+', None, 1028428, 1028599, None, '+'),
+            ('gap', 290, None, None, 290, '+', None, 1028599, 1031868, None, '+'),
+            ('blk', None, 290, 340, None, '+', None, 1031868, 1031918, None, '+')) == got
 
-    def testT2QPosMRnaGapCrossRev(self):
-        # crossing gaps, with strand reversal
-        got = _targetToQueryMap(_pslPosMRna, 134342819, 134350339, '-')  # 1024398-1031918 on - strand
-        self.assertEqual((('blk', None, 50, 119, None, '+', None, 134350270, 134350339, None, '-'),
-                          ('gap', 119, None, None, 119, '+', None, 134346309, 134350270, None, '-'),
-                          ('blk', None, 119, 290, None, '+', None, 134346138, 134346309, None, '-'),
-                          ('gap', 290, None, None, 290, '+', None, 134342869, 134346138, None, '-'),
-                          ('blk', None, 290, 340, None, '+', None, 134342819, 134342869, None, '-')),
-                         got)
+def testT2QPosMRnaGapCrossRev():
+    # crossing gaps, with strand reversal
+    got = _targetToQueryMap(_pslPosMRna, 134342819, 134350339, '-')  # 1024398-1031918 on - strand
+    assert (('blk', None, 50, 119, None, '+', None, 134350270, 134350339, None, '-'),
+            ('gap', 119, None, None, 119, '+', None, 134346309, 134350270, None, '-'),
+            ('blk', None, 119, 290, None, '+', None, 134346138, 134346309, None, '-'),
+            ('gap', 290, None, None, 290, '+', None, 134342869, 134346138, None, '-'),
+            ('blk', None, 290, 340, None, '+', None, 134342819, 134342869, None, '-')) == got
 
-    def testT2QPosMRnaGapCrossBefore(self):
-        # gap before
-        got = _targetToQueryMap(_pslPosMRna, 1024309, 1028420, '+')
-        self.assertEqual(got, (('gap', None, None, None, 0, '+', None, 1024309, 1024348, None, '+'),
-                               ('blk', None, 0, 119, None, '+', None, 1024348, 1024467, None, '+'),
-                               ('gap', 119, None, None, 119, '+', None, 1024467, 1028420, None, '+')))
+def testT2QPosMRnaGapCrossBefore():
+    # gap before
+    got = _targetToQueryMap(_pslPosMRna, 1024309, 1028420, '+')
+    assert (('gap', None, None, None, 0, '+', None, 1024309, 1024348, None, '+'),
+            ('blk', None, 0, 119, None, '+', None, 1024348, 1024467, None, '+'),
+            ('gap', 119, None, None, 119, '+', None, 1024467, 1028420, None, '+')) == got
 
-    def testT2QPosMRnaGapCrossAfter(self):
-        # gap after
-        got = _targetToQueryMap(_pslPosMRna, 1051793, 1053908, '+')
-        self.assertEqual((('blk', None, 1780, 1823, None, '+', None, 1051793, 1051836, None, '+'),
-                          ('gap', 1823, None, None, 1823, '+', None, 1051836, 1053014, None, '+'),
-                          ('blk', None, 1823, 2517, None, '+', None, 1053014, 1053708, None, '+'),
-                          ('gap', 2517, None, None, None, '+', None, 1053708, 1053908, None, '+')),
-                         got)
+def testT2QPosMRnaGapCrossAfter():
+    # gap after
+    got = _targetToQueryMap(_pslPosMRna, 1051793, 1053908, '+')
+    assert (('blk', None, 1780, 1823, None, '+', None, 1051793, 1051836, None, '+'),
+            ('gap', 1823, None, None, 1823, '+', None, 1051836, 1053014, None, '+'),
+            ('blk', None, 1823, 2517, None, '+', None, 1053014, 1053708, None, '+'),
+            ('gap', 2517, None, None, None, '+', None, 1053708, 1053908, None, '+')) == got
 
-    def testT2QDoubleDel1(self):
-        "gap with deletions on both sizes, query one a single base"
-        got = _targetToQueryMap(_pslDoubleDel1, 151283730, 151370810, '+')
-        self.assertEqual((('blk', None, 1580, 1590, None, '-', None, 151283730, 151283740, None, '+'),
-                          ('gap', 1590, None, None, 1591, '-', None, 151283740, 151370804, None, '+'),
-                          ('blk', None, 1591, 1593, None, '-', None, 151370804, 151370806, None, '+'),
-                          ('gap', 1593, None, None, 1593, '-', None, 151370806, 151370807, None, '+'),
-                          ('blk', None, 1593, 1596, None, '-', None, 151370807, 151370810, None, '+')),
-                         got)
+def testT2QDoubleDel1():
+    "gap with deletions on both sizes, query one a single base"
+    got = _targetToQueryMap(_pslDoubleDel1, 151283730, 151370810, '+')
+    assert (('blk', None, 1580, 1590, None, '-', None, 151283730, 151283740, None, '+'),
+            ('gap', 1590, None, None, 1591, '-', None, 151283740, 151370804, None, '+'),
+            ('blk', None, 1591, 1593, None, '-', None, 151370804, 151370806, None, '+'),
+            ('gap', 1593, None, None, 1593, '-', None, 151370806, 151370807, None, '+'),
+            ('blk', None, 1593, 1596, None, '-', None, 151370807, 151370810, None, '+')) == got
 
-    def testT2QDoubleDel1B(self):
-        got = _queryToTargetMap(_pslDoubleDel1, 1408, 1784, '-')
-        self.assertEqual((('blk', None, 1408, 1590, None, '-', None, 151283558, 151283740, None, '+'),
-                          ('gap', None, 1590, 1591, None, '-', 151283740, None, None, 151370804, '+'),
-                          ('blk', None, 1591, 1593, None, '-', None, 151370804, 151370806, None, '+'),
-                          ('blk', None, 1593, 1762, None, '-', None, 151370807, 151370976, None, '+'),
-                          ('gap', None, 1762, 1764, None, '-', 151370976, None, None, 151370976, '+'),
-                          ('blk', None, 1764, 1784, None, '-', None, 151370976, 151370996, None, '+')),
-                         got)
+def testT2QDoubleDel1B():
+    got = _queryToTargetMap(_pslDoubleDel1, 1408, 1784, '-')
+    assert (('blk', None, 1408, 1590, None, '-', None, 151283558, 151283740, None, '+'),
+            ('gap', None, 1590, 1591, None, '-', 151283740, None, None, 151370804, '+'),
+            ('blk', None, 1591, 1593, None, '-', None, 151370804, 151370806, None, '+'),
+            ('blk', None, 1593, 1762, None, '-', None, 151370807, 151370976, None, '+'),
+            ('gap', None, 1762, 1764, None, '-', 151370976, None, None, 151370976, '+'),
+            ('blk', None, 1764, 1784, None, '-', None, 151370976, 151370996, None, '+')) == got
 
-    def testQ2TDoubleDel1AllGap(self):
-        # doesn't map
-        got = _queryToTargetMap(_pslDoubleDel1, 151283730, 151370810, '-')
-        self.assertEqual((('gap', None, 151283730, 151370810, None, '-', 151370996, None, None, None, '+'),),
-                         got)
+def testQ2TDoubleDel1AllGap():
+    # doesn't map
+    got = _queryToTargetMap(_pslDoubleDel1, 151283730, 151370810, '-')
+    assert (('gap', None, 151283730, 151370810, None, '-', 151370996, None, None, None, '+'),) == got
 
-    def testT2QDoubleDel1ToPsl(self):
-        "gap with deletions on both sizes, query one a single base, to a PSL"
-        gotPsl = PslMap(_pslDoubleDel1).targetToQueryMapPsl(151283730, 151370810, '+')
-        self.assertEqual(['15', '0', '0', '0', '1', '1', '2', '87065', '-', 'NM_017069.1-1.1', '1792', '196', '212', 'chrX', '154913754', '151283730', '151370810', '3', '10,2,3,', '1580,1591,1593,', '151283730,151370804,151370807,'],
-                         gotPsl.toRow())
+def testT2QDoubleDel1ToPsl():
+    "gap with deletions on both sizes, query one a single base, to a PSL"
+    gotPsl = PslMap(_pslDoubleDel1).targetToQueryMapPsl(151283730, 151370810, '+')
+    assert ['15', '0', '0', '0', '1', '1', '2', '87065', '-', 'NM_017069.1-1.1', '1792', '196', '212', 'chrX', '154913754', '151283730', '151370810', '3', '10,2,3,', '1580,1591,1593,', '151283730,151370804,151370807,'] == gotPsl.toRow()
 
-    def testQ2TDoubleDel1ToPsl(self):
-        # doesn't map
-        gotPsl = PslMap(_pslDoubleDel1).queryToTargetMapPsl(151283730, 151370810, '-')
-        self.assertEqual(None, gotPsl)
+def testQ2TDoubleDel1ToPsl():
+    # doesn't map
+    gotPsl = PslMap(_pslDoubleDel1).queryToTargetMapPsl(151283730, 151370810, '-')
+    assert gotPsl is None
 
-    def testQ2TPosMRnaSingle(self):
-        # within a single block
-        got = _queryToTargetMap(_pslPosMRna, 96, 97, '+')
-        self.assertEqual(got, (('blk', None, 96, 97, None, '+', None, 1024444, 1024445, None, '+'),))
+def testQ2TPosMRnaSingle():
+    # within a single block
+    got = _queryToTargetMap(_pslPosMRna, 96, 97, '+')
+    assert (('blk', None, 96, 97, None, '+', None, 1024444, 1024445, None, '+'),) == got
 
-    def testQ2TPosMRnaGaps(self):
-        # crossing gaps
-        got = _queryToTargetMap(_pslPosMRna, 50, 340, '+')
-        self.assertEqual((('blk', None, 50, 119, None, '+', None, 1024398, 1024467, None, '+'),
-                          ('blk', None, 119, 290, None, '+', None, 1028428, 1028599, None, '+'),
-                          ('blk', None, 290, 340, None, '+', None, 1031868, 1031918, None, '+')),
-                         got)
+def testQ2TPosMRnaGaps():
+    # crossing gaps
+    got = _queryToTargetMap(_pslPosMRna, 50, 340, '+')
+    assert (('blk', None, 50, 119, None, '+', None, 1024398, 1024467, None, '+'),
+            ('blk', None, 119, 290, None, '+', None, 1028428, 1028599, None, '+'),
+            ('blk', None, 290, 340, None, '+', None, 1031868, 1031918, None, '+')) == got
 
-    def testQ2TPosMRnaGapAfter(self):
-        # gap after
-        got = _queryToTargetMap(_pslPosMRna, 1780, 2537, '+')
-        self.assertEqual((('blk', None, 1780, 1823, None, '+', None, 1051793, 1051836, None, '+'),
-                          ('blk', None, 1823, 2517, None, '+', None, 1053014, 1053708, None, '+'),
-                          ('gap', None, 2517, 2537, None, '+', 1053708, None, None, None, '+')),
-                         got)
+def testQ2TPosMRnaGapAfter():
+    # gap after
+    got = _queryToTargetMap(_pslPosMRna, 1780, 2537, '+')
+    assert (('blk', None, 1780, 1823, None, '+', None, 1051793, 1051836, None, '+'),
+            ('blk', None, 1823, 2517, None, '+', None, 1053014, 1053708, None, '+'),
+            ('gap', None, 2517, 2537, None, '+', 1053708, None, None, None, '+')) == got
 
-    def testQ2TNegMRna(self):
-        # One-base gap at query start of negative strand PSL.  This appeared to be a bug,
-        # but it is doing the right thing.
+def testQ2TNegMRna():
+    # One-base gap at query start of negative strand PSL.  This appeared to be a bug,
+    # but it is doing the right thing.
 
-        # within a single block and on neg strand
-        got = _queryToTargetMap(_pslNegMrna, 0, 100, '-')
-        self.assertEqual((('gap', None, 0, 1, None, '-', None, None, None, 135605109, '+'),
-                          ('blk', None, 1, 100, None, '-', None, 135605109, 135605208, None, '+')),
-                         got)
+    # within a single block and on neg strand
+    got = _queryToTargetMap(_pslNegMrna, 0, 100, '-')
+    assert (('gap', None, 0, 1, None, '-', None, None, None, 135605109, '+'),
+            ('blk', None, 1, 100, None, '-', None, 135605109, 135605208, None, '+')) == got
 
-    def testQ2TNegMRnaToPsl(self):
-        # within a single block and on neg strand
-        gotPsl = PslMap(_pslNegMrna).queryToTargetMapPsl(0, 100, '-')
-        self.assertEqual(['99', '0', '0', '0', '0', '0', '0', '0', '-', 'NM_017651', '5564', '5464', '5563', 'chr6', '171115067', '135605109', '135605208', '1', '99,', '1,', '135605109,'],
-                         gotPsl.toRow())
+def testQ2TNegMRnaToPsl():
+    # within a single block and on neg strand
+    gotPsl = PslMap(_pslNegMrna).queryToTargetMapPsl(0, 100, '-')
+    assert ['99', '0', '0', '0', '0', '0', '0', '0', '-', 'NM_017651', '5564', '5464', '5563', 'chr6', '171115067', '135605109', '135605208', '1', '99,', '1,', '135605109,'] == gotPsl.toRow()
 
-    def testQ2TDoubleDel1Neg(self):
-        # gap with deletions on both sizes, query one a single base
-        # this includes query deletion on either end
-        got = _queryToTargetMap(_pslDoubleDel1, 3, 1790, '+')
-        self.assertEqual((('gap', None, 1387, 1790, None, '+', None, None, None, 151108857, '+'),
-                          ('blk', None, 1175, 1387, None, '+', None, 151108857, 151109069, None, '+'),
-                          ('blk', None, 1022, 1175, None, '+', None, 151116760, 151116913, None, '+'),
-                          ('blk', None, 878, 1022, None, '+', None, 151127128, 151127272, None, '+'),
-                          ('blk', None, 795, 878, None, '+', None, 151143890, 151143973, None, '+'),
-                          ('blk', None, 574, 795, None, '+', None, 151174905, 151175126, None, '+'),
-                          ('blk', None, 506, 574, None, '+', None, 151203795, 151203863, None, '+'),
-                          ('blk', None, 388, 506, None, '+', None, 151264708, 151264826, None, '+'),
-                          ('blk', None, 384, 388, None, '+', None, 151264832, 151264836, None, '+'),
-                          ('blk', None, 202, 384, None, '+', None, 151283558, 151283740, None, '+'),
-                          ('gap', None, 201, 202, None, '+', 151283740, None, None, 151370804, '+'),
-                          ('blk', None, 199, 201, None, '+', None, 151370804, 151370806, None, '+'),
-                          ('blk', None, 30, 199, None, '+', None, 151370807, 151370976, None, '+'),
-                          ('gap', None, 28, 30, None, '+', 151370976, None, None, 151370976, '+'),
-                          ('blk', None, 8, 28, None, '+', None, 151370976, 151370996, None, '+'),
-                          ('gap', None, 3, 8, None, '+', 151370996, None, None, None, '+')),
-                         got)
+def testQ2TDoubleDel1Neg():
+    # gap with deletions on both sizes, query one a single base
+    # this includes query deletion on either end
+    got = _queryToTargetMap(_pslDoubleDel1, 3, 1790, '+')
+    assert (('gap', None, 1387, 1790, None, '+', None, None, None, 151108857, '+'),
+            ('blk', None, 1175, 1387, None, '+', None, 151108857, 151109069, None, '+'),
+            ('blk', None, 1022, 1175, None, '+', None, 151116760, 151116913, None, '+'),
+            ('blk', None, 878, 1022, None, '+', None, 151127128, 151127272, None, '+'),
+            ('blk', None, 795, 878, None, '+', None, 151143890, 151143973, None, '+'),
+            ('blk', None, 574, 795, None, '+', None, 151174905, 151175126, None, '+'),
+            ('blk', None, 506, 574, None, '+', None, 151203795, 151203863, None, '+'),
+            ('blk', None, 388, 506, None, '+', None, 151264708, 151264826, None, '+'),
+            ('blk', None, 384, 388, None, '+', None, 151264832, 151264836, None, '+'),
+            ('blk', None, 202, 384, None, '+', None, 151283558, 151283740, None, '+'),
+            ('gap', None, 201, 202, None, '+', 151283740, None, None, 151370804, '+'),
+            ('blk', None, 199, 201, None, '+', None, 151370804, 151370806, None, '+'),
+            ('blk', None, 30, 199, None, '+', None, 151370807, 151370976, None, '+'),
+            ('gap', None, 28, 30, None, '+', 151370976, None, None, 151370976, '+'),
+            ('blk', None, 8, 28, None, '+', None, 151370976, 151370996, None, '+'),
+            ('gap', None, 3, 8, None, '+', 151370996, None, None, None, '+')) == got
 
-    def testQ2TDoubleDel1Pos(self):
-        # gap with deletions on both sizes, query one a single base
-        got = _queryToTargetMap(_pslDoubleDel1, 2, 1789, '-')  # same range as 3-1790 on + strand
-        self.assertEqual((('gap', None, 2, 405, None, '-', None, None, None, 151108857, '+'),
-                          ('blk', None, 405, 617, None, '-', None, 151108857, 151109069, None, '+'),
-                          ('blk', None, 617, 770, None, '-', None, 151116760, 151116913, None, '+'),
-                          ('blk', None, 770, 914, None, '-', None, 151127128, 151127272, None, '+'),
-                          ('blk', None, 914, 997, None, '-', None, 151143890, 151143973, None, '+'),
-                          ('blk', None, 997, 1218, None, '-', None, 151174905, 151175126, None, '+'),
-                          ('blk', None, 1218, 1286, None, '-', None, 151203795, 151203863, None, '+'),
-                          ('blk', None, 1286, 1404, None, '-', None, 151264708, 151264826, None, '+'),
-                          ('blk', None, 1404, 1408, None, '-', None, 151264832, 151264836, None, '+'),
-                          ('blk', None, 1408, 1590, None, '-', None, 151283558, 151283740, None, '+'),
-                          ('gap', None, 1590, 1591, None, '-', 151283740, None, None, 151370804, '+'),
-                          ('blk', None, 1591, 1593, None, '-', None, 151370804, 151370806, None, '+'),
-                          ('blk', None, 1593, 1762, None, '-', None, 151370807, 151370976, None, '+'),
-                          ('gap', None, 1762, 1764, None, '-', 151370976, None, None, 151370976, '+'),
-                          ('blk', None, 1764, 1784, None, '-', None, 151370976, 151370996, None, '+'),
-                          ('gap', None, 1784, 1789, None, '-', 151370996, None, None, None, '+')),
-                         got)
+def testQ2TDoubleDel1Pos():
+    # gap with deletions on both sizes, query one a single base
+    got = _queryToTargetMap(_pslDoubleDel1, 2, 1789, '-')  # same range as 3-1790 on + strand
+    assert (('gap', None, 2, 405, None, '-', None, None, None, 151108857, '+'),
+            ('blk', None, 405, 617, None, '-', None, 151108857, 151109069, None, '+'),
+            ('blk', None, 617, 770, None, '-', None, 151116760, 151116913, None, '+'),
+            ('blk', None, 770, 914, None, '-', None, 151127128, 151127272, None, '+'),
+            ('blk', None, 914, 997, None, '-', None, 151143890, 151143973, None, '+'),
+            ('blk', None, 997, 1218, None, '-', None, 151174905, 151175126, None, '+'),
+            ('blk', None, 1218, 1286, None, '-', None, 151203795, 151203863, None, '+'),
+            ('blk', None, 1286, 1404, None, '-', None, 151264708, 151264826, None, '+'),
+            ('blk', None, 1404, 1408, None, '-', None, 151264832, 151264836, None, '+'),
+            ('blk', None, 1408, 1590, None, '-', None, 151283558, 151283740, None, '+'),
+            ('gap', None, 1590, 1591, None, '-', 151283740, None, None, 151370804, '+'),
+            ('blk', None, 1591, 1593, None, '-', None, 151370804, 151370806, None, '+'),
+            ('blk', None, 1593, 1762, None, '-', None, 151370807, 151370976, None, '+'),
+            ('gap', None, 1762, 1764, None, '-', 151370976, None, None, 151370976, '+'),
+            ('blk', None, 1764, 1784, None, '-', None, 151370976, 151370996, None, '+'),
+            ('gap', None, 1784, 1789, None, '-', 151370996, None, None, None, '+')) == got
 
-    def testQ2TFullQueryMap(self):
-        # Mapping through PSL produced by BLATing an augustus mouse strain
-        # prediction.  When traversing source exon rages ranges, it produced
-        # incorrect query coordinates when there is a gap at the end and starting
-        # coordinates were in the middle of the gap.
-        queryExonRanges = ((0, 3744), (3744, 4172), (4172, 4308), (4308, 4506),
-                           (4506, 4569), (4569, 4787), (4787, 5002))
-        mapper = PslMap(_pslAugustusBlat)
-        got = []
-        for rng in queryExonRanges:
-            got.extend([_mapToTuple(m) for m in mapper.queryToTargetMap(rng[0], rng[1], '-')])
-        self.assertEqual((('gap', None, 0, 810, None, '-', None, None, None, 38013595, '+'),
-                          ('blk', None, 810, 828, None, '-', None, 38013595, 38013613, None, '+'),
-                          ('blk', None, 828, 849, None, '-', None, 38013616, 38013637, None, '+'),
-                          ('gap', None, 849, 3744, None, '-', 38013637, None, None, None, '+'),
-                          ('gap', None, 3744, 4172, None, '-', 38013637, None, None, None, '+'),
-                          ('gap', None, 4172, 4308, None, '-', 38013637, None, None, None, '+'),
-                          ('gap', None, 4308, 4506, None, '-', 38013637, None, None, None, '+'),
-                          ('gap', None, 4506, 4569, None, '-', 38013637, None, None, None, '+'),
-                          ('gap', None, 4569, 4787, None, '-', 38013637, None, None, None, '+'),
-                          ('gap', None, 4787, 5002, None, '-', 38013637, None, None, None, '+')),
-                         tuple(got))
-
-def suite():
-    ts = unittest.TestSuite()
-    ts.addTest(unittest.makeSuite(TestPslMap))
-    return ts
-
-
-if __name__ == '__main__':
-    unittest.main()
+def testQ2TFullQueryMap():
+    # Mapping through PSL produced by BLATing an augustus mouse strain
+    # prediction.  When traversing source exon rages ranges, it produced
+    # incorrect query coordinates when there is a gap at the end and starting
+    # coordinates were in the middle of the gap.
+    queryExonRanges = ((0, 3744), (3744, 4172), (4172, 4308), (4308, 4506),
+                       (4506, 4569), (4569, 4787), (4787, 5002))
+    mapper = PslMap(_pslAugustusBlat)
+    got = []
+    for rng in queryExonRanges:
+        got.extend([_mapToTuple(m) for m in mapper.queryToTargetMap(rng[0], rng[1], '-')])
+    assert (('gap', None, 0, 810, None, '-', None, None, None, 38013595, '+'),
+            ('blk', None, 810, 828, None, '-', None, 38013595, 38013613, None, '+'),
+            ('blk', None, 828, 849, None, '-', None, 38013616, 38013637, None, '+'),
+            ('gap', None, 849, 3744, None, '-', 38013637, None, None, None, '+'),
+            ('gap', None, 3744, 4172, None, '-', 38013637, None, None, None, '+'),
+            ('gap', None, 4172, 4308, None, '-', 38013637, None, None, None, '+'),
+            ('gap', None, 4308, 4506, None, '-', 38013637, None, None, None, '+'),
+            ('gap', None, 4506, 4569, None, '-', 38013637, None, None, None, '+'),
+            ('gap', None, 4569, 4787, None, '-', 38013637, None, None, None, '+'),
+            ('gap', None, 4787, 5002, None, '-', 38013637, None, None, None, '+')) == tuple(got)

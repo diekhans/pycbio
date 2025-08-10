@@ -1,40 +1,25 @@
 # Copyright 2006-2025 Mark Diekhans
-import unittest
 import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
-from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.hgdata import dnaOps
 
+def testRevCmplStr():
+    testSeq = "cgcggccatttgtctctt"
+    rcSeq = dnaOps.reverseComplement(testSeq)
+    assert rcSeq == "aagagacaaatggccgcg"
 
-class DnaOpsTests(TestCaseBase):
+def testRevCmplBytes():
+    testSeq = b"cgcggccatttgtctctt"
+    rcSeq = dnaOps.reverseComplement(testSeq)
+    assert rcSeq == b"aagagacaaatggccgcg"
 
-    def testRevCmplStr(self):
-        testSeq = "cgcggccatttgtctctt"
-        rcSeq = dnaOps.reverseComplement(testSeq)
-        self.assertEqual(rcSeq, "aagagacaaatggccgcg")
+def testIsValidStr():
+    assert dnaOps.isValidBase('a')
+    assert dnaOps.isValidBase('C')
+    assert not dnaOps.isValidBase('@')
 
-    def testRevCmplBytes(self):
-        testSeq = b"cgcggccatttgtctctt"
-        rcSeq = dnaOps.reverseComplement(testSeq)
-        self.assertEqual(rcSeq, b"aagagacaaatggccgcg")
-
-    def testIsValidStr(self):
-        self.assertTrue(dnaOps.isValidBase('a'))
-        self.assertTrue(dnaOps.isValidBase('C'))
-        self.assertFalse(dnaOps.isValidBase('@'))
-
-    def testIsValidByte(self):
-        self.assertTrue(dnaOps.isValidBase(b'a'))
-        self.assertTrue(dnaOps.isValidBase(b'C'))
-        self.assertFalse(dnaOps.isValidBase(b'@'))
-
-
-def suite():
-    ts = unittest.TestSuite()
-    ts.addTest(unittest.makeSuite(DnaOpsTests))
-    return ts
-
-
-if __name__ == '__main__':
-    unittest.main()
+def testIsValidByte():
+    assert dnaOps.isValidBase(b'a')
+    assert dnaOps.isValidBase(b'C')
+    assert not dnaOps.isValidBase(b'@')

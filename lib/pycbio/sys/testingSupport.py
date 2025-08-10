@@ -3,6 +3,13 @@ Various functions to support testing with pytest
 
 Copyright (c) 2024-2025, Mark Diekhans
 Copyright (c) 2024-2025, The Regents of the University of California
+
+Suggested idiom:
+   import pycbio.sys.testingSupport as ts
+   ...
+   ts.get_test_input_file(request, "ncbi.fa")
+
+
 """
 import pytest
 import sys
@@ -38,8 +45,14 @@ def get_test_dir(request):
     return os.path.dirname(str(request.node.fspath))
 
 def get_test_input_file(request, fname):
-    """Get a path to a file in the test input directory"""
+    """Get a path to a file in the test input file"""
     return osp.join(get_test_dir(request), "input", fname)
+
+def get_test_session_input_file(src_file, fname):
+    """For use in session fixtures to get a path to a file in the test input directory.
+    request.node.path doesn't point to the source file in this case, so we use __file__.
+    """
+    return osp.join(osp.dirname(src_file), "input", fname)
 
 def get_test_output_dir(request):
     """get the path to the output directory to use for this test, create if it doesn't exist"""

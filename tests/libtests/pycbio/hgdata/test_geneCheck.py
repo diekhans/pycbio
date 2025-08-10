@@ -1,44 +1,32 @@
 # Copyright 2006-2025 Mark Diekhans
-import unittest
 import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
-from pycbio.sys.testCaseBase import TestCaseBase
+import pycbio.sys.testingSupport as ts
 from pycbio.hgdata.geneCheck import GeneCheckTbl
 
+def _dumpCheck(fh, checks, g):
+    g.dump(fh)
+    if checks.haveDetails():
+        details = checks.getDetails(g)
+        if details is not None:
+            for d in details:
+                fh.write('\t')
+                d.dump(fh)
 
-class ReadTests(TestCaseBase):
-    def _dumpCheck(self, fh, checks, g):
-        g.dump(fh)
-        if checks.haveDetails():
-            details = checks.getDetails(g)
-            if details is not None:
-                for d in details:
-                    fh.write('\t')
-                    d.dump(fh)
+def _checkDmp(request, checks):
+    with open(ts.get_test_output_file(request, ".dmp"), 'w') as fh:
+        for g in checks:
+            _dumpCheck(fh, checks, g)
+    ts.diff_results_expected(request, ".dmp")
 
-    def _checkDmp(self, checks):
-        with open(self.getOutputFile(".dmp"), 'w') as fh:
-            for g in checks:
-                self._dumpCheck(fh, checks, g)
-        self.diffExpected(".dmp")
+def testCheck(request):
+    checks = GeneCheckTbl(ts.get_test_input_file(request, "geneCheck.tsv"))
+    assert len(checks) == 162
+    _checkDmp(request, checks)
 
-    def testCheck(self):
-        checks = GeneCheckTbl(self.getInputFile("geneCheck.tsv"))
-        self.assertEqual(len(checks), 162)
-        self._checkDmp(checks)
-
-    def testCheckDetails(self):
-        checks = GeneCheckTbl(self.getInputFile("geneCheck.tsv"),
-                              self.getInputFile("geneCheckDetails.tsv"))
-        self.assertEqual(len(checks), 162)
-        self._checkDmp(checks)
-
-def suite():
-    ts = unittest.TestSuite()
-    ts.addTest(unittest.makeSuite(ReadTests))
-    return ts
-
-
-if __name__ == '__main__':
-    unittest.main()
+def testCheckDetails(request):
+    checks = GeneCheckTbl(ts.get_test_input_file(request, "geneCheck.tsv"),
+                          ts.get_test_input_file(request, "geneCheckDetails.tsv"))
+    assert len(checks) == 162
+    _checkDmp(request, checks)
