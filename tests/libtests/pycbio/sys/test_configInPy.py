@@ -1,86 +1,77 @@
 # Copyright 2006-2025 Mark Diekhans
-import unittest
+import pytest
 import os
 import sys
+import re
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys.configInPy import evalConfigFunc, evalConfigFile
-from pycbio.sys.testCaseBase import TestCaseBase
+import pycbio.sys.testingSupport as ts
 from pycbio import PycbioException
 
 
-class ConfigInPyTests(TestCaseBase):
-    def testConfigFuncCall(self):
-        c = evalConfigFunc(self.getInputFile("funcBasic.config.py"))
-        self.assertEqual(c.f1, 10)
-        self.assertEqual(c.f2, 20)
-        self.assertRegex(c.configPyFile, ".*/input/funcBasic.config.py")
-        self.assertEqual(c.passedInModule, None)
+def testConfigFuncCall(request):
+    c = evalConfigFunc(ts.get_test_input_file(request, "funcBasic.config.py"))
+    assert c.f1 == 10
+    assert c.f2 == 20
+    assert re.search(".*/input/funcBasic.config.py", c.configPyFile)
+    assert c.passedInModule is None
 
-    def testConfigFuncPassModule(self):
-        extraEnv = {"passedInModule": "stuck in a global"}
-        c = evalConfigFunc(self.getInputFile("funcBasic.config.py"), extraEnv=extraEnv)
-        self.assertEqual(c.f1, 10)
-        self.assertEqual(c.f2, 20)
-        self.assertRegex(c.configPyFile, ".*/input/funcBasic.config.py")
-        self.assertEqual(c.passedInModule, "stuck in a global")
+def testConfigFuncPassModule(request):
+    extraEnv = {"passedInModule": "stuck in a global"}
+    c = evalConfigFunc(ts.get_test_input_file(request, "funcBasic.config.py"), extraEnv=extraEnv)
+    assert c.f1 == 10
+    assert c.f2 == 20
+    assert re.search(".*/input/funcBasic.config.py", c.configPyFile)
+    assert c.passedInModule == "stuck in a global"
 
-    def testConfigFuncInvalid(self):
-        # tests both specifying a different function name and detecting a function that doesn't exist
-        with self.assertRaises(PycbioException) as cm:
-            evalConfigFunc(self.getInputFile("funcBasic.config.py"), getFuncName="getMissing")
-        self.assertRegex(str(cm.exception), "configuration script does not define function getMissing\\(\\)")
+def testConfigFuncInvalid(request):
+    # tests both specifying a different function name and detecting a function that doesn't exist
+    with pytest.raises(PycbioException) as cm:
+        evalConfigFunc(ts.get_test_input_file(request, "funcBasic.config.py"), getFuncName="getMissing")
+    assert re.search("configuration script does not define function getMissing\\(\\)",
+                     str(cm.value))
 
-    def testConfigFuncArgs(self):
-        c = evalConfigFunc(self.getInputFile("funcArgs.config.py"), getFuncArgs=("F1",), getFuncKwargs={"f2": "F2", "f3": "F3"})
-        self.assertEqual(c.f1, "F1")
-        self.assertEqual(c.f2, "F2")
-        self.assertEqual(c.f3, "F3")
-        self.assertRegex(c.configPyFile, ".*/input/funcArgs.config.py")
+def testConfigFuncArgs(request):
+    c = evalConfigFunc(ts.get_test_input_file(request, "funcArgs.config.py"), getFuncArgs=("F1",), getFuncKwargs={"f2": "F2", "f3": "F3"})
+    assert c.f1 == "F1"
+    assert c.f2 == "F2"
+    assert c.f3 == "F3"
+    assert re.search(".*/input/funcArgs.config.py", c.configPyFile)
 
-    def _checkFields(self, conf, expect):
-        "ensure all expected fields are in configuration"
-        for e in expect:
-            self.assertTrue(hasattr(conf, e), msg="field not found: {}".format(e))
+def _checkFields(conf, expect):
+    "ensure all expected fields are in configuration"
+    for e in expect:
+        assert hasattr(conf, e), f"field not found: {e}"
 
-    def testConfigFileBasic(self):
-        c = evalConfigFile(self.getInputFile("objBasic.config.py"))
-        self.assertEqual(c.value1, 10)
-        self.assertEqual(c.value2, 20)
-        self.assertEqual(getattr(c, "_hidden", None), None)
-        self.assertRegex(c.configPyFile, ".*/input/objBasic.config.py")
-        self.assertEqual(getattr(c, "passedInModule", None), None)
-        self.assertEqual(os.path.basename(c.objBasicConfFile), "objBasic.config.py")
-        self._checkFields(c, ['configPyFile', 'value1', 'value2'])
+def testConfigFileBasic(request):
+    c = evalConfigFile(ts.get_test_input_file(request, "objBasic.config.py"))
+    assert c.value1 == 10
+    assert c.value2 == 20
+    assert getattr(c, "_hidden", None) is None
+    assert re.search(".*/input/objBasic.config.py", c.configPyFile)
+    assert getattr(c, "passedInModule", None) is None
+    assert os.path.basename(c.objBasicConfFile) == "objBasic.config.py"
+    _checkFields(c, ['configPyFile', 'value1', 'value2'])
 
-    def testConfigFileInclude(self):
-        c = evalConfigFile(self.getInputFile("configSub/incl.config.py"))
-        self.assertEqual(c.value1, 10)
-        self.assertEqual(c.value2, 22)
-        self.assertEqual(c.value44, 44)
-        self.assertEqual(getattr(c, "_hidden", None), None)
-        self.assertRegex(c.configPyFile, ".*/input/configSub/incl.config.py")
-        self.assertEqual(getattr(c, "passedInModule", None), None)
-        self.assertEqual(os.path.basename(c.objBasicConfFile), "objBasic.config.py")
-        self.assertEqual(os.path.basename(c.inclConfFile), "incl.config.py")
-        self._checkFields(c, ['configPyFile', 'value1', 'value2'])
+def testConfigFileInclude(request):
+    c = evalConfigFile(ts.get_test_input_file(request, "configSub/incl.config.py"))
+    assert c.value1 == 10
+    assert c.value2 == 22
+    assert c.value44 == 44
+    assert getattr(c, "_hidden", None) is None
+    assert re.search(".*/input/configSub/incl.config.py", c.configPyFile)
+    assert getattr(c, "passedInModule", None) is None
+    assert os.path.basename(c.objBasicConfFile) == "objBasic.config.py"
+    assert os.path.basename(c.inclConfFile) == "incl.config.py"
+    _checkFields(c, ['configPyFile', 'value1', 'value2'])
 
-    def testConfigFilePassModule(self):
-        extraEnv = {"passedInModule": "stuck in a global"}
-        c = evalConfigFile(self.getInputFile("objBasic.config.py"), extraEnv=extraEnv)
-        self.assertEqual(c.value1, 10)
-        self.assertEqual(c.value2, 20)
-        self.assertEqual(getattr(c, "_hidden", None), None)
-        self.assertRegex(c.configPyFile, ".*/input/objBasic.config.py")
-        self.assertEqual(c.passedInModule, "stuck in a global")
-        self._checkFields(c, ['configPyFile', "passedInModule", 'value1', 'value2'])
-
-
-def suite():
-    ts = unittest.TestSuite()
-    ts.addTest(unittest.makeSuite(ConfigInPyTests))
-    return ts
-
-
-if __name__ == '__main__':
-    unittest.main()
+def testConfigFilePassModule(request):
+    extraEnv = {"passedInModule": "stuck in a global"}
+    c = evalConfigFile(ts.get_test_input_file(request, "objBasic.config.py"), extraEnv=extraEnv)
+    assert c.value1 == 10
+    assert c.value2 == 20
+    assert getattr(c, "_hidden", None) is None
+    assert re.search(".*/input/objBasic.config.py", c.configPyFile)
+    assert c.passedInModule == "stuck in a global"
+    _checkFields(c, ['configPyFile', "passedInModule", 'value1', 'value2'])

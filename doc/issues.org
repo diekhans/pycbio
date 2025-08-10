@@ -380,6 +380,11 @@ maybe a single function to parse RGBA and RGB8 strs
 
 
 * convert to pytest:
+** pip install unittest2pytest
+https://github.com/pytest-dev/unittest2pytest
+buggy, but helps
+
+** this breaks some code
 (defun unittest->pytest-buffer ()
   (save-excursion
     (goto-char (point-min))

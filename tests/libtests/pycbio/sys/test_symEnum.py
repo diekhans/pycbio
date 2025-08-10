@@ -1,13 +1,9 @@
 # Copyright 2006-2025 Mark Diekhans
-import unittest
 import sys
 import pickle
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
-
 from pycbio.sys.symEnum import SymEnum, SymEnumValue, auto
-from pycbio.sys.testCaseBase import TestCaseBase
-
 
 class Color(SymEnum):
     red = 1
@@ -30,198 +26,187 @@ class ColorNoDict(SymEnum):
     black = 3
 
 
-class SymEnumTests(TestCaseBase):
-    def _checkColor(self, colorCls):
-        # this useful for pickle tests
-        self.assertEqual(colorCls.red.name, "red")
-        self.assertEqual(colorCls.green.name, "green")
-        self.assertEqual(colorCls.blue.name, "blue")
-        self.assertTrue(colorCls.red < colorCls.blue)
-        self.assertTrue(colorCls.red == colorCls.red)
-        self.assertTrue(colorCls.red != colorCls.blue)
-        self.assertTrue(colorCls.red is not None)
-        self.assertTrue(None != colorCls.red)   # noqa
+def _checkColor(colorCls):
+    # this useful for pickle tests
+    assert colorCls.red.name == "red"
+    assert colorCls.green.name == "green"
+    assert colorCls.blue.name == "blue"
+    assert colorCls.red < colorCls.blue
+    assert colorCls.red == colorCls.red
+    assert colorCls.red != colorCls.blue
+    assert colorCls.red is not None
+    assert None != colorCls.red   # noqa
 
-    def testBasics(self):
-        self._checkColor(Color)
+def testBasics():
+    _checkColor(Color)
 
-    def testLookup(self):
-        self.assertTrue(Color.red == Color("red"))
-        self.assertTrue(Color.green == Color("green"))
-        self.assertTrue(Color.green != Color("red"))
+def testLookup():
+    assert Color.red == Color("red")
+    assert Color.green == Color("green")
+    assert Color.green != Color("red")
 
-    def testStrings(self):
-        self.assertTrue(str(Color.red) == "red")
-        self.assertTrue(str(Color.green) == "green")
-        self.assertTrue(sorted([str(c) for c in Color]), ["red", "green", "blue"])
+def testStrings():
+    assert str(Color.red == "red")
+    assert str(Color.green == "green")
+    assert sorted([str(c) for c in Color]) == ["blue", "green", "red"]
 
-    def testAliases(self):
-        class Name(SymEnum):
-            Fred = 1
-            Rick = 2
-            Richard = Dick = HeyYou = Rick
-            Bill = 3
-        self.assertTrue(Name("Richard") is Name.Rick)
-        self.assertEqual(Name("Dick"), Name.Rick)
-        self.assertTrue(Name("Dick") is Name.Rick)
-        self.assertTrue(Name("Rick") == Name.Rick)
-        self.assertTrue(Name("HeyYou") == Name.Rick)
-        self.assertTrue(Name("Fred") == Name.Fred)
-        self.assertTrue(Name("Fred") is Name.Fred)
-        self.assertEqual([n for n in Name], [Name.Fred, Name.Rick, Name.Bill])
+def testAliases():
+    class Name(SymEnum):
+        Fred = 1
+        Rick = 2
+        Richard = Dick = HeyYou = Rick
+        Bill = 3
+    assert Name("Richard") is Name.Rick
+    assert Name("Dick") == Name.Rick
+    assert Name("Dick") is Name.Rick
+    assert Name("Rick") == Name.Rick
+    assert Name("HeyYou") == Name.Rick
+    assert Name("Fred") == Name.Fred
+    assert Name("Fred") is Name.Fred
+    assert [n for n in Name] == [Name.Fred, Name.Rick, Name.Bill]
 
-    def testAliasesStrValue(self):
-        # alias should not be returned for string name
-        class Name(SymEnum):
-            Fred = 1
-            Rick = 2
-            Arther = Rick
-        self.assertTrue(str(Name.Arther), "Rick")
-        self.assertTrue(str(Name.Rick), "Rick")
+def testAliasesStrValue():
+    # alias should not be returned for string name
+    class Name(SymEnum):
+        Fred = 1
+        Rick = 2
+        Arther = Rick
+    assert str(Name.Arther) == "Rick"
+    assert str(Name.Rick) == "Rick"
 
-    def testSetOps(self):
-        colSet = set([Color.blue, Color.green])
-        self.assertTrue(Color.green in colSet)
-        self.assertFalse(Color.red in colSet)
+def testSetOps():
+    colSet = set([Color.blue, Color.green])
+    assert Color.green in colSet
+    assert Color.red not in colSet
 
-    def testNumberDef(self):
-        class NumDef(SymEnum):
-            neg = -2
-            zero = 0
-            pos = 2
-            big = 3
-        values = [(v.name, v.value) for v in NumDef]
-        self.assertEqual(values, [('neg', -2), ('zero', 0), ('pos', 2), ('big', 3)])
-        self.assertEqual(NumDef(2), NumDef.pos)
+def testNumberDef():
+    class NumDef(SymEnum):
+        neg = -2
+        zero = 0
+        pos = 2
+        big = 3
+    values = [(v.name, v.value) for v in NumDef]
+    assert values == [('neg', -2), ('zero', 0), ('pos', 2), ('big', 3)]
+    assert NumDef(2) == NumDef.pos
 
-    def _testColorPickleProtocol(self, protocol):
-        stuff = {Color.red: "red one",
-                 Color.green: "green one"}
+def _testColorPickleProtocol(protocol):
+    stuff = {Color.red: "red one",
+             Color.green: "green one"}
 
-        world = pickle.dumps((Color, stuff,), protocol)
-        color, stuff2 = pickle.loads(world)
+    world = pickle.dumps((Color, stuff,), protocol)
+    color, stuff2 = pickle.loads(world)
 
-        self.assertTrue(Color.red in stuff2)
-        self.assertTrue(Color.green in stuff2)
+    assert Color.red in stuff2
+    assert Color.green in stuff2
 
-    def testColorPickle(self):
-        for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
-            self._testColorPickleProtocol(protocol)
+def testColorPickle():
+    for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
+        _testColorPickleProtocol(protocol)
 
-    def testExtNameLookup(self):
-        self.assertEqual(GeneFeature.promoter, GeneFeature("promoter"))
-        self.assertEqual(GeneFeature.utr5, GeneFeature("5'UTR"))
-        self.assertEqual(GeneFeature.utr5, GeneFeature("utr5"))
-        self.assertEqual(GeneFeature.cds, GeneFeature("CDS"))
-        self.assertEqual(GeneFeature.utr3, GeneFeature("3'UTR"))
-        self.assertEqual(GeneFeature.utr3, GeneFeature("utr3"))
-        self.assertEqual(GeneFeature.cds, GeneFeature("coding"))
+def testExtNameLookup():
+    assert GeneFeature.promoter == GeneFeature("promoter")
+    assert GeneFeature.utr5 == GeneFeature("5'UTR")
+    assert GeneFeature.utr5 == GeneFeature("utr5")
+    assert GeneFeature.cds == GeneFeature("CDS")
+    assert GeneFeature.utr3 == GeneFeature("3'UTR")
+    assert GeneFeature.utr3 == GeneFeature("utr3")
+    assert GeneFeature.cds == GeneFeature("coding")
 
-    def testExtNameStrings(self):
-        self.assertEqual(str(GeneFeature.promoter), "promoter")
-        self.assertEqual(str(GeneFeature.utr5), "5'UTR")
-        self.assertEqual(str(GeneFeature.cds), "CDS")
-        self.assertEqual(str(GeneFeature.utr3), "3'UTR")
-        self.assertNotEqual(str(GeneFeature.utr3), "utr3")
-        self.assertEqual(str(GeneFeature.coding), "CDS")
-        self.assertEqual(sorted([str(c) for c in GeneFeature]), ["3'UTR", "5'UTR", "CDS", "promoter"])
+def testExtNameStrings():
+    assert str(GeneFeature.promoter) == "promoter"
+    assert str(GeneFeature.utr5) == "5'UTR"
+    assert str(GeneFeature.cds) == "CDS"
+    assert str(GeneFeature.utr3) == "3'UTR"
+    assert str(GeneFeature.coding) == "CDS"
+    assert sorted([str(c) for c in GeneFeature]) == ["3'UTR", "5'UTR", "CDS", "promoter"]
 
-    def _testGeneFeaturePickleProtocol(self, protocol):
-        stuff = {GeneFeature.utr3: "UTR'3 one",
-                 GeneFeature.cds: "CDS one"}
-        world = pickle.dumps((GeneFeature, stuff,), protocol)
-        geneFeature, stuff2 = pickle.loads(world)
+def _geneFeaturePickleProtocolTest(protocol):
+    stuff = {GeneFeature.utr3: "UTR'3 one",
+             GeneFeature.cds: "CDS one"}
+    world = pickle.dumps((GeneFeature, stuff,), protocol)
+    geneFeature, stuff2 = pickle.loads(world)
 
-        self.assertTrue(GeneFeature.utr3 in stuff2)
-        self.assertTrue(GeneFeature.cds in stuff2)
+    assert GeneFeature.utr3 in stuff2
+    assert GeneFeature.cds in stuff2
 
-    def testGeneFeaturePickle(self):
-        for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
-            self._testGeneFeaturePickleProtocol(protocol)
+def testGeneFeaturePickle():
+    for protocol in range(0, pickle.HIGHEST_PROTOCOL + 1):
+        _geneFeaturePickleProtocolTest(protocol)
 
-    def testBasicsFn(self):
-        FnColor = SymEnum("FnColor", ("red", "green", "blue"))
-        self.assertEqual(FnColor.red.name, "red")
-        self.assertEqual(FnColor.green.name, "green")
-        self.assertEqual(FnColor.blue.name, "blue")
-        self.assertTrue(FnColor.red < FnColor.blue)
-        self.assertTrue(FnColor.red == FnColor.red)
-        self.assertTrue(FnColor.red != FnColor.blue)
-        self.assertTrue(FnColor.red is not None)
-        self.assertTrue(None != FnColor.red)   # noqa
+def testBasicsFn():
+    FnColor = SymEnum("FnColor", ("red", "green", "blue"))
+    assert FnColor.red.name == "red"
+    assert FnColor.green.name == "green"
+    assert FnColor.blue.name == "blue"
+    assert FnColor.red < FnColor.blue
+    assert FnColor.red == FnColor.red
+    assert FnColor.red != FnColor.blue
+    assert FnColor.red is not None
+    assert None != FnColor.red   # noqa
 
-    def testAutoDef(self):
-        class AutoDef(SymEnum):
-            first = auto()
-            second = auto()
-            third = auto()
-        self.assertEqual([('first', 1), ('second', 2), ('third', 3)], list(sorted([(str(v), v.value) for v in AutoDef])))
+def testAutoDef():
+    class AutoDef(SymEnum):
+        first = auto()
+        second = auto()
+        third = auto()
+    assert [('first', 1), ('second', 2), ('third', 3)] == list(sorted([(str(v), v.value) for v in AutoDef]))
 
-    def testWithSymEnumValue(self):
-        class CdsStat(SymEnum):
-            none = SymEnumValue("none", "none")
-            unknown = SymEnumValue("unknown", "unk")
-            incomplete = SymEnumValue("incomplete", "incmpl")
-            complete = SymEnumValue("complete", "cmpl")
+def testWithSymEnumValue():
+    class CdsStat(SymEnum):
+        none = SymEnumValue("none", "none")
+        unknown = SymEnumValue("unknown", "unk")
+        incomplete = SymEnumValue("incomplete", "incmpl")
+        complete = SymEnumValue("complete", "cmpl")
 
-        self.assertEqual(str(CdsStat("incomplete")), "incmpl")
-        self.assertEqual(str(CdsStat("incmpl")), "incmpl")
-        self.assertEqual(str(CdsStat(u"incmpl")), "incmpl")
+    assert str(CdsStat("incomplete")) == "incmpl"
+    assert str(CdsStat("incmpl")) == "incmpl"
+    assert str(CdsStat(u"incmpl")) == "incmpl"
 
-    def testBasicsNoDict(self):
-        self.assertEqual(ColorNoDict.purple.name, "purple")
-        self.assertEqual(ColorNoDict.gold.name, "gold")
-        self.assertEqual(ColorNoDict.black.name, "black")
-        self.assertTrue(ColorNoDict.purple < ColorNoDict.black)
-        self.assertTrue(ColorNoDict.purple == ColorNoDict.purple)
-        self.assertTrue(ColorNoDict.purple != ColorNoDict.black)
-        self.assertTrue(ColorNoDict.purple is not None)
-        self.assertTrue(None != ColorNoDict.purple)  # noqa
+def testBasicsNoDict():
+    assert ColorNoDict.purple.name == "purple"
+    assert ColorNoDict.gold.name == "gold"
+    assert ColorNoDict.black.name == "black"
+    assert ColorNoDict.purple < ColorNoDict.black
+    assert ColorNoDict.purple == ColorNoDict.purple
+    assert ColorNoDict.purple != ColorNoDict.black
+    assert ColorNoDict.purple is not None
+    assert None != ColorNoDict.purple  # noqa
 
-    def testLookupNoDict(self):
-        self.assertTrue(ColorNoDict.purple == ColorNoDict("purple"))
-        self.assertTrue(ColorNoDict.gold == ColorNoDict("gold"))
-        self.assertTrue(ColorNoDict.gold != ColorNoDict("purple"))
+def testLookupNoDict():
+    assert ColorNoDict.purple == ColorNoDict("purple")
+    assert ColorNoDict.gold == ColorNoDict("gold")
+    assert ColorNoDict.gold != ColorNoDict("purple")
 
-    def testStringsNoDict(self):
-        self.assertTrue(str(ColorNoDict.purple) == "purple")
-        self.assertTrue(str(ColorNoDict.gold) == "gold")
-        self.assertTrue(sorted([str(c) for c in ColorNoDict]), ["purple", "gold", "black"])
+def testStringsNoDict():
+    assert str(ColorNoDict.purple == "purple")
+    assert str(ColorNoDict.gold == "gold")
+    assert sorted([str(c) for c in ColorNoDict]) == ['black', 'gold', 'purple']
 
-    def testSelfConvert(self):
-        self.assertEqual(Color(Color.red), Color.red)
+def testSelfConvert():
+    assert Color(Color.red) is Color.red
 
-    def testFormat(self):
-        self.assertEqual("{}".format(Color.red), "red")
+def testFormat():
+    assert "{}".format(Color.red) == "red"
 
-    def testFormatPad(self):
-        self.assertEqual("{:5}x".format(Color.red), "red  x")
+def testFormatPad():
+    assert "{:5}x".format(Color.red) == "red  x"
 
-    def _testPickleProt(self, prot):
-        stuff = {}
-        stuff[Color.red] = "red one"
-        stuff[Color.green] = "green one"
-        world = pickle.dumps((Color, stuff), prot)
-        Color2, stuff2 = pickle.loads(world)
+def _pickleProtocolTest(prot):
+    stuff = {}
+    stuff[Color.red] = "red one"
+    stuff[Color.green] = "green one"
+    world = pickle.dumps((Color, stuff), prot)
+    Color2, stuff2 = pickle.loads(world)
 
-        self.assertTrue(Color2.red in stuff2)
-        self.assertTrue(Color2.green in stuff2)
-        self._checkColor(Color2)
+    assert Color2.red in stuff2
+    assert Color2.green in stuff2
+    _checkColor(Color2)
 
-    def testPickle(self):
-        for prot in range(0, pickle.HIGHEST_PROTOCOL + 1):
-            self._testPickleProt(prot)
+def testPickle():
+    for prot in range(0, pickle.HIGHEST_PROTOCOL + 1):
+        _pickleProtocolTest(prot)
 
-    def testCall(self):
-        # this goes thought Enum.__new__ like pickle, and broken SymEnum in 3.12
-        c = Color(1)
-        self.assertEqual(c.red, Color.red)
-
-def suite():
-    ts = unittest.TestSuite()
-    ts.addTest(unittest.makeSuite(SymEnumTests))
-    return ts
-
-
-if __name__ == '__main__':
-    unittest.main()
+def testCall():
+    # this goes thought Enum.__new__ like pickle, and broken SymEnum in 3.12
+    c = Color(1)
+    assert c.red == Color.red

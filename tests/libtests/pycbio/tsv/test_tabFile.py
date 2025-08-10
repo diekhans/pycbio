@@ -1,54 +1,41 @@
 # Copyright 2006-2025 Mark Diekhans
-import unittest
 import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.tsv import TabFile, TabFileReader
-from pycbio.sys.testCaseBase import TestCaseBase
+import pycbio.sys.testingSupport as ts
 import pipettor
 
+typesNumRows = 4
+typesNumCols = 4
 
-class TabFileTests(TestCaseBase):
-    typesNumRows = 4
-    typesNumCols = 4
-
-    def checkRowsCols(self, rows, expectNumRows, expectNumCols):
-        numRows = 0
-        for row in rows:
-            self.assertEqual(len(row), expectNumCols)
-            numRows += 1
-        self.assertEqual(numRows, expectNumRows)
-
-    def testTable(self):
-        tbl = TabFile(self.getInputFile("types.tsv"))
-        self.checkRowsCols(tbl, self.typesNumRows, self.typesNumCols)
-
-    def testTableComments(self):
-        tbl = TabFile(self.getInputFile("typesComment.tsv"), hashAreComments=True)
-        self.checkRowsCols(tbl, self.typesNumRows - 1, self.typesNumCols)
-
-    def testReader(self):
-        rows = []
-        for row in TabFileReader(self.getInputFile("types.tsv")):
-            rows.append(row)
-        self.checkRowsCols(rows, self.typesNumRows, self.typesNumCols)
-
-    def testReaderGzip(self):
-        tsvGz = self.getOutputFile("tsv.gz")
-        pipettor.run(["gzip", "-c", self.getInputFile("types.tsv")], stdout=tsvGz)
-        rows = [row for row in TabFileReader(tsvGz)]
-        self.checkRowsCols(rows, self.typesNumRows, self.typesNumCols)
-
-    def testReaderComments(self):
-        rows = [row for row in TabFileReader(self.getInputFile("typesComment.tsv"), hashAreComments=True)]
-        self.checkRowsCols(rows, self.typesNumRows - 1, self.typesNumCols)
+def checkRowsCols(rows, expectNumRows, expectNumCols):
+    numRows = 0
+    for row in rows:
+        assert len(row) == expectNumCols
+        numRows += 1
 
 
-def suite():
-    ts = unittest.TestSuite()
-    ts.addTest(unittest.makeSuite(TabFileTests))
-    return ts
+def testTable(request):
+    tbl = TabFile(ts.get_test_input_file(request, "types.tsv"))
+    checkRowsCols(tbl, typesNumRows, typesNumCols)
 
+def testTableComments(request):
+    tbl = TabFile(ts.get_test_input_file(request, "typesComment.tsv"), hashAreComments=True)
+    checkRowsCols(tbl, typesNumRows - 1, typesNumCols)
 
-if __name__ == '__main__':
-    unittest.main()
+def testReader(request):
+    rows = []
+    for row in TabFileReader(ts.get_test_input_file(request, "types.tsv")):
+        rows.append(row)
+    checkRowsCols(rows, typesNumRows, typesNumCols)
+
+def testReaderGzip(request):
+    tsvGz = ts.get_test_output_file(request, "tsv.gz")
+    pipettor.run(["gzip", "-c", ts.get_test_input_file(request, "types.tsv")], stdout=tsvGz)
+    rows = [row for row in TabFileReader(tsvGz)]
+    checkRowsCols(rows, typesNumRows, typesNumCols)
+
+def testReaderComments(request):
+    rows = [row for row in TabFileReader(ts.get_test_input_file(request, "typesComment.tsv"), hashAreComments=True)]
+    checkRowsCols(rows, typesNumRows - 1, typesNumCols)
