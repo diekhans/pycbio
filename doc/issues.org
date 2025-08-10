@@ -372,12 +372,13 @@ need fromRGBA8Str?
 maybe a single function to parse RGBA and RGB8 strs
 ** more rgba tests
 ** need more Color and SvgColors tests
+** Color could be a named tuple 
+
 
 * check this on the using realpath to find library: https://patmaddox.com/doc/trunk/www/2023-12-sh-relative-shell-script-includes-with-realpath-on-freebsd/
 
 
 * pslFromCigar should have a direct function to create a cigar using the tuple
-
 
 * convert to pytest:
 ** pip install unittest2pytest
