@@ -1,9 +1,8 @@
 # Copyright 2006-2025 Mark Diekhans
-import unittest
 import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
-from pycbio.sys.testCaseBase import TestCaseBase
+import pycbio.sys.testingSupport as ts
 from pycbio.sys.fileOps import prRowv
 from pycbio.align.pairAlign import loadPslFile
 from pycbio import PycbioException
@@ -21,89 +20,78 @@ class WithSrcCds:
         self.destAln.dump(fh)
 
 
-class PairAlignPsl(TestCaseBase):
-    def _dumpNDiff(self, alns, suffix):
-        with open(self.getOutputFile(suffix), "w") as fh:
-            for pa in alns:
-                pa.dump(fh)
-        self.diffExpected(suffix)
-
-    def testLoad(self):
-        alns = loadPslFile(self.getInputFile("hsRefSeq.psl"),
-                           self.getInputFile("hsRefSeq.cds"))
-        self._dumpNDiff(alns, ".out")
-
-    def testRevCmpl(self):
-        alns = loadPslFile(self.getInputFile("hsRefSeq.psl"),
-                           self.getInputFile("hsRefSeq.cds"))
-        ralns = []
-        rralns = []
+def _dumpNDiff(request, alns, suffix):
+    with open(ts.get_test_output_file(request, suffix), "w") as fh:
         for pa in alns:
-            rpa = pa.revCmpl()
-            ralns.append(rpa)
-            rralns.append(rpa.revCmpl())
-        self._dumpNDiff(ralns, ".rout")
-        self._dumpNDiff(rralns, ".rrout")
+            pa.dump(fh)
+    ts.diff_results_expected(request, suffix)
 
-    def testLoadUnaln(self):
-        alns = loadPslFile(self.getInputFile("hsRefSeq.psl"),
-                           self.getInputFile("hsRefSeq.cds"),
+def testLoad(request):
+    alns = loadPslFile(ts.get_test_input_file(request, "hsRefSeq.psl"),
+                       ts.get_test_input_file(request, "hsRefSeq.cds"))
+    _dumpNDiff(request, alns, ".out")
+
+def testRevCmpl(request):
+    alns = loadPslFile(ts.get_test_input_file(request, "hsRefSeq.psl"),
+                       ts.get_test_input_file(request, "hsRefSeq.cds"))
+    ralns = []
+    rralns = []
+    for pa in alns:
+        rpa = pa.revCmpl()
+        ralns.append(rpa)
+        rralns.append(rpa.revCmpl())
+    _dumpNDiff(request, ralns, ".rout")
+    _dumpNDiff(request, rralns, ".rrout")
+
+def testLoadUnaln(request):
+    alns = loadPslFile(ts.get_test_input_file(request, "hsRefSeq.psl"),
+                       ts.get_test_input_file(request, "hsRefSeq.cds"),
+                       inclUnaln=True)
+    _dumpNDiff(request, alns, ".out")
+
+def doTestProjectCds(request, contained):
+    alns = loadPslFile(ts.get_test_input_file(request, "refseqWeird.psl"),
+                       ts.get_test_input_file(request, "refseqWeird.cds"),
+                       inclUnaln=True)
+    qalns = []
+    for pa in alns:
+        pa.projectCdsToTarget(contained=contained)
+        # project back
+        qpa = pa.copy()
+        qpa.qSubSeqs.clearCds()
+        qpa.projectCdsToQuery(contained=contained)
+        qalns.append(qpa)
+    _dumpNDiff(request, alns, ".tout")
+    _dumpNDiff(request, qalns, ".qout")
+
+def testProjectCds(request):
+    doTestProjectCds(request, False)
+
+def testProjectCdsContained(request):
+    doTestProjectCds(request, True)
+
+def doTestMapCds(request, contained):
+    destAlns = loadPslFile(ts.get_test_input_file(request, "clonesWeird.psl"),
                            inclUnaln=True)
-        self._dumpNDiff(alns, ".out")
+    srcAlns = loadPslFile(ts.get_test_input_file(request, "refseqWeird.psl"),
+                          ts.get_test_input_file(request, "refseqWeird.cds"),
+                          inclUnaln=True,
+                          projectCds=True)
+    mappedAlns = []
+    for destAln in destAlns:
+        for srcAln in srcAlns:
+            if srcAln.qSeq.cds is None:
+                raise PycbioException("no qCDS: " + srcAln.qSeq.id + " <=> " + srcAln.tSeq.id)
+            if srcAln.tSeq.cds is None:
+                raise PycbioException("no tCDS: " + srcAln.qSeq.id + " <=> " + srcAln.tSeq.id)
+            if srcAln.targetOverlap(destAln):
+                ma = destAln.copy()
+                ma.mapCds(srcAln, srcAln.tSeq, ma.tSeq, contained=contained)
+                mappedAlns.append(WithSrcCds(srcAln, ma))
+    _dumpNDiff(request, mappedAlns, ".out")
 
-    def doTestProjectCds(self, contained):
-        alns = loadPslFile(self.getInputFile("refseqWeird.psl"),
-                           self.getInputFile("refseqWeird.cds"),
-                           inclUnaln=True)
-        qalns = []
-        for pa in alns:
-            pa.projectCdsToTarget(contained=contained)
-            # project back
-            qpa = pa.copy()
-            qpa.qSubSeqs.clearCds()
-            qpa.projectCdsToQuery(contained=contained)
-            qalns.append(qpa)
-        self._dumpNDiff(alns, ".tout")
-        self._dumpNDiff(qalns, ".qout")
+def testMapCds(request):
+    doTestMapCds(request, contained=False)
 
-    def testProjectCds(self):
-        self.doTestProjectCds(False)
-
-    def testProjectCdsContained(self):
-        self.doTestProjectCds(True)
-
-    def doTestMapCds(self, contained):
-        destAlns = loadPslFile(self.getInputFile("clonesWeird.psl"),
-                               inclUnaln=True)
-        srcAlns = loadPslFile(self.getInputFile("refseqWeird.psl"),
-                              self.getInputFile("refseqWeird.cds"),
-                              inclUnaln=True,
-                              projectCds=True)
-        mappedAlns = []
-        for destAln in destAlns:
-            for srcAln in srcAlns:
-                if srcAln.qSeq.cds is None:
-                    raise PycbioException("no qCDS: " + srcAln.qSeq.id + " <=> " + srcAln.tSeq.id)
-                if srcAln.tSeq.cds is None:
-                    raise PycbioException("no tCDS: " + srcAln.qSeq.id + " <=> " + srcAln.tSeq.id)
-                if srcAln.targetOverlap(destAln):
-                    ma = destAln.copy()
-                    ma.mapCds(srcAln, srcAln.tSeq, ma.tSeq, contained=contained)
-                    mappedAlns.append(WithSrcCds(srcAln, ma))
-        self._dumpNDiff(mappedAlns, ".out")
-
-    def testMapCds(self):
-        self.doTestMapCds(contained=False)
-
-    def testMapCdsContained(self):
-        self.doTestMapCds(contained=True)
-
-
-def suite():
-    ts = unittest.TestSuite()
-    ts.addTest(unittest.makeSuite(PairAlignPsl))
-    return ts
-
-
-if __name__ == '__main__':
-    unittest.main()
+def testMapCdsContained(request):
+    doTestMapCds(request, contained=True)
