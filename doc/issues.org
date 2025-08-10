@@ -379,27 +379,4 @@ maybe a single function to parse RGBA and RGB8 strs
 
 * pslFromCigar should have a direct function to create a cigar using the tuple
 
-* convert to pytest:
-** pip install unittest2pytest
-https://github.com/pytest-dev/unittest2pytest
-buggy, but helps
-
-** this breaks some code
-(defun unittest->pytest-buffer ()
-  (save-excursion
-    (goto-char (point-min))
-    (dolist (r '(("self\\.assertEqual\\s-*(\\([^,)]*\\),\\s-*\\([^)]*\\))" . "assert \\1 == \\2")
-                 ("self\\.assertNotEqual\\s-*(\\([^,)]*\\),\\s-*\\([^)]*\\))" . "assert \\1 != \\2")
-                 ("self\\.assertTrue\\s-*(\\([^)]*\\))"  . "assert \\1")
-                 ("self\\.assertFalse\\s-*(\\([^)]*\\))" . "assert not \\1")
-                 ("self\\.assertIn\\s-*(\\([^,)]*\\),\\s-*\\([^)]*\\))"    . "assert \\1 in \\2")
-                 ("self\\.assertNotIn\\s-*(\\([^,)]*\\),\\s-*\\([^)]*\\))" . "assert \\1 not in \\2")
-                 ("self\\.assertIs\\s-*(\\([^,)]*\\),\\s-*\\([^)]*\\))"    . "assert \\1 is \\2")
-                 ("self\\.assertIsNot\\s-*(\\([^,)]*\\),\\s-*\\([^)]*\\))" . "assert \\1 is not \\2")
-                 ("self\\.assertIsNone\\s-*(\\([^)]*\\))"     . "assert \\1 is None")
-                 ("self\\.assertRe\\(gex\\|gexp\\)\\s-*(\\([^,)]*\\),\\s-*\\([^)]*\\))" . "assert re.search(\\3, \\2)")
-                 ("self\\.assertIsNotNone\\s-*(\\([^)]*\\))"  . "assert \\1 is not None")))
-      (goto-char (point-min))
-      (while (re-search-forward (car r) nil t)
-        (replace-match (cdr r) t)))))
-
+* remove testCaseBase
