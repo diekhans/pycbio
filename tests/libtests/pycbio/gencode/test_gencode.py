@@ -1,21 +1,13 @@
 # Copyright 2006-2025 Mark Diekhans
-import unittest
 import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
-from pycbio.sys.testCaseBase import TestCaseBase
 from pycbio.gencode import biotypes, gencodeTags  # noqa:F401
 
-class GencodeTests(TestCaseBase):
-    # asserts in biotypes test a lot
-    pass
 
+def testGencodeBiotype():
+    # asserts in biotypes do testing
+    assert biotypes.BioType("ambiguous_orf") == biotypes.BioType.ambiguous_orf
 
-def suite():
-    ts = unittest.TestSuite()
-    ts.addTest(unittest.makeSuite(GencodeTests))
-    return ts
-
-
-if __name__ == '__main__':
-    unittest.main()
+def testGencodeBTags():
+    assert gencodeTags.GencodeTag.CCDS not in gencodeTags.gencodeTagNotFullCds
