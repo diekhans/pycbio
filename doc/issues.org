@@ -380,3 +380,5 @@ maybe a single function to parse RGBA and RGB8 strs
 * pslFromCigar should have a direct function to create a cigar using the tuple
 
 * remove testCaseBase
+
+* get rid of chromInfo stuff, replaced by genome

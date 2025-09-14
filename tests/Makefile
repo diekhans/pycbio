@@ -28,13 +28,23 @@ all: libtest progtest
 test: libtest progtest
 
 .PHONY: libtest
-libtest:
+libtest: common-data
 	${PYTEST} --capture=no ${traceback} --numprocesses=${nproc} --log-cli-level=${loglevel} ${pytest_extra} libtests 
 
 .PHONY: progtest
-progtest:
+progtest: common-data
 	(cd progtests && ${MAKE} test)
+
+common-data: common-output/grch38-regions.fa.gz.fai
+
+common-output/grch38-regions.fa.gz.fai: common-output/grch38-regions.fa.gz
+	samtools faidx $<
+
+common-output/grch38-regions.fa.gz: data/grch38-regions.fa
+	mkdir -p $(dir $@)
+	bgzip -c $< >$@
 
 clean:
 	(cd progtests && ${MAKE} clean)
-	rm -rf libtests/pycbio/*/output
+	rm -rf libtests/pycbio/*/output common-output
+

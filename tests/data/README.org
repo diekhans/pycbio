@@ -1,0 +1,21 @@
+
+Common test data
+
+* Human genome regions
+** generate regions:
+*** select region in browser and use get DNA soft masked and adjust to [0, n)
+*** name regions by zero-based range
+*** BLAT (hgBlat) to get mappings of region to genome
+pick best alignment
+*** project
+- pslMap use -swapMap to project to region
+- liftOver swapPsl and pslToChain
+
+** selected regions of GRCh38
+*** grch38-regions.fa
+grch38-regions-map.psl - mappings of regions to GRCh38
+create with BLAT and pick best alignment
+use pslMap -swapMap to project to region
+
+*** regions:
+**** chr19_51887540_51906200 ZNF649 18660bp region
