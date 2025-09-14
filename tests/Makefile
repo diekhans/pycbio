@@ -35,7 +35,7 @@ libtest: common-data
 progtest: common-data
 	(cd progtests && ${MAKE} test)
 
-common-data: common-output/grch38-regions.fa.gz.fai
+common-data: common-output/grch38-regions.fa.gz.fai common-output/grch38-regions.2bit
 
 common-output/grch38-regions.fa.gz.fai: common-output/grch38-regions.fa.gz
 	samtools faidx $<
@@ -43,6 +43,9 @@ common-output/grch38-regions.fa.gz.fai: common-output/grch38-regions.fa.gz
 common-output/grch38-regions.fa.gz: data/grch38-regions.fa
 	mkdir -p $(dir $@)
 	bgzip -c $< >$@
+
+common-output/grch38-regions.2bit: data/grch38-regions.fa
+	faToTwoBit $< $@
 
 clean:
 	(cd progtests && ${MAKE} clean)

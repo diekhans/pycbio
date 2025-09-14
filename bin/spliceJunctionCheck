@@ -1,0 +1,163 @@
+#!/usr/bin/env python3
+# Copyright 2006-2025 Mark Diekhans
+
+import sys
+import argparse
+from os import path as osp
+from collections import namedtuple
+
+sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
+from pycbio import PycbioException
+from pycbio.sys import fileOps, cli
+from pycbio.sys.symEnum import SymEnum, auto
+from pycbio.sys.svgcolors import SvgColors
+from pycbio.hgdata import dnaOps
+from pycbio.hgdata.coords import Coords
+from pycbio.hgdata.genome import genome_factory
+from pycbio.hgdata.bed import BedReader, Bed
+
+def parse_args():
+    desc = """
+    Validate splice junctions against genome.
+    """
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("--stats-tsv",
+                        help="output statistics to this TSV")
+    parser.add_argument("--nonstd-bed",
+                        help="output report of non-ATG and non-canonical this BED")
+    parser.add_argument("genome_file",
+                        help="genome as an indexed fasta or twobit")
+    parser.add_argument("trans_bed_file",
+                        help="input transcript BED file")
+    return cli.parseOptsArgsWithLogging(parser)
+
+##
+# categories
+##
+class SJCategory(SymEnum):
+    STD = auto()
+    RARE = auto()
+    U12 = auto()
+    STD_RC = auto()
+    GAP = auto()
+    UNKNOWN = auto()
+
+
+MIN_INTRON_SIZE = 30
+
+RARE_COLOR = SvgColors.darkorange
+U12_COLOR = SvgColors.darkseagreen
+PROBLEM_COLOR = SvgColors.darkred
+
+SJ_CATEGORY_COLOR = {
+    SJCategory.RARE: RARE_COLOR,
+    SJCategory.U12: U12_COLOR,
+    SJCategory.STD_RC: PROBLEM_COLOR,
+    SJCategory.GAP: PROBLEM_COLOR,
+    SJCategory.UNKNOWN: PROBLEM_COLOR,
+}
+
+##
+# mapping of pattern to category
+##
+STD_SJ = 'GT/AG'
+RARE_SJ = 'GC/AG'
+U12_SJ = 'AT/AC'
+
+SJ_CATEGORY_MAP = {
+    STD_SJ: SJCategory.STD,
+    RARE_SJ: SJCategory.RARE,
+    U12_SJ: SJCategory.U12,
+    dnaOps.reverseComplement(STD_SJ): SJCategory.STD_RC,
+}
+
+class IntronCat(namedtuple("IntronCat", ("coords", "strand", "junc", "cat"))):
+    pass
+
+class JuncCounter:
+    "count and collect introns"
+    def __init__(self):
+        self.seen = set()
+        self.cat_counts = {cat: 0 for cat in SJCategory}
+        self.non_std_intron_cats = []
+
+    def _count(self, coords, strand, junc, cat):
+        self.cat_counts[cat] += 1
+        if cat != SJCategory.STD:
+            self.non_std_intron_cats.append(IntronCat(coords, strand, junc, cat))
+
+    def count(self, coords, strand, junc, cat):
+        key = (coords, strand)
+        if key not in self.seen:
+            self._count(coords, strand, junc, cat)
+            self.seen.add(key)
+
+def get_junc(genome, coords, strand):
+    junc = (genome.get_seq(coords.name, coords.start, coords.start + 2).upper() + '/' +
+            genome.get_seq(coords.name, coords.end - 2, coords.end).upper())
+    if strand == '-':
+        junc = dnaOps.reverseComplement(junc)
+    return junc
+
+def classify_junc(junc, coords):
+    if len(coords) < MIN_INTRON_SIZE:
+        return SJCategory.gap
+    cat = SJ_CATEGORY_MAP.get(junc, SJCategory.UNKNOWN)
+    if cat == SJCategory.UNKNOWN:
+        cat = SJ_CATEGORY_MAP.get(dnaOps.reverseComplement(junc), cat)
+    return cat
+
+def count_junc(genome, coords, strand, junc_counter):
+    junc = get_junc(genome, coords, strand)
+    cat = classify_junc(junc, coords)
+    junc_counter.count(coords, strand, junc, cat)
+
+def count_bed_rec(genome, bed, junc_counter):
+    if bed.numStdCols < 12:
+        raise PycbioException(f"Must be at least a BED12, found {bed.numStdCols} standard columns")
+    prev_end = bed.blocks[0].end
+    for blk in bed.blocks[1:]:
+        count_junc(genome, Coords(bed.chrom, prev_end, blk.start), bed.strand, junc_counter)
+        prev_end = blk.end
+
+def count_bed_file(genome, trans_bed_file, junc_counter):
+    for bed in BedReader(trans_bed_file):
+        count_bed_rec(genome, bed, junc_counter)
+
+def report_stats(fh, junc_counter):
+    hdr = ("category", "num_introns")
+    fileOps.prRow(fh, hdr)
+    for cat in SJCategory:
+        fileOps.prRowv(fh, cat, junc_counter.cat_counts[cat])
+
+def write_nonstd_bed(fh, intron_cat):
+    coords = intron_cat.coords
+    color = SJ_CATEGORY_COLOR[intron_cat.cat]
+    bed = Bed(coords.name, coords.start, coords.end,
+              name=str(intron_cat.cat) + '_' + intron_cat.junc,
+              strand=intron_cat.strand,
+              itemRgb=color.toRgb8Str())
+    bed.write(fh)
+
+def write_nonstd_bed_file(fh, junc_counter):
+    for intron_cat in sorted(junc_counter.non_std_intron_cats, key=lambda ic: ic.coords):
+        write_nonstd_bed(fh, intron_cat)
+
+def splice_junction_check(opts, genome_file, trans_bed_file):
+    genome = genome_factory(genome_file)
+    junc_counter = JuncCounter()
+    count_bed_file(genome, trans_bed_file, junc_counter)
+
+    if opts.stats_tsv is not None:
+        with fileOps.opengz(opts.stats_tsv, 'w') as fh:
+            report_stats(fh, junc_counter)
+    if opts.nonstd_bed is not None:
+        with fileOps.opengz(opts.nonstd_bed, 'w') as fh:
+            write_nonstd_bed_file(fh, junc_counter)
+
+def main():
+    opts, args = parse_args()
+    splice_junction_check(opts, args.genome_file, args.trans_bed_file)
+
+
+main()

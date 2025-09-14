@@ -49,20 +49,24 @@ class _GenomeTwoBit(Genome):
     """Random access to UCSC two-bit genome sequences"""
 
     def __init__(self, twobit_file):
-        from pytwobit import TwoBit  # lazy import
-        self._fh = TwoBit(twobit_file)
+        from twobitreader import TwoBitFile  # lazy import
+        self._fh = TwoBitFile(twobit_file)
 
     def get_seq_ids(self):
-        return self._fh.references
+        return list(sorted(self._fh.keys()))
 
     def get_seq_length(self, seq_id):
-        return self._fh.get_reference_length(seq_id)
+        return len(self._fh[seq_id])
 
     def get_seq(self, seq_id, start=None, end=None):
-        return self._fh.fetch(seq_id, start, end)
+        if start is None:
+            start = 0
+        if end is None:
+            end = self._fh.get_seq_length()
+        return self._fh[seq_id][start:end]
 
 
-def genomeFactory(seq_file, *, fmt=GenomeFmt.guess):
+def genome_factory(seq_file, *, fmt=GenomeFmt.guess):
     """create the genome reader for the format.  If guess is specified,
     determine file type from extension"""
     fasta_re = r".+\.(fa|fasta)(\.gz)?$"

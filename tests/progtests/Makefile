@@ -1,7 +1,9 @@
 root = ../..
 include ${root}/defs.mk
 
-subdirs = gbff geneCheck ncbi csvToTsv bedCmdTests pslLoadSqlLite conversion utf8ToAscii
+subdirs = gbff geneCheck ncbi csvToTsv \
+	bedCmdTests pslLoadSqlLite conversion utf8ToAscii \
+/	spliceJuncs
 # FIXME: not done: vennChart
 
 all:

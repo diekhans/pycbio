@@ -5,4 +5,4 @@ deprecation
 unidecode
 pyBigWig
 pysam
-pytwobit
+twobitreader

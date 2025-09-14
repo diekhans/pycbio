@@ -2,6 +2,9 @@
 
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
+* quick
+remove unnecessary progtests/*/Makefile:4:export PYTHONPATH
+make put dup mkdirs and clean in a command include
 
 * ArgumentParser need introspection
 write ticket
@@ -212,6 +215,12 @@ attributes.
 ** build java script sortable table?
 
 * Coords:
+** should it really contain strand?
+easily confused with annotation strand.
+Maybe 'reverse' or 'prime3'?
+or drop
+** derived class for annotation strand
+need to use typing.NamedTuple as base class
 ** total ordering tests disabled
 ** paired coordinates features for genome/transcript is really useful:
 PrimerS-JuJu/lib/primersjuju/target_transcripts.py

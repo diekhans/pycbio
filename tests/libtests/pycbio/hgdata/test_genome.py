@@ -5,17 +5,17 @@ import pytest
 
 sys.path = ["../../../../lib", "../.."] + sys.path
 import pycbio.sys.testingSupport as ts
-from pycbio.hgdata.genome import genomeFactory
+from pycbio.hgdata.genome import genome_factory
 
 COMMON_OUTPUT_DIR = "../../../common-output"
 GRCH38_FA = "grch38-regions.fa.gz"
-GRCH38_TWOBIT = "grch38-regions.fa.gz"
+GRCH38_TWOBIT = "grch38-regions.2bit"
 
 def _get_genome_file(request, file_name):
     return osp.join(ts.get_test_dir(request), COMMON_OUTPUT_DIR, file_name)
 
 def _get_genome(request, file_name):
-    return genomeFactory(_get_genome_file(request, file_name))
+    return genome_factory(_get_genome_file(request, file_name))
 
 @pytest.mark.parametrize("genome_file",
                          [GRCH38_FA, GRCH38_TWOBIT])
