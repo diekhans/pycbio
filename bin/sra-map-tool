@@ -6,7 +6,6 @@ import logging
 import argparse
 import csv
 import pipettor
-
 from pycbio.sys import cli, fileOps
 from pycbio.tsv import TsvReader
 
@@ -55,7 +54,7 @@ def parse_args():
     aj_parser.add_argument("align_dir")
     aj_parser.add_argument("para_jobs")
 
-    return cli.parseOptsArgs(parser)
+    return cli.parseOptsArgsWithLogging(parser)
 
 
 ###
@@ -145,10 +144,10 @@ def do_download_expr_run(opts, fastq_dir, sra_expr, sra_acc):
 
 def download_expr_run(opts, fastq_dir, sra_expr, sra_acc):
     if fastqs_exist(opts, fastq_dir, sra_expr, sra_acc):
-        logging.info(f"Exists: {sra_acc}")
+        logging.info(f"Exists: {sra_acc}: " + ", ".join(get_sra_fastq_paths(opts, fastq_dir, sra_expr, sra_acc)))
         return True
     elif opts.dry_run:
-        logging.info(f"Would download: {sra_acc}")
+        logging.info(f"Would download: {sra_acc}: " + ", ".join(get_sra_fastq_paths(opts, fastq_dir, sra_expr, sra_acc)))
         return True
     else:
         logging.info(f"Downloading: {sra_acc}")
@@ -173,7 +172,7 @@ def sra_download(opts, sra_run_info, fastq_dir):
 # align data
 ###
 def get_sra_short_align_pre(align_dir, sra_expr, sra_acc):
-    return osp.join(align_dir, get_platform(sra_expr), sra_acc, sra_acc)
+    return osp.join(align_dir, sra_expr.Expriment, sra_acc, sra_acc)
 
 def get_sra_short_bam(sra_expr, sra_acc, align_dir):
     return get_sra_short_align_pre(align_dir, sra_expr, sra_acc) + ".bam"
@@ -204,21 +203,24 @@ def sra_short_align(opts, sra_run_info, fastq_dir, align_dir, para_jobs):
     cnt = 0
     with open(para_jobs, 'w') as jobs_fh:
         for sra_expr in sra_run_info_load(sra_run_info):
-            if is_illumina(sra_expr):
-                cnt += write_star_expr_job(sra_expr, fastq_dir, align_dir, jobs_fh)
+            cnt += write_star_expr_job(sra_expr, fastq_dir, align_dir, jobs_fh)
     logging.info(f"{cnt} STAR jobs generates")
 
 ###
 # entry point
 ###
-def main():
-    opts, args = parse_args()
+def sra_map_tool(opts, args):
     if args.command == 'download':
         sra_download(opts, args.sra_run_info, args.fastq_dir)
     elif args.command == 'short-align':
         sra_short_align(opts, args.sra_run_info, args.fastq_dir, args.align_dir, args.para_jobs)
     else:
         raise Exception(f"subcommand not handled: {args.command}")
+
+def main():
+    opts, args = parse_args()
+    with cli.ErrorHandler():
+        sra_map_tool(opts, args)
 
 
 main()
