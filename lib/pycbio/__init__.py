@@ -3,7 +3,7 @@
 class NoStackError:
     """When added as an additional base class to an Exception, stack traces
     should not be printed to users expect for debug logging.  These are
-    normally caused for user input erros where print the stack is not helpful.
+    normally caused by user input errors where print the stack is not helpful.
     """
     __slots__ = ()
 

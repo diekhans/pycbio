@@ -139,7 +139,7 @@ def do_download_expr_run(opts, fastq_dir, sra_expr, sra_acc):
             download_fastqs_interleaved(opts, sra_expr, sra_acc, fastq_dir, tmpdir)
         return True
     except Exception as ex:
-        logging.error(f"Failed: {sra_acc}", ex)
+        logging.error(f"Failed: {sra_acc}", exc_info=ex)
         return False
 
 def download_expr_run(opts, fastq_dir, sra_expr, sra_acc):
@@ -219,6 +219,7 @@ def sra_map_tool(opts, args):
 
 def main():
     opts, args = parse_args()
+    pipettor.setDefaultLogging(logging.getLogger(), logging.DEBUG)
     with cli.ErrorHandler():
         sra_map_tool(opts, args)
 

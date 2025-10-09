@@ -4,10 +4,13 @@ import logging
 import traceback
 import io
 import argparse
-from pycbio import NoStackError
+from pycbio import PycbioException, NoStackError
 from pycbio.sys import loggingOps
 from pycbio.sys.objDict import ObjDict
 
+###
+# option parsing
+###
 def _find_subparser_action(parser):
     """Find subparser action in a parser"""
     for action in parser._actions:
@@ -84,6 +87,12 @@ def parseOptsArgsWithLogging(parser, args=None, namespace=None):
     """
     return splitOptionsArgs(parser, parseArgsWithLogging(parser, args, namespace))
 
+###
+# error handling
+###
+class CliError(PycbioException, NoStackError):
+    "Error with command line arguments"
+    pass
 
 def _exceptionPrintNoTraceback(exc, file, indent):
     depth = 0
