@@ -42,7 +42,7 @@ docs/modules.rst
 docs/pipettor.rst
 
 # test output
-/tests/**/output
+output/
 /tests/common-output/
 
 .emacs.bak
