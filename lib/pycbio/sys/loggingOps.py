@@ -23,18 +23,21 @@ def parseFacility(facilityStr):
     return facility
 
 
-def parseLevel(levelStr):
-    "convert a log level string to numeric value"
-    level = logging._nameToLevel.get(levelStr.upper())
+def parseLevel(levelSpec):
+    "Convert a log level string, integer, to string integer to numeric value"
+    try:
+        return int(levelSpec)
+    except ValueError:
+        pass
+    level = logging._nameToLevel.get(levelSpec.upper())
     if level is None:
-        raise ValueError("invalid logging level: \"{}\"".format(levelStr))
+        raise ValueError("invalid logging level: \"{}\"".format(levelSpec))
     return level
 
 
 def _convertFacility(facility):
     """convert facility from string to number, if not already a number"""
     return facility if isinstance(facility, int) else parseFacility(facility)
-
 
 def _convertLevel(level):
     """convert level from string to number, if not already a number"""
@@ -48,10 +51,10 @@ def _loggerBySpec(logger):
     return logger
 
 def setupLogger(logger, handler, level=logging.INFO, *, formatter=None):
-    """add handle to logger and set logger level to the minimum of it's current
+    """Add handler to logger and set logger level to the minimum of it's current
     and the handler level.  Logger maybe a logger, logger name, or None for
-    default logger, returns the logger.
-
+    default logger. A symbolic, integer, or integer string value maybe specific for level.
+    Returns the logger.
     """
     logger = _loggerBySpec(logger)
     if level is not None:
@@ -121,9 +124,9 @@ def addCmdOptions(parser, *, defaultLevel=logging.INFO, inclSyslog=False):
         parseFacility(facilityStr)
         return facilityStr
 
-    def validateLevel(levelStr):
-        parseLevel(levelStr)
-        return levelStr
+    def validateLevel(levelSpec):
+        parseLevel(levelSpec)
+        return levelSpec
     if inclSyslog:
         parser.add_argument("--syslog-facility", type=validateFacility,
                             help="Set syslog facility to case-insensitive symbolic value, if not specified, logging is not done to stderr, "
