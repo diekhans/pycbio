@@ -115,6 +115,7 @@ def testParseSubcommand():
     # standard add all subcommand arguments up front
     parser = argparse.ArgumentParser(description='subspace communication',
                                      exit_on_error=False)
+    parser.add_argument("--star-fleet", action="store_true")
     subparsers = parser.add_subparsers(dest='craft', required=True)
     shuttle_parser = subparsers.add_parser('shuttle', help='Shuttle craft')
     _addTrekOpts(shuttle_parser)
@@ -123,6 +124,8 @@ def testParseSubcommand():
     opts, args = cli.parseOptsArgsWithLogging(parser, testargs)
     assert args.craft == "shuttle"
     _checkTrekOpts(opts, args, None, 'fred', 'barney', True, 'baz')
+    assert not opts.star_fleet
+
     memory_handler = _confTestLogger()
     logging.debug("testParseSubcommand")
     logging.info("testParseSubcommand")

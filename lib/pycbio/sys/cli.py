@@ -31,10 +31,15 @@ def _findParserUsed(parser, parsed_args):
         parser = subparsers_action.choices[cmd_name]
     return parser
 
+def _getOptionDests(parser):
+    return {a.dest for a in parser._actions if a.option_strings}
+
 def _findOptNames(parser, parsed_args):
     "Find option names"
-    parser = _findParserUsed(parser, parsed_args)
-    return {a.dest for a in parser._actions if a.option_strings}
+    # This is ugly, there isn't a good way to walk back the
+    # chain of parsers used.
+    usedParser = _findParserUsed(parser, parsed_args)
+    return _getOptionDests(usedParser) | _getOptionDests(parser)
 
 def splitOptionsArgs(parser, parsed_args):
     """Split command line arguments into two objects one of option arguments
