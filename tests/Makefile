@@ -24,8 +24,11 @@ traceback = --tb=native
 # export PYTHONTRACEMALLOC = 20
 
 all: libtest progtest
+	@echo "to run slow running tests, use 'make test-slow'" >&2
 
 test: libtest progtest
+
+test-slow: progtest-slow
 
 .PHONY: libtest
 libtest: common-data
@@ -34,6 +37,10 @@ libtest: common-data
 .PHONY: progtest
 progtest: common-data
 	(cd progtests && ${MAKE} test)
+
+.PHONY progtest-slow
+progtest-slow:
+	(cd progtests && ${MAKE} test-slow)
 
 common-data: common-output/grch38-regions.fa.gz.fai common-output/grch38-regions.2bit
 

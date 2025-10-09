@@ -1,15 +1,22 @@
 
 Common test data
 
+
+* generate gnome teat regions:
+** create a BED4 for the region
+** extract sequence with
+twoBitToFa -bedPos -bed=
+** rename name regions to be in the form:
+chr19_51887540_51906200
+** BLAT to get mappings of region to genome
+blat -q=dna -t=dna -noHead the.2bit:chr1 region.fa reg1.psl
+** pick best alignments
+** project annotations with either
+- pslMap: use -swapMap to project to region
+- liftOver: swapPsl and pslToChain
+- CrossMap for BAMs
+
 * Human genome regions
-** generate regions:
-*** select region in browser and use get DNA soft masked and adjust to [0, n)
-*** name regions by zero-based range
-*** BLAT (hgBlat) to get mappings of region to genome
-pick best alignment
-*** project
-- pslMap use -swapMap to project to region
-- liftOver swapPsl and pslToChain
 
 ** selected regions of GRCh38
 *** grch38-regions.fa

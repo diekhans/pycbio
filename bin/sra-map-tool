@@ -1,0 +1,224 @@
+#!/usr/bin/env python3
+import sys
+import os
+import os.path as osp
+import logging
+import argparse
+import csv
+import pipettor
+
+from pycbio.sys import cli, fileOps
+from pycbio.tsv import TsvReader
+
+BIN_DIR = osp.normpath(osp.dirname(__file__))
+STAR_ALIGN = osp.join(BIN_DIR, "star-align")
+
+
+###
+# command line
+###
+def _arg_sra_run_info(parser):
+    parser.add_argument("sra_run_info",
+                        help="SRA RunInfo CSV or TSV bases on extension, maybe compressed")
+
+def _arg_fastq_dir(parser):
+    parser.add_argument("fastq_dir",
+                        help="Root FASTQ director, files are in the form <ExprAcc>/<RunAcc>.fastq.gz "
+                        "or <ExprAcc>/<RunAcc>_1.fastq.gz <ExprAcc>/<RunAcc>_2.fastq.gz if split for pair-end reads")
+def _opt_split_paired(parser):
+    parser.add_argument("--split-paired", action='store_true',
+                        help="split paired-end reads into two files, otherwise interleaved")
+
+
+def parse_args():
+    desc = """Assist with downloading and aligning SRA.
+    Uses an SRA RunInfo file download files to specify download
+    Paired end data is downloaded as an interleaved FASTQ unless
+    requested otherwise
+    """
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("--dry-run", action="store_true",
+                        help="do not download or processes, just show what would be done")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    # download subcommand
+    dl_parser = subparsers.add_parser("download")
+    _opt_split_paired(dl_parser)
+    _arg_sra_run_info(dl_parser)
+    _arg_fastq_dir(dl_parser)
+
+    # align-jobs subcommand
+    aj_parser = subparsers.add_parser("short-align")
+    _opt_split_paired(aj_parser)
+    _arg_sra_run_info(aj_parser)
+    _arg_fastq_dir(aj_parser)
+    aj_parser.add_argument("align_dir")
+    aj_parser.add_argument("para_jobs")
+
+    return cli.parseOptsArgs(parser)
+
+
+###
+# sra run metadata
+###
+
+SRA_RUN_TYPE_MAP = {
+    'Run': lambda v: v.split(', ')
+}
+
+def sra_run_info_load(sra_run_info):
+    if fileOps.compressBaseName(sra_run_info).endswith(".csv"):
+        dialect = csv.excel
+    else:
+        dialect = csv.excel_tab
+    return [row for row in TsvReader(sra_run_info, typeMap=SRA_RUN_TYPE_MAP, dialect=dialect)]
+
+def is_paired(sra_expr):
+    return sra_expr.LibraryLayout == 'PAIRED'
+
+###
+# fastqs
+###
+def use_split_fastq(opts, sra_expr):
+    return is_paired(sra_expr) and opts.split_paired
+
+def get_sra_fastq_dir(fastq_dir, sra_expr):
+    return osp.join(fastq_dir, sra_expr.Experiment)
+
+def get_sra_fastq_names(opts, sra_expr, sra_acc, *, compressed=True):
+    "return basenames only"
+    ext = ".gz" if compressed else ""
+    if use_split_fastq(opts, sra_expr):
+        return [sra_acc + '_1.fastq' + ext, sra_acc + '_2.fastq' + ext]
+    else:
+        return [sra_acc + '.fastq' + ext]
+
+def get_sra_fastq_paths(opts, fastq_dir, sra_expr, sra_acc):
+    return [osp.join(get_sra_fastq_dir(fastq_dir, sra_expr), fq)
+            for fq in get_sra_fastq_names(opts, sra_expr, sra_acc)]
+
+def fastqs_exist(opts, fastq_dir, sra_expr, sra_acc):
+    return all(osp.exists(fq) for fq in get_sra_fastq_paths(opts, fastq_dir, sra_expr, sra_acc))
+
+####
+# download fastqs
+###
+def compress_fastq(src, dest):
+    fileOps.ensureFileDir(dest)
+    with fileOps.AtomicFileCreate(dest) as dest_tmp:
+        pipettor.run(['pigz', '-c', src], stdout=dest_tmp)
+
+def install_fastqs_split(opts, fastq_dir, sra_expr, sra_acc, tmpdir):
+    srcs = get_sra_fastq_names(opts, sra_expr, sra_acc, compressed=False)
+    dests = get_sra_fastq_paths(opts, fastq_dir, sra_expr, sra_acc)
+    for src, dest in zip(srcs, dests):
+        src_path = osp.join(tmpdir, src)
+        compress_fastq(osp.join(tmpdir, src), dest)
+        os.unlink(src_path)
+
+def download_fastqs_split(opts, sra_expr, sra_acc, fastq_dir, tmpdir):
+    cmd = ['fasterq-dump', sra_acc, '-t', tmpdir, '-O', tmpdir, '--split-files']
+    pipettor.run(cmd, stderr=sys.stderr)
+    install_fastqs_split(opts, fastq_dir, sra_expr, sra_acc, tmpdir)
+
+def download_fastqs_interleaved(opts, sra_expr, sra_acc, fastq_dir, tmpdir):
+    fastqs = get_sra_fastq_paths(opts, fastq_dir, sra_expr, sra_acc)
+    assert len(fastqs) == 1
+    fastq = fastqs[0]
+
+    with fileOps.AtomicFileCreate(fastq) as dest_tmp:
+        cmds = [['fasterq-dump', sra_acc, '-t', tmpdir, '--split-spot', '--stdout'],
+                ['pigz', '-c']]
+        pipettor.run(cmds, stdout=dest_tmp, stderr=sys.stderr)
+
+def do_download_expr_run(opts, fastq_dir, sra_expr, sra_acc):
+    try:
+        tmpdir = fileOps.findTmpDir()
+        if use_split_fastq(opts, sra_expr):
+            download_fastqs_split(opts, sra_expr, sra_acc, fastq_dir, tmpdir)
+        else:
+            download_fastqs_interleaved(opts, sra_expr, sra_acc, fastq_dir, tmpdir)
+        return True
+    except Exception as ex:
+        logging.error(f"Failed: {sra_acc}", ex)
+        return False
+
+def download_expr_run(opts, fastq_dir, sra_expr, sra_acc):
+    if fastqs_exist(opts, fastq_dir, sra_expr, sra_acc):
+        logging.info(f"Exists: {sra_acc}")
+        return True
+    elif opts.dry_run:
+        logging.info(f"Would download: {sra_acc}")
+        return True
+    else:
+        logging.info(f"Downloading: {sra_acc}")
+        return do_download_expr_run(opts, fastq_dir, sra_expr, sra_acc)
+
+def download_expr(opts, fastq_dir, sra_expr):
+    err_cnt = 0
+    for sra_acc in sra_expr.Run:
+        if not download_expr_run(opts, fastq_dir, sra_expr, sra_acc):
+            err_cnt += 1
+    return err_cnt
+
+def sra_download(opts, sra_run_info, fastq_dir):
+    err_cnt = 0
+    for sra_expr in sra_run_info_load(sra_run_info):
+        err_cnt += download_expr(opts, fastq_dir, sra_expr)
+    if err_cnt > 0:
+        logging.error(F"Error: {err_cnt} downloads failed")
+        exit(1)
+
+###
+# align data
+###
+def get_sra_short_align_pre(align_dir, sra_expr, sra_acc):
+    return osp.join(align_dir, get_platform(sra_expr), sra_acc, sra_acc)
+
+def get_sra_short_bam(sra_expr, sra_acc, align_dir):
+    return get_sra_short_align_pre(align_dir, sra_expr, sra_acc) + ".bam"
+
+def get_sra_short_intron_tsv(sra_expr, sra_acc, align_dir):
+    return get_sra_short_align_pre(align_dir, sra_expr, sra_acc) + ".intron.tsv.gz"
+
+###
+# short align
+###
+def star_job_done(sra_expr, fastq_dir, align_dir, sra_acc):
+    return (osp.exists(get_sra_short_bam(sra_expr, sra_acc, align_dir)) and
+            osp.exists(get_sra_short_intron_tsv(sra_expr, sra_acc, align_dir)))
+
+def write_star_job(sra_expr, fastq_dir, align_dir, sra_acc, jobs_fh):
+    fastqs = get_sra_fastq_paths(fastq_dir, sra_expr, sra_acc)
+    print(STAR_ALIGN, get_sra_short_align_pre(align_dir, sra_expr, sra_acc), *fastqs, file=jobs_fh)
+
+def write_star_expr_job(sra_expr, fastq_dir, align_dir, jobs_fh):
+    cnt = 0
+    for sra_acc in sra_expr.Run:
+        if not star_job_done(sra_expr, fastq_dir, align_dir, sra_acc):
+            write_star_job(sra_expr, fastq_dir, align_dir, sra_acc, jobs_fh)
+            cnt += 1
+    return cnt
+
+def sra_short_align(opts, sra_run_info, fastq_dir, align_dir, para_jobs):
+    cnt = 0
+    with open(para_jobs, 'w') as jobs_fh:
+        for sra_expr in sra_run_info_load(sra_run_info):
+            if is_illumina(sra_expr):
+                cnt += write_star_expr_job(sra_expr, fastq_dir, align_dir, jobs_fh)
+    logging.info(f"{cnt} STAR jobs generates")
+
+###
+# entry point
+###
+def main():
+    opts, args = parse_args()
+    if args.command == 'download':
+        sra_download(opts, args.sra_run_info, args.fastq_dir)
+    elif args.command == 'short-align':
+        sra_short_align(opts, args.sra_run_info, args.fastq_dir, args.align_dir, args.para_jobs)
+    else:
+        raise Exception(f"subcommand not handled: {args.command}")
+
+
+main()
