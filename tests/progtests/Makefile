@@ -17,6 +17,10 @@ test: ${subdirs:%=%.test}
 %.test:
 	(cd $* && ${MAKE} test)
 
+test-full: ${all_subdirs:%=%.test-full}
+%.test-full:
+	(cd $* && ${MAKE} test-full)
+
 test-slow: ${slow_subdirs:%=%.test-slow}
 %.test-slow:
 	(cd $* && ${MAKE} test-slow)

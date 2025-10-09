@@ -14,6 +14,9 @@ libcomp:
 test:
 	cd tests && ${MAKE} test
 
+test-full:
+	cd tests && ${MAKE} test-full
+
 libtest:
 	cd tests && ${MAKE} libtest
 

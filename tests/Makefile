@@ -28,6 +28,8 @@ all: libtest progtest
 
 test: libtest progtest
 
+test-full: libtest progtest progtest-slow
+
 test-slow: progtest-slow
 
 .PHONY: libtest
@@ -38,7 +40,7 @@ libtest: common-data
 progtest: common-data
 	(cd progtests && ${MAKE} test)
 
-.PHONY progtest-slow
+.PHONY: progtest-slow
 progtest-slow:
 	(cd progtests && ${MAKE} test-slow)
 
