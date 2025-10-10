@@ -57,7 +57,7 @@ def parse_args():
                            help="Write commands to run to this file, which can then been run in a batch")
     aj_parser.add_argument("align_cmd", nargs='+',
                            help="""Command to run with initial arguments.  They following arguments will be appended:
-                           fastq_type, one of 'single', 'paired1', 'paired2' with 'paired1' is an integrated FASTQ,
+                           fastq_type, one of 'single', 'paired1', 'paired2' with 'paired1' is an interleaved FASTQ,
                            bam fastq1 [fastq2]""")
     return cli.parseOptsArgsWithLogging(parser)
 
