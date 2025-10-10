@@ -15,7 +15,7 @@ from pycbio.tsv import TsvReader
 ###
 def _arg_sra_run_info(parser):
     parser.add_argument("sra_run_info",
-                        help="SRA RunInfo CSV or TSV bases on extension, maybe compressed")
+                        help="SRA RunInfo or RUnTable. CSV or TSV determined by file name extension, maybe compressed")
 
 def _arg_fastq_dir(parser):
     parser.add_argument("fastq_dir",
