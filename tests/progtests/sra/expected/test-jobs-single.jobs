@@ -1,0 +1,1 @@
+mapper fred single output/test-jobs-single/aligns/SRX2013614/SRR4020133.bam output/test-jobs-single/fastqs/SRX2013614/SRR4020133.fastq.gz

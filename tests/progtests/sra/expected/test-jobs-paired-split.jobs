@@ -1,0 +1,1 @@
+mapper wilma paired2 output/test-jobs-paired-split/aligns/SRX14530460/SRR18396502.bam output/test-jobs-paired-split/fastqs/SRX14530460/SRR18396502_1.fastq.gz output/test-jobs-paired-split/fastqs/SRX14530460/SRR18396502_2.fastq.gz

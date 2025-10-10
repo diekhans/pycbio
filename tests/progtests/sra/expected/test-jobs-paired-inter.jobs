@@ -1,0 +1,1 @@
+mapper barney paired1 output/test-jobs-paired-inter/aligns/SRX14530460/SRR18396502.bam output/test-jobs-paired-inter/fastqs/SRX14530460/SRR18396502.fastq.gz
