@@ -31,18 +31,18 @@ test-slow: test-down-single test-down-paired-inter test-down-paired-split
 test-down-single: mkdirs
 	@rm -rf output/$@
 	${sra_map_tool} download ${SRX2013614_TSV} output/$@
-	test -e output/test-single/SRX2013614/SRR4020133.fastq.gz
+	test -e output/test-down-single/SRX2013614/SRR4020133.fastq.gz
 
 test-down-paired-inter: mkdirs
 	@rm -rf output/$@
 	${sra_map_tool} download ${SRX14530460_CSV} output/$@
-	test -e output/test-paired-inter/SRX14530460/SRR18396502.fastq.gz
+	test -e output/test-down-paired-inter/SRX14530460/SRR18396502.fastq.gz
 
 test-down-paired-split: mkdirs
 	@rm -rf output/$@
 	${sra_map_tool} download --split-paired ${SRX14530460_CSV} output/$@
-	test -e output/test-paired-split/SRX14530460/SRR18396502_1.fastq.gz
-	test -e output/test-paired-split/SRX14530460/SRR18396502_2.fastq.gz
+	test -e output/test-down-paired-split/SRX14530460/SRR18396502_1.fastq.gz
+	test -e output/test-down-paired-split/SRX14530460/SRR18396502_2.fastq.gz
 
 test-jobs-single: mkdirs
 	@rm -rf output/$@

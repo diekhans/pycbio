@@ -2,6 +2,7 @@
 import sys
 import os
 import os.path as osp
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
 import argparse
 import csv
@@ -35,6 +36,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument("--dry-run", action="store_true",
                         help="Do not download or processes, just show what would be done")
+    parser.add_argument("--threads", type=int, default=4,
+                        help="number of threads for some operations")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # download subcommand
@@ -158,17 +161,30 @@ def download_expr_run(opts, fastq_dir, sra_expr, sra_acc):
         logging.info(f"Downloading: {sra_acc}")
         return do_download_expr_run(opts, fastq_dir, sra_expr, sra_acc)
 
-def download_expr(opts, fastq_dir, sra_expr):
+def download_compete_handler(future, acc):
+    try:
+        ok = future.result()
+    except Exception as ex:
+        ok = False
+        logging.error(f"download of {acc} failed", exc_info=ex)
+    return ok
+
+def download_exprs(opts, fastq_dir, sra_run_info):
     err_cnt = 0
-    for sra_acc in sra_expr.Run:
-        if not download_expr_run(opts, fastq_dir, sra_expr, sra_acc):
-            err_cnt += 1
+    with ThreadPoolExecutor(max_workers=opts.threads) as ex:
+        futures = {
+            ex.submit(download_expr_run, opts, fastq_dir, sra_expr, acc): acc
+            for sra_expr in sra_run_info_load(sra_run_info)
+            for acc in sra_expr.Run
+        }
+        for fut in as_completed(futures):
+            if not download_compete_handler(fut, futures[fut]):
+                err_cnt += 1
     return err_cnt
 
+
 def sra_download(opts, sra_run_info, fastq_dir):
-    err_cnt = 0
-    for sra_expr in sra_run_info_load(sra_run_info):
-        err_cnt += download_expr(opts, fastq_dir, sra_expr)
+    err_cnt = download_exprs(opts, fastq_dir, sra_run_info)
     if err_cnt > 0:
         logging.error(F"Error: {err_cnt} downloads failed")
         exit(1)
