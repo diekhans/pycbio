@@ -1,0 +1,161 @@
+#!/usr/bin/env python3
+import argparse
+import sys
+import os
+import csv
+from openpyxl import load_workbook
+
+# AI co-author: Claude
+
+class XLSXParserError(Exception):
+    """Custom exception for XLSX parsing errors"""
+    pass
+
+def validate_input_file(file_path):
+    """Validate that the input file exists and has the correct extension"""
+    if not os.path.exists(file_path):
+        raise XLSXParserError(f"Input file not found: {file_path}")
+
+    if not file_path.lower().endswith(('.xlsx', '.xlsm')):
+        raise XLSXParserError(f"Input file must be an Excel file with .xlsx or .xlsm extension: {file_path}")
+
+def validate_output_directory(directory_path):
+    """Validate that the output directory exists"""
+    if not os.path.exists(directory_path):
+        raise XLSXParserError(f"Output directory not found: {directory_path}")
+
+def validate_header_row(header_row, no_headers):
+    """Validate that the header row is valid"""
+    if header_row < 1 and not no_headers:
+        raise XLSXParserError("Header row must be a positive integer")
+
+def parse_arguments():
+    """Parse command line arguments and validate them"""
+    parser = argparse.ArgumentParser(description='Export XLSX sheets to TSV files')
+
+    parser.add_argument('input_file', help='Path to the input XLSX file')
+    parser.add_argument('output_dir', default='.', help='Output directory for TSV files (default: current directory)')
+    parser.add_argument('-p', '--prefix', help='Prefix for output TSV filenames')
+    parser.add_argument('-d', '--delimiter', default='\t', help='Delimiter for TSV output (default: tab)')
+    parser.add_argument('-s', '--sheet', help='Specific sheet to export (default: all sheets)')
+    parser.add_argument('-r', '--header-row', type=int, default=1, help='Header row number (default: 1)')
+    parser.add_argument('-n', '--no-headers', action='store_true', help='Specify if the file has no headers')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Print verbose output')
+
+    args = parser.parse_args()
+
+    validate_input_file(args.input_file)
+    validate_output_directory(args.output_dir)
+    validate_header_row(args.header_row, args.no_headers)
+
+    return args
+
+def get_output_filename(input_file, sheet_name, output_dir, prefix=None):
+    """Generate output filename for a sheet"""
+    base_filename = os.path.basename(input_file)
+    base_filename = os.path.splitext(base_filename)[0]
+
+    if prefix:
+        base_filename = f"{prefix}_{base_filename}"
+
+    tsv_filename = f"{base_filename}_{sheet_name}.tsv"
+    return os.path.join(output_dir, tsv_filename)
+
+def write_sheet_to_tsv(sheet, output_path, delimiter='\t', start_row=1):
+    """Write sheet data to a TSV file"""
+    with open(output_path, 'w', newline='', encoding='utf-8') as tsv_file:
+        tsv_writer = csv.writer(tsv_file, delimiter=delimiter)
+
+        rows_written = 0
+        for row_idx, row in enumerate(sheet.rows, 1):
+            if row_idx >= start_row:
+                row_values = [cell.value if cell.value is not None else "" for cell in row]
+                tsv_writer.writerow(row_values)
+                rows_written += 1
+
+    return rows_written
+
+def export_single_sheet(sheet, sheet_name, output_path, delimiter='\t', start_row=1, verbose=False):
+    """Export a single sheet to a TSV file"""
+    try:
+        rows_written = write_sheet_to_tsv(sheet, output_path, delimiter, start_row)
+        if verbose:
+            print(f"{sheet_name}: {rows_written} rows -> {os.path.basename(output_path)}")
+        return rows_written
+
+    except Exception as e:
+        raise XLSXParserError(f"Failed to process sheet '{sheet_name}'") from e
+
+def validate_sheet_exists(workbook, sheet_name):
+    """Validate that a sheet exists in the workbook"""
+    if sheet_name not in workbook.sheetnames:
+        raise XLSXParserError(
+            f"Sheet '{sheet_name}' not found. Available sheets: {', '.join(workbook.sheetnames)}"
+        )
+
+def process_single_sheet(workbook, sheet_name, input_file, output_dir, prefix, delimiter, start_row, verbose):
+    """Process a single sheet from a workbook"""
+    sheet = workbook[sheet_name]
+    output_path = get_output_filename(input_file, sheet_name, output_dir, prefix)
+
+    return export_single_sheet(sheet, sheet_name, output_path, delimiter, start_row, verbose)
+
+def process_sheet_list(workbook, sheets_to_process, input_file, output_dir, prefix=None,
+                       delimiter='\t', start_row=1, verbose=False):
+    """Process a list of sheets from a workbook"""
+    for sheet_name in sheets_to_process:
+        try:
+            process_single_sheet(
+                workbook, sheet_name, input_file, output_dir,
+                prefix, delimiter, start_row, verbose
+            )
+        except Exception as e:
+            raise XLSXParserError(f"Failed to process sheet '{sheet_name}'") from e
+
+def load_workbook_safely(file_path):
+    """Load an Excel workbook with error handling"""
+    try:
+        return load_workbook(file_path, read_only=True, data_only=True)
+    except Exception as e:
+        raise XLSXParserError(f"Failed to open Excel file: {file_path}") from e
+
+def determine_sheets_to_process(workbook, sheet_name=None):
+    """Determine which sheets to process based on user input"""
+    if sheet_name:
+        validate_sheet_exists(workbook, sheet_name)
+        return [sheet_name]
+    else:
+        return workbook.sheetnames
+
+def export_sheets_to_tsv(args):
+    """Export sheets to TSV files"""
+    workbook = load_workbook_safely(args.input_file)
+    sheets_to_process = determine_sheets_to_process(workbook, args.sheet)
+
+    start_row = 1
+    if not args.no_headers:
+        start_row = args.header_row
+
+    process_sheet_list(
+        workbook, sheets_to_process, args.input_file, args.output_dir,
+        args.prefix, args.delimiter, start_row, args.verbose
+    )
+
+def run_export():
+    """Run the export process with argument parsing and error handling"""
+    try:
+        args = parse_arguments()
+        export_sheets_to_tsv(args)
+        return 0
+    except XLSXParserError as e:
+        sys.stderr.write(f"Error: {str(e)}\n")
+        if e.__cause__:
+            sys.stderr.write(f"Caused by: {str(e.__cause__)}\n")
+        return 1
+
+def main():
+    """Main entry point for the script"""
+    return run_export()
+
+if __name__ == "__main__":
+    sys.exit(main())
