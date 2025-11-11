@@ -50,15 +50,12 @@ def parse_arguments():
 
     return args
 
-def get_output_filename(input_file, sheet_name, output_dir, prefix=None):
+def get_output_filename(sheet_name, output_dir, prefix=None):
     """Generate output filename for a sheet"""
-    base_filename = os.path.basename(input_file)
-    base_filename = os.path.splitext(base_filename)[0]
-
     if prefix:
-        base_filename = f"{prefix}_{base_filename}"
-
-    tsv_filename = f"{base_filename}_{sheet_name}.tsv"
+        tsv_filename = f"{prefix}_{sheet_name}.tsv"
+    else:
+        tsv_filename = f"{sheet_name}.tsv"
     return os.path.join(output_dir, tsv_filename)
 
 def write_sheet_to_tsv(sheet, output_path, delimiter='\t', start_row=1):
@@ -96,7 +93,7 @@ def validate_sheet_exists(workbook, sheet_name):
 def process_single_sheet(workbook, sheet_name, input_file, output_dir, prefix, delimiter, start_row, verbose):
     """Process a single sheet from a workbook"""
     sheet = workbook[sheet_name]
-    output_path = get_output_filename(input_file, sheet_name, output_dir, prefix)
+    output_path = get_output_filename(sheet_name, output_dir, prefix)
 
     return export_single_sheet(sheet, sheet_name, output_path, delimiter, start_row, verbose)
 
@@ -135,7 +132,6 @@ def export_sheets_to_tsv(args):
     start_row = 1
     if not args.no_headers:
         start_row = args.header_row
-
     process_sheet_list(
         workbook, sheets_to_process, args.input_file, args.output_dir,
         args.prefix, args.delimiter, start_row, args.verbose

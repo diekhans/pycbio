@@ -1,10 +1,11 @@
 #+STARTUP: nologdone
-
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
 
 * quick
 remove unnecessary progtests/*/Makefile:4:export PYTHONPATH
 make put dup mkdirs and clean in a command include
+
+* convert xlsx-to-tsv to use CLI and logging stuff
 
 * ArgumentParser need introspection
 write ticket

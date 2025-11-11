@@ -1,0 +1,3 @@
+Chr	Start	End	Strand	Peak Score	Focus Ratio/Region Size	Annotation	Detailed Annotation	Distance to TSS	Nearest PromoterID	Entrez ID	Nearest Unigene
+chr7_hap2	76702856	76703517	+	2.11082359896613	NA	promoter-TSS (H9_HAP2_G0121211)	-promoter-TSS (H9_HAP2_G0121211)	-283	H9_HAP2_G0121211	H9_HAP2_G0121211	H9_HAP2_T0442278
+chrX_hap2	133090173	133091004	+	1.14181762321236	NA	Intergenic	Intergenic	9042	ENSG00000229015	ENSG00000229015	H9_HAP2_T0516347

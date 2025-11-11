@@ -3,7 +3,7 @@ include ${root}/defs.mk
 
 subdirs = gbff geneCheck ncbi csvToTsv \
 	bedCmdTests pslLoadSqlLite conversion utf8ToAscii \
-	spliceJuncs
+	spliceJuncs spreadSheets
 
 slow_subdirs = sra
 
