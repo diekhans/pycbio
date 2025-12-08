@@ -172,6 +172,7 @@ https://tommyseattle.com/python-class-dict-named-tuple-performance-and-memory-us
 
 
 * PSL
+** psl check for overlapping blocks, etc
 ** psl.repr less than ideal, but block object makes it hard with back-reference
 ** changes Psl, ChromInfo to have parse functions instead of methods, as with genePred.
 ** psl.tOverlap should consider strand?? how?
