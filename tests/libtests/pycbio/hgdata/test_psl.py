@@ -5,7 +5,7 @@ if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 import pycbio.sys.testingSupport as ts
 from pycbio.sys import fileOps
-from pycbio.hgdata.psl import Psl, PslBlock, PslTbl, pslFromCigar, pslFromPysam
+from pycbio.hgdata.psl import Psl, PslTbl, pslFromCigar, pslFromPysam
 
 # test data as a string (ps = psl string)
 
@@ -101,9 +101,9 @@ def testCaclStats():
 
     psl = Psl(qName="ENST00000641515.2", qSize=2618, qStart=0, qEnd=2618,
               tName="chr1", tSize=248956422, tStart=65418, tEnd=71585, strand='+')
-    psl.addBlock(PslBlock(0, 65418, 15))
-    psl.addBlock(PslBlock(15, 65519, 54))
-    psl.addBlock(PslBlock(69, 69036, 2549))
+    psl.addBlock(0, 65418, 15)
+    psl.addBlock(15, 65519, 54)
+    psl.addBlock(69, 69036, 2549)
     psl.updateCounts()
     assert psl.match == 2618
     assert psl.tNumInsert == 2

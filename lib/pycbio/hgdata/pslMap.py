@@ -1,6 +1,6 @@
 # Copyright 2006-2025 Mark Diekhans
 from collections import namedtuple
-from pycbio.hgdata.psl import Psl, PslBlock
+from pycbio.hgdata.psl import Psl
 
 _validStrands = ('+', '-')
 
@@ -73,7 +73,7 @@ def _rangesToPsl(mapPsl, rangeGen):
                      tSize=mapPsl.tSize,
                      strand=strand)
     for rng in rngs:
-        psl.addBlock(PslBlock(rng.qStart, rng.tStart, len(rng)))
+        psl.addBlock(rng.qStart, rng.tStart, len(rng))
     psl.updateBounds()
     psl.updateCounts()
     return psl

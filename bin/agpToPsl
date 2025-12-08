@@ -10,7 +10,7 @@ from pycbio.ncbi.agp import Agp
 from pycbio import PycbioException
 from pycbio.sys import fileOps
 from pycbio.tsv.tabFile import TabFileReader
-from pycbio.hgdata.psl import Psl, PslBlock
+from pycbio.hgdata.psl import Psl
 
 
 def parseArgs():
@@ -97,8 +97,7 @@ def recToPsl(rec, objectSizeMap, componentSizeMap, componentLocalIdMap):
                      tName=rec.object.name, tSize=objectSizeMap(rec.object.name), tStart=rec.object.start, tEnd=rec.object.end,
                      strand=rec.component.strand)
     psl.match = len(rec.object)
-    blk = PslBlock(rec.component.start, rec.object.start, len(rec.object))
-    psl.blocks.append(blk)
+    psl.addBlock(rec.component.start, rec.object.start, len(rec.object))
     return psl
 
 def buildPsl(rec, objectSizeMap, componentSizeMap, componentLocalIdMap, skipUnmappable):

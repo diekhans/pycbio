@@ -127,7 +127,7 @@ def makePsl(seq, qName, tName):
     psl = Psl.create(qName=qName, qSize=seq.sequenceLength, qStart=0, qEnd=seq.sequenceLength,
                      tName=tName, tSize=seq.sequenceLength, tStart=0, tEnd=seq.sequenceLength,
                      strand='+')
-    psl.addBlock(PslBlock(0, 0, seq.sequenceLength))
+    psl.addBlock(0, 0, seq.sequenceLength)
     psl.match = seq.sequenceLength
     return psl
 

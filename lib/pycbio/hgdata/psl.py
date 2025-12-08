@@ -1,13 +1,11 @@
 # Copyright 2006-2025 Mark Diekhans
 import re
+from collections import defaultdict, namedtuple
+from deprecation import deprecated
 from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin, strArraySplit, strArrayJoin
 from pycbio.tsv.tabFile import TabFileReader
 from pycbio.hgdata import dnaOps
 from pycbio.hgdata.cigar import cigarStringParse, cigarFromPysam
-from collections import defaultdict
-from deprecation import deprecated
-
-# FIXME: drop sequence support, it is almost never used
 
 # Notes:
 #  - terms plus and minus are used because `positive' is long and `pos' abbreviation is
@@ -25,19 +23,13 @@ def dropQueryUniq(qName):
     drop it"""
     return re.match('^(.+?)(-[0-9]+(.[0-9]+)*)?$', qName).group(1)
 
-class PslBlock:
+class PslBlock(namedtuple("PslBlock",
+                          ("psl", "qStart", "tStart", "size", "qSeq", "tSeq"))):
     """Block of a PSL"""
-    __slots__ = ("psl", "iBlk", "qStart", "tStart", "size", "qSeq", "tSeq")
+    __slots__ = ()
 
-    def __init__(self, qStart, tStart, size, qSeq=None, tSeq=None):
-        "sets iBlk base on being added in ascending order"
-        self.psl = None
-        self.iBlk = None
-        self.qStart = qStart
-        self.tStart = tStart
-        self.size = size
-        self.qSeq = qSeq
-        self.tSeq = tSeq
+    def __new__(cls, psl, qStart, tStart, size, qSeq=None, tSeq=None):
+        return super(PslBlock, cls).__new__(cls, psl, qStart, tStart, size, qSeq, tSeq)
 
     def __len__(self):
         return self.size
@@ -105,25 +97,6 @@ class PslBlock:
         "compare for equality of alignment."
         return (other is not None) and (self.qStart == other.qStart) and (self.tStart == other.tStart) and (self.size == other.size) and (self.qSeq == other.qSeq) and (self.tSeq == other.tSeq)
 
-    def reverseComplement(self):
-        "construct a block that is the reverse complement of this block"
-        return PslBlock(self.psl.qSize - self.qEnd,
-                        self.psl.tSize - self.tEnd, self.size,
-                        (dnaOps.reverseComplement(self.qSeq) if (self.qSeq is not None) else None),
-                        (dnaOps.reverseComplement(self.tSeq) if (self.tSeq is not None) else None))
-
-    def swapSides(self):
-        "construct a block with query and target swapped "
-        return PslBlock(self.tStart, self.qStart, self.size, self.tSeq, self.qSeq)
-
-    def swapSidesReverseComplement(self):
-        "construct a block with query and target swapped and reverse complemented "
-        return PslBlock(self.psl.tSize - self.tEnd,
-                        self.psl.qSize - self.qEnd, self.size,
-                        (dnaOps.reverseComplement(self.tSeq) if (self.tSeq is not None) else None),
-                        (dnaOps.reverseComplement(self.qSeq) if (self.qSeq is not None) else None))
-
-
 class Psl:
     """Object containing data from a PSL record."""
     __slots__ = ("match", "misMatch", "repMatch", "nCount", "qNumInsert", "qBaseInsert", "tNumInsert", "tBaseInsert", "strand", "qName", "qSize", "qStart", "qEnd", "tName", "tSize", "tStart", "tEnd", "blocks")
@@ -139,9 +112,9 @@ class Psl:
             qSeqs = strArraySplit(qSeqsStr)
             tSeqs = strArraySplit(tSeqsStr)
         for i in range(blockCount):
-            psl.addBlock(PslBlock(qStarts[i], tStarts[i], blockSizes[i],
-                                  (qSeqs[i] if haveSeqs else None),
-                                  (tSeqs[i] if haveSeqs else None)))
+            psl.addBlock(qStarts[i], tStarts[i], blockSizes[i],
+                         (qSeqs[i] if haveSeqs else None),
+                         (tSeqs[i] if haveSeqs else None))
 
     def _zeroStats(self):
         self.match = 0
@@ -230,10 +203,8 @@ class Psl:
                   strand=strand)
         return psl
 
-    def addBlock(self, blk):
-        blk.psl = self
-        blk.iBlk = len(self.blocks)
-        self.blocks.append(blk)
+    def addBlock(self, qStart, tStart, size, qSeq=None, tSeq=None):
+        self.blocks.append(PslBlock(self, qStart, tStart, size, qSeq, tSeq))
 
     def updateBounds(self):
         "update bounds from the blocks"
@@ -455,6 +426,35 @@ class Psl:
         # FIXME: make property
         return (self.match + self.misMatch + self.repMatch) / self.qSize
 
+    def _addReverseComplementBlock(self, blk):
+        self.addBlock(self.qSize - blk.qEnd,
+                      self.tSize - blk.tEnd,
+                      blk.size,
+                      (dnaOps.reverseComplement(blk.qSeq) if (blk.qSeq is not None) else None),
+                      (dnaOps.reverseComplement(blk.tSeq) if (blk.tSeq is not None) else None))
+
+    def _swapStrand(self, keepTStrandImplicit, doRc):
+        # don't make implicit if already explicit
+        if keepTStrandImplicit and (len(self.strand) == 1):
+            qs = reverseStrand(self.tStrand) if doRc else self.tStrand
+            ts = ""
+        else:
+            # swap and make|keep explicit
+            qs = self.tStrand
+            ts = self.qStrand
+        return qs + ts
+
+    def _addSwapSidesBlock(self, blk):
+        "add a block with query and target swapped "
+        self.addBlock(blk.tStart, blk.qStart, blk.size, blk.tSeq, blk.qSeq)
+
+    def _addSwapSidesReverseComplementBlock(self, blk):
+        "add a block with query and target swapped and reverse complemented "
+        self.addBlock(blk.psl.tSize - blk.tEnd,
+                      blk.psl.qSize - blk.qEnd, blk.size,
+                      (dnaOps.reverseComplement(blk.tSeq) if (blk.tSeq is not None) else None),
+                      (dnaOps.reverseComplement(blk.qSeq) if (blk.qSeq is not None) else None))
+
     def reverseComplement(self):
         "create a new PSL that is reverse complemented"
         rc = Psl(qName=self.qName, qSize=self.qSize, qStart=self.qStart, qEnd=self.qEnd,
@@ -469,19 +469,8 @@ class Psl:
         rc.tNumInsert = self.tNumInsert
         rc.tBaseInsert = self.tBaseInsert
         for i in range(self.blockCount - 1, -1, -1):
-            rc.addBlock(self.blocks[i].reverseComplement())
+            rc._addReverseComplementBlock(self.blocks[i])
         return rc
-
-    def _swapStrand(self, keepTStrandImplicit, doRc):
-        # don't make implicit if already explicit
-        if keepTStrandImplicit and (len(self.strand) == 1):
-            qs = reverseStrand(self.tStrand) if doRc else self.tStrand
-            ts = ""
-        else:
-            # swap and make|keep explicit
-            qs = self.tStrand
-            ts = self.qStrand
-        return qs + ts
 
     def swapSides(self, keepTStrandImplicit=False):
         """Create a new PSL with target and query swapped,
@@ -510,10 +499,10 @@ class Psl:
 
         if doRc:
             for i in range(self.blockCount - 1, -1, -1):
-                swap.addBlock(self.blocks[i].swapSidesReverseComplement())
+                swap._addSwapSidesReverseComplementBlock(self.blocks[i])
         else:
             for i in range(self.blockCount):
-                swap.addBlock(self.blocks[i].swapSides())
+                swap._addSwapSidesBlock(self.blocks[i])
         return swap
 
 class PslReader:
@@ -588,7 +577,7 @@ class PslTbl(list):
 
 
 def _processMatch(psl, size, qNext, tNext):
-    psl.addBlock(PslBlock(qNext, tNext, size))
+    psl.addBlock(qNext, tNext, size)
     psl.match += size
 
 def _processTInsert(psl, size, tNext):
@@ -621,7 +610,7 @@ def pslFromCigarObj(qName, qStrand, tName, tSize, tPos, cigar):
 
     psl.qSize, _ = _addCigarBlocks(cigar, psl, 0, tPos)
 
-    # use ends out of blocks to deal with soft-clipping
+    # use ends of blocks to deal with soft-clipping
     psl.qStart, psl.qEnd = psl.blocks[0].qStart, psl.blocks[-1].qEnd
     if qStrand == '-':
         psl.qStart, psl.qEnd = reverseCoords(psl.qStart, psl.qEnd, psl.qSize)

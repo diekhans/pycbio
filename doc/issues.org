@@ -172,11 +172,13 @@ https://tommyseattle.com/python-class-dict-named-tuple-performance-and-memory-us
 
 
 * PSL
-** psl.repr less than idea, but block object makes it hard with back-reference
-** Psl remove PslBlock back references, make named tuple
+** psl.repr less than ideal, but block object makes it hard with back-reference
 ** changes Psl, ChromInfo to have parse functions instead of methods, as with genePred.
 ** psl.tOverlap should consider strand?? how?
-osupport psl sqlite stuff to build query bin ranges
+** support psl sqlite stuff to build query bin ranges
+** drop sequence support, it is almost never used
+** remove deprecated functions
+
 
 * add PslMapInfo class from:
 uniprotFeatMap/lib/uniprotmap/mapping.py
@@ -371,8 +373,6 @@ forget relative imports
 
 * add function to init from __init__ args
 http://code.activestate.com/recipes/286185-automatically-initializing-instance-variables-from/
-
-* switch all function to use coords
 
 
 * color
