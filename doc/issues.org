@@ -22,6 +22,16 @@ implementation makes this hard with subparsers
   look in side for definitions
 - extending to add options on parse and then process then after parsing
   can't do per options, as need multiple options as input
+* CLI
+** should this just go to click? uses optparse
+*** make cli.py compatible with both argparse and optparse
+** add help formatter that includes default value in message
+but this happens in ArgumentParser constructor with sises
+with overriding above.
+*** adding after the fact suggerstions
+- parser.formatter_class = DefaultFormatter - before adding argumebnt
+- parser._action_groups[0].formatter_class = DefaultFormatter 
+
 
 * capture=no on test_cli
 pytest  --verbose --capture=no test_cli.py
