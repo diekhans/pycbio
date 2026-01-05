@@ -64,7 +64,7 @@ class Bed:
                  "extraCols", "numStdCols")
 
     def __init__(self, chrom, chromStart, chromEnd, name=None, *, score=None, strand=None,
-                 thickStart=None, thickEnd=None, itemRgb=None, blocks=None, extraCols=None,
+                 thickStart=None, thickEnd=None, itemRgb=None, blocks=None, extraCols=(),
                  numStdCols=None):
         self.chrom = chrom
         self.chromStart = chromStart
@@ -76,7 +76,7 @@ class Bed:
         self.thickEnd = thickEnd
         self.itemRgb = itemRgb
         self.blocks = copy.copy(blocks)
-        self.extraCols = extraCols if isinstance(extraCols, tuple) else copy.copy(extraCols)
+        self.extraCols = tuple(extraCols)  # copies unless it is already a tuple
         self.numStdCols = self._calcNumStdCols(numStdCols)
 
     def _calcNumStdCols(self, specNumStdCols):
@@ -120,11 +120,7 @@ class Bed:
     @property
     def numColumns(self):
         """Returns the number of columns in the BED when formatted as a row."""
-        # exclude extraCols
-        n = self.numStdCols
-        if self.extraCols is not None:
-            n += len(self.extraCols)
-        return n
+        return self.numStdCols + len(self.extraCols)
 
     def _getBlockColumns(self):
         relStarts = []
@@ -152,7 +148,7 @@ class Bed:
             row.append(_fmtItemRgb(self.itemRgb))
         if self.numStdCols >= 10:
             row.extend(self._getBlockColumns() if self.blocks is not None else self._defaultBlockColumns())
-        if self.extraCols is not None:
+        if len(self.extraCols) > 0:
             row.extend(encodeRow(self.extraCols))
         return row
 
@@ -212,7 +208,7 @@ class Bed:
         if len(row) > numStdCols:
             extraCols = row[numStdCols:]
         else:
-            extraCols = None
+            extraCols = ()
         return cls(chrom, chromStart, chromEnd, name=name, score=score, strand=strand,
                    thickStart=thickStart, thickEnd=thickEnd, itemRgb=itemRgb, blocks=blocks,
                    extraCols=extraCols, numStdCols=numStdCols)
@@ -276,6 +272,10 @@ class Bed:
         fh.write(str(self))
         fh.write('\n')
 
+    def addExtraCols(self, cols):
+        """append extra column values"""
+        self.extraCols += tuple(cols)
+
     @staticmethod
     def genome_sort_key(bed):
         return bed.chrom, bed.chromStart
@@ -311,7 +311,7 @@ class BedTable(TabFile):
         else:
             return ()
 
-def bedFromPsl(psl, *, extraCols=None):
+def bedFromPsl(psl, *, extraCols=()):
     "create a BED12 from PSL, optionally adding extra columns"
     if psl.tStrand == '-':
         psl = psl.reverseComplement()

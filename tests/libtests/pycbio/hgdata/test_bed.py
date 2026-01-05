@@ -145,3 +145,15 @@ def testFixScores(request):
         for bed in BedReader(ts.get_test_input_file(request, "fixscores.bed"), numStdCols=5, fixScores=True):
             bed.write(fh)
     ts.diff_results_expected(request, ".bed")
+
+def testAddExtra(request):
+    testRow = ["chrZ", "1000", "2000", "fred"]
+    extraCols = ["barney", "wilma"]
+    bed = Bed.parse(testRow)
+    assert bed.numStdCols == 4
+    assert bed.numColumns == 4
+    bed.addExtraCols(extraCols)
+    assert bed.numStdCols == 4
+    assert bed.numColumns == 6
+    assert bed.toRow() == testRow + extraCols
+    assert isinstance(bed.extraCols, tuple)
