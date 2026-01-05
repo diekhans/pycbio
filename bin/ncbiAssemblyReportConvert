@@ -10,7 +10,7 @@ from pycbio.ncbi.assembly import AssemblyReport, AssemblyReportException, Assemb
 from pycbio import PycbioException
 from pycbio.sys import fileOps, cli
 from pycbio.sys.symEnum import SymEnum, auto
-from pycbio.hgdata.psl import Psl, PslBlock
+from pycbio.hgdata.psl import Psl
 
 NO_STACK_EXCEPTIONS = (AssemblyReportException, AssemblyReportNotFound)
 

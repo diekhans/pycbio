@@ -54,8 +54,9 @@ class Bed:
     Columns maybe sparsely specified, with ones up to numStdCols defaulted.
 
     For BEDs with extra columns not handled by derived are stored in extraCols.
-    If extra columns is a tuple, include namedtuple, it is stored as-is, otherwise
-    a copy is stored.
+    If extra columns is a tuple, it is stored as-is, otherwise a copy is stored.
+    Non-string fields are converted to string on output. None is converted to
+    an empty string.
 
     itemRgb can be a string or Color object
     """
