@@ -5,6 +5,17 @@
 remove unnecessary progtests/*/Makefile:4:export PYTHONPATH
 make put dup mkdirs and clean in a command include
 
+* add this, plus option to drop _hap1
+def chrom_sort_key(chrom):
+    suffix = re.sub(r"^chr(.+)$", r"\1", chrom)
+    assert suffix != chrom
+    if suffix.isdigit():
+        return int(suffix)
+    else:
+        return sum([100 + ord(c) for c in suffix])
+
+
+
 * convert xlsx-to-tsv to use CLI and logging stuff
 
 * ArgumentParser need introspection
