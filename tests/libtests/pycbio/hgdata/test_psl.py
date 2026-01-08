@@ -87,8 +87,8 @@ def testSwapSizesDropImplicit():
 def testCmpUniq():
     "check that PSL compares correctly"
     # set should product uniqueness
-    psls = set([splitToPsl(psPos),
-                splitToPsl(psPos)])
+    psls = {splitToPsl(psPos),
+            splitToPsl(psPos)}
     assert 1 == len(psls)
 
 def testCaclStats():
