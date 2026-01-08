@@ -91,7 +91,7 @@ def testCmpUniq():
             splitToPsl(psPos)}
     assert 1 == len(psls)
 
-def testCaclStats():
+def testCalcStats():
     # 2618	0	0	0	0	0	2	3549
     # 2618	0	0	0	0	0	2	3549	+	ENST00000641515.2	2618	0	2618	chr1	248956422	65418	71585	3
 
