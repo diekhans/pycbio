@@ -6,3 +6,4 @@ unidecode
 pyBigWig
 pysam
 twobitreader
+openpyxl
