@@ -64,7 +64,6 @@ see hprc-year2-annotation/bin/ncbi-asm-query
 maybe add for both biopytion and direct request
 biopyton doesn't retry timeouts, only network errors
 
-* BED check for overlapping blocks.
 * sqliteOps error max len should be part of an options object
 * ncbiGbFetch - BioPython already has a retry loop
 
@@ -129,9 +128,12 @@ need more tests
 ** if Bed is created without a score and with a strand, zero score is output and no strand
 (maybe fixed)
 ** Bed extension needs work (see decoration.py)
-need to validate override function
-bed.encodeRow maybe in autoSql or tab modules
+*** bed.encodeRow maybe from autoSql module
+*** ability to define extra columns easily
+- from autoSql
+- or a specificaiton
 
+** check for overlapping blocks.
 ** this is ugly, need a different approach
  making parse a function outside of class might fix this
 class CatBed(Bed):
@@ -185,6 +187,8 @@ maybe just make lighter weight?
 *** switch to row derived from namedtuple
 *** rowClass interface is hacky.  It could be a keyword/value and not have to do column lookup.
 *** add default handling for column not in file to typemap
+** add type for split/join comma separated array fields.  
+This is different than autosql, due to trailing comma
 ** rename getRow() functions to toRow()
 ** separate writing from row, have a TsvWriter class
 ** create row factories for:
