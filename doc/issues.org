@@ -151,16 +151,23 @@ class CatBed(Bed):
 or optional
 
 * TSVs
+** this could be it's own pypi package!!
 ** make TsvReader a context manager
 ** TsvReader should use fspec stuff
 *** TsvReader inFh is annoy name and can go away if fspec is used
 ** add TsvWriter
 ** clean up TsvRow
-could it be a ObjDict?  Functionally it already is, but doesn't use the code.
+*** could it be a ObjDict?  Functionally it already is, but doesn't use the code.
+*** how to make column names not colide with functions
+- error on collisions, suggest columNameMapping
+- hide in _columnSpecs_, access through one function?
+- make functions rather than methods?  this seems the best.
+- _names_ ?
 ** TsvRow carries around two fields from reader, could this be one object?
 ** TsvReader could create named tuples.
 what about the class name and serialization
 maybe just make lighter weight?
+** add type 
 ** tsvreader issues
 *** make rowClass (rename rowFactory) so that it can be able to construct and object.  Move parsing of columns outside of tsvRow (good for peewee)
 *** extColumns is not used for writing.  The ColumnSpecs header should be used.
