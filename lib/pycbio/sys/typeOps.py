@@ -1,36 +1,17 @@
 # Copyright 2006-2025 Mark Diekhans
 """Miscellaneous type operations"""
-# FIXME: move to other modules or move set stuff in here.
+# FIXME: move to other modules or move set stuff in here, or
+# get rid of stupid stuff and use cool stuff.
 from collections import abc
 from pycbio import PycbioException
 
 def isListLike(obj):
     "is variable a list-lile, but not a string?"
-    return isinstance(obj, abc.Sequence) and (not isinstance(obj, str))
+    return isinstance(obj, abc.Sequence) and (not isinstance(obj, (str, bytes)))
 
 def isIterable(obj):
     "is variable a iterable, but not a string"
-    return isinstance(obj, abc.Iterable) and (not isinstance(obj, str))
-
-def listAppend(lst, item):
-    """if lst is None, create a new list with item, otherwise append item.
-    Returns list"""
-    if lst is None:
-        return [item]
-    else:
-        lst.append(item)
-    return lst
-
-
-def listExtend(lst, items):
-    """if lst is None, create a new list with items, otherwise extend with items.
-    Returns list"""
-    if lst is None:
-        return list(items)
-    else:
-        lst.extend(items)
-    return lst
-
+    return isinstance(obj, abc.Iterable) and (not isinstance(obj, (str, bytes)))
 
 def mkiter(item):
     """create a iterator over item, if item is iterable, just return an iter,
