@@ -99,7 +99,9 @@ bed-analysis-tools has some tools that were quickly hacked to compare mappings a
 
 * threads:
 add wrapper for subprocess to propagate errors or find a package:
-uniprotFeatMap/bin/uniprotAnnotsToDecorators
+see uniprotFeatMap/bin/uniprotAnnotsToDecorators
+
+* make all reader functions also context managers
 
 * symEnum
 ** SymEnum is invasive to with Enum, can it be cleaner, like other derived enum class?
