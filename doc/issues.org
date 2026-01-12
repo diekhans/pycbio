@@ -22,17 +22,6 @@ def chrom_sort_key(chrom):
 write ticket
 implementation makes this hard with subparsers
 
-* ArgumentParserExtras
-** saved in branch expr-config-logging-with-parser
-** gave up on configuring logging in a derived class
-- in flair logging being enabled four time
-- logging has to be enable after daemonization.
-**  argparse with the issues extending it.
-- find arguments argument types for splitting options and arguments,
-  find the subparser that actually parsed the options
-  look in side for definitions
-- extending to add options on parse and then process then after parsing
-  can't do per options, as need multiple options as input
 * CLI
 ** should this just go to click? uses optparse
 *** make cli.py compatible with both argparse and optparse
@@ -42,7 +31,12 @@ with overriding above.
 *** adding after the fact suggerstions
 - parser.formatter_class = DefaultFormatter - before adding argumebnt
 - parser._action_groups[0].formatter_class = DefaultFormatter 
-
+**  argparse with the issues extending it.
+- find arguments argument types for splitting options and arguments,
+  find the subparser that actually parsed the options
+  look in side for definitions
+- extending to add options on parse and then process then after parsing
+  can't do per options, as need multiple options as input
 
 * capture=no on test_cli
 pytest  --verbose --capture=no test_cli.py
@@ -366,6 +360,7 @@ see ~/compbio/gencode/projs/lrgasp/src/lrgasp-submissions/bin/lrgasp-synapse-dow
 *** https://developer.apple.com/documentation/os/logging
 *** https://pypi.org/project/pyoslog/
 ** ident not pass through to syslog
+** for multiprocess, need to user QueueHandler, stderr is lost with spawn
 
 * add dynamic mixing function to typeOps
 https://stackoverflow.com/questions/8544983/dynamically-mixin-a-base-class-to-an-instance-in-python
@@ -426,3 +421,9 @@ maybe a single function to parse RGBA and RGB8 strs
 
 * remove testCaseBase
 
+* add containers package, include 
+class StrictDict(dict):
+    def __setitem__(self, key, value):
+        if key in self:
+            raise KeyError(f"Duplicate key: '{key}'")
+        super().__setitem__(key, value)

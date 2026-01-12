@@ -107,14 +107,7 @@ def compressBaseName(path):
 def decompressCmd(path):
     """"return the command to decompress the file to stdout, or default if not compressed, which defaults
     to the `cat' command, so that it just gets written through"""
-    # .bgz extension not supported by unpigz
-
-    if path.endswith(".gz"):
-        if which("unpigz"):
-            return ["unpigz", "-c"]
-        else:
-            return ["zcat"]
-    elif path.endswith(".bgz") or path.endswith(".Z"):
+    if path.endswith(".gz") or path.endswith(".bgz") or path.endswith(".Z"):
         return ["zcat"]
     elif path.endswith(".bz2"):
         return ["bzcat"]
