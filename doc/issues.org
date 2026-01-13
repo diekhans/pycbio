@@ -15,7 +15,6 @@ def chrom_sort_key(chrom):
         return sum([100 + ord(c) for c in suffix])
 
 
-
 * convert xlsx-to-tsv to use CLI and logging stuff
 
 * ArgumentParser need introspection
@@ -95,7 +94,12 @@ bed-analysis-tools has some tools that were quickly hacked to compare mappings a
 add wrapper for subprocess to propagate errors or find a package:
 see uniprotFeatMap/bin/uniprotAnnotsToDecorators
 
-* make all reader functions also context managers
+* reader functions
+** make all reader functions also context managers
+** have factories for reader functions to support
+derived class
+
+* Psl and genePred class should allow extra columns
 
 * symEnum
 ** SymEnum is invasive to with Enum, can it be cleaner, like other derived enum class?
