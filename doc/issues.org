@@ -154,6 +154,11 @@ or optional
 
 * TSVs
 ** this could be it's own pypi package!!
+** should removing hash at top of TSV be an option?
+** option to edit header or body on the way in?
+like had a header with a duplicated column
+fix body
+better would be option to read from and iterable
 ** make TsvReader a context manager
 ** TsvReader should use fspec stuff
 *** TsvReader inFh is annoy name and can go away if fspec is used
