@@ -418,13 +418,45 @@ class Psl:
         else:
             return (self.match + self.repMatch) / aligned
 
+    @deprecated
     def basesAligned(self):
         # FIXME: make property
         return self.match + self.misMatch + self.repMatch
 
+    @deprecated
     def queryAligned(self):
         # FIXME: make property
         return (self.match + self.misMatch + self.repMatch) / self.qSize
+
+    @property
+    def alignSize(self):
+        return self.match + self.misMatch + self.repMatch
+
+    @property
+    def qCover(self):
+        return self.alignSize() / self.qSize
+
+    @property
+    def tCover(self):
+        return self.alignSize() / self.tSize
+
+    @property
+    def qSpan(self):
+        return self.qEnd - self.qStart
+
+    @property
+    def tSpan(self):
+        return self.tEnd - self.tStart
+
+    @property
+    def tDensity(self):
+        "alignment size vs target span"
+        return self.alignSize / self.tSpan
+
+    @property
+    def qDensity(self):
+        "alignment size vs query span"
+        return self.alignSize / self.qSpan
 
     def _addReverseComplementBlock(self, blk):
         self.addBlock(self.qSize - blk.qEnd,
