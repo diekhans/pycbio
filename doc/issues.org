@@ -436,3 +436,6 @@ class StrictDict(dict):
         if key in self:
             raise KeyError(f"Duplicate key: '{key}'")
         super().__setitem__(key, value)
+
+* PslStats object should have a reader
+store type in objects too, or maybe make derived classes
