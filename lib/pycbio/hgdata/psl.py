@@ -434,11 +434,11 @@ class Psl:
 
     @property
     def qCover(self):
-        return self.alignSize() / self.qSize
+        return self.alignSize / self.qSize
 
     @property
     def tCover(self):
-        return self.alignSize() / self.tSize
+        return self.alignSize / self.tSize
 
     @property
     def qSpan(self):
