@@ -45,4 +45,5 @@ docs/pipettor.rst
 output/
 /tests/common-output/
 
-.emacs.bak
+.emacs.bak/
+.claude.bak/
