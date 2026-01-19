@@ -363,6 +363,10 @@ see disabled tests in
 tests/libtests/pycbio/hgdata/coordsTests.py
 * logger:
 ** use more complete logging for non-stderr logs
+** default to labels for all info?
+** name mapping:
+getLevelNamesMapping() - use this
+addLevelName(level, levelName) - use from name parsing
 ** need to think it through a bit more; need to better understand how to configure propagation, handles
 see ~/compbio/gencode/projs/lrgasp/src/lrgasp-submissions/bin/lrgasp-synapse-download
 ** macos syslog no longer works with apple unified logging
