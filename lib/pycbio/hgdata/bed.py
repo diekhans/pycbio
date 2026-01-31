@@ -242,7 +242,10 @@ class Bed:
 
     @property
     def blockCount(self):
-        return len(self.blocks)
+        if self.blocks is None:
+            return 0
+        else:
+            return len(self.blocks)
 
     @property
     def span(self):
