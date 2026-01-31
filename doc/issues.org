@@ -14,6 +14,8 @@ def chrom_sort_key(chrom):
     else:
         return sum([100 + ord(c) for c in suffix])
 
+* programs to add:
+** cls-t2t-primate/bin/phylop-score-bed
 
 * convert xlsx-to-tsv to use CLI and logging stuff
 
@@ -170,10 +172,9 @@ better would be option to read from and iterable
 - hide in _columnSpecs_, access through one function?
 - make functions rather than methods?  this seems the best.
 - _names_ ?
-** TsvRow carries around two fields from reader, could this be one object?
 ** TsvReader could create named tuples.
 what about the class name and serialization
-maybe just make lighter weight?
+maybe just make row lighter weight?
 ** add type 
 ** tsvreader issues
 *** make rowClass (rename rowFactory) so that it can be able to construct and object.  Move parsing of columns outside of tsvRow (good for peewee)
@@ -196,6 +197,7 @@ maybe just make lighter weight?
 This is different than autosql, due to trailing comma
 ** rename getRow() functions to toRow()
 ** separate writing from row, have a TsvWriter class
+** could also have a simple columnNameMap dict
 ** create row factories for:
     Python dict (the old standby)
     Python class
@@ -205,8 +207,9 @@ This is different than autosql, due to trailing comma
     NamedTuple an extension of collections
 https://tommyseattle.com/python-class-dict-named-tuple-performance-and-memory-usage/
 
-
-
+** TSV writing with predefine column names and types
+via a TsvRow
+via a function with keyword args
 
 * PSL
 ** psl check for overlapping blocks, etc
