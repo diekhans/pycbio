@@ -27,15 +27,19 @@ mappedCdsBedTest: mkdirs
 
 ###
 bedToIntronBedTests:  bedIntronTest bedIntronMinIntronTest bedIntronUniqueNameTest bedIntronUniqueTest \
-	bedIntronBaseBoundsTest bedIntronExonBoundsTest
+	bedIntronBaseBoundsTest bedIntronExonBoundsTest bedIntronMinIntronGapTest
 
 bedIntronTest: mkdirs
 	${bedToIntronBed} input/galGal4.target.bed output/$@.bed
 	diff expected/$@.bed output/$@.bed
 
-# lots of gaps in mapped
+# lots of gaps in mapped (default is--minIntronSize=30)
 bedIntronMinIntronTest: mkdirs
-	${bedToIntronBed} --minIntronSize=30 input/hg38-galGal4.halMap.bed output/$@.bed
+	${bedToIntronBed} input/hg38-galGal4.halMap.bed output/$@.bed
+	diff expected/$@.bed output/$@.bed
+
+bedIntronMinIntronGapTest: mkdirs
+	${bedToIntronBed} --minIntronSize=0 input/hg38-galGal4.halMap.bed output/$@.bed
 	diff expected/$@.bed output/$@.bed
 
 bedIntronUniqueNameTest: mkdirs

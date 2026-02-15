@@ -25,7 +25,7 @@ def parseArgs():
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument("--fmt", type=OutputFmt, choices=OutputFmt, default=OutputFmt.intron_blk,
                         help="output format")
-    parser.add_argument("--minIntronSize", type=int, default=0,
+    parser.add_argument("--minIntronSize", type=int, default=30,
                         help="minimum size of an intron")
     parser.add_argument("--unique", action='store_true',
                         help="don't output duplicate introns")
