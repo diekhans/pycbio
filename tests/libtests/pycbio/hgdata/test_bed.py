@@ -1,11 +1,13 @@
 # Copyright 2006-2025 Mark Diekhans
+import os
 import os.path as osp
 import sys
 import pickle
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 import pycbio.sys.testingSupport as ts
-from pycbio.hgdata.bed import Bed, BedBlock, BedTable, BedReader, bedFromPsl, bedMergeBlocks, BedException
+from pycbio.sys import fileOps
+from pycbio.hgdata.bed import Bed, BedBlock, BedTable, BedReader, bedFromPsl, bedMergeBlocks, BedException, encodeRow, defaultIfNone
 from pycbio.sys.color import Color
 import pipettor
 
@@ -280,3 +282,121 @@ def testAddExtra(request):
     assert bed.numColumns == 6
     assert bed.toRow() == testRow + extraCols
     assert isinstance(bed.extraCols, tuple)
+
+###
+# BedBlock tests
+###
+def testBedBlockLen(request):
+    """Test BedBlock.__len__"""
+    blk = BedBlock(100, 250)
+    assert len(blk) == 150
+
+def testBedBlockStr(request):
+    """Test BedBlock.__str__"""
+    blk = BedBlock(100, 250)
+    assert str(blk) == "100-250"
+
+###
+# Bed property tests
+###
+def testBedStartEndAliases(request):
+    """Test start/end property aliases"""
+    bed = Bed("chr1", 100, 500, "test")
+    assert bed.start == 100
+    assert bed.end == 500
+    assert bed.start == bed.chromStart
+    assert bed.end == bed.chromEnd
+
+def testBedBlockCount(request):
+    """Test blockCount property"""
+    # With blocks
+    bed = Bed("chr1", 100, 500, "test", strand="+",
+              blocks=[BedBlock(100, 200), BedBlock(300, 500)])
+    assert bed.blockCount == 2
+
+    # Without blocks
+    bed = Bed("chr1", 100, 500, "test")
+    assert bed.blockCount == 0
+
+def testBedSpan(request):
+    """Test span property"""
+    bed = Bed("chr1", 100, 500, "test")
+    assert bed.span == 400
+
+def testBedCoverage(request):
+    """Test coverage property"""
+    # With blocks - coverage is sum of block lengths
+    bed = Bed("chr1", 100, 500, "test", strand="+",
+              blocks=[BedBlock(100, 200), BedBlock(300, 500)])
+    assert bed.coverage == 300  # 100 + 200
+
+    # Without blocks - coverage equals span
+    bed = Bed("chr1", 100, 500, "test")
+    assert bed.coverage == 400
+
+###
+# Bed.parse tests for various column counts
+###
+def testParseBed3(request):
+    """Test parsing BED3"""
+    bed = Bed.parse(["chr1", "100", "200"])
+    assert bed.chrom == "chr1"
+    assert bed.chromStart == 100
+    assert bed.chromEnd == 200
+    assert bed.name is None
+    assert bed.numStdCols == 3
+
+def testParseBed4(request):
+    """Test parsing BED4"""
+    bed = Bed.parse(["chr1", "100", "200", "feat1"])
+    assert bed.name == "feat1"
+    assert bed.score is None
+    assert bed.numStdCols == 4
+
+def testParseBed6(request):
+    """Test parsing BED6"""
+    bed = Bed.parse(["chr1", "100", "200", "feat1", "500", "-"])
+    assert bed.name == "feat1"
+    assert bed.score == 500
+    assert bed.strand == "-"
+    assert bed.numStdCols == 6
+
+def testParseBed8(request):
+    """Test parsing BED8"""
+    bed = Bed.parse(["chr1", "100", "200", "feat1", "500", "-", "120", "180"])
+    assert bed.thickStart == 120
+    assert bed.thickEnd == 180
+    assert bed.numStdCols == 8
+
+def testParseBed9(request):
+    """Test parsing BED9"""
+    bed = Bed.parse(["chr1", "100", "200", "feat1", "500", "-", "120", "180", "255,0,0"])
+    assert bed.itemRgb == "255,0,0"
+    assert bed.numStdCols == 9
+
+###
+# Helper function tests
+###
+def testDefaultIfNone(request):
+    """Test defaultIfNone function"""
+    assert defaultIfNone("value") == "value"
+    assert defaultIfNone(None) == ""
+    assert defaultIfNone(None, "default") == "default"
+    assert defaultIfNone(123) == "123"
+    assert defaultIfNone(None, 0) == "0"
+
+def testEncodeRow(request):
+    """Test encodeRow function"""
+    row = ["a", 1, None, 2.5]
+    encoded = encodeRow(row)
+    assert encoded == ["a", "1", "", "2.5"]
+
+###
+# BedReader tests
+###
+def testBedReaderEmpty(request):
+    """Test BedReader with empty file"""
+    tmpfile = fileOps.tmpFileGet(suffix=".bed")
+    beds = list(BedReader(tmpfile))
+    assert len(beds) == 0
+    os.unlink(tmpfile)
