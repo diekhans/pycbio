@@ -80,12 +80,17 @@ def bedFlatten(opts, inBedFile, outBedFile):
     beds = loadSortedBeds(opts, inBedFile)
     hasBlocks = beds[0].blocks is not None if len(beds) > 0 else False
 
+    mergedBeds = []
+    for i, group in enumerate(overlappingGroupsReader(opts, beds), 1):
+        name = f"{opts.basename}{i}"
+        mergedBeds.append(mergeGroup(opts, group, name, hasBlocks))
+
+    mergedBeds.sort(key=lambda b: (b.chrom, b.chromStart))
+
     with fileOps.AtomicFileCreate(outBedFile) as outBedFileTmp:
         with fileOps.opengz(outBedFileTmp, 'w') as fh:
-            for i, group in enumerate(overlappingGroupsReader(opts, beds), 1):
-                name = f"{opts.basename}.{i}"
-                mergedBed = mergeGroup(opts, group, name, hasBlocks)
-                mergedBed.write(fh)
+            for bed in mergedBeds:
+                bed.write(fh)
 
 def main():
     opts, args = parseArgs()
