@@ -19,10 +19,10 @@ def parseArgs():
                         help="basename for generated names (default: %(default)s)")
     parser.add_argument("--stranded", action="store_true",
                         help="Separate strands when combining")
-    parser.add_argument("inBedFile",
-                        help="input BED")
-    parser.add_argument("outBedFile",
-                        help="output BED")
+    parser.add_argument("inBedFile", nargs='?', default='/dev/stdin',
+                        help="input BED (default: stdin)")
+    parser.add_argument("outBedFile", nargs='?', default='/dev/stdout',
+                        help="output BED (default: stdout)")
     return cli.parseOptsArgsWithLogging(parser)
 
 def loadSortedBeds(opts, inBedFile):
