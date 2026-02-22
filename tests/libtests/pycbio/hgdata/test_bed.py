@@ -166,11 +166,11 @@ def testBedMergeAdjacent(request):
 
 def testBedMergeNonOverlapping(request):
     """Test merging BEDs with non-overlapping blocks"""
-    bed1 = Bed("chr3", 100, 200, "bed1", strand="+", blocks=[BedBlock(100, 150)])
-    bed2 = Bed("chr3", 300, 400, "bed2", strand="+", blocks=[BedBlock(300, 350)])
+    bed1 = Bed("chr3", 100, 150, "bed1", strand="+", blocks=[BedBlock(100, 150)])
+    bed2 = Bed("chr3", 300, 350, "bed2", strand="+", blocks=[BedBlock(300, 350)])
     mergedBed = bedMergeBlocks("merged", [bed1, bed2])
     assert mergedBed.chromStart == 100
-    assert mergedBed.chromEnd == 400
+    assert mergedBed.chromEnd == 350
     # Non-overlapping blocks should remain separate
     assert len(mergedBed.blocks) == 2
     assert mergedBed.blocks[0] == BedBlock(100, 150)
@@ -241,6 +241,17 @@ def testBedMergeDifferentStrands(request):
         assert False, "Expected BedException"
     except BedException as e:
         assert "different strands" in str(e)
+
+def testBedMergeUnstranded(request):
+    """Test merging BEDs on different strands with stranded=False"""
+    bed1 = Bed("chr1", 100, 200, "bed1", strand="+", blocks=[BedBlock(100, 200)])
+    bed2 = Bed("chr1", 150, 300, "bed2", strand="-", blocks=[BedBlock(150, 300)])
+    mergedBed = bedMergeBlocks("merged", [bed1, bed2], stranded=False)
+    assert mergedBed.strand == "+"
+    assert mergedBed.chromStart == 100
+    assert mergedBed.chromEnd == 300
+    assert len(mergedBed.blocks) == 1
+    assert mergedBed.blocks[0] == BedBlock(100, 300)
 
 def testBedMergeDifferentNumStdCols(request):
     """Test that merging BEDs with different numStdCols raises exception"""

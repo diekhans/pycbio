@@ -11,6 +11,10 @@ class PycbioException(Exception):
     """Base class for Pycbio exceptions."""
     pass
 
+class PycbioInputError(PycbioException, NoStackError):
+    """Indicates an input data error"""
+    pass
+
 class PycbioOptionalFeatureException(PycbioException, NoStackError):
     """Thrown to indicate an optional feature is missing"""
     def __init__(self, feature, reason):

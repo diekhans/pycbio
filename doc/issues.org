@@ -103,6 +103,9 @@ derived class
 
 * Psl and genePred class should allow extra columns
 
+* extra columns: make TsvReader columnMap more general to work with extra bed and psl columns
+
+
 * symEnum
 ** SymEnum is invasive to with Enum, can it be cleaner, like other derived enum class?
 Enum has gotten really complex, more so in 3.12. It isn't clear how to do this with
@@ -126,6 +129,7 @@ need more tests
 * collect plot functions
 ~/compbio/kznf/projs/gene-homology/kznf-gene-homology/builds/2022-09/analysis/bin/geneAnnotPlot
 
+
 * BED
 ** if Bed is created without a score and with a strand, zero score is output and no strand
 (maybe fixed)
@@ -133,8 +137,7 @@ need more tests
 *** bed.encodeRow maybe from autoSql module
 *** ability to define extra columns easily
 - from autoSql
-- or a specificaiton
-
+- or a specificaiton, like TsvReader
 ** check for overlapping blocks.
 ** this is ugly, need a different approach
  making parse a function outside of class might fix this
@@ -446,3 +449,17 @@ class StrictDict(dict):
 
 * PslStats object should have a reader
 store type in objects too, or maybe make derived classes
+
+* fileops compressCmd, maybe just return cmd name rather than a list
+
+
+* chrom sort, works with _hap1, _hap2
+def chrom_key(chrom):
+    import re
+    m = re.match(r'chr([^_]+)(_hap\d+)?$', chrom)
+    if not m:
+        return (2, 0, chrom, '')
+    base, hap = m.group(1), m.group(2) or ''
+    if base.isdigit():
+        return (0, int(base), '', hap)
+    return (1, 0, base, hap)

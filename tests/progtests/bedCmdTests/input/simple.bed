@@ -1,0 +1,5 @@
+chr1	100	200	feat1	0	+
+chr1	150	250	feat2	0	+
+chr1	300	400	feat3	0	-
+chr1	350	450	feat4	0	-
+chr2	100	200	feat5	0	+

@@ -1,6 +1,6 @@
 # Copyright 2006-2025 Mark Diekhans
 import copy
-from collections import deque, defaultdict, namedtuple
+from collections import defaultdict, namedtuple
 from pycbio import PycbioException
 from pycbio.sys.color import Color
 from pycbio.tsv.tabFile import TabFile, TabFileReader
@@ -327,66 +327,30 @@ def bedFromPsl(psl, *, extraCols=()):
 ###
 # bedMergeBlocks
 ###
-def _bedMergeCheckCompat(bed0, bed):
-    if bed.numStdCols != bed0.numStdCols:
-        raise BedException(f"attempt to merge BEDs number of standard columns: {bed.name}: {bed.numStdCols} != {bed0.name} {bed0.numStdCols}")
-    if bed.chrom != bed0.chrom:
-        raise BedException(f"attempt to merge BEDs on different chromosomes: {bed.name}: {bed.chrom} != {bed0.name} {bed0.chrom}")
-    if bed.strand != bed0.strand:
-        raise BedException(f"attempt to merge BEDs on different strands: {bed.name}: {bed.strand} != {bed0.name} {bed0.strand}")
-
-def _bedMergeBuildCursors(beds):
-    """Build a vector of cursors and validated sequence and strand compatibility"""
-    cursors = []
+def _bedMergeCollectBlocks(beds, stranded):
+    """Collect all blocks from BEDs and validate compatibility."""
     bed0 = beds[0]
-    minStart = bed0.chromStart
-    maxEnd = bed0.chromEnd
-    for bed in beds:
-        _bedMergeCheckCompat(bed0, bed)
-        cursors.append(deque(bed.blocks))
-        minStart = min(bed.chromStart, minStart)
-        maxEnd = max(bed.chromEnd, maxEnd)
-    return cursors, minStart, maxEnd
+    all_blocks = list(bed0.blocks)
+    for bed in beds[1:]:
+        if bed.numStdCols != bed0.numStdCols:
+            raise BedException(f"attempt to merge BEDs number of standard columns: {bed.name}: {bed.numStdCols} != {bed0.name} {bed0.numStdCols}")
+        if bed.chrom != bed0.chrom:
+            raise BedException(f"attempt to merge BEDs on different chromosomes: {bed.name}: {bed.chrom} != {bed0.name} {bed0.chrom}")
+        if stranded and (bed.strand != bed0.strand):
+            raise BedException(f"attempt to merge BEDs on different strands: {bed.name}: {bed.strand} != {bed0.name} {bed0.strand}")
+        all_blocks.extend(bed.blocks)
+    return all_blocks
 
-def _bedMergeFindNextStart(cursors):
-    """locate the lowest starting position, or None if all cursors are empty"""
-    nextStart = None
-    for cursor in cursors:
-        if (len(cursor) > 0) and ((nextStart is None) or (cursor[0].start < nextStart)):
-            nextStart = cursor[0].start
-    return nextStart
-
-def _bedMergePass(cursors, mergeBlkEnd):
-    """make on pass over cursors, seeing if range can be updated with
-    overlapping or adjacent blocks.  Since processed blocks are removed, from
-    cursor, the block at the head of the cursor must either overlap or be
-    after the block.  Multiple passed handle transitive joins.
-    """
-    updated = False
-    for cursor in cursors:
-        if (len(cursor) > 0) and (cursor[0].start <= mergeBlkEnd):
-            mergeBlkEnd = max(cursor[0].end, mergeBlkEnd)
-            cursor.popleft()
-            updated = True
-    return mergeBlkEnd, updated
-
-def _bedMergeBuildBlk(cursors, mergeBlkStart):
-    "build one block"
-    mergeBlkEnd = mergeBlkStart + 1
-    while True:
-        mergeBlkEnd, updated = _bedMergePass(cursors, mergeBlkEnd)
-        if not updated:
-            break
-    return BedBlock(mergeBlkStart, mergeBlkEnd)
-
-def _bedMergeBuildBlks(cursors):
-    "build all blocks, run untils cursors are empty"
-    mergedBlocks = []
-    nextStart = _bedMergeFindNextStart(cursors)
-    while nextStart is not None:
-        mergedBlocks.append(_bedMergeBuildBlk(cursors, nextStart))
-        nextStart = _bedMergeFindNextStart(cursors)
-    return mergedBlocks
+def _bedMergeBlocks(all_blocks):
+    """Sort and merge overlapping/adjacent blocks"""
+    all_blocks.sort(key=lambda b: b.start)
+    merged = []
+    for blk in all_blocks:
+        if merged and blk.start <= merged[-1].end:
+            merged[-1] = BedBlock(merged[-1].start, max(merged[-1].end, blk.end))
+        else:
+            merged.append(blk)
+    return merged
 
 def _bedMergeThickBounds(beds, maxEnd):
     thickStart = thickEnd = None
@@ -400,18 +364,22 @@ def _bedMergeThickBounds(beds, maxEnd):
         thickStart = thickEnd = maxEnd
     return thickStart, thickEnd
 
-def bedMergeBlocks(name, beds):
+def bedMergeBlocks(name, beds, *, stranded=True):
     """Merge blocks from multiple BED into a single BED.  The BEDs must be on
-    the same sequence and strand.  The thickStart and thickStop will be the
-    minimum and maximum seen, unless they are zero length, in which case, it
-    will remain zero length.  Useful with RangeFinder merge functionality."""
+    the same sequence.  If stranded is True (default), BEDs must be on the same
+    strand; if False, different strands are allowed and the result strand is '+'.
+    The thickStart and thickStop will be the minimum and maximum seen, unless
+    they are zero length, in which case, it will remain zero length.
+    Useful with RangeFinder merge functionality."""
     if len(beds) == 0:
         raise BedException("can't merge list with no BEDs")
-    cursors, minStart, maxEnd = _bedMergeBuildCursors(beds)
-    mergedBlocks = _bedMergeBuildBlks(cursors)
-    thickStart, thickEnd = _bedMergeThickBounds(beds, maxEnd)
+    all_blocks = _bedMergeCollectBlocks(beds, stranded)
+    mergedBlocks = _bedMergeBlocks(all_blocks)
+    chromStart, chromEnd = mergedBlocks[0].start, mergedBlocks[-1].end
+    thickStart, thickEnd = _bedMergeThickBounds(beds, chromEnd)
 
     bed0 = beds[0]
-    return Bed(bed0.chrom, minStart, maxEnd, name=name, strand=bed0.strand,
+    strand = bed0.strand if stranded else '+'
+    return Bed(bed0.chrom, chromStart, chromEnd, name=name, strand=strand,
                thickStart=thickStart, thickEnd=thickEnd, itemRgb=bed0.itemRgb,
                blocks=mergedBlocks, numStdCols=12)

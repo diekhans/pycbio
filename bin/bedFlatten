@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+# Copyright 2006-2025 Mark Diekhans
+
+import sys
+import argparse
+from os import path as osp
+
+sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
+from pycbio.sys import fileOps, cli
+from pycbio.hgdata.bed import BedReader, Bed, bedMergeBlocks
+
+def parseArgs():
+    desc = """Combine blocks from overlapping BEDs into a single BED.
+    If the BED is less than a BED12, overlapping BEDs are merged
+    without blocks.
+    """
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("--basename", default="merged",
+                        help="basename for generated names (default: %(default)s)")
+    parser.add_argument("--stranded", action="store_true",
+                        help="Separate strands when combining")
+    parser.add_argument("inBedFile",
+                        help="input BED")
+    parser.add_argument("outBedFile",
+                        help="output BED")
+    return cli.parseOptsArgsWithLogging(parser)
+
+def loadSortedBeds(opts, inBedFile):
+    """Load and sort BEDs by position."""
+    beds = list(BedReader(inBedFile))
+    if opts.stranded:
+        beds.sort(key=lambda b: (b.chrom, b.strand, b.start, -b.end))
+    else:
+        beds.sort(key=lambda b: (b.chrom, b.start, -b.end))
+    return beds
+
+def overlappingGroupsReader(opts, beds):
+    """Generator that yields groups of overlapping BEDs."""
+    group = []
+    groupEnd = None
+
+    for bed in beds:
+        if len(group) == 0:
+            group = [bed]
+            groupEnd = bed.end
+        elif (bed.chrom != group[0].chrom or
+              (opts.stranded and bed.strand != group[0].strand) or
+              bed.start >= groupEnd):
+            yield group
+            group = [bed]
+            groupEnd = bed.end
+        else:
+            group.append(bed)
+            groupEnd = max(groupEnd, bed.end)
+
+    if len(group) > 0:
+        yield group
+
+def mergeGroupWithBlocks(opts, group, name):
+    """Merge a group of BED12s using bedMergeBlocks."""
+    return bedMergeBlocks(name, group, stranded=opts.stranded)
+
+def mergeGroupWithoutBlocks(opts, group, name):
+    """Merge a group of BEDs without blocks by taking min/max coordinates."""
+    bed0 = group[0]
+    chromStart = min(b.chromStart for b in group)
+    chromEnd = max(b.chromEnd for b in group)
+    strand = bed0.strand if opts.stranded else '+'
+    return Bed(bed0.chrom, chromStart, chromEnd, name=name,
+               strand=strand, numStdCols=bed0.numStdCols)
+
+def mergeGroup(opts, group, name, hasBlocks):
+    """Merge a group of overlapping BEDs."""
+    if hasBlocks:
+        return mergeGroupWithBlocks(opts, group, name)
+    else:
+        return mergeGroupWithoutBlocks(opts, group, name)
+
+def bedFlatten(opts, inBedFile, outBedFile):
+    beds = loadSortedBeds(opts, inBedFile)
+    hasBlocks = beds[0].blocks is not None if len(beds) > 0 else False
+
+    with fileOps.AtomicFileCreate(outBedFile) as outBedFileTmp:
+        with fileOps.opengz(outBedFileTmp, 'w') as fh:
+            for i, group in enumerate(overlappingGroupsReader(opts, beds), 1):
+                name = f"{opts.basename}.{i}"
+                mergedBed = mergeGroup(opts, group, name, hasBlocks)
+                mergedBed.write(fh)
+
+def main():
+    opts, args = parseArgs()
+    with cli.ErrorHandler():
+        bedFlatten(opts, args.inBedFile, args.outBedFile)
+
+
+main()

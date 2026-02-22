@@ -5,6 +5,7 @@ export PYTHONPATH
 
 bedToCdsBed = ${binDir}/bedToCdsBed
 bedToIntronBed = ${binDir}/bedToIntronBed
+bedFlatten = ${binDir}/bedFlatten
 
 # test data
 #  - hg38 to galGal4 mappings in selected regions:
@@ -12,7 +13,7 @@ bedToIntronBed = ${binDir}/bedToIntronBed
 
 galGalDir = ./input
 
-test:  bedToCdsBedTests bedToIntronBedTests
+test:  bedToCdsBedTests bedToIntronBedTests bedFlattenTests
 
 ###
 bedToCdsBedTests: targetCdsBedTest mappedCdsBedTest 
@@ -58,7 +59,24 @@ bedIntronExonBoundsTest: mkdirs
 	${bedToIntronBed} --fmt=exon-bounds input/galGal4.target.bed output/$@.bed
 	diff expected/$@.bed output/$@.bed
 
+###
+bedFlattenTests: bedFlattenTest bedFlattenStrandedTest bedFlattenSimpleTest bedFlattenSimpleStrandedTest
 
+bedFlattenTest: mkdirs
+	${bedFlatten} input/gencode-rnas.bed output/$@.bed
+	diff expected/$@.bed output/$@.bed
+
+bedFlattenStrandedTest: mkdirs
+	${bedFlatten} --stranded input/gencode-rnas.bed output/$@.bed
+	diff expected/$@.bed output/$@.bed
+
+bedFlattenSimpleTest: mkdirs
+	${bedFlatten} input/simple.bed output/$@.bed
+	diff expected/$@.bed output/$@.bed
+
+bedFlattenSimpleStrandedTest: mkdirs
+	${bedFlatten} --stranded input/simple.bed output/$@.bed
+	diff expected/$@.bed output/$@.bed
 
 mkdirs:
 	@mkdir -p output
