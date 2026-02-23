@@ -5,7 +5,7 @@ import pickle
 
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
-from pycbio.hgdata.coords import Coords
+from pycbio.hgdata.coords import Coords, CoordsError, reverseRange, reverseStrand
 def testCoordsParse():
     def check(c):
         assert c.name == "chr22"
@@ -211,3 +211,126 @@ def FIXME_testCoordsSortRegress():
           Coords(name='chr1', start=922922, end=944575),
           Coords(name='chr5', start=270669, end=438291)]
     assert sorted(cs, key=lambda c: (c.name, c.start, c.end, c.strand)) == sorted(cs)
+
+###
+# Helper function tests
+###
+def testReverseRange():
+    """Test reverseRange function"""
+    start, end = reverseRange(100, 200, 1000)
+    assert start == 800
+    assert end == 900
+    # Should raise ValueError if size is None
+    with pytest.raises(ValueError):
+        reverseRange(100, 200, None)
+
+def testReverseStrand():
+    """Test reverseStrand function"""
+    assert reverseStrand('+') == '-'
+    assert reverseStrand('-') == '+'
+    assert reverseStrand(None) is None
+
+###
+# Coords error handling tests
+###
+def testCoordsErrorInvalidStart():
+    """Test that invalid start raises CoordsError"""
+    with pytest.raises(CoordsError):
+        Coords("chr22", "invalid", 1000)
+
+def testCoordsErrorInvalidEnd():
+    """Test that mismatched start/end raises CoordsError"""
+    with pytest.raises(CoordsError):
+        Coords("chr22", 100, None)
+
+def testCoordsErrorInvalidRange():
+    """Test that start > end raises CoordsError"""
+    with pytest.raises(CoordsError):
+        Coords("chr22", 1000, 100)
+
+def testCoordsErrorNegativeStart():
+    """Test that negative start raises CoordsError"""
+    with pytest.raises(CoordsError):
+        Coords("chr22", -100, 100)
+
+def testCoordsErrorExceedsSize():
+    """Test that end > size raises CoordsError"""
+    with pytest.raises(CoordsError):
+        Coords("chr22", 100, 1000, size=500)
+
+def testCoordsErrorInvalidStrand():
+    """Test that invalid strand raises CoordsError"""
+    with pytest.raises(CoordsError):
+        Coords("chr22", 100, 200, strand='X')
+
+def testCoordsErrorInvalidSize():
+    """Test that invalid size raises CoordsError"""
+    with pytest.raises(CoordsError):
+        Coords("chr22", 100, 200, size="invalid")
+
+###
+# Coords method tests
+###
+def testCoordsLen():
+    """Test Coords.__len__"""
+    c = Coords("chr22", 100, 200)
+    assert len(c) == 100
+
+def testCoordsStr():
+    """Test Coords.__str__"""
+    c = Coords("chr22", 100, 200)
+    assert str(c) == "chr22:100-200"
+    c2 = Coords("chr22", None, None)
+    assert str(c2) == "chr22"
+
+def testCoordsHash():
+    """Test Coords.__hash__"""
+    c1 = Coords("chr22", 100, 200, '+', 50818468)
+    c2 = Coords("chr22", 100, 200, '+', 50818468)
+    assert hash(c1) == hash(c2)
+    # Can be used in sets
+    s = {c1, c2}
+    assert len(s) == 1
+
+def testCoordsBase():
+    """Test Coords.base method"""
+    c = Coords("chr22", 100, 200, '+', 50818468)
+    cb = c.base()
+    assert cb.name == "chr22"
+    assert cb.start == 100
+    assert cb.end == 200
+    assert cb.strand is None
+    assert cb.size is None
+    # If already base, returns same
+    cb2 = cb.base()
+    assert cb2 is cb
+
+def testCoordsOverlapsStrand():
+    """Test Coords.overlapsStrand method"""
+    c1 = Coords("chr22", 100, 200, '+')
+    c2 = Coords("chr22", 150, 250, '+')
+    c3 = Coords("chr22", 150, 250, '-')
+    assert c1.overlapsStrand(c2)
+    assert not c1.overlapsStrand(c3)
+
+def testCoordsEqLoc():
+    """Test Coords.eqLoc method"""
+    c1 = Coords("chr22", 100, 200, '+', 50818468)
+    c2 = Coords("chr22", 100, 200, '+', 1000)  # different size
+    c3 = Coords("chr22", 100, 200, '-', 50818468)  # different strand
+    assert c1.eqLoc(c2)  # size doesn't matter
+    assert not c1.eqLoc(c3)  # strand matters
+
+def testCoordsEqAbsLoc():
+    """Test Coords.eqAbsLoc method"""
+    c1 = Coords("chr22", 100, 200, '+', 1000)
+    c2 = Coords("chr22", 800, 900, '-', 1000)  # reverse of c1
+    assert c1.eqAbsLoc(c2)
+    # Same strand, same coords
+    c3 = Coords("chr22", 100, 200, '+', 1000)
+    assert c1.eqAbsLoc(c3)
+
+def testCoordsParseInvalidStrand():
+    """Test parse with invalid strand"""
+    with pytest.raises(CoordsError):
+        Coords.parse("chr22:100-200", strand='X')

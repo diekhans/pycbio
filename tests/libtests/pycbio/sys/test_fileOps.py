@@ -201,4 +201,114 @@ def testMd5Sums(request):
         assert e[1] == g[1]
 
 
-# FIXME: many more tests needed
+###
+# File utility tests
+###
+def testIsCompressed(request):
+    """Test isCompressed function"""
+    assert fileOps.isCompressed("file.gz")
+    assert fileOps.isCompressed("file.bz2")
+    assert fileOps.isCompressed("file.bgz")
+    assert not fileOps.isCompressed("file.txt")
+    assert not fileOps.isCompressed("file")
+
+def testCompressBaseName(request):
+    """Test compressBaseName function"""
+    assert fileOps.compressBaseName("file.txt.gz") == "file.txt"
+    assert fileOps.compressBaseName("file.txt.bz2") == "file.txt"
+    assert fileOps.compressBaseName("file.txt") == "file.txt"
+    assert fileOps.compressBaseName("path/to/file.txt.gz") == "path/to/file.txt"
+
+def testEnsureFileDir(request):
+    """Test ensureFileDir function"""
+    outDir = ts.get_test_output_file(request, "_dir")
+    fileOps.rmTree(outDir)
+    testFile = os.path.join(outDir, "subdir", "file.txt")
+    fileOps.ensureFileDir(testFile)
+    assert os.path.isdir(os.path.dirname(testFile))
+    fileOps.rmTree(outDir)
+
+def testRmTree(request):
+    """Test rmTree function"""
+    outDir = ts.get_test_output_file(request, "_dir")
+    os.makedirs(os.path.join(outDir, "subdir"), exist_ok=True)
+    with open(os.path.join(outDir, "subdir", "file.txt"), "w") as f:
+        f.write("test")
+    assert os.path.exists(outDir)
+    fileOps.rmTree(outDir)
+    assert not os.path.exists(outDir)
+    # Should not error on non-existent
+    fileOps.rmTree(outDir)
+
+def testTmpFileGet(request):
+    """Test tmpFileGet function"""
+    tmpFile = fileOps.tmpFileGet(suffix=".test")
+    assert os.path.exists(tmpFile)
+    assert tmpFile.endswith(".test")
+    os.unlink(tmpFile)
+
+def testTmpDirGet(request):
+    """Test tmpDirGet function"""
+    tmpDir = fileOps.tmpDirGet(suffix=".testdir")
+    assert os.path.isdir(tmpDir)
+    assert tmpDir.endswith(".testdir")
+    os.rmdir(tmpDir)
+
+###
+# Row and line writing tests
+###
+def testPrLine(request):
+    """Test prLine function"""
+    outf = ts.get_test_output_file(request, ".out")
+    with open(outf, "w") as fh:
+        fileOps.prLine(fh, "hello", "world")
+    with open(outf) as fh:
+        assert fh.read() == "helloworld\n"
+
+def testPrRow(request):
+    """Test prRow function"""
+    outf = ts.get_test_output_file(request, ".out")
+    with open(outf, "w") as fh:
+        fileOps.prRow(fh, ["col1", "col2", "col3"])
+    with open(outf) as fh:
+        assert fh.read() == "col1\tcol2\tcol3\n"
+
+def testPrRowv(request):
+    """Test prRowv function"""
+    outf = ts.get_test_output_file(request, ".out")
+    with open(outf, "w") as fh:
+        fileOps.prRowv(fh, "col1", "col2", "col3")
+    with open(outf) as fh:
+        assert fh.read() == "col1\tcol2\tcol3\n"
+
+def testWriteRows(request):
+    """Test writeRows function"""
+    outf = ts.get_test_output_file(request, ".out")
+    rows = [["a", "b", "c"], ["1", "2", "3"]]
+    fileOps.writeRows(outf, rows)
+    with open(outf) as fh:
+        lines = fh.readlines()
+    assert lines == ["a\tb\tc\n", "1\t2\t3\n"]
+
+###
+# iterRows tests
+###
+def testIterRows(request):
+    """Test iterRows function"""
+    outf = ts.get_test_output_file(request, ".tsv")
+    with open(outf, "w") as fh:
+        fh.write("a\tb\tc\n")
+        fh.write("1\t2\t3\n")
+    rows = list(fileOps.iterRows(outf))
+    assert rows == [["a", "b", "c"], ["1", "2", "3"]]
+
+###
+# isFilePath tests
+###
+def testIsFilePath(request):
+    """Test isFilePath function"""
+    from pathlib import Path
+    assert fileOps.isFilePath("/path/to/file")
+    assert fileOps.isFilePath(Path("/path/to/file"))
+    assert not fileOps.isFilePath(123)
+    assert not fileOps.isFilePath(None)

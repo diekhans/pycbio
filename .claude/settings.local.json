@@ -5,7 +5,9 @@
       "Bash(python -m py_compile:*)",
       "Bash(bin/bedFlatten:*)",
       "Bash(cat:*)",
-      "Bash(make:*)"
+      "Bash(make:*)",
+      "Bash(comm -23:*)",
+      "Bash(python3:*)"
     ]
   }
 }

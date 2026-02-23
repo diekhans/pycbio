@@ -5,7 +5,7 @@ if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 import pycbio.sys.testingSupport as ts
 from pycbio.sys import fileOps
-from pycbio.hgdata.psl import Psl, PslTbl, pslFromCigar, pslFromPysam
+from pycbio.hgdata.psl import Psl, PslTbl, pslFromCigar, pslFromPysam, reverseCoords, reverseStrand, dropQueryUniq
 
 # test data as a string (ps = psl string)
 
@@ -145,3 +145,200 @@ def testMultiMapSam(request):
         for aln in samfh:
             pslFromPysam(samfh, aln).write(pslfh)
     ts.diff_results_expected(request, ".psl")
+
+###
+# Helper function tests
+###
+def testReverseCoords():
+    """Test reverseCoords function"""
+    assert reverseCoords(10, 20, 100) == (80, 90)
+    assert reverseCoords(0, 50, 100) == (50, 100)
+    assert reverseCoords(0, 100, 100) == (0, 100)
+
+def testReverseStrand():
+    """Test reverseStrand function"""
+    assert reverseStrand('+') == '-'
+    assert reverseStrand('-') == '+'
+
+def testDropQueryUniq():
+    """Test dropQueryUniq function"""
+    assert dropQueryUniq("NM_001234") == "NM_001234"
+    assert dropQueryUniq("NM_001234-1") == "NM_001234"
+    assert dropQueryUniq("NM_001234-123") == "NM_001234"
+    assert dropQueryUniq("NM_001234-1.5") == "NM_001234"
+
+###
+# PslBlock tests
+###
+def testPslBlockLen():
+    """Test PslBlock.__len__"""
+    psl = splitToPsl(psPos)
+    assert len(psl.blocks[0]) == 17
+
+def testPslBlockStr():
+    """Test PslBlock.__str__"""
+    psl = splitToPsl(psPos)
+    blk = psl.blocks[0]
+    assert str(blk) == f"{blk.qStart}..{blk.qEnd} <=> {blk.tStart}..{blk.tEnd}"
+
+def testPslBlockPlusCoords():
+    """Test PslBlock qStartPlus, qEndPlus, tStartPlus, tEndPlus"""
+    # Positive strand PSL
+    psl = splitToPsl(psPos)
+    blk = psl.blocks[0]
+    assert blk.qStartPlus == blk.qStart
+    assert blk.qEndPlus == blk.qEnd
+    assert blk.tStartPlus == blk.tStart
+    assert blk.tEndPlus == blk.tEnd
+
+    # Negative query strand PSL
+    psl = splitToPsl(psNeg)
+    blk = psl.blocks[0]
+    # For negative strand, plus coords are reversed
+    assert blk.qStartPlus == psl.qSize - blk.qEnd
+    assert blk.qEndPlus == psl.qSize - blk.qStart
+
+def testPslBlockSameAlign():
+    """Test PslBlock.sameAlign"""
+    psl1 = splitToPsl(psPos)
+    psl2 = splitToPsl(psPos)
+    assert psl1.blocks[0].sameAlign(psl2.blocks[0])
+    assert not psl1.blocks[0].sameAlign(psl1.blocks[1])
+    assert not psl1.blocks[0].sameAlign(None)
+
+###
+# Psl property tests
+###
+def testPslQLength():
+    """Test Psl.qLength property"""
+    psl = splitToPsl(psPos)
+    assert psl.qLength == psl.qEnd - psl.qStart
+
+def testPslTLength():
+    """Test Psl.tLength property"""
+    psl = splitToPsl(psPos)
+    assert psl.tLength == psl.tEnd - psl.tStart
+
+def testPslAlignSize():
+    """Test Psl.alignSize property"""
+    psl = splitToPsl(psPos)
+    assert psl.alignSize == psl.match + psl.misMatch + psl.repMatch
+
+def testPslQCover():
+    """Test Psl.qCover property"""
+    psl = splitToPsl(psPos)
+    assert psl.qCover == psl.alignSize / psl.qSize
+
+def testPslTCover():
+    """Test Psl.tCover property"""
+    psl = splitToPsl(psPos)
+    assert psl.tCover == psl.alignSize / psl.tSize
+
+def testPslQSpan():
+    """Test Psl.qSpan property"""
+    psl = splitToPsl(psPos)
+    assert psl.qSpan == psl.qEnd - psl.qStart
+
+def testPslTSpan():
+    """Test Psl.tSpan property"""
+    psl = splitToPsl(psPos)
+    assert psl.tSpan == psl.tEnd - psl.tStart
+
+def testPslIdentity():
+    """Test Psl.identity method"""
+    psl = splitToPsl(psPos)
+    expected = (psl.match + psl.repMatch) / (psl.match + psl.misMatch + psl.repMatch)
+    assert psl.identity() == expected
+
+def testPslQDensity():
+    """Test Psl.qDensity property"""
+    psl = splitToPsl(psPos)
+    assert psl.qDensity == psl.alignSize / psl.qSpan
+
+def testPslTDensity():
+    """Test Psl.tDensity property"""
+    psl = splitToPsl(psPos)
+    assert psl.tDensity == psl.alignSize / psl.tSpan
+
+###
+# Psl method tests
+###
+def testPslTOverlap():
+    """Test Psl.tOverlap method"""
+    psl = splitToPsl(psPos)
+    # Overlapping
+    assert psl.tOverlap(psl.tName, psl.tStart, psl.tEnd)
+    assert psl.tOverlap(psl.tName, psl.tStart + 100, psl.tEnd - 100)
+    # Non-overlapping
+    assert not psl.tOverlap(psl.tName, 0, psl.tStart)
+    assert not psl.tOverlap(psl.tName, psl.tEnd, psl.tEnd + 1000)
+    # Different chromosome
+    assert not psl.tOverlap("chrZ", psl.tStart, psl.tEnd)
+
+def testPslSameAlign():
+    """Test Psl.sameAlign method"""
+    psl1 = splitToPsl(psPos)
+    psl2 = splitToPsl(psPos)
+    psl3 = splitToPsl(psNeg)
+    assert psl1.sameAlign(psl2)
+    assert not psl1.sameAlign(psl3)
+    assert not psl1.sameAlign(None)
+
+def testPslWrite(request):
+    """Test Psl.write method"""
+    psl = splitToPsl(psPos)
+    outFile = ts.get_test_output_file(request, ".psl")
+    with open(outFile, 'w') as fh:
+        psl.write(fh)
+    with open(outFile, 'r') as fh:
+        line = fh.readline().strip()
+    assert line == psPos
+
+def testPslQueryKey():
+    """Test Psl.queryKey static method"""
+    psl = splitToPsl(psPos)
+    key = Psl.queryKey(psl)
+    assert key == (psl.qName, psl.qStart, psl.qEnd)
+
+def testPslTargetKey():
+    """Test Psl.targetKey static method"""
+    psl = splitToPsl(psPos)
+    key = Psl.targetKey(psl)
+    assert key == (psl.tName, psl.tStart, psl.tEnd)
+
+def testPslFromDictRow():
+    """Test Psl.fromDictRow class method"""
+    psl = splitToPsl(psPos)
+    dictRow = {
+        "qName": psl.qName, "qSize": psl.qSize, "qStart": psl.qStart, "qEnd": psl.qEnd,
+        "tName": psl.tName, "tSize": psl.tSize, "tStart": psl.tStart, "tEnd": psl.tEnd,
+        "strand": psl.strand,
+        "matches": psl.match, "misMatches": psl.misMatch, "repMatches": psl.repMatch,
+        "nCount": psl.nCount, "qNumInsert": psl.qNumInsert, "qBaseInsert": psl.qBaseInsert,
+        "tNumInsert": psl.tNumInsert, "tBaseInsert": psl.tBaseInsert,
+        "blockCount": psl.blockCount,
+        "blockSizes": ",".join(str(b.size) for b in psl.blocks) + ",",
+        "qStarts": ",".join(str(b.qStart) for b in psl.blocks) + ",",
+        "tStarts": ",".join(str(b.tStart) for b in psl.blocks) + ",",
+    }
+    psl2 = Psl.fromDictRow(dictRow)
+    assert psl.sameAlign(psl2)
+
+###
+# PslTbl tests
+###
+def testPslTblGetQNames(request):
+    """Test PslTbl.getQNames method"""
+    pslTbl = PslTbl(ts.get_test_input_file(request, "pslTest.psl"), qNameIdx=True)
+    qNames = pslTbl.getQNames()
+    assert isinstance(qNames, list)
+    assert "NM_198943.1" in qNames
+
+def testPslTblGetByQName(request):
+    """Test PslTbl.getByQName method"""
+    pslTbl = PslTbl(ts.get_test_input_file(request, "pslTest.psl"), qNameIdx=True)
+    psls = pslTbl.getByQName("NM_001327.1")
+    assert isinstance(psls, list)
+    assert len(psls) == 4
+    for psl in psls:
+        assert psl.qName == "NM_001327.1"

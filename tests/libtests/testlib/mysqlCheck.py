@@ -14,7 +14,7 @@ _mysqlSupportMissingMsg = None
 try:
     # mysqlclient is required for python 3
     import MySQLdb  # noqa: F401
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
     _mysqlSupportMissingMsg = "MySQL/MariaDb support not available without mysqlclient (MySQLdb) package"
 
 # check for test host

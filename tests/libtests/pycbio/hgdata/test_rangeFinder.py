@@ -2,7 +2,7 @@
 import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
-from pycbio.hgdata.rangeFinder import RangeFinder
+from pycbio.hgdata.rangeFinder import RangeFinder, calcBin, getOverlappingBins
 from collections import namedtuple
 
 # test data and query types
@@ -221,3 +221,54 @@ def testMergerNoStrand3():
         Data(seqId='chr12', start=100, end=10000, strand='+,-', value='val1.1,val1.2,val1.3,val1.4'),
         Data(seqId='chr12', start=100000, end=2000000000, strand='+,-', value='val1.5,val1.6')
     ]
+
+###
+# Helper function tests
+###
+def testCalcBin():
+    """Test calcBin function"""
+    # calcBin returns a bin number for a range
+    bin1 = calcBin(0, 100)
+    bin2 = calcBin(0, 1000)
+    assert isinstance(bin1, int)
+    assert isinstance(bin2, int)
+    # Same range should give same bin
+    assert calcBin(100, 200) == calcBin(100, 200)
+
+def testGetOverlappingBins():
+    """Test getOverlappingBins function"""
+    bins = list(getOverlappingBins(0, 1000))
+    assert len(bins) > 0
+    # Returns tuples of (startBin, endBin)
+    assert all(isinstance(b, tuple) and len(b) == 2 for b in bins)
+
+###
+# Entry-level tests
+###
+def testEntries():
+    """Test RangeFinder.entries method"""
+    rf = mkRangeFinder(data1, True)
+    entries = list(rf.entries())
+    assert len(entries) == len(data1)
+    # Entry has (start, end, value) attributes
+    for entry in entries:
+        assert hasattr(entry, 'start')
+        assert hasattr(entry, 'end')
+        assert hasattr(entry, 'value')
+
+def testOverlappingEntries():
+    """Test RangeFinder.overlappingEntries method"""
+    rf = mkRangeFinder(data1, True)
+    # Query that should match val1.1
+    entries = list(rf.overlappingEntries("chr22", 100, 1000, '+'))
+    assert len(entries) == 1
+    assert entries[0].value == "val1.1"
+    assert entries[0].start == 100
+    assert entries[0].end == 1000
+
+def testOverlappingEntriesNoStrand():
+    """Test RangeFinder.overlappingEntries without strand"""
+    rf = mkRangeFinder(data1, False)
+    entries = list(rf.overlappingEntries("chr12", 100, 200, None))
+    values = sorted([e.value for e in entries])
+    assert values == ["val1.2", "val1.3", "val1.4"]
