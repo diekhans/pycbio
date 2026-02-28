@@ -7,7 +7,7 @@ from os import path as osp
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.sys import fileOps, cli
-from pycbio.hgdata.bed import BedReader, Bed, bedMergeBlocks
+from pycbio.hgdata.bed import BedException, BedReader, Bed, bedMergeBlocks
 
 def parseArgs():
     desc = """Combine blocks from overlapping BEDs into a single BED.
@@ -28,6 +28,8 @@ def parseArgs():
 def loadSortedBeds(opts, inBedFile):
     """Load and sort BEDs by position."""
     beds = list(BedReader(inBedFile))
+    if (len(beds) > 0) and opts.stranded and (beds[0].strand is None):
+        raise BedException("--stranded specified, however BED does not have strand")
     if opts.stranded:
         beds.sort(key=lambda b: (b.chrom, b.strand, b.start, -b.end))
     else:
@@ -65,7 +67,12 @@ def mergeGroupWithoutBlocks(opts, group, name):
     bed0 = group[0]
     chromStart = min(b.chromStart for b in group)
     chromEnd = max(b.chromEnd for b in group)
-    strand = bed0.strand if opts.stranded else '+'
+    if bed0.strand is None:
+        strand = None
+    elif opts.stranded:
+        strand = bed0.strand
+    else:
+        strand = '+'
     return Bed(bed0.chrom, chromStart, chromEnd, name=name,
                strand=strand, numStdCols=bed0.numStdCols)
 
