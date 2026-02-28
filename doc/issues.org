@@ -131,6 +131,7 @@ need more tests
 
 
 * BED
+** BedReader with and empty dict as file did nothing rather than error
 ** if Bed is created without a score and with a strand, zero score is output and no strand
 (maybe fixed)
 ** Bed extension needs work (see decoration.py)
@@ -452,7 +453,6 @@ store type in objects too, or maybe make derived classes
 
 * fileops compressCmd, maybe just return cmd name rather than a list
 
-
 * chrom sort, works with _hap1, _hap2
 def chrom_key(chrom):
     import re
@@ -463,3 +463,14 @@ def chrom_key(chrom):
     if base.isdigit():
         return (0, int(base), '', hap)
     return (1, 0, base, hap)
+
+*  --log-level LOG_LEVEL
+CRITICALSet level to case-insensitive symbolic value,
+one of: , FATALSet level to case-insensitive symbolic
+value, one of: , ERRORSet level to case-insensitive
+symbolic value, one of: , WARNSet level to case-
+insensitive symbolic value, one of: , WARNINGSet level
+to case-insensitive symbolic value, one of: , INFOSet
+level to case-insensitive symbolic value, one of: ,
+DEBUGSet level to case-insensitive symbolic value, one
+of: , NOTSET
