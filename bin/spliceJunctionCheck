@@ -7,7 +7,7 @@ from os import path as osp
 from collections import namedtuple
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
-from pycbio import PycbioException
+from pycbio import PycbioDataError
 from pycbio.sys import fileOps, cli
 from pycbio.sys.symEnum import SymEnum, auto
 from pycbio.sys.svgcolors import SvgColors
@@ -114,7 +114,7 @@ def count_junc(genome, coords, strand, junc_counter):
 
 def count_bed_rec(genome, bed, junc_counter):
     if bed.numStdCols < 12:
-        raise PycbioException(f"Must be at least a BED12, found {bed.numStdCols} standard columns")
+        raise PycbioDataError(f"Must be at least a BED12, found {bed.numStdCols} standard columns")
     prev_end = bed.blocks[0].end
     for blk in bed.blocks[1:]:
         count_junc(genome, Coords(bed.chrom, prev_end, blk.start), bed.strand, junc_counter)
@@ -157,7 +157,8 @@ def splice_junction_check(opts, genome_file, trans_bed_file):
 
 def main():
     opts, args = parse_args()
-    splice_junction_check(opts, args.genome_file, args.trans_bed_file)
+    with cli.ErrorHandler():
+        splice_junction_check(opts, args.genome_file, args.trans_bed_file)
 
 
 main()

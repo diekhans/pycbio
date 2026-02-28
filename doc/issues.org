@@ -474,3 +474,5 @@ to case-insensitive symbolic value, one of: , INFOSet
 level to case-insensitive symbolic value, one of: ,
 DEBUGSet level to case-insensitive symbolic value, one
 of: , NOTSET
+
+* add use of PycbioDataError and ErrorHandler

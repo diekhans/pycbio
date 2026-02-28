@@ -136,7 +136,7 @@ def addCmdOptions(parser, *, defaultLevel=logging.INFO, inclSyslog=False):
     parser.add_argument("--log-stderr", action="store_true",
                         help="also log to stderr, even when logging to syslog")
     parser.add_argument("--log-level", type=validateLevel, default=defaultLevel,
-                        help="Set level to case-insensitive symbolic value, one of: " ", ".join(getLevelNames()))
+                        help="Set level to integer or case-insensitive symbolic value, one of: " + ", ".join(getLevelNames()))
     parser.add_argument("--log-conf",
                         help="Python logging configuration file, see logging.config.fileConfig()")
     parser.add_argument("--log-debug", action="store_true",

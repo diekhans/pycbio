@@ -2,7 +2,7 @@
 # Copyright 2025-2025 Mark Diekhans
 import re
 from abc import ABC, abstractmethod
-from pycbio import PycbioException
+from pycbio import PycbioDataError
 from pycbio.sys.symEnum import SymEnum
 
 class GenomeFmt(SymEnum):
@@ -81,4 +81,4 @@ def genome_factory(seq_file, *, fmt=GenomeFmt.guess):
         elif re.match(twobit_re, seq_file):
             return _GenomeTwoBit(seq_file)
         else:
-            raise PycbioException(f"can not determine genome file type for `{seq_file}'")
+            raise PycbioDataError(f"can not determine genome file type for `{seq_file}'")

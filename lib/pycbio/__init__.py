@@ -11,8 +11,9 @@ class PycbioException(Exception):
     """Base class for Pycbio exceptions."""
     pass
 
-class PycbioInputError(PycbioException, NoStackError):
-    """Indicates an input data error"""
+class PycbioDataError(PycbioException, NoStackError):
+    """Indicates an data format error or related error.  The pycbio.sys.cli.ErrorHandler
+    facility will not generate stacktrace by default."""
     pass
 
 class PycbioOptionalFeatureException(PycbioException, NoStackError):
