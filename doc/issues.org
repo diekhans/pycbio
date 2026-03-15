@@ -464,15 +464,4 @@ def chrom_key(chrom):
         return (0, int(base), '', hap)
     return (1, 0, base, hap)
 
-*  --log-level LOG_LEVEL
-CRITICALSet level to case-insensitive symbolic value,
-one of: , FATALSet level to case-insensitive symbolic
-value, one of: , ERRORSet level to case-insensitive
-symbolic value, one of: , WARNSet level to case-
-insensitive symbolic value, one of: , WARNINGSet level
-to case-insensitive symbolic value, one of: , INFOSet
-level to case-insensitive symbolic value, one of: ,
-DEBUGSet level to case-insensitive symbolic value, one
-of: , NOTSET
-
 * add use of PycbioDataError and ErrorHandler

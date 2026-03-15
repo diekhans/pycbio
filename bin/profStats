@@ -42,7 +42,7 @@ def parseArgs():
                                      formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument("--sort", action="append", dest="sortKeys",
                         choices=sortKeys.keys(),
-                        help="sort result by specified key, which maybe repeated, one of:\n"
+                        help="sort result by specified key, which maybe repeated, default cumulative, one of:\n"
                         + sortKeyDesc)
     parser.add_argument("--report", dest="reportType", type=ReportType, default=ReportType.basic,
                         help="specify type of report to produce, one of: "
