@@ -22,6 +22,7 @@ def mkfzset(item):
     """create a frozenset from item.  If it's None, return an empty set, if
     it's iterable, convert to a set, if it's a single item, make a set of it,
     it it's already a frozenset, just return as-is"""
+    # FIXME: this is silly
     if isinstance(item, frozenset):
         return item
     elif isinstance(item, set):
