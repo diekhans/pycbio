@@ -33,7 +33,7 @@ class TsvRow:
     def __setitem__(self, key, val):
         "set a column by string key or numeric index"
         if isinstance(key, int):
-            setattr(self, self._columnSpecs.columns[key], val)
+            setattr(self, self._columnSpecs_.columns[key], val)
         else:
             setattr(self, key, val)
 

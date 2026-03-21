@@ -5,6 +5,7 @@ import csv
 from pycbio.sys import fileOps
 from pycbio.tsv.tsvRow import TsvRow
 from pycbio.tsv import TsvError
+from pycbio.tsv.tsvColumns import columnsSpecBuild
 
 csv.field_size_limit(sys.maxsize)
 
@@ -36,79 +37,6 @@ def _dehashHeader(row):
     if (len(row) > 0) and row[0].startswith('#'):
         # sometimes there is a space after #
         row[0] = row[0][1:].strip()
-
-class ColumnSpecs:
-    """Information about columns that is disconnect from the reader.
-    This allows rows to pickled with minimal inforation."""
-    __slots = ("columns", "extColumns", "columnMap", "colTypes")
-
-    def __init__(self, columns, extColumns, columnMap, types):
-        self.columns = columns
-        self.extColumns = extColumns
-        self.columnMap = columnMap
-        self.types = types
-
-    def _fmtColWithTypes(self, row, iCol):
-        col = row[iCol]
-        if col is None:
-            return ""
-        ct = self.types[iCol]
-        if type(ct) is tuple:
-            return ct[1](col)
-        else:
-            return str(col)
-
-    def _fmtRowWithTypes(self, row):
-        outrow = []
-        for iCol in range(len(self.columns)):
-            outrow.append(self._fmtColWithTypes(row, iCol))
-        return outrow
-
-    def _fmtRowNoTypes(self, row):
-        outrow = []
-        for iCol in range(len(self.columns)):
-            col = row[iCol]
-            outrow.append(str(col) if col is not None else '')
-        return outrow
-
-    def formatRow(self, row):
-        "format row to a list of strings given specified types"
-        if self.types is not None:
-            return self._fmtRowWithTypes(row)
-        else:
-            return self._fmtRowNoTypes(row)
-
-def _getColTypes(columns, typeMap, defaultColType):
-    "save col types as column indexed list"
-    if typeMap is not None:
-        return [typeMap.get(col, defaultColType) for col in columns]
-    elif defaultColType is not None:
-        return len(columns) * [defaultColType]
-    else:
-        return None
-
-def _setupColumns(columnNames, columnNameMapper):
-    # n.b. columns could be passed in from client, must copy
-    i = 0
-    columns = []
-    extColumns = [] if columnNameMapper is not None else columns
-    colMap = {}
-    for col in columnNames:
-        if columnNameMapper is not None:
-            extColumns.append(col)
-            col = columnNameMapper(col)
-        columns.append(col)
-        if col in colMap:
-            raise TsvError("Duplicate column name: '{}'".format(col))
-        colMap[col] = i
-        i += 1
-    return columns, extColumns, colMap
-
-def _columnsSpecBuild(columnNames, typeMap, defaultColType, columnNameMapper):
-    "columns maybe either specified or from the header"
-    columns, extColumns, columnMap = _setupColumns(columnNames, columnNameMapper)
-    colTypes = _getColTypes(columns, typeMap, defaultColType)
-    return ColumnSpecs(columns, extColumns, columnMap, colTypes)
 
 
 class TsvReader:
@@ -166,7 +94,7 @@ class TsvReader:
 
         if columns is None:
             columns = self._readHeader(allowEmpty)
-        self.columnSpecs = _columnsSpecBuild(columns, typeMap, defaultColType, columnNameMapper)
+        self.columnSpecs = columnsSpecBuild(columns, typeMap, defaultColType, columnNameMapper)
 
     @property
     def columns(self):
@@ -193,6 +121,12 @@ class TsvReader:
         if self.inFh is not None:
             self.inFh.close()
             self.inFh = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc_info):
+        self.close()
 
     @property
     def lineNum(self):
