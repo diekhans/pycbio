@@ -1,4 +1,5 @@
 # Copyright 2006-2025 Mark Diekhans
+"""TSV row objects with column values accessible as attributes."""
 
 # FIXME: danger of dump, etc, methods conflicting with columns.  maybe
 # a better convention to avoid collisions or make these functions rather

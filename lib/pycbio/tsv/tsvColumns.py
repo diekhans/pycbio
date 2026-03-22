@@ -4,8 +4,8 @@ from pycbio.tsv import TsvError
 
 
 class ColumnSpecs:
-    """Information about columns that is disconnect from the reader.
-    This allows rows to pickled with minimal inforation."""
+    """Column names, types, and formatting information for TSV data.
+    Disconnected from reader/writer to allow rows to be pickled."""
     __slots__ = ("columns", "extColumns", "columnMap", "types")
 
     def __init__(self, columns, extColumns, columnMap, types):
@@ -59,7 +59,7 @@ def _setupColumns(columnNames, columnNameMapper):
     return columns, extColumns, colMap
 
 def columnsSpecBuild(columnNames, typeMap, defaultColType, columnNameMapper=None):
-    "columns maybe either specified or from the header"
+    """Build a ColumnSpecs from column names, optional typeMap, and optional name mapper."""
     columns, extColumns, columnMap = _setupColumns(columnNames, columnNameMapper)
     colTypes = _getColTypes(columns, typeMap, defaultColType)
     return ColumnSpecs(columns, extColumns, columnMap, colTypes)

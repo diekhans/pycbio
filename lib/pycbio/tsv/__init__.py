@@ -1,11 +1,11 @@
 # Copyright 2006-2025 Mark Diekhans
-"""" TSV (Tab Separated File) parsing"""
+"""TSV (Tab Separated File) reading and writing"""
 
 from pycbio import PycbioException
 
 
 class TsvError(PycbioException):
-    "Error from reading or parsing a TSV file"
+    "Error from reading, writing, or parsing a TSV file"
     def __init__(self, msg, reader=None):
         if (reader is not None):
             msg = str(reader.fileName) + ":" + str(reader.lineNum) + ": " + msg

@@ -10,14 +10,15 @@ from pycbio.tsv.tsvColumns import columnsSpecBuild
 csv.field_size_limit(sys.maxsize)
 
 
-# typeMap converter for str types were empty represents None
+# typeMap converter for str types where empty represents None
 strOrNoneType = (lambda v: None if (v == "") else v,
                  lambda v: "" if (v is None) else v)
 
-# typeMap converter for int types were empty represents None
+# typeMap converter for int types where empty represents None
 intOrNoneType = (lambda v: None if (v == "") else int(v),
                  lambda v: "" if (v is None) else str(v))
 
+# typeMap converter for float types where empty represents None
 floatOrNoneType = (lambda v: None if (v == "") else float(v),
                    lambda v: "" if (v is None) else str(v))
 
@@ -41,13 +42,14 @@ def _dehashHeader(row):
 
 class TsvReader:
     """Class for reading TSV files.  Reads header and builds column name to
-    column index map.  After a next, object contains a row and each column
-    becomes a field name.  It is also can be indexed by column name or int
-    index.  Columns can be automatically type converted by column name.  This
-    can also read from a dbapi cursor object (must set allowEmpty to true)
+    column index map.  Iterating yields TsvRow objects (or custom rowClass)
+    with columns accessible as attributes.  Columns can be automatically
+    type-converted via typeMap.
 
     If the first character of the header is '#', the '#' and following spaces
     are ignored and not part of the first column name.
+
+    Can be used as a context manager.
     """
 
     def __init__(self, fileName, *, rowClass=None, typeMap=None, defaultColType=None,
@@ -89,7 +91,7 @@ class TsvReader:
         try:
             self._openTsv(fileName, inFh, dialect, encoding, errors)
         except Exception as ex:
-            self._closeTsv()
+            self.close()
             raise TsvError(f"open of TSV failed {fileName}") from ex
 
         if columns is None:
@@ -98,7 +100,7 @@ class TsvReader:
 
     @property
     def columns(self):
-        "column names after name mapping"
+        "column names"
         return self.columnSpecs.columns
 
     def _openTsv(self, fileName, inFh, dialect, encoding, errors):
@@ -110,15 +112,9 @@ class TsvReader:
             self._shouldClose = True
         self._reader = csv.reader(self.inFh, dialect=dialect)
 
-    def _closeTsv(self):
-        "close if we opened the file"
-        if self._shouldClose:
-            self.close()
-
     def close(self):
-        """force close of the file if open, even if this object didn't open
-        it.  Normally, close is handled when end of file is reached"""
-        if self.inFh is not None:
+        """Close the file if this object opened it."""
+        if self._shouldClose and self.inFh is not None:
             self.inFh.close()
             self.inFh = None
 
@@ -179,7 +175,7 @@ class TsvReader:
         except Exception as ex:
             raise TsvError("Error reading TSV row", self) from ex
         finally:
-            self._closeTsv()
+            self.close()
 
     def formatRow(self, row):
         "format row to a list of strings given specified types"

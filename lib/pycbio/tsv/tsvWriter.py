@@ -41,6 +41,7 @@ class TsvWriter:
 
     @property
     def columns(self):
+        "column names"
         return self.columnSpecs.columns
 
     def _open(self, fileName, outFh, dialect, encoding, errors):
