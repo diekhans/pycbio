@@ -33,7 +33,7 @@ def testWriteFromDicts(request):
             {"strCol": "name3", "intCol": 30, "floatCol": 30.555, "onOffCol": False}]
     outFile = ts.get_test_output_file(request, ".tsv")
     with TsvWriter(outFile, columns=_columns, typeMap=_typeMap) as wr:
-        wr.writeHeader()
+
         wr.writeRows(rows)
     ts.diff_results_expected(request, ".tsv")
 
@@ -44,7 +44,7 @@ def testWriteFromLists(request):
             ["name3", 30, 30.555, False]]
     outFile = ts.get_test_output_file(request, ".tsv")
     with TsvWriter(outFile, columns=_columns, typeMap=_typeMap) as wr:
-        wr.writeHeader()
+
         wr.writeRows(rows)
     ts.diff_results_expected(request, ".tsv")
 
@@ -54,7 +54,6 @@ def testWriteFromTsvRows(request):
     rows = [r for r in TsvReader(inFile, typeMap=_typeMap)]
     outFile = ts.get_test_output_file(request, ".tsv")
     with TsvWriter(outFile, columns=_columns, typeMap=_typeMap) as wr:
-        wr.writeHeader()
         wr.writeRows(rows)
     ts.diff_results_expected(request, ".tsv")
 
@@ -66,7 +65,7 @@ def testWriteFromNamedtuples(request):
             Row("name3", 30, 30.555, False)]
     outFile = ts.get_test_output_file(request, ".tsv")
     with TsvWriter(outFile, columns=_columns, typeMap=_typeMap) as wr:
-        wr.writeHeader()
+
         wr.writeRows(rows)
     ts.diff_results_expected(request, ".tsv")
 
@@ -77,7 +76,7 @@ def testWriteNoTypeMap(request):
             ["name3", "30", "30.555", "off"]]
     outFile = ts.get_test_output_file(request, ".tsv")
     with TsvWriter(outFile, columns=_columns) as wr:
-        wr.writeHeader()
+
         wr.writeRows(rows)
     ts.diff_results_expected(request, ".tsv")
 
@@ -89,7 +88,7 @@ def testWriteToFh(request):
     outFile = ts.get_test_output_file(request, ".tsv")
     with open(outFile, "w") as fh:
         wr = TsvWriter(outFile, columns=_columns, typeMap=_typeMap, outFh=fh)
-        wr.writeHeader()
+
         wr.writeRows(rows)
     ts.diff_results_expected(request, ".tsv")
 
@@ -99,7 +98,7 @@ def testWriteNoneValues(request):
             {"strCol": None, "intCol": 20, "floatCol": None, "onOffCol": False}]
     outFile = ts.get_test_output_file(request, ".tsv")
     with TsvWriter(outFile, columns=_columns, typeMap=_typeMap) as wr:
-        wr.writeHeader()
+
         wr.writeRows(rows)
     ts.diff_results_expected(request, ".tsv")
 
@@ -107,7 +106,7 @@ def testWriteColumns(request):
     """write rows using keyword arguments, with some missing columns"""
     outFile = ts.get_test_output_file(request, ".tsv")
     with TsvWriter(outFile, columns=_columns, typeMap=_typeMap) as wr:
-        wr.writeHeader()
+
         wr.writeColumns(strCol="name1", intCol=10, floatCol=10.01, onOffCol=True)
         wr.writeColumns(strCol="name2", floatCol=20.22)
         wr.writeColumns(onOffCol=False)
@@ -120,7 +119,7 @@ def testWriteGzip(request):
             ["name3", 30, 30.555, False]]
     outFile = ts.get_test_output_file(request, ".tsv.gz")
     with TsvWriter(outFile, columns=_columns, typeMap=_typeMap) as wr:
-        wr.writeHeader()
+
         wr.writeRows(rows)
     # read back and verify
     readRows = [r for r in TsvReader(outFile, typeMap=_typeMap)]

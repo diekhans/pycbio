@@ -38,6 +38,7 @@ class TsvWriter:
         self.outFh = None
         self._shouldClose = False
         self._open(fileName, outFh, dialect, encoding, errors)
+        self._writeHeader()
 
     @property
     def columns(self):
@@ -51,7 +52,7 @@ class TsvWriter:
         else:
             self.outFh = fileOps.opengz(fileName, "w", encoding=encoding, errors=errors)
             self._shouldClose = True
-        self._writer = csv.writer(self.outFh, dialect=dialect)
+        self._writer = csv.writer(self.outFh, dialect=dialect, lineterminator='\n')
 
     def close(self):
         """Close the file if this object opened it."""
@@ -65,7 +66,7 @@ class TsvWriter:
     def __exit__(self, *exc_info):
         self.close()
 
-    def writeHeader(self):
+    def _writeHeader(self):
         """Write the column header line."""
         self._writer.writerow(self.columns)
 
