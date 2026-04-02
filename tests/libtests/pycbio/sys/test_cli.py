@@ -80,7 +80,7 @@ def testGetOptsLong():
     _resetLogger()
     parser = _makeTrekParser()
     testargs = ('--log-level=DEBUG', '--kirk=10', '--spock=fred', 'foo')
-    opts, args = cli.parseOptsArgsWithLogging(parser, testargs)
+    opts, args = cli.parseOptsArgsWithLogging(parser, args=testargs)
     _checkTrekOpts(opts, args, 10, 'fred', None, False, 'foo')
     memory_handler = _confTestLogger()
     logging.debug("testGetOptsLong")
@@ -96,7 +96,7 @@ def testGetOptsShort():
     _resetLogger()
     parser = _makeTrekParser()
     testargs = ('--log-level=INFO', '-s' 'fred', '-m', 'barney', '-u', 'baz')
-    opts, args = cli.parseOptsArgsWithLogging(parser, testargs)
+    opts, args = cli.parseOptsArgsWithLogging(parser, args=testargs)
     _checkTrekOpts(opts, args, None, 'fred', 'barney', True, 'baz')
     memory_handler = _confTestLogger()
     logging.debug("testGetOptsShort")
@@ -108,7 +108,7 @@ def testGetOptsShort():
 def testParseOptsArgs():
     parser = _makeTrekParser()
     testargs = ('-s' 'fred', '-m', 'barney', '-u', 'baz')
-    opts, args = cli.parseOptsArgsWithLogging(parser, testargs)
+    opts, args = cli.parseOptsArgsWithLogging(parser, args=testargs)
     _checkTrekOpts(opts, args, None, 'fred', 'barney', True, 'baz')
 
 def testParseSubcommand():
@@ -121,7 +121,7 @@ def testParseSubcommand():
     _addTrekOpts(shuttle_parser)
 
     testargs = ('--log-level=INFO', 'shuttle', '-s', 'fred', '-m', 'barney', '-u', 'baz')
-    opts, args = cli.parseOptsArgsWithLogging(parser, testargs)
+    opts, args = cli.parseOptsArgsWithLogging(parser, args=testargs)
     assert args.craft == "shuttle"
     _checkTrekOpts(opts, args, None, 'fred', 'barney', True, 'baz')
     assert not opts.star_fleet
@@ -151,7 +151,7 @@ def testParseSubcommandTwoPass():
 
     _addTrekOpts(shuttle_parser)
 
-    opts, args = cli.parseOptsArgsWithLogging(parser, testargs)
+    opts, args = cli.parseOptsArgsWithLogging(parser, args=testargs)
     _checkTrekOpts(opts, args, None, 'fred', 'barney', True, 'baz')
     memory_handler = _confTestLogger()
     logging.debug("testParseSubcommand")

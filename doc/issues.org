@@ -17,7 +17,9 @@ def chrom_sort_key(chrom):
 * programs to add:
 ** cls-t2t-primate/bin/phylop-score-bed
 
-* convert xlsx-to-tsv to use CLI and logging stuff
+* xlsx
+convert xlsx-to-tsv to use CLI and logging stuff
+add ~/compbio/kznf/projs/notch2nl/t2t-h9-paper/bin/tsvs-to-xlsx
 
 * ArgumentParser need introspection
 write ticket
