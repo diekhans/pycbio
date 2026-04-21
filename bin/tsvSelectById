@@ -7,7 +7,7 @@ import argparse
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio import PycbioException
-from pycbio.tsv import TsvReader, TsvTable
+from pycbio.tsv import TsvReader
 
 
 def parseArgs():
