@@ -107,6 +107,7 @@ def compressBaseName(path):
 def decompressCmd(path):
     """"return the command to decompress the file to stdout, or default if not compressed, which defaults
     to the `cat' command, so that it just gets written through"""
+    # FIXME: default MacOS zcat doesn't recongize .gz
     if path.endswith(".gz") or path.endswith(".bgz") or path.endswith(".Z"):
         return ["zcat"]
     elif path.endswith(".bz2"):
@@ -349,6 +350,7 @@ def atomicTmpFile(finalPath):
     /dev/stdout), it is returned unchanged and atomicTmpInstall will do
     nothing.  The output directory will be created if it doesn't exist.
     Thread-safe."""
+    # FIXME: not that test name for function: atomicCreate ?
     # note: this can't use tmpFileGet, since file should not be created or be private
     finalDir = osp.dirname(osp.normpath(finalPath))  # maybe empty
     if finalDir == '/dev':
