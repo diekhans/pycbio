@@ -46,7 +46,7 @@ def selectById(selectCol, selectTsv, inCol, inTsv, outTsv):
     selectTbl = loadSelect(selectCol, selectTsv)
     rd = openTsv(inCol, inTsv)
     outFh = open(outTsv, "w")
-    TsvTable.tsvPrRow(outFh, rd.columns)
+    # TsvTable.tsvPrRow(outFh, rd.columns)
     for row in rd:
         if row[inCol] in selectTbl:
             row.write(rd)
