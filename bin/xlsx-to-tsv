@@ -50,6 +50,7 @@ def parse_arguments():
 
     return args
 
+
 def get_output_filename(sheet_name, output_dir, prefix=None):
     """Generate output filename for a sheet"""
     if prefix:
@@ -60,8 +61,8 @@ def get_output_filename(sheet_name, output_dir, prefix=None):
 
 def write_sheet_to_tsv(sheet, output_path, delimiter='\t', start_row=1):
     """Write sheet data to a TSV file"""
-    with open(output_path, 'w', newline='', encoding='utf-8') as tsv_file:
-        tsv_writer = csv.writer(tsv_file, delimiter=delimiter)
+    with open(output_path, 'w', encoding='utf-8') as tsv_file:
+        tsv_writer = csv.writer(tsv_file, delimiter=delimiter, lineterminator='\n')
 
         rows_written = 0
         for row_idx, row in enumerate(sheet.rows, 1):
