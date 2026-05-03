@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+# Copyright 2006-2025 Mark Diekhans
+
+import sys
+from os import path as osp
+import argparse
+import csv
+
+sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
+from pycbio.sys import fileOps, cli
+
+
+def parseArgs():
+    desc = """Convert a CSV to a TSV. Empty lines are dropped."""
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("--inplace", action="store_true",
+                        help="rewrite inCsv in place; outTsv must be omitted")
+    parser.add_argument("--delimiter", default=",",
+                        help="input field delimiter (default: ',')")
+    parser.add_argument("inCsv",
+                        help="input CSV, maybe compressed")
+    parser.add_argument("outTsv", nargs="?",
+                        help="output TSV, may have compression extensions")
+    opts, args = cli.parseOptsArgsWithLogging(parser)
+    if opts.inplace and args.outTsv is not None:
+        parser.error("--inplace conflicts with outTsv argument")
+    if not opts.inplace and args.outTsv is None:
+        parser.error("outTsv required unless --inplace given")
+    if len(opts.delimiter) != 1:
+        parser.error("--delimiter must be a single character")
+    return opts, args
+
+
+def copyCsvToTsv(csvReader, tsvWriter):
+    for row in csvReader:
+        if len(row) > 0:
+            tsvWriter.writerow(row)
+
+
+def convert(opts, inCsv, outTsv):
+    with fileOps.opengz(inCsv) as csvFh:
+        csvReader = csv.reader(csvFh, dialect=csv.excel, delimiter=opts.delimiter)
+        with fileOps.opengz(outTsv, "w") as tsvFh:
+            tsvWriter = csv.writer(tsvFh, dialect=csv.excel_tab, quoting=csv.QUOTE_MINIMAL,
+                                   lineterminator="\n")
+            copyCsvToTsv(csvReader, tsvWriter)
+
+
+def csvToTsv(opts, inCsv, outTsv):
+    if opts.inplace:
+        with fileOps.AtomicFileCreate(inCsv) as tmpPath:
+            convert(opts, inCsv, tmpPath)
+    else:
+        convert(opts, inCsv, outTsv)
+
+
+def main():
+    opts, args = parseArgs()
+    with cli.ErrorHandler():
+        csvToTsv(opts, args.inCsv, args.outTsv)
+
+
+main()

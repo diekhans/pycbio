@@ -1,7 +1,7 @@
 root = ../..
 include ${root}/defs.mk
 
-subdirs = gbff geneCheck ncbi csvToTsv \
+subdirs = gbff geneCheck ncbi csv-to-tsv \
 	bedCmdTests pslLoadSqlLite conversion utf8ToAscii \
 	spliceJuncs spreadSheets
 

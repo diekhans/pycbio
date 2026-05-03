@@ -44,7 +44,7 @@ setup(
         'bin/bedToCdsBed',
         'bin/clusterGenesSelect',
         'bin/clusterGenesStats',
-        'bin/csvToTsv',
+        'bin/csv-to-tsv',
         'bin/emblToFasta',
         'bin/gbffGenesToGenePred',
         'bin/geneCheckStats',
