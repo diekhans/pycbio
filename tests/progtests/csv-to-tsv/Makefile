@@ -5,16 +5,16 @@ export PYTHONPATH
 
 csvToTsv = ${binDir}/csv-to-tsv
 
-test: sraRunTest sraRunInplaceTest sraRunDelimTest
+test: sraRunTest sraRunDerivedTest sraRunDelimTest
 
 sraRunTest: mkdirs
 	${csvToTsv} input/sra-run.csv output/$@.tsv
 	${diff} expected/sraRunTest.tsv output/$@.tsv
 
-sraRunInplaceTest: mkdirs
+sraRunDerivedTest: mkdirs
 	cp input/sra-run.csv output/$@.csv
-	${csvToTsv} --inplace output/$@.csv
-	${diff} expected/sraRunTest.tsv output/$@.csv
+	${csvToTsv} output/$@.csv
+	${diff} expected/sraRunTest.tsv output/$@.tsv
 
 sraRunDelimTest: mkdirs
 	${csvToTsv} --delimiter=';' input/sra-run-semi.csv output/$@.tsv

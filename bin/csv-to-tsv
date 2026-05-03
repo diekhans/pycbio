@@ -11,24 +11,33 @@ from pycbio.sys import fileOps, cli
 
 
 def parseArgs():
-    desc = """Convert a CSV to a TSV. Empty lines are dropped."""
+    desc = """Convert a CSV to a TSV. Empty lines are dropped.
+    If outTsv is not specified, it is derived from inCsv by replacing
+    the .csv extension with .tsv, preserving any compression suffix."""
     parser = argparse.ArgumentParser(description=desc)
-    parser.add_argument("--inplace", '-i', action="store_true",
-                        help="rewrite inCsv in place; outTsv must be omitted")
     parser.add_argument("--delimiter", '-d', default=",",
                         help="input field delimiter (default: ',')")
     parser.add_argument("inCsv",
                         help="input CSV, maybe compressed")
     parser.add_argument("outTsv", nargs="?",
-                        help="output TSV, may have compression extensions")
+                        help="output TSV, may have compression extensions; "
+                        "default derived from inCsv")
     opts, args = cli.parseOptsArgs(parser)
-    if opts.inplace and args.outTsv is not None:
-        parser.error("--inplace conflicts with outTsv argument")
-    if not opts.inplace and args.outTsv is None:
-        parser.error("outTsv required unless --inplace given")
     if len(opts.delimiter) != 1:
         parser.error("--delimiter must be a single character")
+    if args.outTsv is None:
+        args.outTsv = deriveOutTsv(parser, args.inCsv)
     return opts, args
+
+
+def deriveOutTsv(parser, inCsv):
+    """Replace .csv extension with .tsv, preserving compression suffix."""
+    base = fileOps.compressBaseName(inCsv)
+    compExt = inCsv[len(base):]
+    root, ext = osp.splitext(base)
+    if ext.lower() != ".csv":
+        parser.error(f"can't derive outTsv from inCsv {inCsv!r}: expected .csv extension")
+    return root + ".tsv" + compExt
 
 
 def copyCsvToTsv(csvReader, tsvWriter):
@@ -37,21 +46,13 @@ def copyCsvToTsv(csvReader, tsvWriter):
             tsvWriter.writerow(row)
 
 
-def convert(opts, inCsv, outTsv):
+def csvToTsv(opts, inCsv, outTsv):
     with fileOps.opengz(inCsv) as csvFh:
         csvReader = csv.reader(csvFh, dialect=csv.excel, delimiter=opts.delimiter)
         with fileOps.opengz(outTsv, "w") as tsvFh:
             tsvWriter = csv.writer(tsvFh, dialect=csv.excel_tab, quoting=csv.QUOTE_MINIMAL,
                                    lineterminator="\n")
             copyCsvToTsv(csvReader, tsvWriter)
-
-
-def csvToTsv(opts, inCsv, outTsv):
-    if opts.inplace:
-        with fileOps.AtomicFileCreate(inCsv) as tmpPath:
-            convert(opts, inCsv, tmpPath)
-    else:
-        convert(opts, inCsv, outTsv)
 
 
 def main():

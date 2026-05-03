@@ -12,7 +12,9 @@
       "Bash(git mv *)",
       "Bash(bin/csv-to-tsv --inplace foo.csv bar.tsv)",
       "Bash(bin/csv-to-tsv foo.csv)",
-      "Bash(bin/csv-to-tsv --delimiter=ab foo.csv out.tsv)"
+      "Bash(bin/csv-to-tsv --delimiter=ab foo.csv out.tsv)",
+      "Bash(bin/csv-to-tsv foo.txt)",
+      "Bash(bin/csv-to-tsv foo *)"
     ]
   }
 }
