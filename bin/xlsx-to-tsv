@@ -24,9 +24,9 @@ def validate_output_directory(directory_path):
     if not os.path.exists(directory_path):
         raise XLSXParserError(f"Output directory not found: {directory_path}")
 
-def validate_header_row(header_row, no_headers):
+def validate_header_row(header_row):
     """Validate that the header row is valid"""
-    if header_row < 1 and not no_headers:
+    if header_row < 1:
         raise XLSXParserError("Header row must be a positive integer")
 
 def parse_arguments():
@@ -39,14 +39,14 @@ def parse_arguments():
     parser.add_argument('-d', '--delimiter', default='\t', help='Delimiter for TSV output (default: tab)')
     parser.add_argument('-s', '--sheet', help='Specific sheet to export (default: all sheets)')
     parser.add_argument('-r', '--header-row', type=int, default=1, help='Header row number (default: 1)')
-    parser.add_argument('-n', '--no-headers', action='store_true', help='Specify if the file has no headers')
+    parser.add_argument('-n', '--no-header', action='store_true', help='Suppress header row in output (header-row is still used to detect columns)')
     parser.add_argument('-v', '--verbose', action='store_true', help='Print verbose output')
 
     args = parser.parse_args()
 
     validate_input_file(args.input_file)
     validate_output_directory(args.output_dir)
-    validate_header_row(args.header_row, args.no_headers)
+    validate_header_row(args.header_row)
 
     return args
 
@@ -59,24 +59,46 @@ def get_output_filename(sheet_name, output_dir, prefix=None):
         tsv_filename = f"{sheet_name}.tsv"
     return os.path.join(output_dir, tsv_filename)
 
-def write_sheet_to_tsv(sheet, output_path, delimiter='\t', start_row=1):
-    """Write sheet data to a TSV file"""
+def is_blank(value):
+    return value is None or (isinstance(value, str) and value == "")
+
+def detect_header_width(header_row):
+    """Number of leading columns that have a non-empty header cell.
+    Trailing columns with blank header cells are dropped."""
+    n_cols = 0
+    for i, v in enumerate(header_row):
+        if not is_blank(v):
+            n_cols = i + 1
+    return n_cols
+
+def trim_trailing_blank_rows(rows):
+    while rows and all(is_blank(v) for v in rows[-1]):
+        rows.pop()
+
+def write_sheet_to_tsv(sheet, output_path, delimiter='\t', header_row=1, no_header=False):
+    """Write sheet data to a TSV file. Drop trailing blank rows and trailing
+    columns whose header cell is empty."""
+    rows = [tuple(row) for row in sheet.iter_rows(values_only=True)]
+    h_idx = header_row - 1
+    if h_idx >= len(rows):
+        return 0
+    n_cols = detect_header_width(rows[h_idx])
+    if n_cols == 0:
+        return 0
+    start = h_idx + 1 if no_header else h_idx
+    out_rows = [row[:n_cols] for row in rows[start:]]
+    trim_trailing_blank_rows(out_rows)
+
     with open(output_path, 'w', encoding='utf-8') as tsv_file:
         tsv_writer = csv.writer(tsv_file, delimiter=delimiter, lineterminator='\n')
+        for row in out_rows:
+            tsv_writer.writerow(["" if is_blank(v) else v for v in row])
+    return len(out_rows)
 
-        rows_written = 0
-        for row_idx, row in enumerate(sheet.rows, 1):
-            if row_idx >= start_row:
-                row_values = [cell.value if cell.value is not None else "" for cell in row]
-                tsv_writer.writerow(row_values)
-                rows_written += 1
-
-    return rows_written
-
-def export_single_sheet(sheet, sheet_name, output_path, delimiter='\t', start_row=1, verbose=False):
+def export_single_sheet(sheet, sheet_name, output_path, delimiter='\t', header_row=1, no_header=False, verbose=False):
     """Export a single sheet to a TSV file"""
     try:
-        rows_written = write_sheet_to_tsv(sheet, output_path, delimiter, start_row)
+        rows_written = write_sheet_to_tsv(sheet, output_path, delimiter, header_row, no_header)
         if verbose:
             print(f"{sheet_name}: {rows_written} rows -> {os.path.basename(output_path)}")
         return rows_written
@@ -91,21 +113,21 @@ def validate_sheet_exists(workbook, sheet_name):
             f"Sheet '{sheet_name}' not found. Available sheets: {', '.join(workbook.sheetnames)}"
         )
 
-def process_single_sheet(workbook, sheet_name, input_file, output_dir, prefix, delimiter, start_row, verbose):
+def process_single_sheet(workbook, sheet_name, input_file, output_dir, prefix, delimiter, header_row, no_header, verbose):
     """Process a single sheet from a workbook"""
     sheet = workbook[sheet_name]
     output_path = get_output_filename(sheet_name, output_dir, prefix)
 
-    return export_single_sheet(sheet, sheet_name, output_path, delimiter, start_row, verbose)
+    return export_single_sheet(sheet, sheet_name, output_path, delimiter, header_row, no_header, verbose)
 
 def process_sheet_list(workbook, sheets_to_process, input_file, output_dir, prefix=None,
-                       delimiter='\t', start_row=1, verbose=False):
+                       delimiter='\t', header_row=1, no_header=False, verbose=False):
     """Process a list of sheets from a workbook"""
     for sheet_name in sheets_to_process:
         try:
             process_single_sheet(
                 workbook, sheet_name, input_file, output_dir,
-                prefix, delimiter, start_row, verbose
+                prefix, delimiter, header_row, no_header, verbose
             )
         except Exception as e:
             raise XLSXParserError(f"Failed to process sheet '{sheet_name}'") from e
@@ -130,12 +152,9 @@ def export_sheets_to_tsv(args):
     workbook = load_workbook_safely(args.input_file)
     sheets_to_process = determine_sheets_to_process(workbook, args.sheet)
 
-    start_row = 1
-    if not args.no_headers:
-        start_row = args.header_row
     process_sheet_list(
         workbook, sheets_to_process, args.input_file, args.output_dir,
-        args.prefix, args.delimiter, start_row, args.verbose
+        args.prefix, args.delimiter, args.header_row, args.no_header, args.verbose
     )
 
 def run_export():
