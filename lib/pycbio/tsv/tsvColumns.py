@@ -16,15 +16,17 @@ class ColumnSpecs:
 
     def fmtValue(self, iCol, value):
         """Format a single value using the column type if available."""
-        if value is None:
-            return ""
         if self.types is not None:
             ct = self.types[iCol]
             if ct is not None:
                 if isinstance(ct, tuple):
                     return ct[1](value)
+                elif value is None:
+                    return ""
                 else:
                     return str(value)
+        if value is None:
+            return ""
         return str(value)
 
     def formatRow(self, row):
