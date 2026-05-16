@@ -3,7 +3,9 @@ import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from collections import namedtuple
-from pycbio.tsv import TsvReader, TsvWriter
+import pytest
+from pycbio.tsv import TsvReader, TsvWriter, TsvError
+from pycbio.tsv.tsvColumns import columnsSpecBuild
 import pycbio.sys.testingSupport as ts
 
 
@@ -127,3 +129,39 @@ def testWriteGzip(request):
     assert readRows[0].strCol == "name1"
     assert readRows[0].intCol == 10
     assert readRows[2].onOffCol is False
+
+
+def testWriteFromColumnSpecs(request):
+    """pre-built ColumnSpecs may be passed instead of columns/typeMap"""
+    specs = columnsSpecBuild(_columns, _typeMap, None)
+    rows = [["name1", 10, 10.01, True],
+            ["name2", 20, 20.22, False]]
+    outFile = ts.get_test_output_file(request, ".tsv")
+    with TsvWriter(outFile, columnSpecs=specs) as wr:
+        wr.writeRows(rows)
+    readRows = [r for r in TsvReader(outFile, typeMap=_typeMap)]
+    assert [r.strCol for r in readRows] == ["name1", "name2"]
+    assert readRows[1].onOffCol is False
+
+
+def testWriteColumnsDerivedFromTypeMap(request):
+    """when typeMap is given but columns is not, columns come from typeMap keys"""
+    typeMap = {"a": int, "b": float, "c": (str, str)}
+    rows = [[1, 1.5, "x"], [2, 2.5, "y"]]
+    outFile = ts.get_test_output_file(request, ".tsv")
+    with TsvWriter(outFile, typeMap=typeMap) as wr:
+        assert wr.columns == ["a", "b", "c"]
+        wr.writeRows(rows)
+    readRows = [r for r in TsvReader(outFile, typeMap=typeMap)]
+    assert [(r.a, r.b, r.c) for r in readRows] == [(1, 1.5, "x"), (2, 2.5, "y")]
+
+
+def testWriteNoColumnsRejected():
+    with pytest.raises(TsvError):
+        TsvWriter("/tmp/never-used.tsv")
+
+
+def testColumnSpecsConflict():
+    specs = columnsSpecBuild(_columns, _typeMap, None)
+    with pytest.raises(TsvError):
+        TsvWriter("/tmp/never-used.tsv", columns=_columns, columnSpecs=specs)

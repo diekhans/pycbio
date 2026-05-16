@@ -8,11 +8,6 @@
 # FIXME: need way to get raw row with Nones for sql
 # FIXME: this could actually be a dict-like object since py3
 
-def tsvRowToDict(row):
-    """convert a TSV row to a dict"""
-    return {col: getattr(row, col) for col in row._columnSpecs_.columns}
-
-
 class TsvRow:
     "Row of a TSV where columns are fields."
     # n.b.: doesn't inherit from list, as this results in columns in two
@@ -93,3 +88,13 @@ class TsvRow:
             fh.write(str(col))
             i += 1
         fh.write("\n")
+
+
+def tsvRowToDict(row):
+    """convert a TSV row to a dict"""
+    return {col: getattr(row, col) for col in row._columnSpecs_.columns}
+
+
+def tsvRowGetColumnSpecs(row):
+    """return the hidden ColumnSpecs object"""
+    return row._columnSpecs_.columnSpecs_

@@ -2,8 +2,9 @@
 """TSV writing classes"""
 import csv
 from pycbio.sys import fileOps
+from pycbio.tsv import TsvError
 from pycbio.tsv.tsvRow import TsvRow
-from pycbio.tsv.tsvColumns import columnsSpecBuild
+from pycbio.tsv.tsvColumns import ColumnSpecs, columnsSpecBuild
 
 
 class TsvWriter:
@@ -19,14 +20,21 @@ class TsvWriter:
     Can be used as a context manager.
     """
 
-    def __init__(self, fileName, *, columns, typeMap=None, defaultColType=None,
-                 outFh=None, dialect=csv.excel_tab, encoding=None, errors=None):
+    def __init__(self, fileName, *, columns=None, typeMap=None, defaultColType=None,
+                 columnSpecs=None, outFh=None, dialect=csv.excel_tab, encoding=None,
+                 errors=None):
         """
         :param fileName: Path to the output TSV file, unless `outFh` is provided.
-        :param columns: List of column names.
+        :param columns: List of column names.  If omitted but `typeMap` is given,
+            columns are taken from `typeMap` keys in insertion order.
         :param typeMap: Dictionary mapping column names to either a type or a
             (parseFunc, formatFunc) tuple.  Only the formatFunc is used for writing.
         :param defaultColType: Type to use for columns not listed in `typeMap`.
+        :param columnSpecs: A pre-built `ColumnSpecs` to use directly.  Mutually
+            exclusive with `columns`, `typeMap`, and `defaultColType`.  A
+            `ColumnSpecs` can be obtained from a `TsvReader` (via
+            `reader.columnSpecs`) or a `TsvRow` (via `tsvRowGetColumnSpecs(row)`),
+            making it easy to write a TSV with the same schema as one being read.
         :param outFh: An open file-like object to write to instead of `fileName`.
             It will not be closed automatically.
         :param dialect: A `csv.Dialect` instance or dialect name.
@@ -34,11 +42,26 @@ class TsvWriter:
         :param errors: Optional error handling strategy.
         """
         self.fileName = fileName
-        self.columnSpecs = columnsSpecBuild(columns, typeMap, defaultColType)
+        self.columnSpecs = self._resolveColumnSpecs(columns, typeMap, defaultColType, columnSpecs)
         self.outFh = None
         self._shouldClose = False
         self._open(fileName, outFh, dialect, encoding, errors)
         self._writeHeader()
+
+    @staticmethod
+    def _resolveColumnSpecs(columns, typeMap, defaultColType, columnSpecs):
+        if columnSpecs is not None:
+            if columns is not None or typeMap is not None or defaultColType is not None:
+                raise TsvError("columnSpecs cannot be combined with columns, "
+                               "typeMap, or defaultColType")
+            if not isinstance(columnSpecs, ColumnSpecs):
+                raise TsvError("columnSpecs must be a ColumnSpecs instance")
+            return columnSpecs
+        if columns is None:
+            if typeMap is None:
+                raise TsvError("must specify columns, typeMap, or columnSpecs")
+            columns = list(typeMap.keys())
+        return columnsSpecBuild(columns, typeMap, defaultColType)
 
     @property
     def columns(self):
@@ -104,9 +127,16 @@ class TsvWriter:
 
     def writeColumns(self, **kwargs):
         """Write a row using keyword arguments for column values.
-        Missing columns get empty string."""
-        self._writer.writerow([self.columnSpecs.fmtValue(i, kwargs.get(col))
-                               for i, col in enumerate(self.columns)])
+        Columns not present in kwargs are written as empty strings (the type
+        formatter is not invoked).  An explicitly-passed None is still routed
+        through the formatter."""
+        row = []
+        for i, col in enumerate(self.columns):
+            if col in kwargs:
+                row.append(self.columnSpecs.fmtValue(i, kwargs[col]))
+            else:
+                row.append("")
+        self._writer.writerow(row)
 
     def writeRows(self, rows):
         """Write multiple rows."""
