@@ -43,5 +43,6 @@ docs/pipettor.rst
 
 # test output
 tests/**/output
+tests/**/common-output
 
 .emacs.bak
