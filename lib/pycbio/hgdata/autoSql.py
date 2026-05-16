@@ -47,3 +47,26 @@ def intArrayJoin(ints):
 
 # TSV typeMap tuple for str arrays
 intArrayType = (intArraySplit, intArrayJoin)
+
+
+def floatArraySplit(commaStr):
+    "parser for comma-separated string list into a list of floats"
+    floats = []
+    for s in strArraySplit(commaStr):
+        floats.append(float(s))
+    return floats
+
+
+def floatArrayJoin(floats):
+    "formatter for a list of floats into a comma separated string"
+    if floats is not None:
+        strs = []
+        for f in floats:
+            strs.append(str(f))
+        return ",".join(strs) + ","
+    else:
+        return ","
+
+
+# TSV typeMap tuple for float arrays
+floatArrayType = (floatArraySplit, floatArrayJoin)

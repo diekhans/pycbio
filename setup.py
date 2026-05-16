@@ -41,6 +41,7 @@ setup(
     packages = find_packages(where='lib'),
     scripts = [
         'bin/agpToPsl',
+        'bin/bed-generate-parser',
         'bin/bedToCdsBed',
         'bin/clusterGenesSelect',
         'bin/clusterGenesStats',

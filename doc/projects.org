@@ -1,0 +1,4 @@
+* generation of BED-derived classes:
+- program to generate from autoSeq file
+- allow specification of  more specific data type
+

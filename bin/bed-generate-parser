@@ -1,0 +1,256 @@
+#!/usr/bin/env python3
+# Copyright 2006-2025 Mark Diekhans
+"""Generate a Python Bed-subclass parser from a UCSC autoSql (.as) file."""
+
+import sys
+from os import path as osp
+import argparse
+
+sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
+from pycbio.sys import cli
+from pycbio.hgdata import autoSqlParse
+
+
+# BED column spec: (canonical name, aliases, accepted autoSql type names, requires array form?)
+BED_COL_SPEC = (
+    ("chrom", (), ("string",), False),
+    ("chromStart", (), ("uint", "int"), False),
+    ("chromEnd", (), ("uint", "int"), False),
+    ("name", (), ("string", "lstring"), False),
+    ("score", (), ("uint", "int"), False),
+    ("strand", (), ("char",), True),
+    ("thickStart", (), ("uint", "int"), False),
+    ("thickEnd", (), ("uint", "int"), False),
+    ("reserved", ("itemRgb",), ("uint", "int"), False),
+    ("blockCount", (), ("int", "uint"), False),
+    ("blockSizes", (), ("int", "uint"), True),
+    ("chromStarts", ("blockStarts",), ("int", "uint"), True),
+)
+
+INT_TYPES = frozenset(("int", "uint", "short", "ushort", "byte", "ubyte", "bigint"))
+
+
+def parseArgs():
+    desc = """Generate a Python class extending pycbio.hgdata.bed.Bed from a
+    UCSC autoSql (.as) schema file.  The leading BED N (N in 3..12) prefix is
+    detected by field name and type.  Fields beyond the prefix are parsed and
+    serialized with their declared types (int, float, str, tuple of those, or
+    tuple of int/float/str for arrays).
+    """
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("--class-name",
+                        help="override generated class name (default: derived "
+                        "from the .as table name, capitalized)")
+    parser.add_argument("-o", "--output", default="-",
+                        help="output Python file ('-' for stdout, the default)")
+    parser.add_argument("asFile",
+                        help="input autoSql (.as) file")
+    opts, args = cli.parseOptsArgs(parser)
+    return opts, args
+
+
+def detectBedPrefix(fields):
+    """Walk the table's leading fields and return the count that matches the
+    canonical BED12 column sequence by both name and type."""
+    n = 0
+    for spec, fld in zip(BED_COL_SPEC, fields):
+        canon, aliases, typeNames, requireArr = spec
+        if fld.name != canon and fld.name not in aliases:
+            break
+        if fld.type.name not in typeNames:
+            break
+        if requireArr != fld.type.isArray:
+            break
+        n += 1
+    if n == 0:
+        return 0
+    if n < 3:
+        raise SystemExit(
+            f"BED prefix must include at least chrom, chromStart, chromEnd; "
+            f"got only {n} matching column(s)")
+    return n
+
+
+def defaultClassName(tableName):
+    return tableName[0].upper() + tableName[1:]
+
+
+def fieldParseExpr(asType, sourceExpr):
+    """Return a Python expression that decodes `sourceExpr` (a string variable)
+    into the field's Python value."""
+    if asType.isArray and asType.name != "char":
+        if asType.name in INT_TYPES:
+            return f"tuple(intArraySplit({sourceExpr}))"
+        if asType.name == "float":
+            return f"tuple(floatArraySplit({sourceExpr}))"
+        if asType.name in ("string", "lstring"):
+            return f"tuple(strArraySplit({sourceExpr}))"
+        raise SystemExit(f"cannot generate parser for array of type {asType.name!r}")
+    if asType.name in INT_TYPES:
+        return f"int({sourceExpr})"
+    if asType.name == "float":
+        return f"float({sourceExpr})"
+    if asType.name in ("string", "lstring", "char", "enum"):
+        return f"{sourceExpr}"
+    if asType.name == "set":
+        return f"tuple(strArraySplit({sourceExpr}))"
+    raise SystemExit(f"cannot generate parser for type {asType.name!r}")
+
+
+def fieldEncodeExpr(asType, valueExpr):
+    """Return a Python expression that encodes `valueExpr` to its string form."""
+    if asType.isArray and asType.name != "char":
+        if asType.name in INT_TYPES:
+            return f"intArrayJoin({valueExpr})"
+        if asType.name == "float":
+            return f"floatArrayJoin({valueExpr})"
+        if asType.name in ("string", "lstring"):
+            return f"strArrayJoin({valueExpr})"
+        raise SystemExit(f"cannot generate encoder for array of type {asType.name!r}")
+    if asType.name == "set":
+        return f"strArrayJoin({valueExpr})"
+    return f"str({valueExpr})"
+
+
+def pythonTypeHint(asType):
+    """Human-readable Python type, used only for docstring comments."""
+    if asType.isArray and asType.name != "char":
+        if asType.name in INT_TYPES:
+            return "tuple[int, ...]"
+        if asType.name == "float":
+            return "tuple[float, ...]"
+        if asType.name in ("string", "lstring"):
+            return "tuple[str, ...]"
+    if asType.name in INT_TYPES:
+        return "int"
+    if asType.name == "float":
+        return "float"
+    if asType.name == "set":
+        return "tuple[str, ...]"
+    return "str"
+
+
+def generate(asObj, className):
+    if asObj.declType != "table":
+        raise SystemExit(f"only 'table' declarations are supported, got "
+                         f"{asObj.declType!r} for {asObj.name!r}")
+    fields = asObj.fields
+    bedN = detectBedPrefix(fields)
+    extras = fields[bedN:]
+    extraNames = tuple(f.name for f in extras)
+
+    out = []
+    out.append(f'# AUTO-GENERATED by bed-generate-parser from {asObj.name}.as.')
+    out.append('# Do not edit by hand; regenerate via bed-generate-parser.')
+    out.append('')
+    out.append('from pycbio.hgdata.bed import Bed as _BedBase')
+    out.append('from pycbio.hgdata.autoSql import (')
+    out.append('    intArraySplit, intArrayJoin,')
+    out.append('    floatArraySplit, floatArrayJoin,')
+    out.append('    strArraySplit, strArrayJoin,')
+    out.append(')')
+    out.append('')
+    out.append('')
+    out.append(f'class {className}(_BedBase):')
+    out.append(f'    """{asObj.comment}"""')
+    out.append('')
+    if extras:
+        slotsStr = ", ".join(repr(n) for n in extraNames)
+        out.append(f'    __slots__ = ({slotsStr},)' if len(extras) == 1 else f'    __slots__ = ({slotsStr})')
+    else:
+        out.append('    __slots__ = ()')
+    out.append('')
+    out.append(f'    _bedNumStdCols = {bedN}')
+    out.append(f'    _extraFieldNames = {extraNames!r}')
+    out.append('')
+
+    # __init__
+    initKwargs = ["score=None", "strand=None", "thickStart=None", "thickEnd=None",
+                  "itemRgb=None", "blocks=None"]
+    for f in extras:
+        initKwargs.append(f"{f.name}=None")
+    initKwargs.append("numStdCols=None")
+    out.append('    def __init__(self, chrom, chromStart, chromEnd, name=None, *,')
+    out.append('                 ' + ', '.join(initKwargs) + '):')
+    out.append('        super().__init__(chrom, chromStart, chromEnd, name,')
+    out.append('                         score=score, strand=strand,')
+    out.append('                         thickStart=thickStart, thickEnd=thickEnd,')
+    out.append('                         itemRgb=itemRgb, blocks=blocks,')
+    out.append(f'                         extraCols=(), numStdCols=numStdCols if numStdCols is not None else {bedN})')
+    for f in extras:
+        hint = pythonTypeHint(f.type)
+        out.append(f'        self.{f.name} = {f.name}  # {hint}: {f.comment}')
+    if not extras:
+        out.append('        pass')
+    out.append('')
+
+    # _parse classmethod
+    out.append('    @classmethod')
+    out.append('    def _parse(cls, row, numStdCols=None, *, fixScores=False):')
+    out.append('        n = cls._bedNumStdCols')
+    out.append(f'        if len(row) < n + {len(extras)}:')
+    out.append('            from pycbio.hgdata.bed import BedException')
+    out.append(f'            raise BedException(f"expected at least {{n + {len(extras)}}} columns, found {{len(row)}}")')
+    out.append('        base = _BedBase._parse(row[:n], numStdCols=n, fixScores=fixScores)')
+    if extras:
+        out.append('        i = n')
+        seenExtras = set()
+        for f in extras:
+            decoded = fieldParseExpr(f.type, "row[i]")
+            out.append(f'        {f.name} = {decoded}')
+            out.append('        i += 1')
+            seenExtras.add(f.name)
+            # variable-array length sanity check
+            if f.type.isArray and isinstance(f.type.arraySize, str):
+                cnt = f.type.arraySize
+                if cnt in seenExtras:
+                    out.append(f'        assert len({f.name}) == {cnt}, '
+                               f'f"{f.name}: expected {{{cnt}}} elements, got {{len({f.name})}}"')
+    out.append('        return cls(base.chrom, base.chromStart, base.chromEnd, name=base.name,')
+    out.append('                   score=base.score, strand=base.strand,')
+    out.append('                   thickStart=base.thickStart, thickEnd=base.thickEnd,')
+    out.append('                   itemRgb=base.itemRgb, blocks=base.blocks,')
+    extraKwargs = ", ".join(f"{n}={n}" for n in extraNames)
+    if extraKwargs:
+        out.append(f'                   {extraKwargs}, numStdCols=n)')
+    else:
+        out.append('                   numStdCols=n)')
+    out.append('')
+
+    # toRow
+    out.append('    def toRow(self):')
+    out.append('        row = super().toRow()')
+    for f in extras:
+        encoded = fieldEncodeExpr(f.type, f"self.{f.name}")
+        out.append(f'        row.append({encoded})')
+    out.append('        return row')
+    out.append('')
+
+    return "\n".join(out)
+
+
+def main():
+    opts, args = parseArgs()
+    with cli.ErrorHandler():
+        objects = autoSqlParse.parseAutoSql(args.asFile)
+        tables = [o for o in objects if o.declType == "table"]
+        if len(tables) == 0:
+            raise SystemExit(f"no table declarations in {args.asFile}")
+        if len(tables) > 1:
+            raise SystemExit(f"{args.asFile} contains {len(tables)} tables; "
+                             f"only one is supported")
+        asObj = tables[0]
+        className = opts.class_name if opts.class_name else defaultClassName(asObj.name)
+        source = generate(asObj, className)
+        if opts.output == "-":
+            sys.stdout.write(source)
+            if not source.endswith("\n"):
+                sys.stdout.write("\n")
+        else:
+            with open(opts.output, "w") as fh:
+                fh.write(source)
+                if not source.endswith("\n"):
+                    fh.write("\n")
+
+
+main()

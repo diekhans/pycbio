@@ -14,7 +14,10 @@
       "Bash(bin/csv-to-tsv foo.csv)",
       "Bash(bin/csv-to-tsv --delimiter=ab foo.csv out.tsv)",
       "Bash(bin/csv-to-tsv foo.txt)",
-      "Bash(bin/csv-to-tsv foo *)"
+      "Bash(bin/csv-to-tsv foo *)",
+      "Read(//cluster/home/markd/compbio/browser/dev/kent/src/hg/autoSql/**)",
+      "Bash(cp ~/kent/src/hg/autoSql/autoSql.doc /tmp/autoSql_doc.txt)",
+      "Read(//tmp/**)"
     ]
   }
 }
