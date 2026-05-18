@@ -4,10 +4,11 @@ from collections import defaultdict, namedtuple
 from pycbio import PycbioException
 from pycbio.sys.color import Color
 from pycbio.tsv.tabFile import TabFile, TabFileReader
-from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin
+from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin, strArrayJoin
 
 # FIXME: not complete, needs tests
 # FIXME: really need a better way to deal with derived classes than extraCols
+# FIXME: FLAIR uses is an example of issues
 
 
 bed12Columns = ("chrom", "chromStart", "chromEnd", "name", "score", "strand", "thickStart",
@@ -24,7 +25,15 @@ def defaultIfNone(v, dflt=""):
 def encodeRow(row):
     """convert a list of values to a list of strings, making None empty.
     """
-    return [str(v) if v is not None else "" for v in row]
+    erow = []
+    for v in row:
+        if v is None:
+            erow.append("")
+        elif isinstance(v, (list, tuple)):
+            erow.append(strArrayJoin(v))
+        else:
+            erow.append(str(v))
+    return erow
 
 def _fmtItemRgb(itemRgb):
     "allows itemRgb to be a Color, None, a number, or a string"
@@ -164,7 +173,7 @@ class Bed:
         return blocks
 
     @classmethod
-    def _parse(cls, row, numStdCols=None, *, fixScores=False):
+    def _parse(cls, row, numStdCols=None, *, fixScores=False, skipExtraCols=False):
         assert (numStdCols is None) or (3 <= numStdCols <= 12)
         if numStdCols is None:
             numStdCols = min(len(row), 12)
@@ -206,7 +215,7 @@ class Bed:
             blocks = Bed._parseBlockColumns(chromStart, row)
         else:
             blocks = None
-        if len(row) > numStdCols:
+        if (not skipExtraCols) and (len(row) > numStdCols):
             extraCols = row[numStdCols:]
         else:
             extraCols = ()
@@ -215,14 +224,14 @@ class Bed:
                    extraCols=extraCols, numStdCols=numStdCols)
 
     @classmethod
-    def parse(cls, row, numStdCols=None, *, fixScores=False):
+    def parse(cls, row, numStdCols=None, *, fixScores=False, skipExtraCols=False):
         """Parse a list of BED columns, as strings, into a Bed object.  If
         self.numStdCols is specified, only those columns are parsed and the
         remainder goes into extraCols.  Floating point scores are converted to
         ints to match UCSC browser behavior. If fixScores is True, non-numeric
         scores are converted to zero rather than generating an error."""
         try:
-            return cls._parse(row, numStdCols=numStdCols, fixScores=fixScores)
+            return cls._parse(row, numStdCols=numStdCols, fixScores=fixScores, skipExtraCols=skipExtraCols)
         except Exception as ex:
             raise BedException(f"parsing of BED row failed: {row}") from ex
 
