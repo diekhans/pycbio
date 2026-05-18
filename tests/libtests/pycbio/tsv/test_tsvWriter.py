@@ -5,7 +5,9 @@ if __name__ == '__main__':
 from collections import namedtuple
 import pytest
 from pycbio.tsv import TsvReader, TsvWriter, TsvError
-from pycbio.tsv.tsvColumns import columnsSpecBuild
+from pycbio.tsv.tsvRow import tsvRowGetColumnSpecs
+from pycbio.tsv.tsvColumns import ColumnSpecs, columnsSpecBuild
+from pycbio.sys.symEnum import SymEnum, SymEnumValue
 import pycbio.sys.testingSupport as ts
 
 
@@ -165,3 +167,80 @@ def testColumnSpecsConflict():
     specs = columnsSpecBuild(_columns, _typeMap, None)
     with pytest.raises(TsvError):
         TsvWriter("/tmp/never-used.tsv", columns=_columns, columnSpecs=specs)
+
+
+def testCopyTsvViaReaderSpecs(request):
+    """read a TSV, take ColumnSpecs from the reader, write a copy through TsvWriter,
+    and verify byte-for-byte identity with the input."""
+    inFile = ts.get_test_input_file(request, "types.tsv")
+    reader = TsvReader(inFile, typeMap=_typeMap)
+    specs = reader.columnSpecs
+    assert isinstance(specs, ColumnSpecs)
+    outFile = ts.get_test_output_file(request, ".tsv")
+    with TsvWriter(outFile, columnSpecs=specs) as wr:
+        for row in reader:
+            wr.writeRow(row)
+    with open(inFile) as fh:
+        expected = fh.read()
+    with open(outFile) as fh:
+        actual = fh.read()
+    assert actual == expected
+
+
+class _Color(SymEnum):
+    purple = 1
+    gold = 2
+    black = 3
+
+
+class _Feature(SymEnum):
+    """SymEnum with external names containing non-identifier chars"""
+    promoter = 1
+    utr5 = SymEnumValue(2, "5'UTR")
+    cds = SymEnumValue(3, "CDS")
+
+
+def testWriteSymEnumColumn(request):
+    """A SymEnum subclass placed as a scalar type in typeMap should parse via
+    SymEnum(str) on read and format via str(member) on write, round-tripping
+    the textual values."""
+    typeMap = {"name": str, "color": _Color, "feature": _Feature}
+    rows = [
+        {"name": "tx1", "color": _Color.purple, "feature": _Feature.promoter},
+        {"name": "tx2", "color": _Color.gold, "feature": _Feature.utr5},
+        {"name": "tx3", "color": _Color.black, "feature": _Feature.cds},
+    ]
+    outFile = ts.get_test_output_file(request, ".tsv")
+    with TsvWriter(outFile, columns=["name", "color", "feature"], typeMap=typeMap) as wr:
+        wr.writeRows(rows)
+    with open(outFile) as fh:
+        content = fh.read()
+    assert content == ("name\tcolor\tfeature\n"
+                       "tx1\tpurple\tpromoter\n"
+                       "tx2\tgold\t5'UTR\n"
+                       "tx3\tblack\tCDS\n")
+    # parsed back as SymEnum members
+    readRows = list(TsvReader(outFile, typeMap=typeMap))
+    assert readRows[0].color is _Color.purple
+    assert readRows[1].feature is _Feature.utr5
+    assert readRows[2].feature is _Feature.cds
+
+
+def testCopyTsvViaRowSpecs(request):
+    """get ColumnSpecs from a TsvRow via tsvRowGetColumnSpecs() and use it to
+    write a copy of the TSV."""
+    inFile = ts.get_test_input_file(request, "types.tsv")
+    rows = list(TsvReader(inFile, typeMap=_typeMap))
+    assert len(rows) > 0
+    specs = tsvRowGetColumnSpecs(rows[0])
+    assert isinstance(specs, ColumnSpecs)
+    # same specs object as the reader holds
+    assert specs is tsvRowGetColumnSpecs(rows[-1])
+    outFile = ts.get_test_output_file(request, ".tsv")
+    with TsvWriter(outFile, columnSpecs=specs) as wr:
+        wr.writeRows(rows)
+    with open(inFile) as fh:
+        expected = fh.read()
+    with open(outFile) as fh:
+        actual = fh.read()
+    assert actual == expected

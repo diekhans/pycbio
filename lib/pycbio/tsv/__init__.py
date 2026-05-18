@@ -12,7 +12,7 @@ class TsvError(PycbioException):
         super(TsvError, self).__init__(msg)
 
 
-from pycbio.tsv.tsvRow import TsvRow, tsvRowToDict, tsvRowGetColumnSpecs
+from pycbio.tsv.tsvRow import TsvRow, tsvRowToDict, tsvRowGetColumnSpecs, tsvRowGetColumns
 from pycbio.tsv.tsvReader import TsvReader, strOrNoneType, intOrNoneType, floatOrNoneType, printf_basic_dialect
 from pycbio.tsv.tsvWriter import TsvWriter
 from pycbio.tsv.tabFile import TabFile
@@ -21,5 +21,5 @@ from pycbio.tsv.tabFile import TabFileReader
 __all__ = (TsvError.__name__, TsvRow.__name__, TsvReader.__name__, TsvWriter.__name__,
            "strOrNoneType", "intOrNoneType", "floatOrNoneType",
            TabFile.__name__, TabFileReader.__name__,
-           tsvRowToDict.__name__, tsvRowGetColumnSpecs.__name__,
+           tsvRowToDict.__name__, tsvRowGetColumnSpecs.__name__, tsvRowGetColumns.__name__,
            printf_basic_dialect.__name__)

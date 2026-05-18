@@ -97,4 +97,8 @@ def tsvRowToDict(row):
 
 def tsvRowGetColumnSpecs(row):
     """return the hidden ColumnSpecs object"""
-    return row._columnSpecs_.columnSpecs_
+    return row._columnSpecs_
+
+def tsvRowGetColumns(row):
+    """return the hidden ColumnSpecs object"""
+    return row._columnSpecs_.columns
