@@ -103,10 +103,9 @@ see uniprotFeatMap/bin/uniprotAnnotsToDecorators
 ** have factories for reader functions to support
 derived class
 
-* Psl and genePred class should allow extra columns
-
-* extra columns: make TsvReader columnMap more general to work with extra bed and psl columns
-
+* Psl, genePred, autoSeql class should allow extra columns
+** extra columns: make TsvReader columnMap more general to work with extra bed and psl columns
+** autoSql derived bed building program in branch
 
 * symEnum
 ** SymEnum is invasive to with Enum, can it be cleaner, like other derived enum class?
@@ -160,14 +159,19 @@ class CatBed(Bed):
 ** maybe store BED itemRgb, fillColor, as a Color and convert on format.
 or optional
 
+
 * TSVs
 ** this could be it's own pypi package!!
 ** should removing hash at top of TSV be an option?
+** option to skip number of lines because of things like featureCounts
 ** option to edit header or body on the way in?
 like had a header with a duplicated column
 fix body
 better would be option to read from and iterable
 ** make TsvReader a context manager
+** Ability to change typeMap after opening
+allows for column discover without open/close
+use case ~/compbio/kznf/projs/znf649-rescue/bin/deseq.py
 ** TsvReader should use fspec stuff
 *** TsvReader inFh is annoy name and can go away if fspec is used
 ** add TsvWriter
@@ -181,7 +185,6 @@ better would be option to read from and iterable
 ** TsvReader could create named tuples.
 what about the class name and serialization
 maybe just make row lighter weight?
-** add type 
 ** tsvreader issues
 *** make rowClass (rename rowFactory) so that it can be able to construct and object.  Move parsing of columns outside of tsvRow (good for peewee)
 *** extColumns is not used for writing.  The ColumnSpecs header should be used.
@@ -467,3 +470,6 @@ def chrom_key(chrom):
     return (1, 0, base, hap)
 
 * add use of PycbioDataError and ErrorHandler
+
+* csvToTsv add ability to fix column names to be legal python
+* python selectById, with explicit TSV support
