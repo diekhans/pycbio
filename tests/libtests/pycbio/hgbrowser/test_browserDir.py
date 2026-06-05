@@ -2,6 +2,7 @@
 import sys
 import os.path as osp
 import glob
+from pathlib import Path
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 import pycbio.sys.testingSupport as ts
@@ -54,3 +55,10 @@ def testBasic(request):
     outDir = ts.get_test_output_file(request)
     _basicTest(outDir)
     _diffDir(request)
+
+def testBasicPath(request):
+    "outDir given as a pathlib.Path"
+    outDir = Path(ts.get_test_output_file(request))
+    _basicTest(outDir)
+    assert osp.exists(osp.join(outDir, "index.html"))
+    assert osp.exists(osp.join(outDir, "dir1.html"))

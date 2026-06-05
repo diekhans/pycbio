@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright 2025-2025 Mark Diekhans
+import os
 import re
 from abc import ABC, abstractmethod
 from pycbio import PycbioDataError
@@ -76,9 +77,9 @@ def genome_factory(seq_file, *, fmt=GenomeFmt.guess):
     elif fmt is GenomeFmt.twobit:
         return _GenomeTwoBit(seq_file)
     elif fmt is GenomeFmt.guess:
-        if re.match(fasta_re, seq_file):
+        if re.match(fasta_re, os.fspath(seq_file)):
             return _GenomeFasta(seq_file)
-        elif re.match(twobit_re, seq_file):
+        elif re.match(twobit_re, os.fspath(seq_file)):
             return _GenomeTwoBit(seq_file)
         else:
             raise PycbioDataError(f"can not determine genome file type for `{seq_file}'")

@@ -1,6 +1,7 @@
 # Copyright 2025-2025 Mark Diekhans
 import sys
 import os.path as osp
+from pathlib import Path
 import pytest
 
 sys.path = ["../../../../lib", "../.."] + sys.path
@@ -28,6 +29,13 @@ def test_genome_seq_ids(request, genome_file):
 def test_genome_seq_length(request, genome_file):
     genome = _get_genome(request, genome_file)
     assert genome.get_seq_length("chr19_51887540_51906200") == 18660
+
+@pytest.mark.parametrize("genome_file",
+                         [GRCH38_FA, GRCH38_TWOBIT])
+def test_genome_factory_path(request, genome_file):
+    "fmt guess works when seq_file is a pathlib.Path"
+    genome = genome_factory(Path(_get_genome_file(request, genome_file)))
+    assert genome.get_seq_ids() == ["chr19_51887540_51906200"]
 
 @pytest.mark.parametrize("genome_file",
                          [GRCH38_FA, GRCH38_TWOBIT])

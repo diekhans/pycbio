@@ -2,6 +2,7 @@
 """Create a frameset that that is a directory of locations in the genome
 browser.
 """
+import os
 import copy
 from urllib.parse import quote
 from pycbio.html.htmlPage import HtmlPage
@@ -239,7 +240,7 @@ class BrowserDir:
         self._addPageRows(pg, pgRows)
         pg.add(self._getPageLinks(pageNum, numPages, True))
 
-        dirFile = outDir + "/dir{}.html".format(pageNum)
+        dirFile = os.path.join(outDir, "dir{}.html".format(pageNum))
         pg.writeFile(dirFile)
 
     def _writeDirPages(self, outDir):
@@ -255,5 +256,5 @@ class BrowserDir:
     def write(self, outDir):
         fileOps.ensureDir(outDir)
         frame = self._mkFrame(self.title, self.dirPercent, self.below)
-        frame.writeFile(outDir + "/index.html")
+        frame.writeFile(os.path.join(outDir, "index.html"))
         self._writeDirPages(outDir)

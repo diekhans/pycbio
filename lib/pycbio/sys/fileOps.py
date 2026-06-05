@@ -76,12 +76,14 @@ def rmTree(root):
 
 def isCompressed(path):
     "determine if a file appears to be compressed by extension"
+    path = os.fspath(path)
     return path.endswith(".gz") or path.endswith(".bgz") or path.endswith(".bz2") or path.endswith(".Z")
 
 
 def compressCmd(path, *, bgzip=False):
     """return the command to compress the path, or default if not compressed, which defaults
     to the `cat' command, so that it just gets written through"""
+    path = os.fspath(path)
     if path.endswith(".Z"):
         raise PycbioException("writing compress .Z files not supported")
 
@@ -99,6 +101,7 @@ def compressCmd(path, *, bgzip=False):
 
 def compressBaseName(path):
     """if a file is compressed, return the path without the compressed extension"""
+    path = os.fspath(path)
     if isCompressed(path):
         return osp.splitext(path)[0]
     else:
@@ -108,6 +111,7 @@ def decompressCmd(path):
     """"return the command to decompress the file to stdout, or default if not compressed, which defaults
     to the `cat' command, so that it just gets written through"""
     # FIXME: default MacOS zcat doesn't recongize .gz
+    path = os.fspath(path)
     if path.endswith(".gz") or path.endswith(".bgz") or path.endswith(".Z"):
         return ["zcat"]
     elif path.endswith(".bz2"):
@@ -120,6 +124,7 @@ def opengz(fileName, mode="r", *, buffering=-1, encoding=None, errors=None, bgzi
     """open a file, if it ends in an extension indicating compression, open
     with a compression or decompression pipe.  If bgzip is specified for write,
     it is used to writing"""
+    fileName = os.fspath(fileName)
     if not isCompressed(fileName):
         return open(fileName, mode, buffering=buffering, encoding=encoding, errors=errors)
     elif mode.startswith("r"):
@@ -240,11 +245,11 @@ class FileAccessor:
         self.fh = None
 
     def __enter__(self):
-        self.fh = opengz(self.fspec, self.mode) if isinstance(self.fspec, str) else self.fspec
+        self.fh = opengz(self.fspec, self.mode) if isFilePath(self.fspec) else self.fspec
         return self.fh
 
     def __exit__(self, typ, value, traceback):
-        if isinstance(self.fspec, str):
+        if isFilePath(self.fspec):
             self.fh.close()
 
 
@@ -406,6 +411,7 @@ def AtomicFileOpen(finalPath, mode='w', *, buffering=-1, encoding=None,
 
 def uncompressedBase(path):
     "return the file path, removing a compression extension if it exists"
+    path = os.fspath(path)
     if path.endswith(".gz") or path.endswith(".bz2") or path.endswith(".Z"):
         return osp.splitext(path)[0]
     else:

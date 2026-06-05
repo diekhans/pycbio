@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import math
+from pathlib import Path
 from csv import excel_tab, excel
 import pickle
 import pipettor
@@ -27,6 +28,12 @@ def _onOffFmt(val):
         return "on"
     else:
         return "off"
+
+def testLoadPath(request):
+    "fileName given as pathlib.Path"
+    rows = [r for r in TsvReader(Path(ts.get_test_input_file(request, "mrna1.tsv")))]
+    assert len(rows) == 10
+    assert rows[0].qName == "BC032353"
 
 def testLoad(request):
     rows = [r for r in TsvReader(ts.get_test_input_file(request, "mrna1.tsv"))]

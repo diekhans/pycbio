@@ -3,6 +3,7 @@ import os
 import sys
 import shutil
 import re
+from pathlib import Path
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from pycbio.sys import testingSupport as ts
@@ -307,8 +308,71 @@ def testIterRows(request):
 ###
 def testIsFilePath(request):
     """Test isFilePath function"""
-    from pathlib import Path
     assert fileOps.isFilePath("/path/to/file")
     assert fileOps.isFilePath(Path("/path/to/file"))
     assert not fileOps.isFilePath(123)
     assert not fileOps.isFilePath(None)
+
+###
+# pathlib.Path acceptance tests: path-taking functions must accept either str
+# or pathlib.Path
+###
+def testIsCompressedPath(request):
+    """isCompressed accepts Path"""
+    assert fileOps.isCompressed(Path("file.gz"))
+    assert fileOps.isCompressed(Path("file.bz2"))
+    assert fileOps.isCompressed(Path("file.bgz"))
+    assert not fileOps.isCompressed(Path("file.txt"))
+
+def testCompressCmdPath(request):
+    """compressCmd accepts Path"""
+    assert fileOps.compressCmd(Path("file.bz2")) == ["bzip2"]
+    assert fileOps.compressCmd(Path("file.txt")) == ["cat"]
+
+def testDecompressCmdPath(request):
+    """decompressCmd accepts Path"""
+    assert fileOps.decompressCmd(Path("file.gz")) == ["zcat"]
+    assert fileOps.decompressCmd(Path("file.bz2")) == ["bzcat"]
+    assert fileOps.decompressCmd(Path("file.txt")) == ["cat"]
+
+def testCompressBaseNamePath(request):
+    """compressBaseName accepts Path, returns str"""
+    assert fileOps.compressBaseName(Path("file.txt.gz")) == "file.txt"
+    assert fileOps.compressBaseName(Path("file.txt")) == "file.txt"
+
+def testUncompressedBasePath(request):
+    """uncompressedBase accepts Path, returns str"""
+    assert fileOps.uncompressedBase(Path("file.txt.gz")) == "file.txt"
+    assert fileOps.uncompressedBase(Path("file.txt")) == "file.txt"
+
+def testOpengzReadPlainPath(request):
+    """opengz reads a plain file given as a Path"""
+    inf = ts.get_test_input_file(request, "simple1.txt")
+    outf = ts.get_test_output_file(request, ".out")
+    fileOps.rmFiles(outf)
+    with fileOps.opengz(Path(inf)) as inFh, open(outf, "w") as outFh:
+        shutil.copyfileobj(inFh, outFh)
+    ts.diff_test_files(inf, outf)
+
+def testOpengzWriteGzPath(request):
+    """opengz writes a compressed file given as a Path"""
+    inf = ts.get_test_input_file(request, "simple1.txt")
+    outf = ts.get_test_output_file(request, ".out")
+    outfGz = ts.get_test_output_file(request, ".out.gz")
+    fileOps.rmFiles(outf, outfGz)
+    with open(inf) as inFh, fileOps.opengz(Path(outfGz), "w") as outFh:
+        shutil.copyfileobj(inFh, outFh)
+    pipettor.run(("gunzip", "-c", outfGz), stdout=outf)
+    ts.diff_test_files(inf, outf)
+
+def testFileAccessorPath(request):
+    """FileAccessor opens a Path rather than treating it as a file handle"""
+    inf = ts.get_test_input_file(request, "simple1.txt")
+    with fileOps.FileAccessor(Path(inf)) as fh:
+        lines = [l.rstrip("\n") for l in fh]
+    assert simple1Lines == lines
+
+def testReadFileLinesPath(request):
+    """readFileLines accepts Path"""
+    lines = fileOps.readFileLines(Path(ts.get_test_input_file(request, "simple1.txt")))
+    assert simple1Lines == lines
