@@ -7,6 +7,7 @@ import argparse
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.hgdata.bed import BedBlock, BedReader
+from pycbio.sys import cli
 
 
 def parseArgs():
@@ -18,7 +19,7 @@ def parseArgs():
                         help="input BED")
     parser.add_argument("cdsBedFile",
                         help="outputCdsFile")
-    return parser.parse_args()
+    return cli.parseOptsArgsWithLogging(parser)
 
 def trimBlock(blk, cdsStart, cdsEnd):
     start = max(cdsStart, blk.start)
@@ -44,12 +45,18 @@ def convertBedToCdsBed(bed):
     bed.chromEnd = bed.thickEnd
     return bed
 
-def bedToCdsBed(args):
-    with open(args.cdsBedFile, "w") as cdsBedFh:
-        for bed in BedReader(args.inBedFile):
+def bedToCdsBed(opts, inBedFile, cdsBedFile):
+    with open(cdsBedFile, "w") as cdsBedFh:
+        for bed in BedReader(inBedFile):
             cdsBed = convertBedToCdsBed(bed)
             if cdsBed is not None:
                 cdsBed.write(cdsBedFh)
 
 
-bedToCdsBed(parseArgs())
+def main():
+    opts, args = parseArgs()
+    with cli.ErrorHandler():
+        bedToCdsBed(opts, args.inBedFile, args.cdsBedFile)
+
+
+main()

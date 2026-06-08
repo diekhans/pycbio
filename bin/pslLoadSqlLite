@@ -9,6 +9,7 @@ sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.hgdata.psl import Psl, PslReader
 from pycbio.hgdata.pslSqlite import PslSqliteTable
 from pycbio.db import sqliteOps
+from pycbio.sys import cli
 
 # FIXME: not done, doesn't work
 
@@ -23,7 +24,7 @@ Load a PSL file into an SQLite database
                         help="SQLLite3 database, created if it does not exist")
     parser.add_argument('table', type=str,
                         help="Name of table to for PSLs")
-    return parser.parse_args()
+    return cli.parseOptsArgsWithLogging(parser)
 
 def loadPsl(pslFile):
     "load PSLs and sort by target"
@@ -39,11 +40,17 @@ def loadDb(conn, table, psls):
         pslTable.index()
 
 
-def pslLoadSqlLite(args):
-    psls = loadPsl(args.pslFile)
-    conn = sqliteOps.connect(args.sqliteDb, create=True)
-    loadDb(conn, args.table, psls)
+def pslLoadSqlLite(opts, pslFile, sqliteDb, table):
+    psls = loadPsl(pslFile)
+    conn = sqliteOps.connect(sqliteDb, create=True)
+    loadDb(conn, table, psls)
     conn.close()
 
 
-pslLoadSqlLite(parseArgs())
+def main():
+    opts, args = parseArgs()
+    with cli.ErrorHandler():
+        pslLoadSqlLite(opts, args.pslFile, args.sqliteDb, args.table)
+
+
+main()

@@ -6,7 +6,7 @@ import argparse
 import json
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
-from pycbio.sys import fileOps
+from pycbio.sys import fileOps, cli
 
 
 def parseArgs():
@@ -19,7 +19,7 @@ def parseArgs():
                         help="analyze this JSON file")
     parser.add_argument('outfile',
                         help="write results to this file; format depends on options")
-    return parser.parse_args()
+    return cli.parseOptsArgsWithLogging(parser)
 
 
 def loadFromJson(fname):
@@ -88,13 +88,19 @@ def keysToStruct(keys):
     return keyStruct
 
 
-def jsonAnalyze(args):
-    data = loadFromJson(args.inJson)
+def jsonAnalyze(opts, inJson, outfile):
+    data = loadFromJson(inJson)
     keys = getKeys(data)
-    if args.printKeyPaths:
-        printKeys(args.outfile, keys)
+    if opts.printKeyPaths:
+        printKeys(outfile, keys)
     else:
-        saveToJson(args.outfile, keysToStruct(keys))
+        saveToJson(outfile, keysToStruct(keys))
 
 
-jsonAnalyze(parseArgs())
+def main():
+    opts, args = parseArgs()
+    with cli.ErrorHandler():
+        jsonAnalyze(opts, args.inJson, args.outfile)
+
+
+main()

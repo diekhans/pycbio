@@ -7,7 +7,7 @@ import argparse
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.hgdata.genePred import GenePred
-from pycbio.sys import fileOps
+from pycbio.sys import fileOps, cli
 
 
 def parseArgs():
@@ -31,7 +31,7 @@ def parseArgs():
                         help="input genePred")
     parser.add_argument("genePredOut", default="/dev/stdout",
                         help="output genePred")
-    return parser.parse_args()
+    return cli.parseOptsArgsWithLogging(parser)
 
 
 class GenePredSelect:
@@ -71,9 +71,15 @@ class GenePredSelect:
             if self._selected(gp):
                 fileOps.prRow(outFh, gp.getRow())
 
-def main(args):
-    gs = GenePredSelect(args)
-    gs.select(args.genePredIn, args.genePredOut)
+def genePredSelect(opts, genePredIn, genePredOut):
+    gs = GenePredSelect(opts)
+    gs.select(genePredIn, genePredOut)
 
 
-main(parseArgs())
+def main():
+    opts, args = parseArgs()
+    with cli.ErrorHandler():
+        genePredSelect(opts, args.genePredIn, args.genePredOut)
+
+
+main()

@@ -12,7 +12,7 @@ from Bio import Entrez
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio import PycbioException
-from pycbio.sys import fileOps
+from pycbio.sys import fileOps, cli
 
 host = "eutils.ncbi.nlm.nih.gov"
 
@@ -49,12 +49,12 @@ def parseArgs():
                         help="override defaulting of email address")
     parser.add_argument("ids", nargs="*", default=[],
                         help="explicit list of ids to fetch")
-    args = parser.parse_args()
-    if args.email is None:
-        args.email = getEmail()
+    opts, args = cli.parseOptsArgsWithLogging(parser)
+    if opts.email is None:
+        opts.email = getEmail()
     global verbose
-    verbose = args.verbose
-    return args
+    verbose = opts.verbose
+    return opts, args
 
 def loadIdFiles(idFiles):
     ids = []
@@ -108,18 +108,23 @@ def doFetchOutToDir(email, db, fastaFmt, ids, outDir):
     for gbid in sorted(ids):
         doFetchOneToFile(email, db, fastaFmt, gbid, outDir)
 
-def ncbiGbFetch(args):
-    ids = args.ids
-    if args.idFiles is not None:
-        ids.extend(loadIdFiles(args.idFiles))
+def ncbiGbFetch(opts, ids):
+    if opts.idFiles is not None:
+        ids.extend(loadIdFiles(opts.idFiles))
     ids = frozenset(ids)
     if len(ids) == 0:
         raise PycbioException("no ids specified on command line or with --idFile")
-    email = args.email if args.email is not None else getEmail()
-    if args.outDir is not None:
-        doFetchOutToDir(email, args.db, args.fasta, ids, args.outDir)
+    email = opts.email if opts.email is not None else getEmail()
+    if opts.outDir is not None:
+        doFetchOutToDir(email, opts.db, opts.fasta, ids, opts.outDir)
     else:
-        doFetchOutToFile(email, args.db, args.fasta, ids, args.out)
+        doFetchOutToFile(email, opts.db, opts.fasta, ids, opts.out)
 
 
-ncbiGbFetch(parseArgs())
+def main():
+    opts, args = parseArgs()
+    with cli.ErrorHandler():
+        ncbiGbFetch(opts, args.ids)
+
+
+main()

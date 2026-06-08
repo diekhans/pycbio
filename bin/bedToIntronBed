@@ -92,7 +92,8 @@ def bedToIntronBed(inBedFile, outBedFile, opts):
 
 def main():
     opts, args = parseArgs()
-    bedToIntronBed(args.inBedFile, args.outBedFile, opts)
+    with cli.ErrorHandler():
+        bedToIntronBed(args.inBedFile, args.outBedFile, opts)
 
 
 main()

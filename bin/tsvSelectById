@@ -8,6 +8,7 @@ import argparse
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio import PycbioException
 from pycbio.tsv import TsvReader
+from pycbio.sys import cli
 
 
 def parseArgs():
@@ -25,7 +26,7 @@ def parseArgs():
                         help="")
     parser.add_argument("outTsv",
                         help="")
-    return parser.parse_args()
+    return cli.parseOptsArgsWithLogging(parser)
 
 
 def openTsv(col, tsv):
@@ -42,7 +43,8 @@ def loadSelect(selectCol, selectTsv):
         selectTbl[row[selectCol]] = True
 
 
-def selectById(selectCol, selectTsv, inCol, inTsv, outTsv):
+def selectById(opts, selectCol, selectTsv, inCol, inTsv, outTsv):
+    raise Exception("FIXME: not done")
     selectTbl = loadSelect(selectCol, selectTsv)
     rd = openTsv(inCol, inTsv)
     outFh = open(outTsv, "w")
@@ -53,6 +55,10 @@ def selectById(selectCol, selectTsv, inCol, inTsv, outTsv):
     outFh.close()
 
 
-raise Exception("FIXME: not done")
-args = parseArgs()
-selectById(args.selectCol, args.selectTsv, args.inCol, args.inTsv, args.outTsv)
+def main():
+    opts, args = parseArgs()
+    with cli.ErrorHandler():
+        selectById(opts, args.selectCol, args.selectTsv, args.inCol, args.inTsv, args.outTsv)
+
+
+main()

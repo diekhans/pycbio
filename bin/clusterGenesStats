@@ -11,6 +11,7 @@ from pycbio.hgdata.clusterGenes import ClusterGenes
 from pycbio.stats.venn import Venn
 from pycbio.sys.fileOps import prRowv
 from pycbio.tsv.tabFile import TabFile
+from pycbio.sys import cli
 
 
 def parseArgs():
@@ -31,7 +32,7 @@ def parseArgs():
                         help="""clusterGenes output file to process""")
     parser.add_argument("statsFile",
                         help="""output statistics to this file""")
-    return parser.parse_args()
+    return cli.parseOptsArgsWithLogging(parser)
 
 
 def readLociCats(self, catsFile):
@@ -163,14 +164,20 @@ class ClusterStats:
         fh.close()
 
 
-def clusterGenesStats(args):
-    lociCats = readLociCats(args.lociCatsFile) if args.lociCatsFile is not None else None
-    clStats = ClusterStats(args.clusterFile, lociCats, args.omitZero)
-    clStats.saveVenn(args.statsFile, args.total)
-    if args.totalsOut is not None:
-        clStats.saveSetTotals(args.totalsOut)
-    if args.geneSubsetOut:
-        clStats.saveGeneSubsets(args.geneSubsetOut)
+def clusterGenesStats(opts, clusterFile, statsFile):
+    lociCats = readLociCats(opts.lociCatsFile) if opts.lociCatsFile is not None else None
+    clStats = ClusterStats(clusterFile, lociCats, opts.omitZero)
+    clStats.saveVenn(statsFile, opts.total)
+    if opts.totalsOut is not None:
+        clStats.saveSetTotals(opts.totalsOut)
+    if opts.geneSubsetOut:
+        clStats.saveGeneSubsets(opts.geneSubsetOut)
 
 
-clusterGenesStats(parseArgs())
+def main():
+    opts, args = parseArgs()
+    with cli.ErrorHandler():
+        clusterGenesStats(opts, args.clusterFile, args.statsFile)
+
+
+main()

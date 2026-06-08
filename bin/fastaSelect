@@ -56,7 +56,8 @@ def fastaSelect(opts, inFasta, outFasta):
 
 def main():
     opts, args = parseArgs()
-    fastaSelect(opts, args.inFasta, args.outFasta)
+    with cli.ErrorHandler():
+        fastaSelect(opts, args.inFasta, args.outFasta)
 
 
 main()

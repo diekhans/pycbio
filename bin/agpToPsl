@@ -8,7 +8,7 @@ import argparse
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.ncbi.agp import Agp
 from pycbio import PycbioException
-from pycbio.sys import fileOps
+from pycbio.sys import fileOps, cli
 from pycbio.tsv.tabFile import TabFileReader
 from pycbio.hgdata.psl import Psl
 
@@ -30,7 +30,7 @@ query is the component.
                         help="NCBI AGP file")
     parser.add_argument('pslFile', type=str,
                         help="PSL output file")
-    return parser.parse_args()
+    return cli.parseOptsArgsWithLogging(parser)
 
 
 class UnmappedNameException(PycbioException):
@@ -119,21 +119,27 @@ def buildPsls(agp, objectSizeMap, componentSizeMap, componentLocalIdMap, skipUnm
     return psls
 
 
-def main(args):
-    agp = Agp(args.agpFile)
-    if args.componentLocalId2Acc is not None:
-        componentLocalIdMap = loadComponentLocalIdMap(args.componentLocalId2Acc)
+def agpToPsl(opts, agpFile, pslFile):
+    agp = Agp(agpFile)
+    if opts.componentLocalId2Acc is not None:
+        componentLocalIdMap = loadComponentLocalIdMap(opts.componentLocalId2Acc)
     else:
         componentLocalIdMap = lambda a: a  # NOQA pass through
-    if args.componentSizes is not None:
-        componentSizeMap = loadComponentSizeMap(args.componentSizes)
+    if opts.componentSizes is not None:
+        componentSizeMap = loadComponentSizeMap(opts.componentSizes)
     else:
         componentSizeMap = componentSizesFromAgp(agp, componentLocalIdMap)
     objectSizeMap = objectSizesFromAgp(agp)
-    psls = buildPsls(agp, objectSizeMap, componentSizeMap, componentLocalIdMap, args.skipUnmappable)
-    with fileOps.opengz(args.pslFile, 'w') as fh:
+    psls = buildPsls(agp, objectSizeMap, componentSizeMap, componentLocalIdMap, opts.skipUnmappable)
+    with fileOps.opengz(pslFile, 'w') as fh:
         for psl in psls:
             print("\t".join(psl.toRow()), file=fh)
 
 
-main(parseArgs())
+def main():
+    opts, args = parseArgs()
+    with cli.ErrorHandler():
+        agpToPsl(opts, args.agpFile, args.pslFile)
+
+
+main()

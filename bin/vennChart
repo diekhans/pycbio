@@ -6,7 +6,8 @@ from os import path as osp
 import argparse
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
-from python.tsv import TsvReader
+from pycbio.tsv import TsvReader
+from pycbio.sys import cli
 
 
 def parseArgs():
@@ -26,7 +27,7 @@ Output defaults to PDF format.
                         help="input statistics")
     parser.add_argument("outImage",
                         help="output image")
-    return parser.parse_args()
+    return cli.parseOptsArgsWithLogging(parser)
 
 
 class BoolStats:
@@ -44,4 +45,14 @@ class VennCircle:
         pass
 
 
-raise Exception("FIXME: not done")
+def vennChart(opts, inStats, outImage):
+    raise Exception("FIXME: not done")
+
+
+def main():
+    opts, args = parseArgs()
+    with cli.ErrorHandler():
+        vennChart(opts, args.inStats, args.outImage)
+
+
+main()

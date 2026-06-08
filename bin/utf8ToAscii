@@ -7,7 +7,7 @@ import argparse
 from unidecode import unidecode
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
-from pycbio.sys import fileOps
+from pycbio.sys import fileOps, cli
 
 def parseArgs():
     desc = """Convert a UTF-8 encode file to ASCII """
@@ -16,17 +16,19 @@ def parseArgs():
                         help="UTF-8 input file")
     parser.add_argument("asciiOutFile", nargs='?', default='/dev/stdin',
                         help="ASCII output file")
-    return parser.parse_args()
+    return cli.parseOptsArgsWithLogging(parser)
 
-def utf8ToAscii(utf8InFile, asciiOutFile):
+def utf8ToAscii(opts, utf8InFile, asciiOutFile):
     with fileOps.opengz(utf8InFile) as inFh:
         utf8text = inFh.read()
         asciitext = unidecode(utf8text)
         with fileOps.opengz(asciiOutFile, "w") as outFh:
             outFh.write(asciitext)
 
-def main(args):
-    utf8ToAscii(args.utf8InFile, args.asciiOutFile)
+def main():
+    opts, args = parseArgs()
+    with cli.ErrorHandler():
+        utf8ToAscii(opts, args.utf8InFile, args.asciiOutFile)
 
 
-main(parseArgs())
+main()

@@ -22,7 +22,7 @@ def parseArgs():
     parser.add_argument("outTsv", nargs="?",
                         help="output TSV, may have compression extensions; "
                         "default derived from inCsv")
-    opts, args = cli.parseOptsArgs(parser)
+    opts, args = cli.parseOptsArgsWithLogging(parser)
     if len(opts.delimiter) != 1:
         parser.error("--delimiter must be a single character")
     if args.outTsv is None:

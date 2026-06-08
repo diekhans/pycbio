@@ -7,6 +7,7 @@ import argparse
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.sys.fileOps import prRowv
+from pycbio.sys import cli
 from pycbio.sys.symEnum import SymEnum
 from pycbio.hgdata import geneCheck
 
@@ -32,7 +33,7 @@ def parseArgs():
                         help="gene-check output file to process")
     parser.add_argument("statsOut",
                         help="statistics TSV output")
-    return parser.parse_args()
+    return cli.parseOptsArgsWithLogging(parser)
 
 
 class CountChks:
@@ -95,9 +96,15 @@ class CountChks:
                    self.probInstCnts[v])
         outFh.close()
 
-def main(args):
-    counter = CountChks(args.geneChks)
-    counter.count(args.statsOut)
+def geneCheckStats(opts, geneChks, statsOut):
+    counter = CountChks(geneChks)
+    counter.count(statsOut)
 
 
-main(parseArgs())
+def main():
+    opts, args = parseArgs()
+    with cli.ErrorHandler():
+        geneCheckStats(opts, args.geneChks, args.statsOut)
+
+
+main()

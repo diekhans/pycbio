@@ -4,6 +4,10 @@ import sys
 import os
 import csv
 from openpyxl import load_workbook
+from os import path as osp
+
+sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
+from pycbio.sys import cli
 
 # AI co-author: Claude
 
@@ -42,13 +46,13 @@ def parse_arguments():
     parser.add_argument('-n', '--no-header', action='store_true', help='Suppress header row in output (header-row is still used to detect columns)')
     parser.add_argument('-v', '--verbose', action='store_true', help='Print verbose output')
 
-    args = parser.parse_args()
+    opts, args = cli.parseOptsArgsWithLogging(parser)
 
     validate_input_file(args.input_file)
     validate_output_directory(args.output_dir)
-    validate_header_row(args.header_row)
+    validate_header_row(opts.header_row)
 
-    return args
+    return opts, args
 
 
 def get_output_filename(sheet_name, output_dir, prefix=None):
@@ -147,32 +151,22 @@ def determine_sheets_to_process(workbook, sheet_name=None):
     else:
         return workbook.sheetnames
 
-def export_sheets_to_tsv(args):
+def export_sheets_to_tsv(opts, input_file, output_dir):
     """Export sheets to TSV files"""
-    workbook = load_workbook_safely(args.input_file)
-    sheets_to_process = determine_sheets_to_process(workbook, args.sheet)
+    workbook = load_workbook_safely(input_file)
+    sheets_to_process = determine_sheets_to_process(workbook, opts.sheet)
 
     process_sheet_list(
-        workbook, sheets_to_process, args.input_file, args.output_dir,
-        args.prefix, args.delimiter, args.header_row, args.no_header, args.verbose
+        workbook, sheets_to_process, input_file, output_dir,
+        opts.prefix, opts.delimiter, opts.header_row, opts.no_header, opts.verbose
     )
-
-def run_export():
-    """Run the export process with argument parsing and error handling"""
-    try:
-        args = parse_arguments()
-        export_sheets_to_tsv(args)
-        return 0
-    except XLSXParserError as e:
-        sys.stderr.write(f"Error: {str(e)}\n")
-        if e.__cause__:
-            sys.stderr.write(f"Caused by: {str(e.__cause__)}\n")
-        return 1
 
 def main():
     """Main entry point for the script"""
-    return run_export()
+    opts, args = parse_arguments()
+    with cli.ErrorHandler():
+        export_sheets_to_tsv(opts, args.input_file, args.output_dir)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

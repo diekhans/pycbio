@@ -8,6 +8,7 @@ import argparse
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.hgdata.clusterGenes import ClusterGenes
 from pycbio.sys.fileOps import prRow, prRowv, readFileLines
+from pycbio.sys import cli
 
 
 def parseArgs():
@@ -41,19 +42,19 @@ def parseArgs():
                         help="""clusterGenes output file to process""")
     parser.add_argument("outFile",
                         help="""selected subset of clusters, in clusterGenes format unless BED is requested""")
-    return parser.parse_args()
+    return cli.parseOptsArgsWithLogging(parser)
 
 
 class ClusterSelect:
-    def __init__(self, args):
-        self.clusters = ClusterGenes(args.clusterFile)
+    def __init__(self, opts, clusterFile):
+        self.clusters = ClusterGenes(clusterFile)
 
-        self.trackSets = self._parseTrackSetList(args.trackSet) if (args.trackSet is not None) else None
-        self.notTrackSets = self._parseTrackSetList(args.notTrackSet) if (args.notTrackSet is not None) else None
-        self.onlyTrackSets = self._parseTrackSetList(args.onlyTrackSet) if (args.onlyTrackSet is not None) else None
-        self.notOnlyTrackSets = self._parseTrackSetList(args.notOnlyTrackSet) if (args.notOnlyTrackSet is not None) else None
-        self.geneIds = self._loadIdFiles(args.geneIdFiles) if (args.geneIdFiles is not None) else None
-        self.trackFilterSet = self._parseTrackSet(args.trackFilterSet) if (args.trackFilterSet is not None) else None
+        self.trackSets = self._parseTrackSetList(opts.trackSet) if (opts.trackSet is not None) else None
+        self.notTrackSets = self._parseTrackSetList(opts.notTrackSet) if (opts.notTrackSet is not None) else None
+        self.onlyTrackSets = self._parseTrackSetList(opts.onlyTrackSet) if (opts.onlyTrackSet is not None) else None
+        self.notOnlyTrackSets = self._parseTrackSetList(opts.notOnlyTrackSet) if (opts.notOnlyTrackSet is not None) else None
+        self.geneIds = self._loadIdFiles(opts.geneIdFiles) if (opts.geneIdFiles is not None) else None
+        self.trackFilterSet = self._parseTrackSet(opts.trackFilterSet) if (opts.trackFilterSet is not None) else None
 
     def _parseTrackSet(self, spec):
         selSet = set()
@@ -138,12 +139,18 @@ class ClusterSelect:
                 self._writeClusterBed(outFh, cl)
         outFh.close()
 
-def clusterGenesSelect(args):
-    clSelect = ClusterSelect(args)
-    if args.clusterBedOutput:
-        clSelect.outClusterBed(args.outFile)
+def clusterGenesSelect(opts, clusterFile, outFile):
+    clSelect = ClusterSelect(opts, clusterFile)
+    if opts.clusterBedOutput:
+        clSelect.outClusterBed(outFile)
     else:
-        clSelect.outClusters(args.outFile)
+        clSelect.outClusters(outFile)
 
 
-clusterGenesSelect(parseArgs())
+def main():
+    opts, args = parseArgs()
+    with cli.ErrorHandler():
+        clusterGenesSelect(opts, args.clusterFile, args.outFile)
+
+
+main()

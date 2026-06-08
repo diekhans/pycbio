@@ -5,7 +5,7 @@ from os import path as osp
 import re
 import argparse
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
-from pycbio.sys import fileOps
+from pycbio.sys import fileOps, cli
 
 def parseArgs():
     desc = """Convert a EMBL files to FASTA"""
@@ -16,7 +16,7 @@ def parseArgs():
                         help="input EMBL, maybe compressed")
     parser.add_argument("outFasta",
                         help="output FASTA, may have compression extensions")
-    return parser.parse_args()
+    return cli.parseOptsArgsWithLogging(parser)
 
 # Crude EMBL parser, Neither BioPython EMBL, scikit-bio, or anything else
 # found allow access to all of the record types, which is essential to parse
@@ -116,10 +116,16 @@ def emblToFasta(idNM, emblFh, faFh):
         if useRec(idNM, rec):
             writeFastaRec(rec, idNM, faFh)
 
-def main(args):
-    with fileOps.opengz(args.inEmbl) as emblFh:
-        with fileOps.opengz(args.outFasta, "w") as faFh:
-            emblToFasta(args.idNM, emblFh, faFh)
+def emblToFastaCmd(opts, inEmbl, outFasta):
+    with fileOps.opengz(inEmbl) as emblFh:
+        with fileOps.opengz(outFasta, "w") as faFh:
+            emblToFasta(opts.idNM, emblFh, faFh)
 
 
-main(parseArgs())
+def main():
+    opts, args = parseArgs()
+    with cli.ErrorHandler():
+        emblToFastaCmd(opts, args.inEmbl, args.outFasta)
+
+
+main()

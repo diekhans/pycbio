@@ -8,6 +8,7 @@ import pstats
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.sys.symEnum import SymEnum
+from pycbio.sys import cli
 
 sortKeys = {
     'calls': 'call count',
@@ -53,11 +54,11 @@ def parseArgs():
                         help="profile log file input")
     parser.add_argument("statsOut",
                         help="statistics output")
-    args = parser.parse_args()
-    if args.sortKeys is None:
+    opts, args = cli.parseOptsArgsWithLogging(parser)
+    if opts.sortKeys is None:
         # can't do this with defaults, since it is a list.
-        args.sortKeys = ["cumulative"]
-    return args
+        opts.sortKeys = ["cumulative"]
+    return opts, args
 
 def generateReport(profLog, statsOut, sortKeys, reportType, stripDirs):
     statsOutFh = open(statsOut, "w")
@@ -73,8 +74,14 @@ def generateReport(profLog, statsOut, sortKeys, reportType, stripDirs):
         profStats.print_callees()
     statsOutFh.close()
 
-def main(args):
-    generateReport(args.profLog, args.statsOut, args.sortKeys, args.reportType, args.stripDirs)
+def profStats(opts, profLog, statsOut):
+    generateReport(profLog, statsOut, opts.sortKeys, opts.reportType, opts.stripDirs)
 
 
-main(parseArgs())
+def main():
+    opts, args = parseArgs()
+    with cli.ErrorHandler():
+        profStats(opts, args.profLog, args.statsOut)
+
+
+main()
