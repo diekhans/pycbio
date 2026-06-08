@@ -29,7 +29,8 @@ def testTrackBasic():
     trk = Track("foo", "Foo")
     assert str(trk) == ("track foo\n"
                         "shortLabel Foo\n"
-                        "longLabel Foo\n")
+                        "longLabel Foo\n"
+                        "\n")
 
 
 def testTrackLongLabel():
@@ -37,7 +38,8 @@ def testTrackLongLabel():
     assert str(trk) == ("track foo\n"
                         "shortLabel Foo\n"
                         "longLabel The Foo Track\n"
-                        "color 1,2,3\n")
+                        "color 1,2,3\n"
+                        "\n")
 
 
 def testTrackNoneDropped():
@@ -119,9 +121,10 @@ def testTrackDb():
     tdb.add(Track("b", "B"))
     out = tdb.format()
     assert str(tdb) == out
-    assert out.endswith("\n")
-    assert "\n\n" in out                      # blank line between stanzas
+    assert out.endswith("\n\n")               # last stanza also blank-terminated
     assert out.count("track ") == 2
+    assert out == ("track a\nshortLabel A\nlongLabel A\n\n"
+                   "track b\nshortLabel B\nlongLabel B\n\n")
 
 
 def testTrackDbInitList():

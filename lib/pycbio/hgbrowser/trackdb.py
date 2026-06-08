@@ -70,7 +70,7 @@ class Track:
         return ['\n'.join(prefix + line for line in self._own_lines())]
 
     def __str__(self):
-        return '\n\n'.join(self.stanzas()) + '\n'
+        return ''.join(stanza + '\n\n' for stanza in self.stanzas())
 
 
 class Container(Track):
@@ -158,7 +158,7 @@ class TrackDb:
         stanzas = []
         for track in self.tracks:
             stanzas.extend(track.stanzas())
-        return '\n\n'.join(stanzas) + '\n'
+        return ''.join(stanza + '\n\n' for stanza in stanzas)
 
     def __str__(self):
         return self.format()
