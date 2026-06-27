@@ -31,18 +31,19 @@ def quote_setting(v):
 
 
 class Track:
-    """A trackDb track stanza.  Settings come from the class DEFAULTS merged
-    with keyword arguments (kwargs win); those with a value of None are
-    dropped."""
+    """A trackDb track stanza.  Settings come from the class DEFAULTS, the
+    settings dict (for names that aren't valid keywords, e.g. dotted names),
+    and keyword arguments, merged in that order so later sources win.  Settings
+    with a value of None are dropped."""
 
     DEFAULTS = {}
 
-    def __init__(self, track, shortLabel, longLabel=None, **settings):
+    def __init__(self, track, shortLabel, *, longLabel=None, settings=None, **kwargs):
         self.track = track
         self.shortLabel = shortLabel
         self.longLabel = longLabel if longLabel is not None else shortLabel
-        self.settings = {k: v for k, v in (self.DEFAULTS | settings).items()
-                         if v is not None}
+        merged = self.DEFAULTS | (settings or {}) | kwargs
+        self.settings = {k: v for k, v in merged.items() if v is not None}
 
     def __setitem__(self, key, val):
         if val is None:
@@ -76,8 +77,8 @@ class Track:
 class Container(Track):
     """A track that contains subtracks (e.g. super or composite track)."""
 
-    def __init__(self, track, shortLabel, longLabel=None, **settings):
-        super().__init__(track, shortLabel, longLabel=longLabel, **settings)
+    def __init__(self, track, shortLabel, *, longLabel=None, settings=None, **kwargs):
+        super().__init__(track, shortLabel, longLabel=longLabel, settings=settings, **kwargs)
         self.subtracks = []
 
     def add(self, subtrack):
@@ -100,10 +101,10 @@ class DataTrack(Track):
         "visibility": "hide",
     }
 
-    def __init__(self, track, shortLabel, longLabel=None, *,
-                 trackType, bigDataUrl, **settings):
-        super().__init__(track, shortLabel, longLabel=longLabel,
-                         type=trackType, bigDataUrl=bigDataUrl, **settings)
+    def __init__(self, track, shortLabel, *, longLabel=None,
+                 trackType, bigDataUrl, settings=None, **kwargs):
+        super().__init__(track, shortLabel, longLabel=longLabel, settings=settings,
+                         type=trackType, bigDataUrl=bigDataUrl, **kwargs)
 
 
 class PslTrack(DataTrack):
@@ -119,10 +120,10 @@ class PslTrack(DataTrack):
         "showDiffBasesMaxZoom": 10000,
     }
 
-    def __init__(self, track, shortLabel, longLabel=None, *,
-                 bigDataUrl, **settings):
-        super().__init__(track, shortLabel, longLabel=longLabel,
-                         trackType="bigPsl", bigDataUrl=bigDataUrl, **settings)
+    def __init__(self, track, shortLabel, *, longLabel=None,
+                 bigDataUrl, settings=None, **kwargs):
+        super().__init__(track, shortLabel, longLabel=longLabel, settings=settings,
+                         trackType="bigPsl", bigDataUrl=bigDataUrl, **kwargs)
 
 
 class SuperTrack(Container):

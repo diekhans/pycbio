@@ -34,7 +34,7 @@ def testTrackBasic():
 
 
 def testTrackLongLabel():
-    trk = Track("foo", "Foo", "The Foo Track", color="1,2,3")
+    trk = Track("foo", "Foo", longLabel="The Foo Track", color="1,2,3")
     assert str(trk) == ("track foo\n"
                         "shortLabel Foo\n"
                         "longLabel The Foo Track\n"
@@ -46,6 +46,20 @@ def testTrackNoneDropped():
     trk = Track("foo", "Foo", color=None, html="x.html")
     assert "color" not in str(trk)
     assert "html x.html" in str(trk)
+
+
+def testTrackSettingsDict():
+    "settings= dict carries names that aren't valid keywords (dotted)"
+    trk = Track("foo", "Foo", settings={"filter.score": "10",
+                                        "decorator.default.style": "box"})
+    s = str(trk)
+    assert "filter.score 10" in s
+    assert "decorator.default.style box" in s
+
+
+def testTrackKwargsWinOverSettings():
+    trk = Track("foo", "Foo", settings={"color": "1,2,3"}, color="4,5,6")
+    assert trk["color"] == "4,5,6"
 
 
 def testTrackItemAccess():
