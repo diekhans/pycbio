@@ -113,7 +113,7 @@ asmUmappedErrTest: mkdirs
 ##
 # ncbiAssemblyReportToTsv
 ##
-asmReportToTsvTests: asmReportToTsvBasicTest asmReportToTsvWithMetaTest asmReportToTsvMetaErrTest
+asmReportToTsvTests: asmReportToTsvBasicTest asmReportToTsvWithMetaTest asmReportToTsvAllMetaTest asmReportToTsvMetaErrTest
 
 asmReportToTsvBasicTest: mkdirs
 	${ncbiAssemblyReportToTsv} ${asmReportTestFile} output/$@.tsv
@@ -121,6 +121,10 @@ asmReportToTsvBasicTest: mkdirs
 
 asmReportToTsvWithMetaTest: mkdirs
 	${ncbiAssemblyReportToTsv} --add-meta='taxid' --add-meta1='genbank_assembly_accession' ${asmReportTestFile} output/$@.tsv
+	diff expected/$@.tsv output/$@.tsv
+
+asmReportToTsvAllMetaTest: mkdirs
+	${ncbiAssemblyReportToTsv} --add-all-meta ${asmReportTestFile} output/$@.tsv
 	diff expected/$@.tsv output/$@.tsv
 
 asmReportToTsvMetaErrTest: mkdirs

@@ -24,6 +24,8 @@ Files are available from:
                         help="Add this metadata column to the TSV. Metadata names in the file are convert to lower cases and have spaces replaced with underscore")
     parser.add_argument('--add-meta1', action='append', default=[],
                         help="similar to --add-meta, only the value is only the white-space separated word in the column")
+    parser.add_argument('--add-all-meta', action='store_true', default=False,
+                        help="add all metadata fields as columns at the end of the TSV")
     parser.add_argument('assemblyReport', type=str,
                         help="NCBI assembly report file")
     parser.add_argument('outTsv', type=str,
@@ -40,12 +42,19 @@ def checkMeta(opts, asmReport):
         raise AssemblyReportException(f"metadata field(s) not in this assembly report: {badDesc}\n"
                                       "Note: Metadata names in the file are convert to lower cases and have spaces replaced with underscore")
 
+def getAllMetaCols(opts, asmReport):
+    if not opts.add_all_meta:
+        return []
+    explicit = set(opts.add_meta) | set(opts.add_meta1)
+    return [col for col in asmReport.metaData if col not in explicit]
+
 def getMetaHeaders(opts, asmReport):
-    return opts.add_meta + opts.add_meta1
+    return opts.add_meta + opts.add_meta1 + getAllMetaCols(opts, asmReport)
 
 def getMetaValues(opts, asmReport):
     return ([asmReport.metaData[col] for col in opts.add_meta] +
-            [asmReport.metaData[col].split()[0] for col in opts.add_meta1])
+            [asmReport.metaData[col].split()[0] for col in opts.add_meta1] +
+            [asmReport.metaData[col] for col in getAllMetaCols(opts, asmReport)])
 
 def ncbiAssemblyReportToTsv(opts, assemblyReport, outTsv):
     asmReport = AssemblyReport(assemblyReport)
@@ -53,9 +62,9 @@ def ncbiAssemblyReportToTsv(opts, assemblyReport, outTsv):
     metaValues = tuple(getMetaValues(opts, asmReport))
 
     with fileOps.opengz(outTsv, 'w') as fh:
-        fileOps.prRow(fh, tuple(getMetaHeaders(opts, asmReport)) + asmReport.seqs[0]._fields)
+        fileOps.prRow(fh, asmReport.seqs[0]._fields + tuple(getMetaHeaders(opts, asmReport)))
         for seq in asmReport.seqs:
-            fileOps.prRow(fh, metaValues + seq)
+            fileOps.prRow(fh, seq + metaValues)
 
 def main():
     opts, args = parseArgs()
