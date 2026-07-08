@@ -11,7 +11,7 @@ from urllib.error import HTTPError
 from Bio import Entrez
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
-from pycbio import PycbioException
+from pycbio import PycbioException, PycbioDataError
 from pycbio.sys import fileOps, cli
 
 host = "eutils.ncbi.nlm.nih.gov"
@@ -113,7 +113,7 @@ def ncbiGbFetch(opts, ids):
         ids.extend(loadIdFiles(opts.idFiles))
     ids = frozenset(ids)
     if len(ids) == 0:
-        raise PycbioException("no ids specified on command line or with --idFile")
+        raise PycbioDataError("no ids specified on command line or with --idFile")
     email = opts.email if opts.email is not None else getEmail()
     if opts.outDir is not None:
         doFetchOutToDir(email, opts.db, opts.fasta, ids, opts.outDir)
