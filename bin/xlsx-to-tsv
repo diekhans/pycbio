@@ -1,37 +1,35 @@
 #!/usr/bin/env python3
-import argparse
+# Copyright 2006-2025 Mark Diekhans
 import sys
 import os
 import csv
-from openpyxl import load_workbook
+import argparse
 from os import path as osp
+from openpyxl import load_workbook
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.sys import cli
+from pycbio.tsv import TsvWriter
 
 # AI co-author: Claude
-
-class XLSXParserError(Exception):
-    """Custom exception for XLSX parsing errors"""
-    pass
 
 def validate_input_file(file_path):
     """Validate that the input file exists and has the correct extension"""
     if not os.path.exists(file_path):
-        raise XLSXParserError(f"Input file not found: {file_path}")
+        raise cli.CliError(f"Input file not found: {file_path}")
 
     if not file_path.lower().endswith(('.xlsx', '.xlsm')):
-        raise XLSXParserError(f"Input file must be an Excel file with .xlsx or .xlsm extension: {file_path}")
+        raise cli.CliError(f"Input file must be an Excel file with .xlsx or .xlsm extension: {file_path}")
 
 def validate_output_directory(directory_path):
     """Validate that the output directory exists"""
     if not os.path.exists(directory_path):
-        raise XLSXParserError(f"Output directory not found: {directory_path}")
+        raise cli.CliError(f"Output directory not found: {directory_path}")
 
 def validate_header_row(header_row):
     """Validate that the header row is valid"""
     if header_row < 1:
-        raise XLSXParserError("Header row must be a positive integer")
+        raise cli.CliError("Header row must be a positive integer")
 
 def parse_arguments():
     """Parse command line arguments and validate them"""
@@ -46,13 +44,7 @@ def parse_arguments():
     parser.add_argument('-n', '--no-header', action='store_true', help='Suppress header row in output (header-row is still used to detect columns)')
     parser.add_argument('-v', '--verbose', action='store_true', help='Print verbose output')
 
-    opts, args = cli.parseOptsArgsWithLogging(parser)
-
-    validate_input_file(args.input_file)
-    validate_output_directory(args.output_dir)
-    validate_header_row(opts.header_row)
-
-    return opts, args
+    return cli.parseOptsArgsWithLogging(parser)
 
 
 def get_output_filename(sheet_name, output_dir, prefix=None):
@@ -79,9 +71,18 @@ def trim_trailing_blank_rows(rows):
     while rows and all(is_blank(v) for v in rows[-1]):
         rows.pop()
 
+def make_output_dialect(delimiter):
+    """Build a csv dialect for the requested output delimiter"""
+    class OutputDialect(csv.excel):
+        pass
+    OutputDialect.delimiter = delimiter
+    OutputDialect.lineterminator = '\n'
+    return OutputDialect
+
 def write_sheet_to_tsv(sheet, output_path, delimiter='\t', header_row=1, no_header=False):
-    """Write sheet data to a TSV file. Drop trailing blank rows and trailing
-    columns whose header cell is empty."""
+    """Write sheet data to a TSV file. The header row provides the TsvWriter
+    columns (and is emitted unless no_header). Drop trailing blank rows and
+    trailing columns whose header cell is empty."""
     rows = [tuple(row) for row in sheet.iter_rows(values_only=True)]
     h_idx = header_row - 1
     if h_idx >= len(rows):
@@ -89,15 +90,14 @@ def write_sheet_to_tsv(sheet, output_path, delimiter='\t', header_row=1, no_head
     n_cols = detect_header_width(rows[h_idx])
     if n_cols == 0:
         return 0
-    start = h_idx + 1 if no_header else h_idx
-    out_rows = [row[:n_cols] for row in rows[start:]]
-    trim_trailing_blank_rows(out_rows)
+    columns = ["" if is_blank(v) else v for v in rows[h_idx][:n_cols]]
+    data_rows = [row[:n_cols] for row in rows[h_idx + 1:]]
+    trim_trailing_blank_rows(data_rows)
 
-    with open(output_path, 'w', encoding='utf-8') as tsv_file:
-        tsv_writer = csv.writer(tsv_file, delimiter=delimiter, lineterminator='\n')
-        for row in out_rows:
-            tsv_writer.writerow(["" if is_blank(v) else v for v in row])
-    return len(out_rows)
+    with TsvWriter(output_path, columns=columns, dialect=make_output_dialect(delimiter),
+                   writeHeader=not no_header) as tsv_writer:
+        tsv_writer.writeRows(data_rows)
+    return len(data_rows) + (0 if no_header else 1)
 
 def export_single_sheet(sheet, sheet_name, output_path, delimiter='\t', header_row=1, no_header=False, verbose=False):
     """Export a single sheet to a TSV file"""
@@ -108,12 +108,12 @@ def export_single_sheet(sheet, sheet_name, output_path, delimiter='\t', header_r
         return rows_written
 
     except Exception as e:
-        raise XLSXParserError(f"Failed to process sheet '{sheet_name}'") from e
+        raise cli.CliError(f"Failed to process sheet '{sheet_name}'") from e
 
 def validate_sheet_exists(workbook, sheet_name):
     """Validate that a sheet exists in the workbook"""
     if sheet_name not in workbook.sheetnames:
-        raise XLSXParserError(
+        raise cli.CliError(
             f"Sheet '{sheet_name}' not found. Available sheets: {', '.join(workbook.sheetnames)}"
         )
 
@@ -134,14 +134,14 @@ def process_sheet_list(workbook, sheets_to_process, input_file, output_dir, pref
                 prefix, delimiter, header_row, no_header, verbose
             )
         except Exception as e:
-            raise XLSXParserError(f"Failed to process sheet '{sheet_name}'") from e
+            raise cli.CliError(f"Failed to process sheet '{sheet_name}'") from e
 
 def load_workbook_safely(file_path):
     """Load an Excel workbook with error handling"""
     try:
         return load_workbook(file_path, read_only=True, data_only=True)
     except Exception as e:
-        raise XLSXParserError(f"Failed to open Excel file: {file_path}") from e
+        raise cli.CliError(f"Failed to open Excel file: {file_path}") from e
 
 def determine_sheets_to_process(workbook, sheet_name=None):
     """Determine which sheets to process based on user input"""
@@ -153,6 +153,10 @@ def determine_sheets_to_process(workbook, sheet_name=None):
 
 def export_sheets_to_tsv(opts, input_file, output_dir):
     """Export sheets to TSV files"""
+    validate_input_file(input_file)
+    validate_output_directory(output_dir)
+    validate_header_row(opts.header_row)
+
     workbook = load_workbook_safely(input_file)
     sheets_to_process = determine_sheets_to_process(workbook, opts.sheet)
 

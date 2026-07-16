@@ -22,7 +22,7 @@ class TsvWriter:
 
     def __init__(self, fileName, *, columns=None, typeMap=None, defaultColType=None,
                  columnSpecs=None, outFh=None, dialect=csv.excel_tab, encoding=None,
-                 errors=None):
+                 errors=None, writeHeader=True):
         """
         :param fileName: Path to the output TSV file, unless `outFh` is provided.
         :param columns: List of column names.  If omitted but `typeMap` is given,
@@ -40,13 +40,17 @@ class TsvWriter:
         :param dialect: A `csv.Dialect` instance or dialect name.
         :param encoding: Optional text encoding (e.g., 'utf-8').
         :param errors: Optional error handling strategy.
+        :param writeHeader: If True (default), write the column header line when
+            the writer is created.  Set False to emit only data rows; the columns
+            are still used for row formatting.
         """
         self.fileName = fileName
         self.columnSpecs = self._resolveColumnSpecs(columns, typeMap, defaultColType, columnSpecs)
         self.outFh = None
         self._shouldClose = False
         self._open(fileName, outFh, dialect, encoding, errors)
-        self._writeHeader()
+        if writeHeader:
+            self._writeHeader()
 
     @staticmethod
     def _resolveColumnSpecs(columns, typeMap, defaultColType, columnSpecs):

@@ -2,7 +2,7 @@
 import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
-from pycbio.hgbrowser.trackdb import (Priority, quote_setting, Track, Container,
+from pycbio.hgbrowser.trackdb import (Priority, quote_setting, Track,
                                       DataTrack, PslTrack, SuperTrack,
                                       CompositeTrack, TrackDb)
 

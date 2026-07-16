@@ -1,0 +1,102 @@
+#!/usr/bin/env python3
+# Copyright 2006-2025 Mark Diekhans
+
+import sys
+from os import path as osp
+import argparse
+from openpyxl import Workbook
+
+sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
+from pycbio.sys import cli
+from pycbio.tsv import TsvReader
+
+# AI co-author: Claude
+
+# Excel sheet name constraints
+MAX_SHEET_NAME_LEN = 31
+INVALID_SHEET_CHARS = set(r'[]:*?/\\')
+
+def parseArgs():
+    desc = """Combine one or more TSV files into an XLSX workbook, with each
+    TSV becoming a separate sheet.  Sheet names are derived from the input file
+    names unless overridden with --name.  This is the inverse of xlsx-to-tsv.
+    """
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("--name", action="append", default=[], dest="names",
+                        help="sheet name for the corresponding input file, in order; "
+                        "may be repeated (default: derived from the file name)")
+    parser.add_argument("outXlsx",
+                        help="output XLSX file")
+    parser.add_argument("inTsvs", nargs="+",
+                        help="one or more input TSV files, maybe compressed")
+    return cli.parseOptsArgsWithLogging(parser)
+
+def sanitizeSheetName(name):
+    "make a sheet name valid for Excel: drop invalid chars and truncate"
+    cleaned = ''.join(c for c in name if c not in INVALID_SHEET_CHARS).strip()
+    if cleaned == "":
+        cleaned = "Sheet"
+    return cleaned[:MAX_SHEET_NAME_LEN]
+
+def uniqueSheetName(name, used):
+    "ensure a sheet name is unique, appending a numeric suffix if needed"
+    if name not in used:
+        return name
+    suffix = 2
+    while True:
+        candidate = f"{name[:MAX_SHEET_NAME_LEN - len(str(suffix)) - 1]}_{suffix}"
+        if candidate not in used:
+            return candidate
+        suffix += 1
+
+def validateArgs(outXlsx, inTsvs):
+    "check the output extension and that input files exist"
+    if not outXlsx.lower().endswith(('.xlsx', '.xlsm')):
+        raise cli.CliError(f"Output file must have a .xlsx or .xlsm extension: {outXlsx}")
+    for inTsv in inTsvs:
+        if not osp.exists(inTsv):
+            raise cli.CliError(f"Input file not found: {inTsv}")
+
+def determineSheetNames(inTsvs, names):
+    "compute the sheet name to use for each input file"
+    if len(names) not in (0, len(inTsvs)):
+        raise cli.CliError(f"got {len(names)} --name options for {len(inTsvs)} input files; "
+                           "specify one --name per input file or none")
+    requested = names if names else [osp.splitext(osp.basename(f))[0] for f in inTsvs]
+    sheetNames = []
+    used = set()
+    for name in requested:
+        sheetName = uniqueSheetName(sanitizeSheetName(name), used)
+        used.add(sheetName)
+        sheetNames.append(sheetName)
+    return sheetNames
+
+def loadTsvIntoSheet(sheet, inTsv):
+    "read a TSV file and write its header and rows into a worksheet"
+    reader = TsvReader(inTsv, allowEmpty=True)
+    if len(reader.columns) > 0:
+        sheet.append(list(reader.columns))
+    for row in reader:
+        sheet.append(list(row))
+
+def buildWorkbook(inTsvs, sheetNames):
+    "build a workbook with one sheet per input file"
+    workbook = Workbook()
+    workbook.remove(workbook.active)  # drop the empty default sheet
+    for inTsv, sheetName in zip(inTsvs, sheetNames):
+        loadTsvIntoSheet(workbook.create_sheet(title=sheetName), inTsv)
+    return workbook
+
+def tsvToXlsx(opts, outXlsx, inTsvs):
+    validateArgs(outXlsx, inTsvs)
+    sheetNames = determineSheetNames(inTsvs, opts.names)
+    workbook = buildWorkbook(inTsvs, sheetNames)
+    workbook.save(outXlsx)
+
+def main():
+    opts, args = parseArgs()
+    with cli.ErrorHandler():
+        tsvToXlsx(opts, args.outXlsx, args.inTsvs)
+
+
+main()
