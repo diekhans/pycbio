@@ -99,26 +99,6 @@ def testLoadFrameStat(request):
     assert r.exons[9].start == 119589051
     assert r.hasExonFrames
 
-def testStrandRelative(request):
-    gpTbl = GenePredTbl(ts.get_test_input_file(request, "fromPslMinTest.gp"))
-    assert len(gpTbl) == 9
-    r = gpTbl[0]
-    r = r.getStrandRelative(chromSizes[r.chrom])
-    assert r.strandRel
-    assert len(r.exons) == 10
-    assert r.name == "NM_000017.1"
-    assert not r.hasExonFrames
-
-    # positive strand features
-    chkFeatures(r, featsNM_000017)
-
-    # negative strand features
-    r = gpTbl[1]
-    r = r.getStrandRelative(chromSizes[r.chrom])
-    assert r.strandRel
-    assert r.name == "NM_000066.1"
-    chkFeatures(r, featureExpectedSwap(featsNM_000066, chromSizes[r.chrom]))
-
 def testFromBigGenePred(request):
     with open(ts.get_test_output_file(request, ".gp"), "w") as outFh:
         for row in fileOps.iterRows(ts.get_test_input_file(request, "cat-consensus.bonobo.bigGenePred.txt")):

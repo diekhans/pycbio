@@ -205,6 +205,10 @@ class GenePred:
             gp.addExon(chromSize - exon.end, chromSize - exon.start, exon.frame)
         return gp
 
+    def inDirectionOfTranscription(self):
+        "are exons in the direction of transcriptions"
+        return self.strand == "+"
+
     def _overlapsCds(self, exonStart, exonEnd):
         return (self.cdsStart is not None) and (self.cdsStart < self.cdsEnd) and (exonStart < self.cdsEnd) and (exonEnd > self.cdsStart)
 
