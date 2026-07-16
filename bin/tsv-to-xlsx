@@ -5,6 +5,7 @@ import sys
 from os import path as osp
 import argparse
 from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from pycbio.sys import cli
@@ -16,6 +17,8 @@ from pycbio.tsv import TsvReader
 MAX_SHEET_NAME_LEN = 31
 INVALID_SHEET_CHARS = set(r'[]:*?/\\')
 
+DEFAULT_MAX_WIDTH = 16
+
 def parseArgs():
     desc = """Combine one or more TSV files into an XLSX workbook, with each
     TSV becoming a separate sheet.  Sheet names are derived from the input file
@@ -25,6 +28,12 @@ def parseArgs():
     parser.add_argument("--name", action="append", default=[], dest="names",
                         help="sheet name for the corresponding input file, in order; "
                         "may be repeated (default: derived from the file name)")
+    parser.add_argument("--numbers", action="store_true",
+                        help="convert cells that look like integers or floats to numbers "
+                        "(default: all cells are written as text)")
+    parser.add_argument("--max-width", type=int, default=DEFAULT_MAX_WIDTH, dest="maxWidth",
+                        help="fit each column to its widest cell, up to this many characters "
+                        "(default: %(default)s)")
     parser.add_argument("outXlsx",
                         help="output XLSX file")
     parser.add_argument("inTsvs", nargs="+",
@@ -71,26 +80,61 @@ def determineSheetNames(inTsvs, names):
         sheetNames.append(sheetName)
     return sheetNames
 
-def loadTsvIntoSheet(sheet, inTsv):
+def convertCell(value, numbers):
+    "if numbers is set, convert an int- or float-looking cell to a number"
+    if not numbers or value == "":
+        return value
+    try:
+        return int(value)
+    except ValueError:
+        pass
+    try:
+        return float(value)
+    except ValueError:
+        return value
+
+def accountWidths(widths, values):
+    "grow the per-column max display widths to fit the given row values"
+    for i, value in enumerate(values):
+        length = len(str(value))
+        if i >= len(widths):
+            widths.append(length)
+        elif length > widths[i]:
+            widths[i] = length
+
+def setColumnWidths(sheet, widths, maxWidth):
+    "size each column to its widest cell, capped at maxWidth"
+    for i, width in enumerate(widths):
+        width = min(width, maxWidth)
+        if width > 0:
+            sheet.column_dimensions[get_column_letter(i + 1)].width = width
+
+def loadTsvIntoSheet(sheet, inTsv, numbers, maxWidth):
     "read a TSV file and write its header and rows into a worksheet"
     reader = TsvReader(inTsv, allowEmpty=True)
+    widths = []
     if len(reader.columns) > 0:
-        sheet.append(list(reader.columns))
+        header = list(reader.columns)
+        sheet.append(header)
+        accountWidths(widths, header)
     for row in reader:
-        sheet.append(list(row))
+        values = [convertCell(v, numbers) for v in row]
+        sheet.append(values)
+        accountWidths(widths, values)
+    setColumnWidths(sheet, widths, maxWidth)
 
-def buildWorkbook(inTsvs, sheetNames):
+def buildWorkbook(inTsvs, sheetNames, numbers, maxWidth):
     "build a workbook with one sheet per input file"
     workbook = Workbook()
     workbook.remove(workbook.active)  # drop the empty default sheet
     for inTsv, sheetName in zip(inTsvs, sheetNames):
-        loadTsvIntoSheet(workbook.create_sheet(title=sheetName), inTsv)
+        loadTsvIntoSheet(workbook.create_sheet(title=sheetName), inTsv, numbers, maxWidth)
     return workbook
 
 def tsvToXlsx(opts, outXlsx, inTsvs):
     validateArgs(outXlsx, inTsvs)
     sheetNames = determineSheetNames(inTsvs, opts.names)
-    workbook = buildWorkbook(inTsvs, sheetNames)
+    workbook = buildWorkbook(inTsvs, sheetNames, opts.numbers, opts.maxWidth)
     workbook.save(outXlsx)
 
 def main():
