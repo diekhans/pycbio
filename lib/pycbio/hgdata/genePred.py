@@ -187,7 +187,6 @@ class GenePred:
         self.hasExonFrames = False
         self.cdsStartIExon = None
         self.cdsEndIExon = None
-        self.strandRel = False    # are these strand-relative coordinates?
 
     def clone(self):
         "name a copy"
@@ -205,20 +204,6 @@ class GenePred:
         for exon in reversed(self.exons):
             gp.addExon(chromSize - exon.end, chromSize - exon.start, exon.frame)
         return gp
-
-    def getStrandRelative(self, chromSize):
-        """create a copy of this GenePred object that has strand relative
-        coordinates."""
-        if self.inDirectionOfTranscription():
-            gp = self.clone()
-        else:
-            gp = self._cloneToOtherStrand(chromSize)
-        gp.strandRel = True
-        return gp
-
-    def inDirectionOfTranscription(self):
-        "are exons in the direction of transcriptions"
-        return (self.strand == "+") or self.strandRel
 
     def _overlapsCds(self, exonStart, exonEnd):
         return (self.cdsStart is not None) and (self.cdsStart < self.cdsEnd) and (exonStart < self.cdsEnd) and (exonEnd > self.cdsStart)
