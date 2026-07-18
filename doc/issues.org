@@ -17,10 +17,6 @@ def chrom_sort_key(chrom):
 * programs to add:
 ** cls-t2t-primate/bin/phylop-score-bed
 
-* xlsx
-convert xlsx-to-tsv to use CLI and logging stuff
-add ~/compbio/kznf/projs/notch2nl/t2t-h9-paper/bin/tsvs-to-xlsx
-
 * ArgumentParser need introspection
 write ticket
 implementation makes this hard with subparsers
@@ -216,9 +212,6 @@ This is different than autosql, due to trailing comma
     NamedTuple an extension of collections
 https://tommyseattle.com/python-class-dict-named-tuple-performance-and-memory-usage/
 
-** TSV writing with predefine column names and types
-via a TsvRow
-via a function with keyword args
 
 * PSL
 ** psl check for overlapping blocks, etc
@@ -473,3 +466,13 @@ def chrom_key(chrom):
 
 * csvToTsv add ability to fix column names to be legal python
 * python selectById, with explicit TSV support
+
+* browser dir should handle url quoting
+from urllib.parse import quote
+see ~/compbio/mirna/projs/hprc/miRNA-HPRC/bin/gencode-not-found-browser-dir
+
+* write columns should handle named tupples better:
+see bin/mirna-compare-summary
+   tw.writeColumns(mirgenedb_gene=summ.mirgenedb_gene, hgnc_symbol$
+                            **class_counts(summ.idc, summ.mapc)._asdict())
+

@@ -16,7 +16,8 @@
       "Bash(bin/csv-to-tsv foo.txt)",
       "Bash(bin/csv-to-tsv foo *)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(echo \"exit=$?\")"
     ]
   }
 }
