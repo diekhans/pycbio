@@ -45,6 +45,11 @@ def parseArgs():
                         help="apply a regular expression substitution to every column header; "
                         "PATTERN is a Python regex and REPL its replacement; may be repeated "
                         "and are applied in order")
+    parser.add_argument("--sheet-name-subst", nargs=2, action="append", default=[], dest="sheetNameSubs",
+                        metavar=("PATTERN", "REPL"),
+                        help="apply a regular expression substitution to every derived sheet name "
+                        "(before sanitizing and uniquifying); PATTERN is a Python regex and REPL "
+                        "its replacement; may be repeated and are applied in order")
     parser.add_argument("--no-header-normalize", action="store_false", dest="normalize",
                         help="do not normalize column headers to valid Python identifiers "
                         "(by default headers are normalized, after any --header-subst)")
@@ -84,12 +89,19 @@ def validateArgs(outXlsx, inTsvs):
         if not osp.exists(inTsv):
             raise cli.CliError(f"Input file not found: {inTsv}")
 
-def determineSheetNames(inTsvs, names):
+def substSheetName(name, sheetNameSubs):
+    "apply regex substitutions to a derived sheet name"
+    for pattern, repl in sheetNameSubs:
+        name = re.sub(pattern, repl, name)
+    return name
+
+def determineSheetNames(inTsvs, names, sheetNameSubs):
     "compute the sheet name to use for each input file"
     if len(names) not in (0, len(inTsvs)):
         raise cli.CliError(f"got {len(names)} --name options for {len(inTsvs)} input files; "
                            "specify one --name per input file or none")
     requested = names if names else [osp.splitext(osp.basename(f))[0] for f in inTsvs]
+    requested = [substSheetName(name, sheetNameSubs) for name in requested]
     sheetNames = []
     used = set()
     for name in requested:
@@ -184,7 +196,7 @@ def resolveInputs(opts, positionals):
 def tsvToXlsx(opts, outXlsx, positionals):
     names, inTsvs = resolveInputs(opts, positionals)
     validateArgs(outXlsx, inTsvs)
-    sheetNames = determineSheetNames(inTsvs, names)
+    sheetNames = determineSheetNames(inTsvs, names, opts.sheetNameSubs)
     workbook = buildWorkbook(inTsvs, sheetNames, opts)
     workbook.save(outXlsx)
 

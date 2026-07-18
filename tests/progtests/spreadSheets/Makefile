@@ -18,7 +18,7 @@ testXlsxBasic: mkdirs
 	${diff} expected/$@/H9_q20_hap1_enriched_peaks.tsv output/$@/H9_q20_hap1_enriched_peaks.tsv
 	${diff} expected/$@/H9_q20_hap2_enriched_peaks.tsv output/$@/H9_q20_hap2_enriched_peaks.tsv
 
-tsv-tests: testTsvToXlsxRoundTrip testTsvToXlsxHeaderXform testTsvToXlsxPairs
+tsv-tests: testTsvToXlsxRoundTrip testTsvToXlsxHeaderXform testTsvToXlsxPairs testTsvToXlsxSheetNameSubst
 
 # build a multi-sheet workbook from TSVs, convert it back, and confirm the
 # round-trip reproduces the inputs (xlsx is binary, so we diff the TSVs)
@@ -45,6 +45,16 @@ testTsvToXlsxPairs: mkdirs
 	${xlsx_to_tsv} output/$@/combined.xlsx output/$@
 	${diff} expected/$@/Genes.tsv output/$@/Genes.tsv
 	${diff} expected/$@/Samples.tsv output/$@/Samples.tsv
+
+# --sheet-name-subst rewrites the sheet names derived from the input file names
+# (here stripping a common prefix); the substituted names drive the output file
+# names on the way back
+testTsvToXlsxSheetNameSubst: mkdirs
+	@mkdir -p output/$@
+	${tsv_to_xlsx} --sheet-name-subst '^dataset_v1\.' '' output/$@/combined.xlsx input/dataset_v1.genes.tsv input/dataset_v1.samples.tsv
+	${xlsx_to_tsv} output/$@/combined.xlsx output/$@
+	${diff} input/genes.tsv output/$@/genes.tsv
+	${diff} input/samples.tsv output/$@/samples.tsv
 
 mkdirs:
 	@mkdir -p output

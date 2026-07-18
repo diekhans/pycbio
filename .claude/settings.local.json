@@ -17,7 +17,12 @@
       "Bash(bin/csv-to-tsv foo *)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(echo \"exit=$?\")"
+      "Bash(echo \"exit=$?\")",
+      "Read(//hive/users/markd/mirna/projs/hprc/miRNA-HPRC/**)",
+      "Bash(/cluster/home/markd/compbio/code/pycbio/bin/tsv-to-xlsx --numbers --max-width=32 --sheet-name-subst '^hsa-pre_final\\\\.' '' /tmp/hsa-test.xlsx ../data/analysis-summary/MirGeneDB/hsa-pre_final.compare.family.counts.tsv ../data/analysis-summary/MirGeneDB/hsa-pre_final.family.summary.tsv)",
+      "Bash(rm -f /tmp/hsa-test.xlsx)",
+      "Bash(cp input/genes.tsv input/dataset_v1.genes.tsv)",
+      "Bash(cp input/samples.tsv input/dataset_v1.samples.tsv)"
     ]
   }
 }
