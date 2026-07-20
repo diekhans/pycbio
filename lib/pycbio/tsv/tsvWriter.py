@@ -1,4 +1,4 @@
-# Copyright 2006-2025 Mark Diekhans
+# Copyright 2006-2026 Mark Diekhans
 """TSV writing classes"""
 import csv
 from pycbio.sys import fileOps

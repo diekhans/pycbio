@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2025-2025 Mark Diekhans
+# Copyright 2025-2026 Mark Diekhans
 import os
 import re
 from abc import ABC, abstractmethod

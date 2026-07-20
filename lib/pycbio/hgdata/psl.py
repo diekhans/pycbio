@@ -1,4 +1,4 @@
-# Copyright 2006-2025 Mark Diekhans
+# Copyright 2006-2026 Mark Diekhans
 import re
 from collections import defaultdict, namedtuple
 from deprecation import deprecated

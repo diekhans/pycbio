@@ -1,8 +1,8 @@
 """
 Various functions to support testing with pytest
 
-Copyright (c) 2024-2025, Mark Diekhans
-Copyright (c) 2024-2025, The Regents of the University of California
+Copyright (c) 2024-2026, Mark Diekhans
+Copyright (c) 2024-2026, The Regents of the University of California
 
 Suggested idiom:
    import pycbio.sys.testingSupport as ts
