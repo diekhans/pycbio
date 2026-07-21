@@ -18,7 +18,10 @@ testXlsxBasic: mkdirs
 	${diff} expected/$@/H9_q20_hap1_enriched_peaks.tsv output/$@/H9_q20_hap1_enriched_peaks.tsv
 	${diff} expected/$@/H9_q20_hap2_enriched_peaks.tsv output/$@/H9_q20_hap2_enriched_peaks.tsv
 
-tsv-tests: testTsvToXlsxRoundTrip testTsvToXlsxHeaderXform testTsvToXlsxPairs testTsvToXlsxSheetNameSubst
+tsv-tests: testTsvToXlsxRoundTrip testTsvToXlsxHeaderXform testTsvToXlsxPairs testTsvToXlsxSheetNameSubst testTsvToXlsxFreeze
+
+# dump each sheet's freeze_panes anchor for comparing to expected
+dumpFreeze = python3 -c 'import openpyxl,sys; wb=openpyxl.load_workbook(sys.argv[1]); print("\n".join(f"{ws.title}\t{ws.freeze_panes}" for ws in wb))'
 
 # build a multi-sheet workbook from TSVs, convert it back, and confirm the
 # round-trip reproduces the inputs (xlsx is binary, so we diff the TSVs)
@@ -52,6 +55,17 @@ testTsvToXlsxPairs: mkdirs
 testTsvToXlsxSheetNameSubst: mkdirs
 	@mkdir -p output/$@
 	${tsv_to_xlsx} --sheet-name-subst '^dataset_v1\.' '' output/$@/combined.xlsx input/dataset_v1.genes.tsv input/dataset_v1.samples.tsv
+	${xlsx_to_tsv} output/$@/combined.xlsx output/$@
+	${diff} input/genes.tsv output/$@/genes.tsv
+	${diff} input/samples.tsv output/$@/samples.tsv
+
+# --freeze-rows/--freeze-cols set the freeze-pane anchor on each sheet; the cell
+# content still round-trips, and the anchor is checked against expected
+testTsvToXlsxFreeze: mkdirs
+	@mkdir -p output/$@
+	${tsv_to_xlsx} --freeze-rows=1 --freeze-cols=2 output/$@/combined.xlsx input/genes.tsv input/samples.tsv
+	${dumpFreeze} output/$@/combined.xlsx > output/$@/freeze.txt
+	${diff} expected/$@/freeze.txt output/$@/freeze.txt
 	${xlsx_to_tsv} output/$@/combined.xlsx output/$@
 	${diff} input/genes.tsv output/$@/genes.tsv
 	${diff} input/samples.tsv output/$@/samples.tsv

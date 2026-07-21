@@ -40,6 +40,12 @@ def parseArgs():
     parser.add_argument("--max-width", type=int, default=DEFAULT_MAX_WIDTH, dest="maxWidth",
                         help="fit each column to its widest cell, up to this many characters "
                         "(default: %(default)s)")
+    parser.add_argument("--freeze-rows", type=int, default=0, dest="freezeRows",
+                        help="freeze the top N rows of each sheet so they stay visible while "
+                        "scrolling (default: %(default)s)")
+    parser.add_argument("--freeze-cols", type=int, default=0, dest="freezeCols",
+                        help="freeze the leftmost N columns of each sheet so they stay visible "
+                        "while scrolling (default: %(default)s)")
     parser.add_argument("--header-subst", nargs=2, action="append", default=[], dest="headerSubs",
                         metavar=("PATTERN", "REPL"),
                         help="apply a regular expression substitution to every column header; "
@@ -161,6 +167,11 @@ def setColumnWidths(sheet, widths, maxWidth):
             width = min(width, maxWidth) + WIDTH_PADDING
             sheet.column_dimensions[get_column_letter(i + 1)].width = width
 
+def freezePanes(sheet, freezeRows, freezeCols):
+    "freeze the top freezeRows rows and leftmost freezeCols columns"
+    if freezeRows > 0 or freezeCols > 0:
+        sheet.freeze_panes = get_column_letter(freezeCols + 1) + str(freezeRows + 1)
+
 def loadTsvIntoSheet(sheet, inTsv, opts):
     "read a TSV file and write its header and rows into a worksheet"
     reader = TsvReader(inTsv, allowEmpty=True)
@@ -174,6 +185,7 @@ def loadTsvIntoSheet(sheet, inTsv, opts):
         sheet.append(values)
         accountWidths(widths, values)
     setColumnWidths(sheet, widths, opts.maxWidth)
+    freezePanes(sheet, opts.freezeRows, opts.freezeCols)
 
 def buildWorkbook(inTsvs, sheetNames, opts):
     "build a workbook with one sheet per input file"
