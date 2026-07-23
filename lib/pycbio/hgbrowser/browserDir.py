@@ -368,6 +368,8 @@ body { display: flex; flex-direction: column; font-family: sans-serif; }
 #dirSearchBar { padding: 4px; flex: 0 0 auto; }
 #dirSearch { width: 20em; }
 #dirTable { flex: 1 1 auto; }
+.tabulator-row.dirCurrent { background-color: #ffe08a !important;
+                            box-shadow: inset 3px 0 0 #d97706; }
 """
 
 class BrowserDirDynamic(BrowserDirBase):
@@ -411,9 +413,9 @@ class BrowserDirDynamic(BrowserDirBase):
                          "textField": "c{}t".format(i)})
         return spec
 
-    def _rowData(self, row):
+    def _rowData(self, row, rowId):
         "build the Tabulator data object for one row"
-        data = {}
+        data = {"_id": rowId}
         for i, cell in enumerate(row.row):
             data["c{}".format(i)] = _cellHtml(cell)
             data["c{}s".format(i)] = _cellSortKey(cell)
@@ -423,7 +425,7 @@ class BrowserDirDynamic(BrowserDirBase):
         return data
 
     def _tableData(self):
-        return [self._rowData(row) for row in self.rows]
+        return [self._rowData(row, rowId) for rowId, row in enumerate(self.rows)]
 
     def _jsonEmbed(self, obj):
         "serialize obj as JSON safe to embed in a <script> element"
@@ -485,14 +487,34 @@ var _columns = _colSpec.map(function(c) {
     }
     return col;
 });
+var _currentId = null;
 var _config = {data: _tableData, columns: _columns, layout: _opts.layout,
-               height: "100%",
+               height: "100%", index: "_id",
                rowFormatter: function(row) {
-                   var cls = row.getData()._cls;
-                   if (cls) row.getElement().classList.add(cls);
+                   var el = row.getElement();
+                   var data = row.getData();
+                   if (data._cls) el.classList.add(data._cls);
+                   if (data._id === _currentId) {
+                       el.classList.add("dirCurrent");
+                   } else {
+                       el.classList.remove("dirCurrent");
+                   }
                }};
 for (var k in _opts.extra) { _config[k] = _opts.extra[k]; }
 var _dirTable = new Tabulator("#dirTable", _config);
+// Tabulator 6 requires event callbacks to be registered via on(), not as
+// constructor options.  Highlight the row whose link was last clicked.
+function _dirSetCurrent(e, row) {
+    if (!e.target.closest("a")) return;
+    var prevId = _currentId;
+    _currentId = row.getData()._id;
+    if (prevId !== null) {
+        var prev = _dirTable.getRow(prevId);
+        if (prev) prev.reformat();
+    }
+    row.reformat();
+}
+_dirTable.on("rowClick", _dirSetCurrent);
 var _searchFields = _colSpec.map(function(c) { return c.textField; });
 function _dirGlobalSearch() {
     var v = document.getElementById("dirSearch").value.toLowerCase();
