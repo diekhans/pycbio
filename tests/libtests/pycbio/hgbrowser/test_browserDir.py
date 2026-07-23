@@ -89,7 +89,8 @@ def _dynamicTest(outDir):
     css = browserDir.defaultStyle + "\n.great {background-color: aquamarine;}\n"
     brDir = browserDir.BrowserDirDynamic(browserDir.GENOME_UCSC_URL, "hg38",
                                          colNames=_cols, style=css,
-                                         title="Flintstones hub", below=True)
+                                         title="Flintstones hub", below=True,
+                                         colDefs={"name": {"width": 120, "wrap": True}})
     for row in _genBasicData(15):
         _dynamicAddRow(brDir, row)
     brDir.write(outDir)
@@ -97,6 +98,52 @@ def _dynamicTest(outDir):
 def testDynamic(request):
     outDir = ts.get_test_output_file(request)
     _dynamicTest(outDir)
+    assert osp.exists(osp.join(outDir, "index.html"))
+    assert osp.exists(osp.join(outDir, "dir.html"))
+    _diffDir(request)
+
+
+##
+# dynamic directory with genomic sort keys, a fixed-width wrapping column,
+# and row shading (mirrors realistic multi-chromosome usage)
+##
+_genesCols = ("position", "gene", "description", "status")
+
+# (chrom, start, end, symbol, description, status)
+_genesData = (
+    ("chr17", 43044295, 43125483, "BRCA1", "DNA repair; breast/ovarian cancer susceptibility", "done"),
+    ("chr7", 55019017, 55211628, "EGFR", "epidermal growth factor receptor; amplified in tumors", "done"),
+    ("chr8", 127735434, 127742951, "MYC", "MYC proto-oncogene, bHLH transcription factor", "review"),
+    ("chr13", 32315086, 32400268, "BRCA2", "DNA repair; Fanconi anemia complementation group", "review"),
+    ("chr10", 87863625, 87971930, "PTEN", "phosphatase and tensin homolog; tumor suppressor", "todo"),
+    ("chr2", 47403067, 47634501, "MSH2", "mutS homolog 2; Lynch syndrome mismatch repair", "todo"))
+
+def _genesPosCell(brDir, chrom, start, end):
+    "position cell with a genomic sort key (chr2 sorts before chr10)"
+    coords = f"{chrom}:{start + 1}-{end}"
+    sortKey = "{}\t{:012d}".format(chrom[3:].zfill(3), start)
+    return browserDir.Cell(coords, html=brDir.mkAnchor(coords), sortKey=sortKey)
+
+def _genesAddRow(brDir, gene):
+    chrom, start, end, symbol, desc, status = gene
+    rowCls = "great" if status == "done" else None
+    posCell = _genesPosCell(brDir, chrom, start, end)
+    brDir.addRow((posCell, symbol, desc, status), cssRowClass=rowCls)
+
+def _genesTest(outDir):
+    css = browserDir.defaultStyle + "\n.great {background-color: #d7f0d7;}\n"
+    brDir = browserDir.BrowserDirDynamic(browserDir.GENOME_UCSC_URL, "hg38",
+                                         colNames=_genesCols, style=css,
+                                         title="hg38 genes", dirPercent=45,
+                                         colDefs={"position": {"minWidth": 230},
+                                                  "description": {"wrap": True}})
+    for gene in _genesData:
+        _genesAddRow(brDir, gene)
+    brDir.write(outDir)
+
+def testDynamicGenes(request):
+    outDir = ts.get_test_output_file(request)
+    _genesTest(outDir)
     assert osp.exists(osp.join(outDir, "index.html"))
     assert osp.exists(osp.join(outDir, "dir.html"))
     _diffDir(request)

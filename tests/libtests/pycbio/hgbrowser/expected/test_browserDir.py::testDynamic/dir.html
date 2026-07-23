@@ -12,6 +12,10 @@ body { display: flex; flex-direction: column; font-family: sans-serif; }
 #dirTable { flex: 1 1 auto; }
 .tabulator-row.dirCurrent { background-color: #ffe08a !important;
                             box-shadow: inset 3px 0 0 #d97706; }
+.tabulator-row .tabulator-cell.dirWrap { white-space: normal;
+                                         overflow: visible;
+                                         text-overflow: clip;
+                                         word-break: break-word; }
 
 </style>
 </head>
@@ -41,9 +45,9 @@ function _anySearch(data, params) {
     return false;
 }
 
-var _colSpec = [{"title": "position", "field": "c0", "sortField": "c0s", "textField": "c0t"}, {"title": "name", "field": "c1", "sortField": "c1s", "textField": "c1t"}, {"title": "status", "field": "c2", "sortField": "c2s", "textField": "c2t"}];
+var _colSpec = [{"title": "position", "field": "c0", "sortField": "c0s", "textField": "c0t"}, {"title": "name", "field": "c1", "sortField": "c1s", "textField": "c1t", "wrap": true, "width": 120}, {"title": "status", "field": "c2", "sortField": "c2s", "textField": "c2t"}];
 var _tableData = [{"_id": 0, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A1000-2000\" target=browser>chr22:1000-2000<\/a>", "c0s": "chr22\t000000001000", "c0t": "chr22:1000-2000", "c1": "fred_0", "c1s": "fred_0", "c1t": "fred_0", "c2": "sad", "c2s": "sad", "c2t": "sad"}, {"_id": 1, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A1500-2300\" target=browser>chr22:1500-2300<\/a>", "c0s": "chr22\t000000001500", "c0t": "chr22:1500-2300", "c1": "barny_0", "c1s": "barny_0", "c1t": "barny_0", "c2": "happy", "c2s": "happy", "c2t": "happy"}, {"_id": 2, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A3500-3700\" target=browser>chr22:3500-3700<\/a>", "c0s": "chr22\t000000003500", "c0t": "chr22:3500-3700", "c1": "wilma_0", "c1s": "wilma_0", "c1t": "wilma_0", "c2": "great", "c2s": "great", "c2t": "great", "_cls": "great"}, {"_id": 3, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A2000-4000\" target=browser>chr22:2000-4000<\/a>", "c0s": "chr22\t000000002000", "c0t": "chr22:2000-4000", "c1": "fred_1", "c1s": "fred_1", "c1t": "fred_1", "c2": "sad", "c2s": "sad", "c2t": "sad"}, {"_id": 4, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A3000-4600\" target=browser>chr22:3000-4600<\/a>", "c0s": "chr22\t000000003000", "c0t": "chr22:3000-4600", "c1": "barny_1", "c1s": "barny_1", "c1t": "barny_1", "c2": "happy", "c2s": "happy", "c2t": "happy"}, {"_id": 5, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A7000-7400\" target=browser>chr22:7000-7400<\/a>", "c0s": "chr22\t000000007000", "c0t": "chr22:7000-7400", "c1": "wilma_1", "c1s": "wilma_1", "c1t": "wilma_1", "c2": "great", "c2s": "great", "c2t": "great", "_cls": "great"}, {"_id": 6, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A3000-6000\" target=browser>chr22:3000-6000<\/a>", "c0s": "chr22\t000000003000", "c0t": "chr22:3000-6000", "c1": "fred_2", "c1s": "fred_2", "c1t": "fred_2", "c2": "sad", "c2s": "sad", "c2t": "sad"}, {"_id": 7, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A4500-6900\" target=browser>chr22:4500-6900<\/a>", "c0s": "chr22\t000000004500", "c0t": "chr22:4500-6900", "c1": "barny_2", "c1s": "barny_2", "c1t": "barny_2", "c2": "happy", "c2s": "happy", "c2t": "happy"}, {"_id": 8, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A10500-11100\" target=browser>chr22:10500-11100<\/a>", "c0s": "chr22\t000000010500", "c0t": "chr22:10500-11100", "c1": "wilma_2", "c1s": "wilma_2", "c1t": "wilma_2", "c2": "great", "c2s": "great", "c2t": "great", "_cls": "great"}, {"_id": 9, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A4000-8000\" target=browser>chr22:4000-8000<\/a>", "c0s": "chr22\t000000004000", "c0t": "chr22:4000-8000", "c1": "fred_3", "c1s": "fred_3", "c1t": "fred_3", "c2": "sad", "c2s": "sad", "c2t": "sad"}, {"_id": 10, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A6000-9200\" target=browser>chr22:6000-9200<\/a>", "c0s": "chr22\t000000006000", "c0t": "chr22:6000-9200", "c1": "barny_3", "c1s": "barny_3", "c1t": "barny_3", "c2": "happy", "c2s": "happy", "c2t": "happy"}, {"_id": 11, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A14000-14800\" target=browser>chr22:14000-14800<\/a>", "c0s": "chr22\t000000014000", "c0t": "chr22:14000-14800", "c1": "wilma_3", "c1s": "wilma_3", "c1t": "wilma_3", "c2": "great", "c2s": "great", "c2t": "great", "_cls": "great"}, {"_id": 12, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A5000-10000\" target=browser>chr22:5000-10000<\/a>", "c0s": "chr22\t000000005000", "c0t": "chr22:5000-10000", "c1": "fred_4", "c1s": "fred_4", "c1t": "fred_4", "c2": "sad", "c2s": "sad", "c2t": "sad"}, {"_id": 13, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A7500-11500\" target=browser>chr22:7500-11500<\/a>", "c0s": "chr22\t000000007500", "c0t": "chr22:7500-11500", "c1": "barny_4", "c1s": "barny_4", "c1t": "barny_4", "c2": "happy", "c2s": "happy", "c2t": "happy"}, {"_id": 14, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A17500-18500\" target=browser>chr22:17500-18500<\/a>", "c0s": "chr22\t000000017500", "c0t": "chr22:17500-18500", "c1": "wilma_4", "c1s": "wilma_4", "c1t": "wilma_4", "c2": "great", "c2s": "great", "c2t": "great", "_cls": "great"}];
-var _opts = {"globalSearch": true, "headerFilters": true, "layout": "fitDataFill", "extra": {}};
+var _opts = {"globalSearch": true, "headerFilters": true, "layout": "fitColumns", "extra": {}};
 
 var _columns = _colSpec.map(function(c) {
     var col = {title: c.title, field: c.field, formatter: "html",
@@ -53,6 +57,11 @@ var _columns = _colSpec.map(function(c) {
         col.headerFilterFunc = _colFilter;
         col.headerFilterFuncParams = {field: c.textField};
     }
+    if (c.wrap) col.cssClass = "dirWrap";
+    if ("width" in c) col.width = c.width;       // fixed; does not flex
+    if ("minWidth" in c) col.minWidth = c.minWidth;
+    if ("grow" in c) col.widthGrow = c.grow;
+    if ("shrink" in c) col.widthShrink = c.shrink;
     return col;
 });
 var _currentId = null;

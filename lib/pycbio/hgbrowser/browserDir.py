@@ -370,6 +370,10 @@ body { display: flex; flex-direction: column; font-family: sans-serif; }
 #dirTable { flex: 1 1 auto; }
 .tabulator-row.dirCurrent { background-color: #ffe08a !important;
                             box-shadow: inset 3px 0 0 #d97706; }
+.tabulator-row .tabulator-cell.dirWrap { white-space: normal;
+                                         overflow: visible;
+                                         text-overflow: clip;
+                                         word-break: break-word; }
 """
 
 class BrowserDirDynamic(BrowserDirBase):
@@ -382,18 +386,36 @@ class BrowserDirDynamic(BrowserDirBase):
     """
 
     def __init__(self, browserUrl, defaultDb, *, globalSearch=True,
-                 headerFilters=True, layout="fitDataFill",
+                 headerFilters=True, layout="fitColumns", colDefs=None,
                  tabulatorVersion=TABULATOR_VERSION, tabulatorOptions=None,
                  **kwargs):
         """globalSearch adds a search box that matches across all columns.
         headerFilters adds a per-column filter input under each header.  layout
-        is the Tabulator layout mode.  tabulatorOptions is an optional dict
-        merged into the Tabulator configuration.
+        is the Tabulator layout mode; the default "fitColumns" makes the
+        columns fill and resize with the window.
+
+        colDefs is an optional dict giving per-column behavior, keyed by column
+        name or zero-based index; each value is a dict with any of:
+          - wrap:     True to word-wrap the cell content
+          - width:    fixed width (int pixels or CSS string); the column does
+                      not flex
+          - minWidth: minimum width in pixels; a flexible column will not
+                      shrink (or clip) below this, so use it to keep a column
+                      at its data width
+          - grow:     widthGrow, the relative share of leftover width a
+                      flexible column claims (default 3 for a wrap column)
+          - shrink:   widthShrink
+        A wrapping column with no explicit width defaults to grow=3 and
+        minWidth=120 so it absorbs width and re-flows as the window resizes.
+
+        tabulatorOptions is an optional dict merged into the Tabulator
+        configuration.
         """
         super().__init__(browserUrl, defaultDb, **kwargs)
         self.globalSearch = globalSearch
         self.headerFilters = headerFilters
         self.layout = layout
+        self.colDefs = colDefs or {}
         self.tabulatorVersion = tabulatorVersion
         self.tabulatorOptions = tabulatorOptions
 
@@ -404,13 +426,39 @@ class BrowserDirDynamic(BrowserDirBase):
         ncols = self.rows[0].numColumns() if self.rows else 0
         return ["col{}".format(i + 1) for i in range(ncols)]
 
+    def _colDef(self, i, title):
+        "per-column definition dict, looked up by name then index"
+        cd = self.colDefs.get(title)
+        if cd is None:
+            cd = self.colDefs.get(i)
+        return cd or {}
+
+    def _applyColDef(self, entry, cd):
+        "merge a colDefs entry into the client column spec, with wrap defaults"
+        wrap = bool(cd.get("wrap"))
+        if wrap:
+            entry["wrap"] = True
+        if "width" in cd:
+            entry["width"] = cd["width"]
+        flexWrap = wrap and ("width" not in cd)   # a wrap column that flexes
+        grow = cd.get("grow", 3 if flexWrap else None)
+        if grow is not None:
+            entry["grow"] = grow
+        minWidth = cd.get("minWidth", 120 if flexWrap else None)
+        if minWidth is not None:
+            entry["minWidth"] = minWidth
+        if "shrink" in cd:
+            entry["shrink"] = cd["shrink"]
+
     def _colSpec(self):
         "specification of columns, passed to the client as JSON"
         spec = []
         for i, title in enumerate(self._colTitles()):
-            spec.append({"title": title, "field": "c{}".format(i),
-                         "sortField": "c{}s".format(i),
-                         "textField": "c{}t".format(i)})
+            entry = {"title": title, "field": "c{}".format(i),
+                     "sortField": "c{}s".format(i),
+                     "textField": "c{}t".format(i)}
+            self._applyColDef(entry, self._colDef(i, title))
+            spec.append(entry)
         return spec
 
     def _rowData(self, row, rowId):
@@ -485,6 +533,11 @@ var _columns = _colSpec.map(function(c) {
         col.headerFilterFunc = _colFilter;
         col.headerFilterFuncParams = {field: c.textField};
     }
+    if (c.wrap) col.cssClass = "dirWrap";
+    if ("width" in c) col.width = c.width;       // fixed; does not flex
+    if ("minWidth" in c) col.minWidth = c.minWidth;
+    if ("grow" in c) col.widthGrow = c.grow;
+    if ("shrink" in c) col.widthShrink = c.shrink;
     return col;
 });
 var _currentId = null;

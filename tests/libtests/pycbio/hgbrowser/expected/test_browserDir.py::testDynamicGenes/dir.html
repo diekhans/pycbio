@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+<title>hg38 genes</title>
+<link href="https://unpkg.com/tabulator-tables@6.5.2/dist/css/tabulator.min.css" rel="stylesheet">
+<script src="https://unpkg.com/tabulator-tables@6.5.2/dist/js/tabulator.min.js"></script>
+<style type="text/css">
+
+html, body { height: 100%; margin: 0; }
+body { display: flex; flex-direction: column; font-family: sans-serif; }
+#dirSearchBar { padding: 4px; flex: 0 0 auto; }
+#dirSearch { width: 20em; }
+#dirTable { flex: 1 1 auto; }
+.tabulator-row.dirCurrent { background-color: #ffe08a !important;
+                            box-shadow: inset 3px 0 0 #d97706; }
+.tabulator-row .tabulator-cell.dirWrap { white-space: normal;
+                                         overflow: visible;
+                                         text-overflow: clip;
+                                         word-break: break-word; }
+
+</style>
+</head>
+<body>
+<h3>hg38 genes</h3>
+<div id="dirSearchBar">
+Search: <input id="dirSearch" type="text" oninput="_dirGlobalSearch()" placeholder="search all columns">
+</div>
+<div id="dirTable"></div>
+<script>
+
+function _keySort(a, b, aRow, bRow, column, dir, params) {
+    var x = aRow.getData()[params.field];
+    var y = bRow.getData()[params.field];
+    if (x === y) return 0;
+    return (x > y) ? 1 : -1;
+}
+function _colFilter(headerValue, rowValue, rowData, params) {
+    var t = ("" + (rowData[params.field] || "")).toLowerCase();
+    return t.indexOf(("" + headerValue).toLowerCase()) > -1;
+}
+function _anySearch(data, params) {
+    for (var i = 0; i < params.fields.length; i++) {
+        var t = ("" + (data[params.fields[i]] || "")).toLowerCase();
+        if (t.indexOf(params.value) > -1) return true;
+    }
+    return false;
+}
+
+var _colSpec = [{"title": "position", "field": "c0", "sortField": "c0s", "textField": "c0t", "minWidth": 230}, {"title": "gene", "field": "c1", "sortField": "c1s", "textField": "c1t"}, {"title": "description", "field": "c2", "sortField": "c2s", "textField": "c2t", "wrap": true, "grow": 3, "minWidth": 120}, {"title": "status", "field": "c3", "sortField": "c3s", "textField": "c3t"}];
+var _tableData = [{"_id": 0, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr17%3A43044296-43125483\" target=browser>chr17:43044296-43125483<\/a>", "c0s": "017\t000043044295", "c0t": "chr17:43044296-43125483", "c1": "BRCA1", "c1s": "BRCA1", "c1t": "BRCA1", "c2": "DNA repair; breast/ovarian cancer susceptibility", "c2s": "DNA repair; breast/ovarian cancer susceptibility", "c2t": "DNA repair; breast/ovarian cancer susceptibility", "c3": "done", "c3s": "done", "c3t": "done", "_cls": "great"}, {"_id": 1, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr7%3A55019018-55211628\" target=browser>chr7:55019018-55211628<\/a>", "c0s": "007\t000055019017", "c0t": "chr7:55019018-55211628", "c1": "EGFR", "c1s": "EGFR", "c1t": "EGFR", "c2": "epidermal growth factor receptor; amplified in tumors", "c2s": "epidermal growth factor receptor; amplified in tumors", "c2t": "epidermal growth factor receptor; amplified in tumors", "c3": "done", "c3s": "done", "c3t": "done", "_cls": "great"}, {"_id": 2, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr8%3A127735435-127742951\" target=browser>chr8:127735435-127742951<\/a>", "c0s": "008\t000127735434", "c0t": "chr8:127735435-127742951", "c1": "MYC", "c1s": "MYC", "c1t": "MYC", "c2": "MYC proto-oncogene, bHLH transcription factor", "c2s": "MYC proto-oncogene, bHLH transcription factor", "c2t": "MYC proto-oncogene, bHLH transcription factor", "c3": "review", "c3s": "review", "c3t": "review"}, {"_id": 3, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr13%3A32315087-32400268\" target=browser>chr13:32315087-32400268<\/a>", "c0s": "013\t000032315086", "c0t": "chr13:32315087-32400268", "c1": "BRCA2", "c1s": "BRCA2", "c1t": "BRCA2", "c2": "DNA repair; Fanconi anemia complementation group", "c2s": "DNA repair; Fanconi anemia complementation group", "c2t": "DNA repair; Fanconi anemia complementation group", "c3": "review", "c3s": "review", "c3t": "review"}, {"_id": 4, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr10%3A87863626-87971930\" target=browser>chr10:87863626-87971930<\/a>", "c0s": "010\t000087863625", "c0t": "chr10:87863626-87971930", "c1": "PTEN", "c1s": "PTEN", "c1t": "PTEN", "c2": "phosphatase and tensin homolog; tumor suppressor", "c2s": "phosphatase and tensin homolog; tumor suppressor", "c2t": "phosphatase and tensin homolog; tumor suppressor", "c3": "todo", "c3s": "todo", "c3t": "todo"}, {"_id": 5, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr2%3A47403068-47634501\" target=browser>chr2:47403068-47634501<\/a>", "c0s": "002\t000047403067", "c0t": "chr2:47403068-47634501", "c1": "MSH2", "c1s": "MSH2", "c1t": "MSH2", "c2": "mutS homolog 2; Lynch syndrome mismatch repair", "c2s": "mutS homolog 2; Lynch syndrome mismatch repair", "c2t": "mutS homolog 2; Lynch syndrome mismatch repair", "c3": "todo", "c3s": "todo", "c3t": "todo"}];
+var _opts = {"globalSearch": true, "headerFilters": true, "layout": "fitColumns", "extra": {}};
+
+var _columns = _colSpec.map(function(c) {
+    var col = {title: c.title, field: c.field, formatter: "html",
+               sorter: _keySort, sorterParams: {field: c.sortField}};
+    if (_opts.headerFilters) {
+        col.headerFilter = "input";
+        col.headerFilterFunc = _colFilter;
+        col.headerFilterFuncParams = {field: c.textField};
+    }
+    if (c.wrap) col.cssClass = "dirWrap";
+    if ("width" in c) col.width = c.width;       // fixed; does not flex
+    if ("minWidth" in c) col.minWidth = c.minWidth;
+    if ("grow" in c) col.widthGrow = c.grow;
+    if ("shrink" in c) col.widthShrink = c.shrink;
+    return col;
+});
+var _currentId = null;
+var _config = {data: _tableData, columns: _columns, layout: _opts.layout,
+               height: "100%", index: "_id",
+               rowFormatter: function(row) {
+                   var el = row.getElement();
+                   var data = row.getData();
+                   if (data._cls) el.classList.add(data._cls);
+                   if (data._id === _currentId) {
+                       el.classList.add("dirCurrent");
+                   } else {
+                       el.classList.remove("dirCurrent");
+                   }
+               }};
+for (var k in _opts.extra) { _config[k] = _opts.extra[k]; }
+var _dirTable = new Tabulator("#dirTable", _config);
+// Tabulator 6 requires event callbacks to be registered via on(), not as
+// constructor options.  Highlight the row whose link was last clicked.
+function _dirSetCurrent(e, row) {
+    if (!e.target.closest("a")) return;
+    var prevId = _currentId;
+    _currentId = row.getData()._id;
+    if (prevId !== null) {
+        var prev = _dirTable.getRow(prevId);
+        if (prev) prev.reformat();
+    }
+    row.reformat();
+}
+_dirTable.on("rowClick", _dirSetCurrent);
+var _searchFields = _colSpec.map(function(c) { return c.textField; });
+function _dirGlobalSearch() {
+    var v = document.getElementById("dirSearch").value.toLowerCase();
+    if (v === "") {
+        _dirTable.clearFilter();
+    } else {
+        _dirTable.setFilter(_anySearch, {fields: _searchFields, value: v});
+    }
+}
+
+</script>
+</body></html>
