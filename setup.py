@@ -18,6 +18,7 @@ requirements = [
     'flake8',
     'pyBigWig',
     'pysam',
+    'openpyxl',
 ]
 
 if have_mysql_client_lib():

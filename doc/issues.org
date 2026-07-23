@@ -476,3 +476,5 @@ see bin/mirna-compare-summary
    tw.writeColumns(mirgenedb_gene=summ.mirgenedb_gene, hgnc_symbol$
                             **class_counts(summ.idc, summ.mapc)._asdict())
 
+* a Counter-like class that used fieldnames
+or this already exist
