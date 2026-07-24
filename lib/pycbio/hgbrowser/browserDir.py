@@ -386,10 +386,14 @@ function _rangeEditor(cell, onRendered, success, cancel, params) {
     lo.type = hi.type = "number";
     lo.placeholder = "min";
     hi.placeholder = "max";
-    function commit() {
-        success({min: lo.value === "" ? null : parseFloat(lo.value),
-                 max: hi.value === "" ? null : parseFloat(hi.value)});
+    function val() {
+        return {min: lo.value === "" ? null : parseFloat(lo.value),
+                max: hi.value === "" ? null : parseFloat(hi.value)};
     }
+    // Tabulator's live filter calls success(editorElement.value); expose the
+    // range object as the element's value so that path works, not just ours.
+    Object.defineProperty(wrap, "value", {get: val});
+    function commit() { success(val()); }
     function stop(e) { e.stopPropagation(); }
     function key(e) { if (e.key === "Escape") cancel(); e.stopPropagation(); }
     lo.addEventListener("input", commit);
