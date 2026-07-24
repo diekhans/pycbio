@@ -110,6 +110,7 @@ var _columns = _colSpec.map(function(c) {
         }
     }
     if (c.wrap) col.cssClass = "dirWrap";
+    if (c.headerWrap) col.headerWordWrap = true;
     if ("align" in c) { col.hozAlign = c.align; col.headerHozAlign = c.align; }
     if ("width" in c) col.width = c.width;       // fixed; does not flex
     if ("minWidth" in c) col.minWidth = c.minWidth;

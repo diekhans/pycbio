@@ -449,29 +449,33 @@ class BrowserDirDynamic(BrowserDirBase):
     """
 
     def __init__(self, browserUrl, defaultDb, *, globalSearch=True,
-                 headerFilters=True, layout="fitColumns", colDefs=None,
-                 tabulatorVersion=TABULATOR_VERSION, tabulatorOptions=None,
-                 **kwargs):
+                 headerFilters=True, headerWrap=False, layout="fitColumns",
+                 colDefs=None, tabulatorVersion=TABULATOR_VERSION,
+                 tabulatorOptions=None, **kwargs):
         """globalSearch adds a search box that matches across all columns.
-        headerFilters adds a per-column filter input under each header.  layout
-        is the Tabulator layout mode; the default "fitColumns" makes the
-        columns fill and resize with the window.
+        headerFilters adds a per-column filter input under each header.
+        headerWrap word-wraps the column-name titles of all columns (a column
+        can override this with its own headerWrap in colDefs).  layout is the
+        Tabulator layout mode; the default "fitColumns" makes the columns fill
+        and resize with the window.
 
         colDefs is an optional dict giving per-column behavior, keyed by column
         name or zero-based index; each value is a dict with any of:
-          - wrap:     True to word-wrap the cell content
-          - width:    fixed width (int pixels or CSS string); the column does
-                      not flex
-          - minWidth: minimum width in pixels; a flexible column will not
-                      shrink (or clip) below this, so use it to keep a column
-                      at its data width
-          - grow:     widthGrow, the relative share of leftover width a
-                      flexible column claims (default 3 for a wrap column)
-          - shrink:   widthShrink
-          - filter:   "text" (default, substring match), "range" (numeric
-                      min/max filter), or "none" (no header filter)
-          - align:    horizontal alignment "left", "center", or "right"
-                      (header and cells); "range" columns default to "right"
+          - wrap:       True to word-wrap the cell content
+          - headerWrap: True/False to word-wrap this column's name (overrides
+                        the table-wide headerWrap)
+          - width:      fixed width (int pixels or CSS string); the column does
+                        not flex
+          - minWidth:   minimum width in pixels; a flexible column will not
+                        shrink (or clip) below this, so use it to keep a column
+                        at its data width
+          - grow:       widthGrow, the relative share of leftover width a
+                        flexible column claims (default 3 for a wrap column)
+          - shrink:     widthShrink
+          - filter:     "text" (default, substring match), "range" (numeric
+                        min/max filter), or "none" (no header filter)
+          - align:      horizontal alignment "left", "center", or "right"
+                        (header and cells); "range" columns default to "right"
         A wrapping column with no explicit width defaults to grow=3 and
         minWidth=120 so it absorbs width and re-flows as the window resizes.
         A "range" filter column needs a numeric value per cell (a Cell whose
@@ -483,6 +487,7 @@ class BrowserDirDynamic(BrowserDirBase):
         super().__init__(browserUrl, defaultDb, **kwargs)
         self.globalSearch = globalSearch
         self.headerFilters = headerFilters
+        self.headerWrap = headerWrap
         self.layout = layout
         self.colDefs = colDefs or {}
         self.tabulatorVersion = tabulatorVersion
@@ -540,6 +545,8 @@ class BrowserDirDynamic(BrowserDirBase):
             align = cd.get("align", "right" if filterType == "range" else None)
             if align is not None:
                 entry["align"] = align
+            if cd.get("headerWrap", self.headerWrap):
+                entry["headerWrap"] = True
             spec.append(entry)
         return spec
 
@@ -632,6 +639,7 @@ var _columns = _colSpec.map(function(c) {
         }
     }
     if (c.wrap) col.cssClass = "dirWrap";
+    if (c.headerWrap) col.headerWordWrap = true;
     if ("align" in c) { col.hozAlign = c.align; col.headerHozAlign = c.align; }
     if ("width" in c) col.width = c.width;       // fixed; does not flex
     if ("minWidth" in c) col.minWidth = c.minWidth;

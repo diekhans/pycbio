@@ -142,7 +142,8 @@ def _genesTest(outDir):
                                          colNames=_genesCols, style=css,
                                          title="hg38 genes", dirPercent=45,
                                          colDefs={"position": {"minWidth": 230},
-                                                  "description": {"wrap": True},
+                                                  "description": {"wrap": True,
+                                                                  "headerWrap": True},
                                                   "length": {"filter": "range"}})
     for gene in _genesData:
         _genesAddRow(brDir, gene)
