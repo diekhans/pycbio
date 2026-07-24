@@ -142,6 +142,7 @@ def _genesTest(outDir):
                                          colNames=_genesCols, style=css,
                                          title="hg38 genes", dirPercent=45,
                                          colDefs={"position": {"minWidth": 230},
+                                                  "gene": {"fit": True},
                                                   "description": {"wrap": True,
                                                                   "headerWrap": True},
                                                   "length": {"filter": "range"}})
@@ -152,6 +153,60 @@ def _genesTest(outDir):
 def testDynamicGenes(request):
     outDir = ts.get_test_output_file(request)
     _genesTest(outDir)
+    assert osp.exists(osp.join(outDir, "index.html"))
+    assert osp.exists(osp.join(outDir, "dir.html"))
+    _diffDir(request)
+
+
+##
+# per-assembly miRNA gene table (mirrors hub-geneset-browser): one row per
+# merged locus, all loci of a gene share the copies count; numeric copies
+# column with a range filter; location columns are HTML anchors whose text
+# (the position) sorts/filters/fits; GRCh38 location empty when no ref locus
+##
+_mirnaAssembly = "GCA_018852605.1"
+_mirnaCols = ("gene", "family", "gene_id", "copies", "conflict",
+              "assembly location", "GRCh38 location")
+
+# (gene, family, gene_id, copies, conflict, assembly_pos, grch38_pos or None)
+_mirnaData = (
+    ("Hsa-Mir-21", "MIR-21", "ENSG00000284190", 1, "no", "chr17:59841266-59841337", "chr17:59841266-59841337"),
+    ("Hsa-Mir-10a", "MIR-10", "ENSG00000284420", 2, "no", "chr17:48632267-48632377", "chr17:48632267-48632377"),
+    ("Hsa-Mir-10a", "MIR-10", "ENSG00000284420", 2, "gene", "chr17:48640001-48640110", "chr17:48632267-48632377"),
+    ("Hsa-Mir-10b", "MIR-10", "ENSG00000207996", 1, "gene", "chr2:176155838-176155948", "chr2:176155838-176155948"),
+    ("Hsa-Let-7a-1", "LET-7", "ENSG00000199165", 3, "no", "chr9:94175957-94176036", "chr9:94175957-94176036"),
+    ("Hsa-Let-7a-1", "LET-7", "ENSG00000199165", 3, "family", "chr9:94180500-94180579", "chr9:94175957-94176036"),
+    ("Hsa-Let-7a-1", "LET-7", "ENSG00000199165", 3, "family", "chr9:94190100-94190179", "chr9:94175957-94176036"),
+    ("Hsa-Mir-451a", "MIR-451", "ENSG00000284567", 1, "no", "chr17:28861371-28861442", "chr17:28861371-28861442"),
+    ("Hsa-Mir-127", "MIR-127", "Mir-127", 1, "no", "chr14:100882979-100883075", None),
+    ("Hsa-Mir-9-1", "MIR-9", "ENSG00000207828", 5, "gene", "chr1:156390133-156390221", "chr1:156390133-156390221"),
+    ("Hsa-Mir-9-1", "MIR-9", "ENSG00000207828", 5, "no", "chr1:156400000-156400088", "chr1:156390133-156390221"),
+    ("Hsa-Mir-9-1", "MIR-9", "ENSG00000207828", 5, "family", "chr1:156410000-156410088", "chr1:156390133-156390221"),
+    ("Hsa-Mir-1246", "MIR-1246", "Mir-1246", 8, "family", "chr2:176100050-176100160", None),
+    ("Hsa-Mir-1246", "MIR-1246", "Mir-1246", 8, "family", "chr2:176120050-176120160", None),
+    ("Hsa-Mir-3648", "MIR-3648", "ENSG00000271528", 2, "no", "chr21:8205348-8205422", "chr21:8205348-8205422"))
+
+def _mirnaAddRow(brDir, rec):
+    gene, family, geneId, copies, conflict, asmPos, refPos = rec
+    asmCell = brDir.mkAnchor(asmPos)
+    refCell = brDir.mkAnchor(refPos, db="hg38") if refPos else ""
+    row = (gene, family, geneId, browserDir.Cell(copies), conflict, asmCell, refCell)
+    brDir.addRow(row)
+
+def _mirnaTest(outDir):
+    brDir = browserDir.BrowserDirDynamic(browserDir.GENOME_UCSC_URL, _mirnaAssembly,
+                                         colNames=_mirnaCols, dirPercent=100,
+                                         title="miRNA loci ({})".format(_mirnaAssembly),
+                                         colDefs={"copies": {"filter": "range"},
+                                                  "assembly location": {"expand": True},
+                                                  "GRCh38 location": {"expand": True}})
+    for rec in _mirnaData:
+        _mirnaAddRow(brDir, rec)
+    brDir.write(outDir)
+
+def testDynamicMirna(request):
+    outDir = ts.get_test_output_file(request)
+    _mirnaTest(outDir)
     assert osp.exists(osp.join(outDir, "index.html"))
     assert osp.exists(osp.join(outDir, "dir.html"))
     _diffDir(request)

@@ -1,0 +1,206 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+<title>miRNA loci (GCA_018852605.1)</title>
+<link href="https://unpkg.com/tabulator-tables@6.5.2/dist/css/tabulator.min.css" rel="stylesheet">
+<script src="https://unpkg.com/tabulator-tables@6.5.2/dist/js/tabulator.min.js"></script>
+<style type="text/css">
+
+html, body { height: 100%; margin: 0; }
+body { display: flex; flex-direction: column; font-family: sans-serif; }
+#dirSearchBar { padding: 4px; flex: 0 0 auto; }
+#dirSearch { width: 20em; }
+#dirTable { flex: 1 1 auto; }
+.tabulator-row.dirCurrent { background-color: #ffe08a !important;
+                            box-shadow: inset 3px 0 0 #d97706; }
+.tabulator-row .tabulator-cell.dirWrap { white-space: normal;
+                                         overflow: visible;
+                                         text-overflow: clip;
+                                         word-break: break-word; }
+.dirRange { display: flex; gap: 2px; }
+.dirRange input { width: 50%; box-sizing: border-box; }
+.dirRange input::-webkit-outer-spin-button,
+.dirRange input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.dirRange input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+
+</style>
+</head>
+<body>
+<h3>miRNA loci (GCA_018852605.1)</h3>
+<div id="dirSearchBar">
+Search: <input id="dirSearch" type="text" oninput="_dirGlobalSearch()" placeholder="search all columns">
+</div>
+<div id="dirTable"></div>
+<script>
+
+function _keySort(a, b, aRow, bRow, column, dir, params) {
+    var x = aRow.getData()[params.field];
+    var y = bRow.getData()[params.field];
+    if (params.numeric) {
+        x = parseFloat(x); y = parseFloat(y);
+        if (isNaN(x)) x = -Infinity;
+        if (isNaN(y)) y = -Infinity;
+    }
+    if (x === y) return 0;
+    return (x > y) ? 1 : -1;
+}
+function _colFilter(headerValue, rowValue, rowData, params) {
+    var t = ("" + (rowData[params.field] || "")).toLowerCase();
+    return t.indexOf(("" + headerValue).toLowerCase()) > -1;
+}
+function _anySearch(data, params) {
+    for (var i = 0; i < params.fields.length; i++) {
+        var t = ("" + (data[params.fields[i]] || "")).toLowerCase();
+        if (t.indexOf(params.value) > -1) return true;
+    }
+    return false;
+}
+function _rangeEditor(cell, onRendered, success, cancel, params) {
+    var wrap = document.createElement("span");
+    var lo = document.createElement("input");
+    var hi = document.createElement("input");
+    wrap.className = "dirRange";
+    lo.type = hi.type = "number";
+    lo.placeholder = "min";
+    hi.placeholder = "max";
+    function val() {
+        return {min: lo.value === "" ? null : parseFloat(lo.value),
+                max: hi.value === "" ? null : parseFloat(hi.value)};
+    }
+    // Tabulator's live filter calls success(editorElement.value); expose the
+    // range object as the element's value so that path works, not just ours.
+    Object.defineProperty(wrap, "value", {get: val});
+    function commit() { success(val()); }
+    function stop(e) { e.stopPropagation(); }
+    function key(e) { if (e.key === "Escape") cancel(); e.stopPropagation(); }
+    lo.addEventListener("input", commit);
+    hi.addEventListener("input", commit);
+    lo.addEventListener("keydown", key);
+    hi.addEventListener("keydown", key);
+    lo.addEventListener("mousedown", stop);
+    hi.addEventListener("mousedown", stop);
+    wrap.appendChild(lo);
+    wrap.appendChild(hi);
+    return wrap;
+}
+function _rangeFilter(headerValue, rowValue, rowData, params) {
+    var n = rowData[params.field];
+    if (n === null || n === undefined || n === "") return false;
+    n = parseFloat(n);
+    if (isNaN(n)) return false;
+    if (headerValue.min !== null && n < headerValue.min) return false;
+    if (headerValue.max !== null && n > headerValue.max) return false;
+    return true;
+}
+function _rangeEmpty(value) {
+    return (value == null) || (value.min == null && value.max == null);
+}
+function _fontOf(el, fallback) {
+    if (!el) return fallback;
+    var cs = getComputedStyle(el);
+    return cs.fontStyle + " " + cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily;
+}
+// Size each fit column to the widest of its data (and header, unless it
+// wraps).  The width is set as the column's preferred width; the column also
+// has widthShrink so it gives space back (rather than forcing horizontal
+// scroll) when the window is too narrow for every column at full width.
+function _fitColumnWidths() {
+    var fits = _colSpec.filter(function(c) { return c.fit; });
+    if (!fits.length) return;
+    var el = _dirTable.element;
+    var cellFont = _fontOf(el.querySelector(".tabulator-cell"), "14px sans-serif");
+    var hdrFont = _fontOf(el.querySelector(".tabulator-col-title"), cellFont);
+    var ctx = document.createElement("canvas").getContext("2d");
+    fits.forEach(function(c) {
+        ctx.font = cellFont;
+        var w = 0;
+        for (var i = 0; i < _tableData.length; i++) {
+            var t = _tableData[i][c.textField];
+            var cw = ctx.measureText(t == null ? "" : ("" + t)).width;
+            if (cw > w) w = cw;
+        }
+        var need = w + 8;                    // cell padding
+        if (!c.headerWrap) {                 // header must fit on one line too
+            ctx.font = hdrFont;
+            need = Math.max(need, ctx.measureText(c.title).width + 22);
+        }
+        if (c.filter === "range") {          // room for the min/max inputs
+            need = Math.max(need, 70);
+        }
+        var col = _dirTable.getColumn(c.field);
+        if (col) col.getDefinition().width = Math.ceil(need);
+    });
+    _dirTable.redraw(true);
+}
+
+var _colSpec = [{"title": "gene", "field": "c0", "sortField": "c0s", "textField": "c0t", "fit": true}, {"title": "family", "field": "c1", "sortField": "c1s", "textField": "c1t", "fit": true}, {"title": "gene_id", "field": "c2", "sortField": "c2s", "textField": "c2t", "fit": true}, {"title": "copies", "field": "c3", "sortField": "c3s", "textField": "c3t", "filter": "range", "numberField": "c3n", "align": "right", "numericSort": true, "fit": true}, {"title": "conflict", "field": "c4", "sortField": "c4s", "textField": "c4t", "fit": true}, {"title": "assembly location", "field": "c5", "sortField": "c5s", "textField": "c5t", "grow": 1, "minWidth": 60}, {"title": "GRCh38 location", "field": "c6", "sortField": "c6s", "textField": "c6t", "grow": 1, "minWidth": 60}];
+var _tableData = [{"_id": 0, "c0": "Hsa-Mir-21", "c0s": "Hsa-Mir-21", "c0t": "Hsa-Mir-21", "c1": "MIR-21", "c1s": "MIR-21", "c1t": "MIR-21", "c2": "ENSG00000284190", "c2s": "ENSG00000284190", "c2t": "ENSG00000284190", "c3": "1", "c3s": "1", "c3t": "1", "c3n": 1, "c4": "no", "c4s": "no", "c4t": "no", "c5": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=GCA_018852605.1&genome=GCA_018852605.1&position=chr17%3A59841266-59841337\" target=browser>chr17:59841266-59841337<\/a>", "c5s": "chr17:59841266-59841337", "c5t": "chr17:59841266-59841337", "c6": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr17%3A59841266-59841337\" target=browser>chr17:59841266-59841337<\/a>", "c6s": "chr17:59841266-59841337", "c6t": "chr17:59841266-59841337"}, {"_id": 1, "c0": "Hsa-Mir-10a", "c0s": "Hsa-Mir-10a", "c0t": "Hsa-Mir-10a", "c1": "MIR-10", "c1s": "MIR-10", "c1t": "MIR-10", "c2": "ENSG00000284420", "c2s": "ENSG00000284420", "c2t": "ENSG00000284420", "c3": "2", "c3s": "2", "c3t": "2", "c3n": 2, "c4": "no", "c4s": "no", "c4t": "no", "c5": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=GCA_018852605.1&genome=GCA_018852605.1&position=chr17%3A48632267-48632377\" target=browser>chr17:48632267-48632377<\/a>", "c5s": "chr17:48632267-48632377", "c5t": "chr17:48632267-48632377", "c6": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr17%3A48632267-48632377\" target=browser>chr17:48632267-48632377<\/a>", "c6s": "chr17:48632267-48632377", "c6t": "chr17:48632267-48632377"}, {"_id": 2, "c0": "Hsa-Mir-10a", "c0s": "Hsa-Mir-10a", "c0t": "Hsa-Mir-10a", "c1": "MIR-10", "c1s": "MIR-10", "c1t": "MIR-10", "c2": "ENSG00000284420", "c2s": "ENSG00000284420", "c2t": "ENSG00000284420", "c3": "2", "c3s": "2", "c3t": "2", "c3n": 2, "c4": "gene", "c4s": "gene", "c4t": "gene", "c5": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=GCA_018852605.1&genome=GCA_018852605.1&position=chr17%3A48640001-48640110\" target=browser>chr17:48640001-48640110<\/a>", "c5s": "chr17:48640001-48640110", "c5t": "chr17:48640001-48640110", "c6": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr17%3A48632267-48632377\" target=browser>chr17:48632267-48632377<\/a>", "c6s": "chr17:48632267-48632377", "c6t": "chr17:48632267-48632377"}, {"_id": 3, "c0": "Hsa-Mir-10b", "c0s": "Hsa-Mir-10b", "c0t": "Hsa-Mir-10b", "c1": "MIR-10", "c1s": "MIR-10", "c1t": "MIR-10", "c2": "ENSG00000207996", "c2s": "ENSG00000207996", "c2t": "ENSG00000207996", "c3": "1", "c3s": "1", "c3t": "1", "c3n": 1, "c4": "gene", "c4s": "gene", "c4t": "gene", "c5": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=GCA_018852605.1&genome=GCA_018852605.1&position=chr2%3A176155838-176155948\" target=browser>chr2:176155838-176155948<\/a>", "c5s": "chr2:176155838-176155948", "c5t": "chr2:176155838-176155948", "c6": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr2%3A176155838-176155948\" target=browser>chr2:176155838-176155948<\/a>", "c6s": "chr2:176155838-176155948", "c6t": "chr2:176155838-176155948"}, {"_id": 4, "c0": "Hsa-Let-7a-1", "c0s": "Hsa-Let-7a-1", "c0t": "Hsa-Let-7a-1", "c1": "LET-7", "c1s": "LET-7", "c1t": "LET-7", "c2": "ENSG00000199165", "c2s": "ENSG00000199165", "c2t": "ENSG00000199165", "c3": "3", "c3s": "3", "c3t": "3", "c3n": 3, "c4": "no", "c4s": "no", "c4t": "no", "c5": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=GCA_018852605.1&genome=GCA_018852605.1&position=chr9%3A94175957-94176036\" target=browser>chr9:94175957-94176036<\/a>", "c5s": "chr9:94175957-94176036", "c5t": "chr9:94175957-94176036", "c6": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr9%3A94175957-94176036\" target=browser>chr9:94175957-94176036<\/a>", "c6s": "chr9:94175957-94176036", "c6t": "chr9:94175957-94176036"}, {"_id": 5, "c0": "Hsa-Let-7a-1", "c0s": "Hsa-Let-7a-1", "c0t": "Hsa-Let-7a-1", "c1": "LET-7", "c1s": "LET-7", "c1t": "LET-7", "c2": "ENSG00000199165", "c2s": "ENSG00000199165", "c2t": "ENSG00000199165", "c3": "3", "c3s": "3", "c3t": "3", "c3n": 3, "c4": "family", "c4s": "family", "c4t": "family", "c5": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=GCA_018852605.1&genome=GCA_018852605.1&position=chr9%3A94180500-94180579\" target=browser>chr9:94180500-94180579<\/a>", "c5s": "chr9:94180500-94180579", "c5t": "chr9:94180500-94180579", "c6": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr9%3A94175957-94176036\" target=browser>chr9:94175957-94176036<\/a>", "c6s": "chr9:94175957-94176036", "c6t": "chr9:94175957-94176036"}, {"_id": 6, "c0": "Hsa-Let-7a-1", "c0s": "Hsa-Let-7a-1", "c0t": "Hsa-Let-7a-1", "c1": "LET-7", "c1s": "LET-7", "c1t": "LET-7", "c2": "ENSG00000199165", "c2s": "ENSG00000199165", "c2t": "ENSG00000199165", "c3": "3", "c3s": "3", "c3t": "3", "c3n": 3, "c4": "family", "c4s": "family", "c4t": "family", "c5": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=GCA_018852605.1&genome=GCA_018852605.1&position=chr9%3A94190100-94190179\" target=browser>chr9:94190100-94190179<\/a>", "c5s": "chr9:94190100-94190179", "c5t": "chr9:94190100-94190179", "c6": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr9%3A94175957-94176036\" target=browser>chr9:94175957-94176036<\/a>", "c6s": "chr9:94175957-94176036", "c6t": "chr9:94175957-94176036"}, {"_id": 7, "c0": "Hsa-Mir-451a", "c0s": "Hsa-Mir-451a", "c0t": "Hsa-Mir-451a", "c1": "MIR-451", "c1s": "MIR-451", "c1t": "MIR-451", "c2": "ENSG00000284567", "c2s": "ENSG00000284567", "c2t": "ENSG00000284567", "c3": "1", "c3s": "1", "c3t": "1", "c3n": 1, "c4": "no", "c4s": "no", "c4t": "no", "c5": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=GCA_018852605.1&genome=GCA_018852605.1&position=chr17%3A28861371-28861442\" target=browser>chr17:28861371-28861442<\/a>", "c5s": "chr17:28861371-28861442", "c5t": "chr17:28861371-28861442", "c6": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr17%3A28861371-28861442\" target=browser>chr17:28861371-28861442<\/a>", "c6s": "chr17:28861371-28861442", "c6t": "chr17:28861371-28861442"}, {"_id": 8, "c0": "Hsa-Mir-127", "c0s": "Hsa-Mir-127", "c0t": "Hsa-Mir-127", "c1": "MIR-127", "c1s": "MIR-127", "c1t": "MIR-127", "c2": "Mir-127", "c2s": "Mir-127", "c2t": "Mir-127", "c3": "1", "c3s": "1", "c3t": "1", "c3n": 1, "c4": "no", "c4s": "no", "c4t": "no", "c5": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=GCA_018852605.1&genome=GCA_018852605.1&position=chr14%3A100882979-100883075\" target=browser>chr14:100882979-100883075<\/a>", "c5s": "chr14:100882979-100883075", "c5t": "chr14:100882979-100883075", "c6": "", "c6s": "", "c6t": ""}, {"_id": 9, "c0": "Hsa-Mir-9-1", "c0s": "Hsa-Mir-9-1", "c0t": "Hsa-Mir-9-1", "c1": "MIR-9", "c1s": "MIR-9", "c1t": "MIR-9", "c2": "ENSG00000207828", "c2s": "ENSG00000207828", "c2t": "ENSG00000207828", "c3": "5", "c3s": "5", "c3t": "5", "c3n": 5, "c4": "gene", "c4s": "gene", "c4t": "gene", "c5": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=GCA_018852605.1&genome=GCA_018852605.1&position=chr1%3A156390133-156390221\" target=browser>chr1:156390133-156390221<\/a>", "c5s": "chr1:156390133-156390221", "c5t": "chr1:156390133-156390221", "c6": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr1%3A156390133-156390221\" target=browser>chr1:156390133-156390221<\/a>", "c6s": "chr1:156390133-156390221", "c6t": "chr1:156390133-156390221"}, {"_id": 10, "c0": "Hsa-Mir-9-1", "c0s": "Hsa-Mir-9-1", "c0t": "Hsa-Mir-9-1", "c1": "MIR-9", "c1s": "MIR-9", "c1t": "MIR-9", "c2": "ENSG00000207828", "c2s": "ENSG00000207828", "c2t": "ENSG00000207828", "c3": "5", "c3s": "5", "c3t": "5", "c3n": 5, "c4": "no", "c4s": "no", "c4t": "no", "c5": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=GCA_018852605.1&genome=GCA_018852605.1&position=chr1%3A156400000-156400088\" target=browser>chr1:156400000-156400088<\/a>", "c5s": "chr1:156400000-156400088", "c5t": "chr1:156400000-156400088", "c6": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr1%3A156390133-156390221\" target=browser>chr1:156390133-156390221<\/a>", "c6s": "chr1:156390133-156390221", "c6t": "chr1:156390133-156390221"}, {"_id": 11, "c0": "Hsa-Mir-9-1", "c0s": "Hsa-Mir-9-1", "c0t": "Hsa-Mir-9-1", "c1": "MIR-9", "c1s": "MIR-9", "c1t": "MIR-9", "c2": "ENSG00000207828", "c2s": "ENSG00000207828", "c2t": "ENSG00000207828", "c3": "5", "c3s": "5", "c3t": "5", "c3n": 5, "c4": "family", "c4s": "family", "c4t": "family", "c5": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=GCA_018852605.1&genome=GCA_018852605.1&position=chr1%3A156410000-156410088\" target=browser>chr1:156410000-156410088<\/a>", "c5s": "chr1:156410000-156410088", "c5t": "chr1:156410000-156410088", "c6": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr1%3A156390133-156390221\" target=browser>chr1:156390133-156390221<\/a>", "c6s": "chr1:156390133-156390221", "c6t": "chr1:156390133-156390221"}, {"_id": 12, "c0": "Hsa-Mir-1246", "c0s": "Hsa-Mir-1246", "c0t": "Hsa-Mir-1246", "c1": "MIR-1246", "c1s": "MIR-1246", "c1t": "MIR-1246", "c2": "Mir-1246", "c2s": "Mir-1246", "c2t": "Mir-1246", "c3": "8", "c3s": "8", "c3t": "8", "c3n": 8, "c4": "family", "c4s": "family", "c4t": "family", "c5": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=GCA_018852605.1&genome=GCA_018852605.1&position=chr2%3A176100050-176100160\" target=browser>chr2:176100050-176100160<\/a>", "c5s": "chr2:176100050-176100160", "c5t": "chr2:176100050-176100160", "c6": "", "c6s": "", "c6t": ""}, {"_id": 13, "c0": "Hsa-Mir-1246", "c0s": "Hsa-Mir-1246", "c0t": "Hsa-Mir-1246", "c1": "MIR-1246", "c1s": "MIR-1246", "c1t": "MIR-1246", "c2": "Mir-1246", "c2s": "Mir-1246", "c2t": "Mir-1246", "c3": "8", "c3s": "8", "c3t": "8", "c3n": 8, "c4": "family", "c4s": "family", "c4t": "family", "c5": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=GCA_018852605.1&genome=GCA_018852605.1&position=chr2%3A176120050-176120160\" target=browser>chr2:176120050-176120160<\/a>", "c5s": "chr2:176120050-176120160", "c5t": "chr2:176120050-176120160", "c6": "", "c6s": "", "c6t": ""}, {"_id": 14, "c0": "Hsa-Mir-3648", "c0s": "Hsa-Mir-3648", "c0t": "Hsa-Mir-3648", "c1": "MIR-3648", "c1s": "MIR-3648", "c1t": "MIR-3648", "c2": "ENSG00000271528", "c2s": "ENSG00000271528", "c2t": "ENSG00000271528", "c3": "2", "c3s": "2", "c3t": "2", "c3n": 2, "c4": "no", "c4s": "no", "c4t": "no", "c5": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=GCA_018852605.1&genome=GCA_018852605.1&position=chr21%3A8205348-8205422\" target=browser>chr21:8205348-8205422<\/a>", "c5s": "chr21:8205348-8205422", "c5t": "chr21:8205348-8205422", "c6": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr21%3A8205348-8205422\" target=browser>chr21:8205348-8205422<\/a>", "c6s": "chr21:8205348-8205422", "c6t": "chr21:8205348-8205422"}];
+var _opts = {"globalSearch": true, "headerFilters": true, "layout": "fitColumns", "extra": {}};
+
+var _columns = _colSpec.map(function(c) {
+    var col = {title: c.title, field: c.field, formatter: "html",
+               sorter: _keySort,
+               sorterParams: {field: c.sortField, numeric: !!c.numericSort}};
+    if (_opts.headerFilters && c.filter !== "none") {
+        if (c.filter === "range") {
+            col.headerFilter = _rangeEditor;
+            col.headerFilterFunc = _rangeFilter;
+            col.headerFilterFuncParams = {field: c.numberField};
+            col.headerFilterEmptyCheck = _rangeEmpty;
+        } else {
+            col.headerFilter = "input";
+            col.headerFilterFunc = _colFilter;
+            col.headerFilterFuncParams = {field: c.textField};
+        }
+    }
+    if (c.wrap) col.cssClass = "dirWrap";
+    if (c.headerWrap) col.headerWordWrap = true;
+    if ("align" in c) col.hozAlign = c.align;               // data cells
+    if ("headerAlign" in c) col.headerHozAlign = c.headerAlign;
+    if ("width" in c) col.width = c.width;       // fixed; does not flex
+    if ("minWidth" in c) col.minWidth = c.minWidth;
+    if ("grow" in c) col.widthGrow = c.grow;
+    if (c.fit) col.widthShrink = 1;              // give space back before scrolling
+    if ("shrink" in c) col.widthShrink = c.shrink;
+    return col;
+});
+var _currentId = null;
+var _config = {data: _tableData, columns: _columns, layout: _opts.layout,
+               height: "100%", index: "_id",
+               rowFormatter: function(row) {
+                   var el = row.getElement();
+                   var data = row.getData();
+                   if (data._cls) el.classList.add(data._cls);
+                   if (data._id === _currentId) {
+                       el.classList.add("dirCurrent");
+                   } else {
+                       el.classList.remove("dirCurrent");
+                   }
+               }};
+for (var k in _opts.extra) { _config[k] = _opts.extra[k]; }
+var _dirTable = new Tabulator("#dirTable", _config);
+// Tabulator 6 requires event callbacks to be registered via on(), not as
+// constructor options.  Highlight the row whose link was last clicked.
+function _dirSetCurrent(e, row) {
+    if (!e.target.closest("a")) return;
+    var prevId = _currentId;
+    _currentId = row.getData()._id;
+    if (prevId !== null) {
+        var prev = _dirTable.getRow(prevId);
+        if (prev) prev.reformat();
+    }
+    row.reformat();
+}
+_dirTable.on("rowClick", _dirSetCurrent);
+_dirTable.on("tableBuilt", _fitColumnWidths);
+var _searchFields = _colSpec.map(function(c) { return c.textField; });
+function _dirGlobalSearch() {
+    var v = document.getElementById("dirSearch").value.toLowerCase();
+    if (v === "") {
+        _dirTable.clearFilter();
+    } else {
+        _dirTable.setFilter(_anySearch, {fields: _searchFields, value: v});
+    }
+}
+
+</script>
+</body></html>

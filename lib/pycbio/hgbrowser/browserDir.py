@@ -436,6 +436,43 @@ function _rangeFilter(headerValue, rowValue, rowData, params) {
 function _rangeEmpty(value) {
     return (value == null) || (value.min == null && value.max == null);
 }
+function _fontOf(el, fallback) {
+    if (!el) return fallback;
+    var cs = getComputedStyle(el);
+    return cs.fontStyle + " " + cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily;
+}
+// Size each fit column to the widest of its data (and header, unless it
+// wraps).  The width is set as the column's preferred width; the column also
+// has widthShrink so it gives space back (rather than forcing horizontal
+// scroll) when the window is too narrow for every column at full width.
+function _fitColumnWidths() {
+    var fits = _colSpec.filter(function(c) { return c.fit; });
+    if (!fits.length) return;
+    var el = _dirTable.element;
+    var cellFont = _fontOf(el.querySelector(".tabulator-cell"), "14px sans-serif");
+    var hdrFont = _fontOf(el.querySelector(".tabulator-col-title"), cellFont);
+    var ctx = document.createElement("canvas").getContext("2d");
+    fits.forEach(function(c) {
+        ctx.font = cellFont;
+        var w = 0;
+        for (var i = 0; i < _tableData.length; i++) {
+            var t = _tableData[i][c.textField];
+            var cw = ctx.measureText(t == null ? "" : ("" + t)).width;
+            if (cw > w) w = cw;
+        }
+        var need = w + 8;                    // cell padding
+        if (!c.headerWrap) {                 // header must fit on one line too
+            ctx.font = hdrFont;
+            need = Math.max(need, ctx.measureText(c.title).width + 22);
+        }
+        if (c.filter === "range") {          // room for the min/max inputs
+            need = Math.max(need, 70);
+        }
+        var col = _dirTable.getColumn(c.field);
+        if (col) col.getDefinition().width = Math.ceil(need);
+    });
+    _dirTable.redraw(true);
+}
 """
 
 _dynamicStyle = """
@@ -480,6 +517,15 @@ class BrowserDirDynamic(BrowserDirBase):
         colDefs is an optional dict giving per-column behavior, keyed by column
         name or zero-based index; each value is a dict with any of:
           - wrap:       True to word-wrap the cell content
+          - fit:        True to size the column (client-side) to the widest of
+                        its data and its header; if the header also wraps
+                        (headerWrap), only the data governs the width.  This is
+                        the default for columns that are not wrapped, expanded,
+                        or explicitly sized; set fit=False to opt out.
+          - expand:     True to make the column flex, absorbing extra space as
+                        the window widens and giving it back as it narrows
+                        (widthGrow with a small minWidth floor); use for the
+                        column(s) that should soak up slack (e.g. locations)
           - headerWrap: True/False to word-wrap this column's name (overrides
                         the table-wide headerWrap)
           - width:      fixed width (int pixels or CSS string); the column does
@@ -492,8 +538,10 @@ class BrowserDirDynamic(BrowserDirBase):
           - shrink:     widthShrink
           - filter:     "text" (default, substring match), "range" (numeric
                         min/max filter), or "none" (no header filter)
-          - align:      horizontal alignment "left", "center", or "right"
-                        (header and cells); "range" columns default to "right"
+          - align:      data-cell horizontal alignment "left", "center", or
+                        "right"; "range" columns default to "right"
+          - headerAlign: header-title alignment (defaults to left, so a
+                        right-aligned numeric column keeps a left header)
         A wrapping column with no explicit width defaults to grow=3 and
         minWidth=120 so it absorbs width and re-flows as the window resizes.
         A "range" filter column needs a numeric value per cell (a Cell whose
@@ -563,12 +611,29 @@ class BrowserDirDynamic(BrowserDirBase):
             align = cd.get("align", "right" if filterType == "range" else None)
             if align is not None:
                 entry["align"] = align
+            if "headerAlign" in cd:
+                entry["headerAlign"] = cd["headerAlign"]
             if cd.get("headerWrap", self.headerWrap):
                 entry["headerWrap"] = True
+            if cd.get("expand"):
+                entry.setdefault("grow", cd.get("grow", 1))
+                entry.setdefault("minWidth", cd.get("minWidth", 60))
             if self._colNumericSort(i):
                 entry["numericSort"] = True
+            if self._colFit(cd, entry):
+                entry["fit"] = True
             spec.append(entry)
         return spec
+
+    def _colFit(self, cd, entry):
+        """resolve size-to-content: an explicit colDefs fit wins; otherwise a
+        column that is not wrapped, expanded, or explicitly sized defaults to
+        fitting its content (so it does not flex and grow to fill the window)."""
+        if "fit" in cd:
+            return bool(cd["fit"]) and ("width" not in entry)
+        if entry.get("expand"):
+            return False
+        return not any(k in entry for k in ("width", "minWidth", "grow", "wrap"))
 
     def _rangeCols(self):
         "set of column indices that use a numeric range filter"
@@ -668,10 +733,12 @@ var _columns = _colSpec.map(function(c) {
     }
     if (c.wrap) col.cssClass = "dirWrap";
     if (c.headerWrap) col.headerWordWrap = true;
-    if ("align" in c) { col.hozAlign = c.align; col.headerHozAlign = c.align; }
+    if ("align" in c) col.hozAlign = c.align;               // data cells
+    if ("headerAlign" in c) col.headerHozAlign = c.headerAlign;
     if ("width" in c) col.width = c.width;       // fixed; does not flex
     if ("minWidth" in c) col.minWidth = c.minWidth;
     if ("grow" in c) col.widthGrow = c.grow;
+    if (c.fit) col.widthShrink = 1;              // give space back before scrolling
     if ("shrink" in c) col.widthShrink = c.shrink;
     return col;
 });
@@ -703,6 +770,7 @@ function _dirSetCurrent(e, row) {
     row.reformat();
 }
 _dirTable.on("rowClick", _dirSetCurrent);
+_dirTable.on("tableBuilt", _fitColumnWidths);
 var _searchFields = _colSpec.map(function(c) { return c.textField; });
 function _dirGlobalSearch() {
     var v = document.getElementById("dirSearch").value.toLowerCase();
