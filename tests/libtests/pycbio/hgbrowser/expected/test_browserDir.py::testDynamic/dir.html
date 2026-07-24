@@ -35,6 +35,11 @@ Search: <input id="dirSearch" type="text" oninput="_dirGlobalSearch()" placehold
 function _keySort(a, b, aRow, bRow, column, dir, params) {
     var x = aRow.getData()[params.field];
     var y = bRow.getData()[params.field];
+    if (params.numeric) {
+        x = parseFloat(x); y = parseFloat(y);
+        if (isNaN(x)) x = -Infinity;
+        if (isNaN(y)) y = -Infinity;
+    }
     if (x === y) return 0;
     return (x > y) ? 1 : -1;
 }
@@ -96,7 +101,8 @@ var _opts = {"globalSearch": true, "headerFilters": true, "layout": "fitColumns"
 
 var _columns = _colSpec.map(function(c) {
     var col = {title: c.title, field: c.field, formatter: "html",
-               sorter: _keySort, sorterParams: {field: c.sortField}};
+               sorter: _keySort,
+               sorterParams: {field: c.sortField, numeric: !!c.numericSort}};
     if (_opts.headerFilters && c.filter !== "none") {
         if (c.filter === "range") {
             col.headerFilter = _rangeEditor;

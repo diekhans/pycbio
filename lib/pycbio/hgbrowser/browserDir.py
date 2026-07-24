@@ -123,6 +123,19 @@ def _cellNumber(cell):
         return num if num is not None else _toNumber(cell.value)
     return _toNumber(_stripTags(str(cell)))
 
+def _sortKeyIsBlank(cell):
+    "True if a cell's sort key is an empty/whitespace string"
+    key = _cellSortKey(cell)
+    return isinstance(key, str) and (key.strip() == "")
+
+def _sortKeyBlankOrNumber(cell):
+    "True if a cell's sort key is blank or numeric (numeric-sort detection)"
+    return _sortKeyIsBlank(cell) or (_toNumber(_cellSortKey(cell)) is not None)
+
+def _sortKeyIsNumber(cell):
+    "True if a cell's sort key is a non-blank number"
+    return (not _sortKeyIsBlank(cell)) and (_toNumber(_cellSortKey(cell)) is not None)
+
 class Row:
     "Row in the table"
     __slots__ = ("row", "key", "cssRowClass", "cssCellClasses")
@@ -364,6 +377,11 @@ _dynamicScriptHelpers = """
 function _keySort(a, b, aRow, bRow, column, dir, params) {
     var x = aRow.getData()[params.field];
     var y = bRow.getData()[params.field];
+    if (params.numeric) {
+        x = parseFloat(x); y = parseFloat(y);
+        if (isNaN(x)) x = -Infinity;
+        if (isNaN(y)) y = -Infinity;
+    }
     if (x === y) return 0;
     return (x > y) ? 1 : -1;
 }
@@ -547,6 +565,8 @@ class BrowserDirDynamic(BrowserDirBase):
                 entry["align"] = align
             if cd.get("headerWrap", self.headerWrap):
                 entry["headerWrap"] = True
+            if self._colNumericSort(i):
+                entry["numericSort"] = True
             spec.append(entry)
         return spec
 
@@ -554,6 +574,13 @@ class BrowserDirDynamic(BrowserDirBase):
         "set of column indices that use a numeric range filter"
         return {i for i, title in enumerate(self._colTitles())
                 if self._colFilterType(i, title) == "range"}
+
+    def _colNumericSort(self, i):
+        "True if every non-blank sort key is numeric and at least one exists"
+        cells = [row.row[i] for row in self.rows]
+        if not all(_sortKeyBlankOrNumber(c) for c in cells):
+            return False
+        return any(_sortKeyIsNumber(c) for c in cells)
 
     def _rowData(self, row, rowId, rangeCols):
         "build the Tabulator data object for one row"
@@ -625,7 +652,8 @@ class BrowserDirDynamic(BrowserDirBase):
 _dynamicInitScript = """
 var _columns = _colSpec.map(function(c) {
     var col = {title: c.title, field: c.field, formatter: "html",
-               sorter: _keySort, sorterParams: {field: c.sortField}};
+               sorter: _keySort,
+               sorterParams: {field: c.sortField, numeric: !!c.numericSort}};
     if (_opts.headerFilters && c.filter !== "none") {
         if (c.filter === "range") {
             col.headerFilter = _rangeEditor;
