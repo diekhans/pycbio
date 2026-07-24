@@ -107,7 +107,7 @@ def testDynamic(request):
 # dynamic directory with genomic sort keys, a fixed-width wrapping column,
 # and row shading (mirrors realistic multi-chromosome usage)
 ##
-_genesCols = ("position", "gene", "description", "status")
+_genesCols = ("position", "gene", "description", "length", "status")
 
 # (chrom, start, end, symbol, description, status)
 _genesData = (
@@ -124,11 +124,17 @@ def _genesPosCell(brDir, chrom, start, end):
     sortKey = "{}\t{:012d}".format(chrom[3:].zfill(3), start)
     return browserDir.Cell(coords, html=brDir.mkAnchor(coords), sortKey=sortKey)
 
+def _genesLenCell(start, end):
+    "numeric length cell: comma-formatted display, numeric sort/range key"
+    length = end - start
+    return browserDir.Cell(f"{length:,}", sortKey=length)
+
 def _genesAddRow(brDir, gene):
     chrom, start, end, symbol, desc, status = gene
     rowCls = "great" if status == "done" else None
     posCell = _genesPosCell(brDir, chrom, start, end)
-    brDir.addRow((posCell, symbol, desc, status), cssRowClass=rowCls)
+    lenCell = _genesLenCell(start, end)
+    brDir.addRow((posCell, symbol, desc, lenCell, status), cssRowClass=rowCls)
 
 def _genesTest(outDir):
     css = browserDir.defaultStyle + "\n.great {background-color: #d7f0d7;}\n"
@@ -136,7 +142,8 @@ def _genesTest(outDir):
                                          colNames=_genesCols, style=css,
                                          title="hg38 genes", dirPercent=45,
                                          colDefs={"position": {"minWidth": 230},
-                                                  "description": {"wrap": True}})
+                                                  "description": {"wrap": True},
+                                                  "length": {"filter": "range"}})
     for gene in _genesData:
         _genesAddRow(brDir, gene)
     brDir.write(outDir)

@@ -16,6 +16,11 @@ body { display: flex; flex-direction: column; font-family: sans-serif; }
                                          overflow: visible;
                                          text-overflow: clip;
                                          word-break: break-word; }
+.dirRange { display: flex; gap: 2px; }
+.dirRange input { width: 50%; box-sizing: border-box; }
+.dirRange input::-webkit-outer-spin-button,
+.dirRange input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.dirRange input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 
 </style>
 </head>
@@ -44,20 +49,64 @@ function _anySearch(data, params) {
     }
     return false;
 }
+function _rangeEditor(cell, onRendered, success, cancel, params) {
+    var wrap = document.createElement("span");
+    var lo = document.createElement("input");
+    var hi = document.createElement("input");
+    wrap.className = "dirRange";
+    lo.type = hi.type = "number";
+    lo.placeholder = "min";
+    hi.placeholder = "max";
+    function commit() {
+        success({min: lo.value === "" ? null : parseFloat(lo.value),
+                 max: hi.value === "" ? null : parseFloat(hi.value)});
+    }
+    function stop(e) { e.stopPropagation(); }
+    function key(e) { if (e.key === "Escape") cancel(); e.stopPropagation(); }
+    lo.addEventListener("input", commit);
+    hi.addEventListener("input", commit);
+    lo.addEventListener("keydown", key);
+    hi.addEventListener("keydown", key);
+    lo.addEventListener("mousedown", stop);
+    hi.addEventListener("mousedown", stop);
+    wrap.appendChild(lo);
+    wrap.appendChild(hi);
+    return wrap;
+}
+function _rangeFilter(headerValue, rowValue, rowData, params) {
+    var n = rowData[params.field];
+    if (n === null || n === undefined || n === "") return false;
+    n = parseFloat(n);
+    if (isNaN(n)) return false;
+    if (headerValue.min !== null && n < headerValue.min) return false;
+    if (headerValue.max !== null && n > headerValue.max) return false;
+    return true;
+}
+function _rangeEmpty(value) {
+    return (value == null) || (value.min == null && value.max == null);
+}
 
-var _colSpec = [{"title": "position", "field": "c0", "sortField": "c0s", "textField": "c0t", "minWidth": 230}, {"title": "gene", "field": "c1", "sortField": "c1s", "textField": "c1t"}, {"title": "description", "field": "c2", "sortField": "c2s", "textField": "c2t", "wrap": true, "grow": 3, "minWidth": 120}, {"title": "status", "field": "c3", "sortField": "c3s", "textField": "c3t"}];
-var _tableData = [{"_id": 0, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr17%3A43044296-43125483\" target=browser>chr17:43044296-43125483<\/a>", "c0s": "017\t000043044295", "c0t": "chr17:43044296-43125483", "c1": "BRCA1", "c1s": "BRCA1", "c1t": "BRCA1", "c2": "DNA repair; breast/ovarian cancer susceptibility", "c2s": "DNA repair; breast/ovarian cancer susceptibility", "c2t": "DNA repair; breast/ovarian cancer susceptibility", "c3": "done", "c3s": "done", "c3t": "done", "_cls": "great"}, {"_id": 1, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr7%3A55019018-55211628\" target=browser>chr7:55019018-55211628<\/a>", "c0s": "007\t000055019017", "c0t": "chr7:55019018-55211628", "c1": "EGFR", "c1s": "EGFR", "c1t": "EGFR", "c2": "epidermal growth factor receptor; amplified in tumors", "c2s": "epidermal growth factor receptor; amplified in tumors", "c2t": "epidermal growth factor receptor; amplified in tumors", "c3": "done", "c3s": "done", "c3t": "done", "_cls": "great"}, {"_id": 2, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr8%3A127735435-127742951\" target=browser>chr8:127735435-127742951<\/a>", "c0s": "008\t000127735434", "c0t": "chr8:127735435-127742951", "c1": "MYC", "c1s": "MYC", "c1t": "MYC", "c2": "MYC proto-oncogene, bHLH transcription factor", "c2s": "MYC proto-oncogene, bHLH transcription factor", "c2t": "MYC proto-oncogene, bHLH transcription factor", "c3": "review", "c3s": "review", "c3t": "review"}, {"_id": 3, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr13%3A32315087-32400268\" target=browser>chr13:32315087-32400268<\/a>", "c0s": "013\t000032315086", "c0t": "chr13:32315087-32400268", "c1": "BRCA2", "c1s": "BRCA2", "c1t": "BRCA2", "c2": "DNA repair; Fanconi anemia complementation group", "c2s": "DNA repair; Fanconi anemia complementation group", "c2t": "DNA repair; Fanconi anemia complementation group", "c3": "review", "c3s": "review", "c3t": "review"}, {"_id": 4, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr10%3A87863626-87971930\" target=browser>chr10:87863626-87971930<\/a>", "c0s": "010\t000087863625", "c0t": "chr10:87863626-87971930", "c1": "PTEN", "c1s": "PTEN", "c1t": "PTEN", "c2": "phosphatase and tensin homolog; tumor suppressor", "c2s": "phosphatase and tensin homolog; tumor suppressor", "c2t": "phosphatase and tensin homolog; tumor suppressor", "c3": "todo", "c3s": "todo", "c3t": "todo"}, {"_id": 5, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr2%3A47403068-47634501\" target=browser>chr2:47403068-47634501<\/a>", "c0s": "002\t000047403067", "c0t": "chr2:47403068-47634501", "c1": "MSH2", "c1s": "MSH2", "c1t": "MSH2", "c2": "mutS homolog 2; Lynch syndrome mismatch repair", "c2s": "mutS homolog 2; Lynch syndrome mismatch repair", "c2t": "mutS homolog 2; Lynch syndrome mismatch repair", "c3": "todo", "c3s": "todo", "c3t": "todo"}];
+var _colSpec = [{"title": "position", "field": "c0", "sortField": "c0s", "textField": "c0t", "minWidth": 230}, {"title": "gene", "field": "c1", "sortField": "c1s", "textField": "c1t"}, {"title": "description", "field": "c2", "sortField": "c2s", "textField": "c2t", "wrap": true, "grow": 3, "minWidth": 120}, {"title": "length", "field": "c3", "sortField": "c3s", "textField": "c3t", "filter": "range", "numberField": "c3n", "align": "right"}, {"title": "status", "field": "c4", "sortField": "c4s", "textField": "c4t"}];
+var _tableData = [{"_id": 0, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr17%3A43044296-43125483\" target=browser>chr17:43044296-43125483<\/a>", "c0s": "017\t000043044295", "c0t": "chr17:43044296-43125483", "c1": "BRCA1", "c1s": "BRCA1", "c1t": "BRCA1", "c2": "DNA repair; breast/ovarian cancer susceptibility", "c2s": "DNA repair; breast/ovarian cancer susceptibility", "c2t": "DNA repair; breast/ovarian cancer susceptibility", "c3": "81,188", "c3s": 81188, "c3t": "81,188", "c3n": 81188, "c4": "done", "c4s": "done", "c4t": "done", "_cls": "great"}, {"_id": 1, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr7%3A55019018-55211628\" target=browser>chr7:55019018-55211628<\/a>", "c0s": "007\t000055019017", "c0t": "chr7:55019018-55211628", "c1": "EGFR", "c1s": "EGFR", "c1t": "EGFR", "c2": "epidermal growth factor receptor; amplified in tumors", "c2s": "epidermal growth factor receptor; amplified in tumors", "c2t": "epidermal growth factor receptor; amplified in tumors", "c3": "192,611", "c3s": 192611, "c3t": "192,611", "c3n": 192611, "c4": "done", "c4s": "done", "c4t": "done", "_cls": "great"}, {"_id": 2, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr8%3A127735435-127742951\" target=browser>chr8:127735435-127742951<\/a>", "c0s": "008\t000127735434", "c0t": "chr8:127735435-127742951", "c1": "MYC", "c1s": "MYC", "c1t": "MYC", "c2": "MYC proto-oncogene, bHLH transcription factor", "c2s": "MYC proto-oncogene, bHLH transcription factor", "c2t": "MYC proto-oncogene, bHLH transcription factor", "c3": "7,517", "c3s": 7517, "c3t": "7,517", "c3n": 7517, "c4": "review", "c4s": "review", "c4t": "review"}, {"_id": 3, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr13%3A32315087-32400268\" target=browser>chr13:32315087-32400268<\/a>", "c0s": "013\t000032315086", "c0t": "chr13:32315087-32400268", "c1": "BRCA2", "c1s": "BRCA2", "c1t": "BRCA2", "c2": "DNA repair; Fanconi anemia complementation group", "c2s": "DNA repair; Fanconi anemia complementation group", "c2t": "DNA repair; Fanconi anemia complementation group", "c3": "85,182", "c3s": 85182, "c3t": "85,182", "c3n": 85182, "c4": "review", "c4s": "review", "c4t": "review"}, {"_id": 4, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr10%3A87863626-87971930\" target=browser>chr10:87863626-87971930<\/a>", "c0s": "010\t000087863625", "c0t": "chr10:87863626-87971930", "c1": "PTEN", "c1s": "PTEN", "c1t": "PTEN", "c2": "phosphatase and tensin homolog; tumor suppressor", "c2s": "phosphatase and tensin homolog; tumor suppressor", "c2t": "phosphatase and tensin homolog; tumor suppressor", "c3": "108,305", "c3s": 108305, "c3t": "108,305", "c3n": 108305, "c4": "todo", "c4s": "todo", "c4t": "todo"}, {"_id": 5, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr2%3A47403068-47634501\" target=browser>chr2:47403068-47634501<\/a>", "c0s": "002\t000047403067", "c0t": "chr2:47403068-47634501", "c1": "MSH2", "c1s": "MSH2", "c1t": "MSH2", "c2": "mutS homolog 2; Lynch syndrome mismatch repair", "c2s": "mutS homolog 2; Lynch syndrome mismatch repair", "c2t": "mutS homolog 2; Lynch syndrome mismatch repair", "c3": "231,434", "c3s": 231434, "c3t": "231,434", "c3n": 231434, "c4": "todo", "c4s": "todo", "c4t": "todo"}];
 var _opts = {"globalSearch": true, "headerFilters": true, "layout": "fitColumns", "extra": {}};
 
 var _columns = _colSpec.map(function(c) {
     var col = {title: c.title, field: c.field, formatter: "html",
                sorter: _keySort, sorterParams: {field: c.sortField}};
-    if (_opts.headerFilters) {
-        col.headerFilter = "input";
-        col.headerFilterFunc = _colFilter;
-        col.headerFilterFuncParams = {field: c.textField};
+    if (_opts.headerFilters && c.filter !== "none") {
+        if (c.filter === "range") {
+            col.headerFilter = _rangeEditor;
+            col.headerFilterFunc = _rangeFilter;
+            col.headerFilterFuncParams = {field: c.numberField};
+            col.headerFilterEmptyCheck = _rangeEmpty;
+        } else {
+            col.headerFilter = "input";
+            col.headerFilterFunc = _colFilter;
+            col.headerFilterFuncParams = {field: c.textField};
+        }
     }
     if (c.wrap) col.cssClass = "dirWrap";
+    if ("align" in c) { col.hozAlign = c.align; col.headerHozAlign = c.align; }
     if ("width" in c) col.width = c.width;       // fixed; does not flex
     if ("minWidth" in c) col.minWidth = c.minWidth;
     if ("grow" in c) col.widthGrow = c.grow;

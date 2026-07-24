@@ -105,6 +105,24 @@ def _cellSortKey(cell):
 def _cellCssClass(cell):
     return cell.cssClass if isinstance(cell, Cell) else None
 
+def _toNumber(v):
+    "coerce a value to a number, or None if not numeric"
+    if isinstance(v, bool):
+        return None
+    if isinstance(v, (int, float)):
+        return v
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
+def _cellNumber(cell):
+    "numeric value of a cell for range filtering, or None"
+    if isinstance(cell, Cell):
+        num = _toNumber(cell.sortKey)
+        return num if num is not None else _toNumber(cell.value)
+    return _toNumber(_stripTags(str(cell)))
+
 class Row:
     "Row in the table"
     __slots__ = ("row", "key", "cssRowClass", "cssCellClasses")
@@ -360,6 +378,42 @@ function _anySearch(data, params) {
     }
     return false;
 }
+function _rangeEditor(cell, onRendered, success, cancel, params) {
+    var wrap = document.createElement("span");
+    var lo = document.createElement("input");
+    var hi = document.createElement("input");
+    wrap.className = "dirRange";
+    lo.type = hi.type = "number";
+    lo.placeholder = "min";
+    hi.placeholder = "max";
+    function commit() {
+        success({min: lo.value === "" ? null : parseFloat(lo.value),
+                 max: hi.value === "" ? null : parseFloat(hi.value)});
+    }
+    function stop(e) { e.stopPropagation(); }
+    function key(e) { if (e.key === "Escape") cancel(); e.stopPropagation(); }
+    lo.addEventListener("input", commit);
+    hi.addEventListener("input", commit);
+    lo.addEventListener("keydown", key);
+    hi.addEventListener("keydown", key);
+    lo.addEventListener("mousedown", stop);
+    hi.addEventListener("mousedown", stop);
+    wrap.appendChild(lo);
+    wrap.appendChild(hi);
+    return wrap;
+}
+function _rangeFilter(headerValue, rowValue, rowData, params) {
+    var n = rowData[params.field];
+    if (n === null || n === undefined || n === "") return false;
+    n = parseFloat(n);
+    if (isNaN(n)) return false;
+    if (headerValue.min !== null && n < headerValue.min) return false;
+    if (headerValue.max !== null && n > headerValue.max) return false;
+    return true;
+}
+function _rangeEmpty(value) {
+    return (value == null) || (value.min == null && value.max == null);
+}
 """
 
 _dynamicStyle = """
@@ -374,6 +428,11 @@ body { display: flex; flex-direction: column; font-family: sans-serif; }
                                          overflow: visible;
                                          text-overflow: clip;
                                          word-break: break-word; }
+.dirRange { display: flex; gap: 2px; }
+.dirRange input { width: 50%; box-sizing: border-box; }
+.dirRange input::-webkit-outer-spin-button,
+.dirRange input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.dirRange input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 """
 
 class BrowserDirDynamic(BrowserDirBase):
@@ -405,8 +464,14 @@ class BrowserDirDynamic(BrowserDirBase):
           - grow:     widthGrow, the relative share of leftover width a
                       flexible column claims (default 3 for a wrap column)
           - shrink:   widthShrink
+          - filter:   "text" (default, substring match), "range" (numeric
+                      min/max filter), or "none" (no header filter)
+          - align:    horizontal alignment "left", "center", or "right"
+                      (header and cells); "range" columns default to "right"
         A wrapping column with no explicit width defaults to grow=3 and
         minWidth=120 so it absorbs width and re-flows as the window resizes.
+        A "range" filter column needs a numeric value per cell (a Cell whose
+        sortKey or value is a number, or a plain numeric cell).
 
         tabulatorOptions is an optional dict merged into the Tabulator
         configuration.
@@ -450,6 +515,10 @@ class BrowserDirDynamic(BrowserDirBase):
         if "shrink" in cd:
             entry["shrink"] = cd["shrink"]
 
+    def _colFilterType(self, i, title):
+        "header filter type for a column: text, range, or none"
+        return self._colDef(i, title).get("filter", "text")
+
     def _colSpec(self):
         "specification of columns, passed to the client as JSON"
         spec = []
@@ -457,23 +526,41 @@ class BrowserDirDynamic(BrowserDirBase):
             entry = {"title": title, "field": "c{}".format(i),
                      "sortField": "c{}s".format(i),
                      "textField": "c{}t".format(i)}
-            self._applyColDef(entry, self._colDef(i, title))
+            cd = self._colDef(i, title)
+            self._applyColDef(entry, cd)
+            filterType = self._colFilterType(i, title)
+            if filterType != "text":
+                entry["filter"] = filterType
+            if filterType == "range":
+                entry["numberField"] = "c{}n".format(i)
+            align = cd.get("align", "right" if filterType == "range" else None)
+            if align is not None:
+                entry["align"] = align
             spec.append(entry)
         return spec
 
-    def _rowData(self, row, rowId):
+    def _rangeCols(self):
+        "set of column indices that use a numeric range filter"
+        return {i for i, title in enumerate(self._colTitles())
+                if self._colFilterType(i, title) == "range"}
+
+    def _rowData(self, row, rowId, rangeCols):
         "build the Tabulator data object for one row"
         data = {"_id": rowId}
         for i, cell in enumerate(row.row):
             data["c{}".format(i)] = _cellHtml(cell)
             data["c{}s".format(i)] = _cellSortKey(cell)
             data["c{}t".format(i)] = _cellText(cell)
+            if i in rangeCols:
+                data["c{}n".format(i)] = _cellNumber(cell)
         if row.cssRowClass is not None:
             data["_cls"] = row.cssRowClass
         return data
 
     def _tableData(self):
-        return [self._rowData(row, rowId) for rowId, row in enumerate(self.rows)]
+        rangeCols = self._rangeCols()
+        return [self._rowData(row, rowId, rangeCols)
+                for rowId, row in enumerate(self.rows)]
 
     def _jsonEmbed(self, obj):
         "serialize obj as JSON safe to embed in a <script> element"
@@ -528,12 +615,20 @@ _dynamicInitScript = """
 var _columns = _colSpec.map(function(c) {
     var col = {title: c.title, field: c.field, formatter: "html",
                sorter: _keySort, sorterParams: {field: c.sortField}};
-    if (_opts.headerFilters) {
-        col.headerFilter = "input";
-        col.headerFilterFunc = _colFilter;
-        col.headerFilterFuncParams = {field: c.textField};
+    if (_opts.headerFilters && c.filter !== "none") {
+        if (c.filter === "range") {
+            col.headerFilter = _rangeEditor;
+            col.headerFilterFunc = _rangeFilter;
+            col.headerFilterFuncParams = {field: c.numberField};
+            col.headerFilterEmptyCheck = _rangeEmpty;
+        } else {
+            col.headerFilter = "input";
+            col.headerFilterFunc = _colFilter;
+            col.headerFilterFuncParams = {field: c.textField};
+        }
     }
     if (c.wrap) col.cssClass = "dirWrap";
+    if ("align" in c) { col.hozAlign = c.align; col.headerHozAlign = c.align; }
     if ("width" in c) col.width = c.width;       // fixed; does not flex
     if ("minWidth" in c) col.minWidth = c.minWidth;
     if ("grow" in c) col.widthGrow = c.grow;
