@@ -441,10 +441,28 @@ function _fontOf(el, fallback) {
     var cs = getComputedStyle(el);
     return cs.fontStyle + " " + cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily;
 }
-// Size each fit column to the widest of its data (and header, unless it
-// wraps).  The width is set as the column's preferred width; the column also
-// has widthShrink so it gives space back (rather than forcing horizontal
-// scroll) when the window is too narrow for every column at full width.
+function _maxDataWidth(ctx, field) {
+    var w = 0;
+    for (var i = 0; i < _tableData.length; i++) {
+        var t = _tableData[i][field];
+        var cw = ctx.measureText(t == null ? "" : ("" + t)).width;
+        if (cw > w) w = cw;
+    }
+    return w;
+}
+function _maxWordWidth(ctx, text) {
+    var words = ("" + text).split(" ");
+    var w = 0;
+    for (var i = 0; i < words.length; i++) {
+        var ww = ctx.measureText(words[i]).width;
+        if (ww > w) w = ww;
+    }
+    return w;
+}
+// Size each fit column to the widest of its data and its header.  The header
+// word-wraps, so what must fit on a line is its longest single word, not the
+// whole title.  Fit columns also have widthShrink, giving space back rather
+// than forcing horizontal scroll when the window is too narrow.
 function _fitColumnWidths() {
     var fits = _colSpec.filter(function(c) { return c.fit; });
     if (!fits.length) return;
@@ -454,20 +472,14 @@ function _fitColumnWidths() {
     var ctx = document.createElement("canvas").getContext("2d");
     fits.forEach(function(c) {
         ctx.font = cellFont;
-        var w = 0;
-        for (var i = 0; i < _tableData.length; i++) {
-            var t = _tableData[i][c.textField];
-            var cw = ctx.measureText(t == null ? "" : ("" + t)).width;
-            if (cw > w) w = cw;
-        }
-        var need = w + 8;                    // cell padding
-        if (!c.headerWrap) {                 // header must fit on one line too
-            ctx.font = hdrFont;
-            need = Math.max(need, ctx.measureText(c.title).width + 22);
-        }
-        if (c.filter === "range") {          // room for the min/max inputs
-            need = Math.max(need, 70);
-        }
+        var data = _maxDataWidth(ctx, c.textField);
+        ctx.font = hdrFont;
+        var header = c.headerWrap ? _maxWordWidth(ctx, c.title)
+                                  : ctx.measureText(c.title).width;
+        // cell: 4+4 padding + 1 border; header also reserves the 25px sort
+        // arrow space (padding-right) plus the 4+4 content padding + border
+        var need = Math.max(data + 9, header + 34);
+        if (c.filter === "range") need = Math.max(need, 70);
         var col = _dirTable.getColumn(c.field);
         if (col) col.getDefinition().width = Math.ceil(need);
     });
@@ -518,10 +530,11 @@ class BrowserDirDynamic(BrowserDirBase):
         name or zero-based index; each value is a dict with any of:
           - wrap:       True to word-wrap the cell content
           - fit:        True to size the column (client-side) to the widest of
-                        its data and its header; if the header also wraps
-                        (headerWrap), only the data governs the width.  This is
-                        the default for columns that are not wrapped, expanded,
-                        or explicitly sized; set fit=False to opt out.
+                        its data and its header.  A fit column's header
+                        word-wraps by default, so the header contributes only
+                        its longest word to the width, not the whole title.
+                        This is the default for columns that are not wrapped,
+                        expanded, or explicitly sized; set fit=False to opt out.
           - expand:     True to make the column flex, absorbing extra space as
                         the window widens and giving it back as it narrows
                         (widthGrow with a small minWidth floor); use for the
@@ -613,15 +626,19 @@ class BrowserDirDynamic(BrowserDirBase):
                 entry["align"] = align
             if "headerAlign" in cd:
                 entry["headerAlign"] = cd["headerAlign"]
-            if cd.get("headerWrap", self.headerWrap):
-                entry["headerWrap"] = True
             if cd.get("expand"):
                 entry.setdefault("grow", cd.get("grow", 1))
                 entry.setdefault("minWidth", cd.get("minWidth", 60))
             if self._colNumericSort(i):
                 entry["numericSort"] = True
-            if self._colFit(cd, entry):
+            fit = self._colFit(cd, entry)
+            if fit:
                 entry["fit"] = True
+            # fit/expand columns wrap their header by default so a wide title
+            # does not force the column wide; only its longest word must fit
+            wrapHdr = self.headerWrap or fit or bool(cd.get("expand"))
+            if cd.get("headerWrap", wrapHdr):
+                entry["headerWrap"] = True
             spec.append(entry)
         return spec
 
