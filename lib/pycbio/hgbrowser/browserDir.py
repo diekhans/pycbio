@@ -200,12 +200,15 @@ class BrowserDirBase:
 
     def __init__(self, browserUrl, defaultDb, *, colNames=None, pageSize=50,
                  title=None, dirPercent=15, below=False, pageDesc=None,
-                 tracks={}, initTracks={}, style=defaultStyle,
+                 doc=None, tracks={}, initTracks={}, style=defaultStyle,
                  customTrackUrls=None, hubUrls=None):
         """The tracks arg is a dict of track name to setting, it is added to
         each URL and the initial setting of the frame. The initTracks arg is
         similar, however its only set in the initial frame and not added to
         each URL. customTrackUrls and hubUrls can be a string URL or list of URLs.
+        doc is optional documentation shown on each directory page below the
+        header; it may be an HTML string or a list of HTML strings, each
+        rendered as its own paragraph.
         """
         self.browserUrl = browserUrl
         if self.browserUrl.endswith("/"):
@@ -217,6 +220,7 @@ class BrowserDirBase:
         self.dirPercent = dirPercent
         self.below = below
         self.pageDesc = pageDesc
+        self.doc = doc
         self.rows = []
         self.style = style
         self.trackArgs = _buildTrackArgsList(tracks)
@@ -288,6 +292,18 @@ class BrowserDirBase:
             pg.add(fbr)
         return pg
 
+    def _addDoc(self, pg):
+        "add the optional documentation block below the header"
+        if self.doc is None:
+            return
+        pg.add('<div class="dirDoc">')
+        if isinstance(self.doc, str):
+            pg.add(self.doc)
+        else:
+            for para in self.doc:
+                pg.add("<p>{}</p>".format(para))
+        pg.add('</div>')
+
     def write(self, outDir):
         raise NotImplementedError("write() must be implemented by a subclass")
 
@@ -336,6 +352,7 @@ class BrowserDirStatic(BrowserDirBase):
             title += ": {}".format(self.title)
         pg = HtmlPage(title=title, inStyle=self.style)
         pg.h3(title)
+        self._addDoc(pg)
         if self.pageDesc is not None:
             pg.add(self.pageDesc)
             pg.add("<br><br>")
@@ -493,6 +510,7 @@ body { display: flex; flex-direction: column; font-family: sans-serif; }
 #dirSearchBar { padding: 4px; flex: 0 0 auto; }
 #dirSearch { width: 20em; }
 #dirTable { flex: 1 1 auto; }
+.dirDoc { flex: 0 0 auto; margin: 0 4px 4px; }
 .tabulator-row.dirCurrent { background-color: #ffe08a !important;
                             box-shadow: inset 3px 0 0 #d97706; }
 .tabulator-row .tabulator-cell.dirWrap { white-space: normal;
@@ -713,6 +731,7 @@ class BrowserDirDynamic(BrowserDirBase):
         pg = HtmlPage(title=self.title, headExtra=headExtra, inStyle=_dynamicStyle)
         if self.title:
             pg.h3(self.title)
+        self._addDoc(pg)
         if self.pageDesc is not None:
             pg.add(self.pageDesc)
         self._addSearchBar(pg)

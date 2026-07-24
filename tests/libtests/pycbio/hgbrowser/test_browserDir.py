@@ -39,6 +39,7 @@ def _basicTest(outDir):
                                         colNames=_basicCols,
                                         pageSize=5, style=css,
                                         title="Flintstones hub",
+                                        doc="Characters from <b>Bedrock</b>.",
                                         below=True, hubUrls=[primateHub, quaryHub])
     for row in _genBasicData(15):
         _basicAddRow(brDir, row)
@@ -194,8 +195,11 @@ def _mirnaAddRow(brDir, rec):
     brDir.addRow(row)
 
 def _mirnaTest(outDir):
+    doc = ["One row per merged miRNA locus; all loci of a gene share the same"
+           " <b>copies</b> count.",
+           "<b>conflict</b> is <tt>no</tt>, <tt>gene</tt>, or <tt>family</tt>."]
     brDir = browserDir.BrowserDirDynamic(browserDir.GENOME_UCSC_URL, _mirnaAssembly,
-                                         colNames=_mirnaCols, dirPercent=100,
+                                         colNames=_mirnaCols, dirPercent=100, doc=doc,
                                          title="miRNA loci ({})".format(_mirnaAssembly),
                                          colDefs={"copies": {"filter": "range"},
                                                   "assembly location": {"expand": True},

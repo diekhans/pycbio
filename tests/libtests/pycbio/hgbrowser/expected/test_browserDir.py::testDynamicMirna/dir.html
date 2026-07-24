@@ -10,6 +10,7 @@ body { display: flex; flex-direction: column; font-family: sans-serif; }
 #dirSearchBar { padding: 4px; flex: 0 0 auto; }
 #dirSearch { width: 20em; }
 #dirTable { flex: 1 1 auto; }
+.dirDoc { flex: 0 0 auto; margin: 0 4px 4px; }
 .tabulator-row.dirCurrent { background-color: #ffe08a !important;
                             box-shadow: inset 3px 0 0 #d97706; }
 .tabulator-row .tabulator-cell.dirWrap { white-space: normal;
@@ -26,6 +27,10 @@ body { display: flex; flex-direction: column; font-family: sans-serif; }
 </head>
 <body>
 <h3>miRNA loci (GCA_018852605.1)</h3>
+<div class="dirDoc">
+<p>One row per merged miRNA locus; all loci of a gene share the same <b>copies</b> count.</p>
+<p><b>conflict</b> is <tt>no</tt>, <tt>gene</tt>, or <tt>family</tt>.</p>
+</div>
 <div id="dirSearchBar">
 Search: <input id="dirSearch" type="text" oninput="_dirGlobalSearch()" placeholder="search all columns">
 </div>
