@@ -109,6 +109,20 @@ function _maxDataWidth(ctx, field) {
     }
     return w;
 }
+// Apply a measured fit width.  An expanding column keeps flexing, with the
+// measured size as its floor; a plain fit column is pinned to it.  Both the
+// definition and the live column must be set: the layout reads the definition
+// (a column with a width is excluded from the flex pool, and minWidth is read
+// off the column), but only setWidth/setMinWidth resize what is rendered.
+function _setFitWidth(col, spec, need) {
+    if (spec.grow) {
+        col.getDefinition().minWidth = need;
+        col._getSelf().setMinWidth(need);
+    } else {
+        col.getDefinition().width = need;
+        col.setWidth(need);
+    }
+}
 function _maxWordWidth(ctx, text) {
     var words = ("" + text).split(" ");
     var w = 0;
@@ -120,8 +134,10 @@ function _maxWordWidth(ctx, text) {
 }
 // Size each fit column to the widest of its data and its header.  The header
 // word-wraps, so what must fit on a line is its longest single word, not the
-// whole title.  Fit columns also have widthShrink, giving space back rather
-// than forcing horizontal scroll when the window is too narrow.
+// whole title.  A fit column that also expands gets the measured size as its
+// minWidth, not a fixed width: a column with a definition width is excluded
+// from the fitColumns flex pool, so giving an expanding column a width would
+// stop it absorbing slack (and leave the table with no flexible column).
 function _fitColumnWidths() {
     var fits = _colSpec.filter(function(c) { return c.fit; });
     if (!fits.length) return;
@@ -140,7 +156,7 @@ function _fitColumnWidths() {
         var need = Math.max(data + 9, header + 34);
         if (c.filter === "range") need = Math.max(need, 70);
         var col = _dirTable.getColumn(c.field);
-        if (col) col.getDefinition().width = Math.ceil(need);
+        if (col) _setFitWidth(col, c, Math.ceil(need));
     });
     _dirTable.redraw(true);
 }
@@ -172,7 +188,10 @@ var _columns = _colSpec.map(function(c) {
     if ("width" in c) col.width = c.width;       // fixed; does not flex
     if ("minWidth" in c) col.minWidth = c.minWidth;
     if ("grow" in c) col.widthGrow = c.grow;
-    if (c.fit) col.widthShrink = 1;              // give space back before scrolling
+    // no widthShrink for fit columns: with fitColumns, shrinking only ever
+    // engages when there is space left over (the layout takes |gap| + leftover
+    // as overflow), so it narrowed the table as the window widened instead of
+    // giving space back when it was too narrow
     if ("shrink" in c) col.widthShrink = c.shrink;
     return col;
 });
