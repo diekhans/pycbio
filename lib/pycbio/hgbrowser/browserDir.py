@@ -402,16 +402,39 @@ function _keySort(a, b, aRow, bRow, column, dir, params) {
     if (x === y) return 0;
     return (x > y) ? 1 : -1;
 }
+// A filter pattern is applied to every row, so compile it just once.  A
+// pattern that will not compile is normally one that is still being typed, so
+// it falls back to a literal substring match rather than matching nothing.
+var _reCache = {};
+function _patternRe(pattern) {
+    if (!(pattern in _reCache)) {
+        try {
+            _reCache[pattern] = new RegExp(pattern, "i");
+        } catch (e) {
+            _reCache[pattern] = null;
+        }
+    }
+    return _reCache[pattern];
+}
+function _textMatch(text, pattern) {
+    var re = _opts.regexpFilters ? _patternRe(pattern) : null;
+    if (re !== null) {
+        return re.test(text);
+    }
+    return text.toLowerCase().indexOf(pattern.toLowerCase()) > -1;
+}
 function _colFilter(headerValue, rowValue, rowData, params) {
-    var t = ("" + (rowData[params.field] || "")).toLowerCase();
-    return t.indexOf(("" + headerValue).toLowerCase()) > -1;
+    return _textMatch("" + (rowData[params.field] || ""), "" + headerValue);
 }
 function _anySearch(data, params) {
     for (var i = 0; i < params.fields.length; i++) {
-        var t = ("" + (data[params.fields[i]] || "")).toLowerCase();
-        if (t.indexOf(params.value) > -1) return true;
+        if (_textMatch("" + (data[params.fields[i]] || ""), params.value)) return true;
     }
     return false;
+}
+function _dirToggleHelp() {
+    var help = document.getElementById("dirHelp");
+    help.hidden = !help.hidden;
 }
 function _rangeEditor(cell, onRendered, success, cancel, params) {
     var wrap = document.createElement("span");
@@ -525,6 +548,13 @@ html, body { height: 100%; margin: 0; }
 body { display: flex; flex-direction: column; font-family: sans-serif; }
 #dirSearchBar { padding: 4px; flex: 0 0 auto; }
 #dirSearch { width: 20em; }
+#dirHelpBtn { margin-left: 6px; width: 1.6em; height: 1.6em; line-height: 1;
+              padding: 0; border: 1px solid #999; border-radius: 50%;
+              background: #f0f0f0; font-weight: bold; cursor: pointer; }
+#dirHelp { flex: 0 0 auto; max-width: 60em; margin: 0 4px 4px; padding: 2px 8px;
+           border: 1px solid #ccc; background: #f8f8f8; }
+#dirHelp ul { margin: 4px 0; padding-left: 1.4em; }
+#dirHelp code { background: #eee; padding: 0 2px; }
 #dirTable { flex: 1 1 auto; }
 .dirDoc { flex: 0 0 auto; margin: 0 4px 4px; }
 .tabulator-row.dirCurrent { background-color: #ffe08a !important;
@@ -551,7 +581,8 @@ class BrowserDirDynamic(BrowserDirBase):
 
     def __init__(self, browserUrl, defaultDb, *, globalSearch=True,
                  headerFilters=True, headerWrap=False, layout="fitColumns",
-                 colDefs=None, tabulatorVersion=TABULATOR_VERSION,
+                 regexpFilters=True, filterHelp=None, colDefs=None,
+                 tabulatorVersion=TABULATOR_VERSION,
                  tabulatorOptions=None, **kwargs):
         """globalSearch adds a search box that matches across all columns.
         headerFilters adds a per-column filter input under each header.
@@ -559,6 +590,13 @@ class BrowserDirDynamic(BrowserDirBase):
         can override this with its own headerWrap in colDefs).  layout is the
         Tabulator layout mode; the default "fitColumns" makes the columns fill
         and resize with the window.
+
+        regexpFilters makes the text filters (both the per-column ones and the
+        global search) case-insensitive regular expressions rather than plain
+        substrings; a pattern that does not compile, as happens while one is
+        being typed, falls back to a substring match.  Either way, a help
+        button by the search box describes the filtering; filterHelp is
+        optional HTML appended to that description.
 
         colDefs is an optional dict giving per-column behavior, keyed by column
         name or zero-based index; each value is a dict with any of:
@@ -588,8 +626,9 @@ class BrowserDirDynamic(BrowserDirBase):
           - grow:       widthGrow, the relative share of leftover width a
                         flexible column claims (default 3 for a wrap column)
           - shrink:     widthShrink
-          - filter:     "text" (default, substring match), "range" (numeric
-                        min/max filter), or "none" (no header filter)
+          - filter:     "text" (default, regexp or substring match, see
+                        regexpFilters), "range" (numeric min/max filter), or
+                        "none" (no header filter)
           - align:      data-cell horizontal alignment "left", "center", or
                         "right"; "range" columns default to "right"
           - headerAlign: header-title alignment (defaults to left, so a
@@ -607,6 +646,8 @@ class BrowserDirDynamic(BrowserDirBase):
         self.headerFilters = headerFilters
         self.headerWrap = headerWrap
         self.layout = layout
+        self.regexpFilters = regexpFilters
+        self.filterHelp = filterHelp
         self.colDefs = colDefs or {}
         self.tabulatorVersion = tabulatorVersion
         self.tabulatorOptions = tabulatorOptions
@@ -729,6 +770,7 @@ class BrowserDirDynamic(BrowserDirBase):
         "the per-page Tabulator initialization script"
         opts = {"globalSearch": self.globalSearch,
                 "headerFilters": self.headerFilters,
+                "regexpFilters": self.regexpFilters,
                 "layout": self.layout,
                 "extra": self.tabulatorOptions or {}}
         parts = [_dynamicScriptHelpers,
@@ -739,12 +781,54 @@ class BrowserDirDynamic(BrowserDirBase):
         return "\n".join(parts)
 
     def _addSearchBar(self, pg):
-        if not self.globalSearch:
+        "the search box and the button that reveals the filter help"
+        if not (self.globalSearch or self.headerFilters):
             return
         pg.add('<div id="dirSearchBar">')
-        pg.add('Search: <input id="dirSearch" type="text" '
-               'oninput="_dirGlobalSearch()" placeholder="search all columns">')
+        if self.globalSearch:
+            pg.add('Search: <input id="dirSearch" type="text" '
+                   'oninput="_dirGlobalSearch()" placeholder="search all columns">')
+        pg.add('<button id="dirHelpBtn" type="button" title="how filtering works" '
+               'onclick="_dirToggleHelp()">?</button>')
         pg.add('</div>')
+        self._addFilterHelp(pg)
+
+    def _filterMatchDesc(self):
+        "how a text filter treats what is typed into it"
+        if self.regexpFilters:
+            return ("What is typed is a case-insensitive regular expression, matched "
+                    "anywhere in the value: <code>^chr1$</code> matches only the whole "
+                    "value, <code>MIR1|MIR2</code> either of two.")
+        else:
+            return ("What is typed is case-insensitive text, matched anywhere in the "
+                    "value.")
+
+    def _filterHelpItems(self):
+        "the standard description of how this page's filtering works"
+        items = [self._filterMatchDesc()]
+        if self.headerFilters:
+            items.append("The box under a column name filters on that column alone.")
+            if self._rangeCols():
+                items.append("Numeric columns have <b>min</b>/<b>max</b> boxes instead; "
+                             "fill in just one for an open-ended range.")
+        if self.globalSearch:
+            items.append("The <b>Search</b> box matches against all columns at once.")
+        items.append("Filters combine: a row is shown only when it passes every one of them.")
+        if self.regexpFilters:
+            items.append("An expression that is not valid, as while it is still being typed, "
+                         "matches as plain text instead.")
+        return items
+
+    def _addFilterHelp(self, pg):
+        "the (initially hidden) filter-help block, with any caller-supplied HTML"
+        pg.add('<div id="dirHelp" hidden>')
+        pg.add("<ul>")
+        for item in self._filterHelpItems():
+            pg.add("<li>{}</li>".format(item))
+        pg.add("</ul>")
+        if self.filterHelp is not None:
+            pg.add(self.filterHelp)
+        pg.add("</div>")
 
     def _writeDirPage(self, outDir):
         headExtra = '<link href="{}" rel="stylesheet">\n<script src="{}"></script>'.format(
@@ -833,7 +917,7 @@ _dirTable.on("rowClick", _dirSetCurrent);
 _dirTable.on("tableBuilt", _fitColumnWidths);
 var _searchFields = _colSpec.map(function(c) { return c.textField; });
 function _dirGlobalSearch() {
-    var v = document.getElementById("dirSearch").value.toLowerCase();
+    var v = document.getElementById("dirSearch").value;
     if (v === "") {
         _dirTable.clearFilter();
     } else {

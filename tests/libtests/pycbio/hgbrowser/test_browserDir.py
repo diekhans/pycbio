@@ -160,6 +160,27 @@ def testDynamicGenes(request):
 
 
 ##
+# filter help: substring rather than regexp filters, no global search, and
+# caller-supplied HTML added to the help block
+##
+def _filterHelpTest(outDir):
+    help = "<p>Genes are named by their <b>HGNC</b> symbol.</p>"
+    brDir = browserDir.BrowserDirDynamic(browserDir.GENOME_UCSC_URL, "hg38",
+                                         colNames=_genesCols, title="hg38 genes",
+                                         globalSearch=False, regexpFilters=False,
+                                         filterHelp=help,
+                                         colDefs={"length": {"filter": "range"}})
+    for gene in _genesData:
+        _genesAddRow(brDir, gene)
+    brDir.write(outDir)
+
+def testDynamicFilterHelp(request):
+    outDir = ts.get_test_output_file(request)
+    _filterHelpTest(outDir)
+    _diffDir(request)
+
+
+##
 # per-assembly miRNA gene table (mirrors hub-geneset-browser): one row per
 # merged locus, all loci of a gene share the copies count; numeric copies
 # column with a range filter; location columns are HTML anchors whose text

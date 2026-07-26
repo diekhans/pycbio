@@ -9,6 +9,13 @@ html, body { height: 100%; margin: 0; }
 body { display: flex; flex-direction: column; font-family: sans-serif; }
 #dirSearchBar { padding: 4px; flex: 0 0 auto; }
 #dirSearch { width: 20em; }
+#dirHelpBtn { margin-left: 6px; width: 1.6em; height: 1.6em; line-height: 1;
+              padding: 0; border: 1px solid #999; border-radius: 50%;
+              background: #f0f0f0; font-weight: bold; cursor: pointer; }
+#dirHelp { flex: 0 0 auto; max-width: 60em; margin: 0 4px 4px; padding: 2px 8px;
+           border: 1px solid #ccc; background: #f8f8f8; }
+#dirHelp ul { margin: 4px 0; padding-left: 1.4em; }
+#dirHelp code { background: #eee; padding: 0 2px; }
 #dirTable { flex: 1 1 auto; }
 .dirDoc { flex: 0 0 auto; margin: 0 4px 4px; }
 .tabulator-row.dirCurrent { background-color: #ffe08a !important;
@@ -29,6 +36,16 @@ body { display: flex; flex-direction: column; font-family: sans-serif; }
 <h3>Flintstones hub</h3>
 <div id="dirSearchBar">
 Search: <input id="dirSearch" type="text" oninput="_dirGlobalSearch()" placeholder="search all columns">
+<button id="dirHelpBtn" type="button" title="how filtering works" onclick="_dirToggleHelp()">?</button>
+</div>
+<div id="dirHelp" hidden>
+<ul>
+<li>What is typed is a case-insensitive regular expression, matched anywhere in the value: <code>^chr1$</code> matches only the whole value, <code>MIR1|MIR2</code> either of two.</li>
+<li>The box under a column name filters on that column alone.</li>
+<li>The <b>Search</b> box matches against all columns at once.</li>
+<li>Filters combine: a row is shown only when it passes every one of them.</li>
+<li>An expression that is not valid, as while it is still being typed, matches as plain text instead.</li>
+</ul>
 </div>
 <div id="dirTable"></div>
 <script>
@@ -44,16 +61,39 @@ function _keySort(a, b, aRow, bRow, column, dir, params) {
     if (x === y) return 0;
     return (x > y) ? 1 : -1;
 }
+// A filter pattern is applied to every row, so compile it just once.  A
+// pattern that will not compile is normally one that is still being typed, so
+// it falls back to a literal substring match rather than matching nothing.
+var _reCache = {};
+function _patternRe(pattern) {
+    if (!(pattern in _reCache)) {
+        try {
+            _reCache[pattern] = new RegExp(pattern, "i");
+        } catch (e) {
+            _reCache[pattern] = null;
+        }
+    }
+    return _reCache[pattern];
+}
+function _textMatch(text, pattern) {
+    var re = _opts.regexpFilters ? _patternRe(pattern) : null;
+    if (re !== null) {
+        return re.test(text);
+    }
+    return text.toLowerCase().indexOf(pattern.toLowerCase()) > -1;
+}
 function _colFilter(headerValue, rowValue, rowData, params) {
-    var t = ("" + (rowData[params.field] || "")).toLowerCase();
-    return t.indexOf(("" + headerValue).toLowerCase()) > -1;
+    return _textMatch("" + (rowData[params.field] || ""), "" + headerValue);
 }
 function _anySearch(data, params) {
     for (var i = 0; i < params.fields.length; i++) {
-        var t = ("" + (data[params.fields[i]] || "")).toLowerCase();
-        if (t.indexOf(params.value) > -1) return true;
+        if (_textMatch("" + (data[params.fields[i]] || ""), params.value)) return true;
     }
     return false;
+}
+function _dirToggleHelp() {
+    var help = document.getElementById("dirHelp");
+    help.hidden = !help.hidden;
 }
 function _rangeEditor(cell, onRendered, success, cancel, params) {
     var wrap = document.createElement("span");
@@ -163,7 +203,7 @@ function _fitColumnWidths() {
 
 var _colSpec = [{"title": "position", "field": "c0", "sortField": "c0s", "textField": "c0t", "fit": true, "headerWrap": true}, {"title": "name", "field": "c1", "sortField": "c1s", "textField": "c1t", "wrap": true, "width": 120}, {"title": "status", "field": "c2", "sortField": "c2s", "textField": "c2t", "fit": true, "headerWrap": true}];
 var _tableData = [{"_id": 0, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A1000-2000\" target=browser>chr22:1000-2000<\/a>", "c0s": "chr22\t000000001000", "c0t": "chr22:1000-2000", "c1": "fred_0", "c1s": "fred_0", "c1t": "fred_0", "c2": "sad", "c2s": "sad", "c2t": "sad"}, {"_id": 1, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A1500-2300\" target=browser>chr22:1500-2300<\/a>", "c0s": "chr22\t000000001500", "c0t": "chr22:1500-2300", "c1": "barny_0", "c1s": "barny_0", "c1t": "barny_0", "c2": "happy", "c2s": "happy", "c2t": "happy"}, {"_id": 2, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A3500-3700\" target=browser>chr22:3500-3700<\/a>", "c0s": "chr22\t000000003500", "c0t": "chr22:3500-3700", "c1": "wilma_0", "c1s": "wilma_0", "c1t": "wilma_0", "c2": "great", "c2s": "great", "c2t": "great", "_cls": "great"}, {"_id": 3, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A2000-4000\" target=browser>chr22:2000-4000<\/a>", "c0s": "chr22\t000000002000", "c0t": "chr22:2000-4000", "c1": "fred_1", "c1s": "fred_1", "c1t": "fred_1", "c2": "sad", "c2s": "sad", "c2t": "sad"}, {"_id": 4, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A3000-4600\" target=browser>chr22:3000-4600<\/a>", "c0s": "chr22\t000000003000", "c0t": "chr22:3000-4600", "c1": "barny_1", "c1s": "barny_1", "c1t": "barny_1", "c2": "happy", "c2s": "happy", "c2t": "happy"}, {"_id": 5, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A7000-7400\" target=browser>chr22:7000-7400<\/a>", "c0s": "chr22\t000000007000", "c0t": "chr22:7000-7400", "c1": "wilma_1", "c1s": "wilma_1", "c1t": "wilma_1", "c2": "great", "c2s": "great", "c2t": "great", "_cls": "great"}, {"_id": 6, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A3000-6000\" target=browser>chr22:3000-6000<\/a>", "c0s": "chr22\t000000003000", "c0t": "chr22:3000-6000", "c1": "fred_2", "c1s": "fred_2", "c1t": "fred_2", "c2": "sad", "c2s": "sad", "c2t": "sad"}, {"_id": 7, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A4500-6900\" target=browser>chr22:4500-6900<\/a>", "c0s": "chr22\t000000004500", "c0t": "chr22:4500-6900", "c1": "barny_2", "c1s": "barny_2", "c1t": "barny_2", "c2": "happy", "c2s": "happy", "c2t": "happy"}, {"_id": 8, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A10500-11100\" target=browser>chr22:10500-11100<\/a>", "c0s": "chr22\t000000010500", "c0t": "chr22:10500-11100", "c1": "wilma_2", "c1s": "wilma_2", "c1t": "wilma_2", "c2": "great", "c2s": "great", "c2t": "great", "_cls": "great"}, {"_id": 9, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A4000-8000\" target=browser>chr22:4000-8000<\/a>", "c0s": "chr22\t000000004000", "c0t": "chr22:4000-8000", "c1": "fred_3", "c1s": "fred_3", "c1t": "fred_3", "c2": "sad", "c2s": "sad", "c2t": "sad"}, {"_id": 10, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A6000-9200\" target=browser>chr22:6000-9200<\/a>", "c0s": "chr22\t000000006000", "c0t": "chr22:6000-9200", "c1": "barny_3", "c1s": "barny_3", "c1t": "barny_3", "c2": "happy", "c2s": "happy", "c2t": "happy"}, {"_id": 11, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A14000-14800\" target=browser>chr22:14000-14800<\/a>", "c0s": "chr22\t000000014000", "c0t": "chr22:14000-14800", "c1": "wilma_3", "c1s": "wilma_3", "c1t": "wilma_3", "c2": "great", "c2s": "great", "c2t": "great", "_cls": "great"}, {"_id": 12, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A5000-10000\" target=browser>chr22:5000-10000<\/a>", "c0s": "chr22\t000000005000", "c0t": "chr22:5000-10000", "c1": "fred_4", "c1s": "fred_4", "c1t": "fred_4", "c2": "sad", "c2s": "sad", "c2t": "sad"}, {"_id": 13, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A7500-11500\" target=browser>chr22:7500-11500<\/a>", "c0s": "chr22\t000000007500", "c0t": "chr22:7500-11500", "c1": "barny_4", "c1s": "barny_4", "c1t": "barny_4", "c2": "happy", "c2s": "happy", "c2t": "happy"}, {"_id": 14, "c0": "<a href=\"https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg38&genome=hg38&position=chr22%3A17500-18500\" target=browser>chr22:17500-18500<\/a>", "c0s": "chr22\t000000017500", "c0t": "chr22:17500-18500", "c1": "wilma_4", "c1s": "wilma_4", "c1t": "wilma_4", "c2": "great", "c2s": "great", "c2t": "great", "_cls": "great"}];
-var _opts = {"globalSearch": true, "headerFilters": true, "layout": "fitColumns", "extra": {}};
+var _opts = {"globalSearch": true, "headerFilters": true, "regexpFilters": true, "layout": "fitColumns", "extra": {}};
 
 var _columns = _colSpec.map(function(c) {
     var col = {title: c.title, field: c.field, formatter: "html",
@@ -226,7 +266,7 @@ _dirTable.on("rowClick", _dirSetCurrent);
 _dirTable.on("tableBuilt", _fitColumnWidths);
 var _searchFields = _colSpec.map(function(c) { return c.textField; });
 function _dirGlobalSearch() {
-    var v = document.getElementById("dirSearch").value.toLowerCase();
+    var v = document.getElementById("dirSearch").value;
     if (v === "") {
         _dirTable.clearFilter();
     } else {
