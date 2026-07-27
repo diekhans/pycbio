@@ -17,6 +17,8 @@ import copy
 import json
 import html
 import warnings
+import functools
+import importlib.resources
 from urllib.parse import quote
 from pycbio.html.htmlPage import HtmlPage
 from pycbio.sys import fileOps
@@ -54,6 +56,16 @@ def _tabulatorCssUrl(version):
 
 def _tabulatorJsUrl(version):
     return f"https://unpkg.com/tabulator-tables@{version}/dist/js/tabulator.min.js"
+
+
+# client code for the dynamic pages, shipped as package data beside this module
+# and inlined into each generated page
+DYNAMIC_JS_FILE = "browserDirDynamic.js"
+
+@functools.cache
+def _dynamicJs():
+    "the BrowserDirDynamic client code, read from the package data file"
+    return importlib.resources.files(__package__).joinpath(DYNAMIC_JS_FILE).read_text()
 
 
 _tagRe = re.compile(r"<[^>]+>")
@@ -388,161 +400,6 @@ class BrowserDir(BrowserDirStatic):
         super().__init__(*args, **kwargs)
 
 
-# JavaScript helpers shared by all dynamic pages.  These are static (contain no
-# per-page data), so they are emitted verbatim.
-_dynamicScriptHelpers = """
-function _keySort(a, b, aRow, bRow, column, dir, params) {
-    var x = aRow.getData()[params.field];
-    var y = bRow.getData()[params.field];
-    if (params.numeric) {
-        x = parseFloat(x); y = parseFloat(y);
-        if (isNaN(x)) x = -Infinity;
-        if (isNaN(y)) y = -Infinity;
-    }
-    if (x === y) return 0;
-    return (x > y) ? 1 : -1;
-}
-// A filter pattern is applied to every row, so compile it just once.  A
-// pattern that will not compile is normally one that is still being typed, so
-// it falls back to a literal substring match rather than matching nothing.
-var _reCache = {};
-function _patternRe(pattern) {
-    if (!(pattern in _reCache)) {
-        try {
-            _reCache[pattern] = new RegExp(pattern, "i");
-        } catch (e) {
-            _reCache[pattern] = null;
-        }
-    }
-    return _reCache[pattern];
-}
-function _textMatch(text, pattern) {
-    var re = _opts.regexpFilters ? _patternRe(pattern) : null;
-    if (re !== null) {
-        return re.test(text);
-    }
-    return text.toLowerCase().indexOf(pattern.toLowerCase()) > -1;
-}
-function _colFilter(headerValue, rowValue, rowData, params) {
-    return _textMatch("" + (rowData[params.field] || ""), "" + headerValue);
-}
-function _anySearch(data, params) {
-    for (var i = 0; i < params.fields.length; i++) {
-        if (_textMatch("" + (data[params.fields[i]] || ""), params.value)) return true;
-    }
-    return false;
-}
-function _dirToggleHelp() {
-    var help = document.getElementById("dirHelp");
-    help.hidden = !help.hidden;
-}
-function _rangeEditor(cell, onRendered, success, cancel, params) {
-    var wrap = document.createElement("span");
-    var lo = document.createElement("input");
-    var hi = document.createElement("input");
-    wrap.className = "dirRange";
-    lo.type = hi.type = "number";
-    lo.placeholder = "min";
-    hi.placeholder = "max";
-    function val() {
-        return {min: lo.value === "" ? null : parseFloat(lo.value),
-                max: hi.value === "" ? null : parseFloat(hi.value)};
-    }
-    // Tabulator's live filter calls success(editorElement.value); expose the
-    // range object as the element's value so that path works, not just ours.
-    Object.defineProperty(wrap, "value", {get: val});
-    function commit() { success(val()); }
-    function stop(e) { e.stopPropagation(); }
-    function key(e) { if (e.key === "Escape") cancel(); e.stopPropagation(); }
-    lo.addEventListener("input", commit);
-    hi.addEventListener("input", commit);
-    lo.addEventListener("keydown", key);
-    hi.addEventListener("keydown", key);
-    lo.addEventListener("mousedown", stop);
-    hi.addEventListener("mousedown", stop);
-    wrap.appendChild(lo);
-    wrap.appendChild(hi);
-    return wrap;
-}
-function _rangeFilter(headerValue, rowValue, rowData, params) {
-    var n = rowData[params.field];
-    if (n === null || n === undefined || n === "") return false;
-    n = parseFloat(n);
-    if (isNaN(n)) return false;
-    if (headerValue.min !== null && n < headerValue.min) return false;
-    if (headerValue.max !== null && n > headerValue.max) return false;
-    return true;
-}
-function _rangeEmpty(value) {
-    return (value == null) || (value.min == null && value.max == null);
-}
-function _fontOf(el, fallback) {
-    if (!el) return fallback;
-    var cs = getComputedStyle(el);
-    return cs.fontStyle + " " + cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily;
-}
-function _maxDataWidth(ctx, field) {
-    var w = 0;
-    for (var i = 0; i < _tableData.length; i++) {
-        var t = _tableData[i][field];
-        var cw = ctx.measureText(t == null ? "" : ("" + t)).width;
-        if (cw > w) w = cw;
-    }
-    return w;
-}
-// Apply a measured fit width.  An expanding column keeps flexing, with the
-// measured size as its floor; a plain fit column is pinned to it.  Both the
-// definition and the live column must be set: the layout reads the definition
-// (a column with a width is excluded from the flex pool, and minWidth is read
-// off the column), but only setWidth/setMinWidth resize what is rendered.
-function _setFitWidth(col, spec, need) {
-    if (spec.grow) {
-        col.getDefinition().minWidth = need;
-        col._getSelf().setMinWidth(need);
-    } else {
-        col.getDefinition().width = need;
-        col.setWidth(need);
-    }
-}
-function _maxWordWidth(ctx, text) {
-    var words = ("" + text).split(" ");
-    var w = 0;
-    for (var i = 0; i < words.length; i++) {
-        var ww = ctx.measureText(words[i]).width;
-        if (ww > w) w = ww;
-    }
-    return w;
-}
-// Size each fit column to the widest of its data and its header.  The header
-// word-wraps, so what must fit on a line is its longest single word, not the
-// whole title.  A fit column that also expands gets the measured size as its
-// minWidth, not a fixed width: a column with a definition width is excluded
-// from the fitColumns flex pool, so giving an expanding column a width would
-// stop it absorbing slack (and leave the table with no flexible column).
-function _fitColumnWidths() {
-    var fits = _colSpec.filter(function(c) { return c.fit; });
-    if (!fits.length) return;
-    var el = _dirTable.element;
-    var cellFont = _fontOf(el.querySelector(".tabulator-cell"), "14px sans-serif");
-    var hdrFont = _fontOf(el.querySelector(".tabulator-col-title"), cellFont);
-    var ctx = document.createElement("canvas").getContext("2d");
-    fits.forEach(function(c) {
-        ctx.font = cellFont;
-        var data = _maxDataWidth(ctx, c.textField);
-        ctx.font = hdrFont;
-        var header = c.headerWrap ? _maxWordWidth(ctx, c.title)
-                                  : ctx.measureText(c.title).width;
-        // cell: 4+4 padding + 1 border; header also reserves the 25px sort
-        // arrow space (padding-right) plus the 4+4 content padding + border
-        var need = Math.max(data + 9, header + 34);
-        if (c.filter === "range") need = Math.max(need, 70);
-        var col = _dirTable.getColumn(c.field);
-        if (col) _setFitWidth(col, c, Math.ceil(need));
-    });
-    _dirTable.redraw(true);
-}
-"""
-
 _dynamicStyle = """
 html, body { height: 100%; margin: 0; }
 body { display: flex; flex-direction: column; font-family: sans-serif; }
@@ -767,17 +624,16 @@ class BrowserDirDynamic(BrowserDirBase):
         return json.dumps(obj).replace("</", "<\\/")
 
     def _buildScript(self):
-        "the per-page Tabulator initialization script"
+        "this page's data followed by the client code that builds the table"
         opts = {"globalSearch": self.globalSearch,
                 "headerFilters": self.headerFilters,
                 "regexpFilters": self.regexpFilters,
                 "layout": self.layout,
                 "extra": self.tabulatorOptions or {}}
-        parts = [_dynamicScriptHelpers,
-                 "var _colSpec = {};".format(self._jsonEmbed(self._colSpec())),
+        parts = ["var _colSpec = {};".format(self._jsonEmbed(self._colSpec())),
                  "var _tableData = {};".format(self._jsonEmbed(self._tableData())),
                  "var _opts = {};".format(self._jsonEmbed(opts)),
-                 _dynamicInitScript]
+                 _dynamicJs()]
         return "\n".join(parts)
 
     def _addSearchBar(self, pg):
@@ -806,6 +662,10 @@ class BrowserDirDynamic(BrowserDirBase):
     def _filterHelpItems(self):
         "the standard description of how this page's filtering works"
         items = [self._filterMatchDesc()]
+        if self.regexpFilters:
+            items.append("To match everything <i>but</i> some value, negate it with a "
+                         "look-ahead: <code>^(?!ok$).*</code> finds all values other "
+                         "than <code>ok</code>.")
         if self.headerFilters:
             items.append("The box under a column name filters on that column alone.")
             if self._rangeCols():
@@ -851,77 +711,3 @@ class BrowserDirDynamic(BrowserDirBase):
         frame = self._mkFrame("dir.html", self.title, self.dirPercent, self.below)
         frame.writeFile(os.path.join(outDir, "index.html"))
         self._writeDirPage(outDir)
-
-
-# Per-page init logic that consumes the _colSpec/_tableData/_opts globals set
-# above it.  Kept as a static block since it contains only structural code.
-_dynamicInitScript = """
-var _columns = _colSpec.map(function(c) {
-    var col = {title: c.title, field: c.field, formatter: "html",
-               sorter: _keySort,
-               sorterParams: {field: c.sortField, numeric: !!c.numericSort}};
-    if (_opts.headerFilters && c.filter !== "none") {
-        if (c.filter === "range") {
-            col.headerFilter = _rangeEditor;
-            col.headerFilterFunc = _rangeFilter;
-            col.headerFilterFuncParams = {field: c.numberField};
-            col.headerFilterEmptyCheck = _rangeEmpty;
-        } else {
-            col.headerFilter = "input";
-            col.headerFilterFunc = _colFilter;
-            col.headerFilterFuncParams = {field: c.textField};
-        }
-    }
-    if (c.wrap) col.cssClass = "dirWrap";
-    if (c.headerWrap) col.headerWordWrap = true;
-    if ("align" in c) col.hozAlign = c.align;               // data cells
-    if ("headerAlign" in c) col.headerHozAlign = c.headerAlign;
-    if ("width" in c) col.width = c.width;       // fixed; does not flex
-    if ("minWidth" in c) col.minWidth = c.minWidth;
-    if ("grow" in c) col.widthGrow = c.grow;
-    // no widthShrink for fit columns: with fitColumns, shrinking only ever
-    // engages when there is space left over (the layout takes |gap| + leftover
-    // as overflow), so it narrowed the table as the window widened instead of
-    // giving space back when it was too narrow
-    if ("shrink" in c) col.widthShrink = c.shrink;
-    return col;
-});
-var _currentId = null;
-var _config = {data: _tableData, columns: _columns, layout: _opts.layout,
-               height: "100%", index: "_id",
-               rowFormatter: function(row) {
-                   var el = row.getElement();
-                   var data = row.getData();
-                   if (data._cls) el.classList.add(data._cls);
-                   if (data._id === _currentId) {
-                       el.classList.add("dirCurrent");
-                   } else {
-                       el.classList.remove("dirCurrent");
-                   }
-               }};
-for (var k in _opts.extra) { _config[k] = _opts.extra[k]; }
-var _dirTable = new Tabulator("#dirTable", _config);
-// Tabulator 6 requires event callbacks to be registered via on(), not as
-// constructor options.  Highlight the row whose link was last clicked.
-function _dirSetCurrent(e, row) {
-    if (!e.target.closest("a")) return;
-    var prevId = _currentId;
-    _currentId = row.getData()._id;
-    if (prevId !== null) {
-        var prev = _dirTable.getRow(prevId);
-        if (prev) prev.reformat();
-    }
-    row.reformat();
-}
-_dirTable.on("rowClick", _dirSetCurrent);
-_dirTable.on("tableBuilt", _fitColumnWidths);
-var _searchFields = _colSpec.map(function(c) { return c.textField; });
-function _dirGlobalSearch() {
-    var v = document.getElementById("dirSearch").value;
-    if (v === "") {
-        _dirTable.clearFilter();
-    } else {
-        _dirTable.setFilter(_anySearch, {fields: _searchFields, value: v});
-    }
-}
-"""

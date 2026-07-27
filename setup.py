@@ -40,6 +40,7 @@ setup(
     install_requires = requirements,
     package_dir = {'': 'lib'},
     packages = find_packages(where='lib'),
+    package_data = {'pycbio.hgbrowser': ['*.js']},
     scripts = [
         'bin/agpToPsl',
         'bin/bedToCdsBed',
