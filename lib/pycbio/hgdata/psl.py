@@ -418,12 +418,12 @@ class Psl:
         else:
             return (self.match + self.repMatch) / aligned
 
-    @deprecated
+    @deprecated()
     def basesAligned(self):
         # FIXME: make property
         return self.match + self.misMatch + self.repMatch
 
-    @deprecated
+    @deprecated()
     def queryAligned(self):
         # FIXME: make property
         return (self.match + self.misMatch + self.repMatch) / self.qSize
