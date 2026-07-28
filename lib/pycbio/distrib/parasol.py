@@ -34,14 +34,24 @@ class BatchStats:
         elif words[0] == "para.results":
             self.paraResultsErrors = 1
             return True
+        elif words[0] == "total sick machines":
+            # "total sick machines: %d failures: %d" -- the summary line para check
+            # gets back from paraHub's showSickNodes, so words is
+            # ["total sick machines", " %d failures", " %d"]
+            self.sickMachines = int(words[1].split()[0])
+            self.sickFailures = int(words[2])
+            return True
         elif words[0].startswith("slow"):
+            # "slow (> %d minutes): %d"
             self.slow = int(words[1])
             return True
         elif words[0].startswith("hung"):
-            self.hung = 0
+            # "hung (> %d minutes): %d"
+            self.hung = int(words[1])
             return True
         elif words[0].startswith("failed"):
-            self.failed = 0
+            # "failed %d times: %d" -- the count is the value, not the retry limit
+            self.failed = int(words[1])
             return True
         else:
             return False
@@ -63,6 +73,8 @@ class BatchStats:
         self.slow = 0
         self.hung = 0
         self.failed = 0
+        self.sickMachines = 0
+        self.sickFailures = 0
 
         # parse lines, skiping empty lines
         for line in lines:
