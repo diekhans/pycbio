@@ -1,0 +1,8 @@
+genes	A	7.5
+genes	B	7.5
+genes	C	7.5
+genes	D	6.5
+genes	E	7.5
+samples	A	8.5
+samples	B	11.5
+samples	C	7.5

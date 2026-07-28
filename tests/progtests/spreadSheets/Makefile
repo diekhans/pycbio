@@ -18,10 +18,13 @@ testXlsxBasic: mkdirs
 	${diff} expected/$@/H9_q20_hap1_enriched_peaks.tsv output/$@/H9_q20_hap1_enriched_peaks.tsv
 	${diff} expected/$@/H9_q20_hap2_enriched_peaks.tsv output/$@/H9_q20_hap2_enriched_peaks.tsv
 
-tsv-tests: testTsvToXlsxRoundTrip testTsvToXlsxHeaderXform testTsvToXlsxPairs testTsvToXlsxSheetNameSubst testTsvToXlsxFreeze
+tsv-tests: testTsvToXlsxRoundTrip testTsvToXlsxHeaderXform testTsvToXlsxPairs testTsvToXlsxSheetNameSubst testTsvToXlsxFreeze testTsvToXlsxWidths
 
 # dump each sheet's freeze_panes anchor for comparing to expected
 dumpFreeze = python3 -c 'import openpyxl,sys; wb=openpyxl.load_workbook(sys.argv[1]); print("\n".join(f"{ws.title}\t{ws.freeze_panes}" for ws in wb))'
+
+# dump each sheet's column widths for comparing to expected
+dumpWidths = python3 -c 'import openpyxl,sys; wb=openpyxl.load_workbook(sys.argv[1]); print("\n".join(f"{ws.title}\t{col}\t{dim.width}" for ws in wb for col, dim in sorted(ws.column_dimensions.items())))'
 
 # build a multi-sheet workbook from TSVs, convert it back, and confirm the
 # round-trip reproduces the inputs (xlsx is binary, so we diff the TSVs)
@@ -69,6 +72,20 @@ testTsvToXlsxFreeze: mkdirs
 	${xlsx_to_tsv} output/$@/combined.xlsx output/$@
 	${diff} input/genes.tsv output/$@/genes.tsv
 	${diff} input/samples.tsv output/$@/samples.tsv
+
+# columns are sized to their widest cell plus the width padding, capped by
+# --max-width; check the default padding and an explicit --width-padding, which
+# applies on top of the cap (here every column ends up 4 + 6)
+testTsvToXlsxWidths: mkdirs
+	@mkdir -p output/$@
+	${tsv_to_xlsx} output/$@/default.xlsx input/genes.tsv input/samples.tsv
+	${dumpWidths} output/$@/default.xlsx > output/$@/defaultWidths.txt
+	${diff} expected/$@/defaultWidths.txt output/$@/defaultWidths.txt
+	${tsv_to_xlsx} --max-width=4 --width-padding=6 output/$@/padded.xlsx input/genes.tsv input/samples.tsv
+	${dumpWidths} output/$@/padded.xlsx > output/$@/paddedWidths.txt
+	${diff} expected/$@/paddedWidths.txt output/$@/paddedWidths.txt
+	${xlsx_to_tsv} output/$@/padded.xlsx output/$@
+	${diff} input/genes.tsv output/$@/genes.tsv
 
 mkdirs:
 	@mkdir -p output

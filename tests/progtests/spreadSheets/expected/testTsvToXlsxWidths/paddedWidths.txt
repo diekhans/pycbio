@@ -1,0 +1,8 @@
+genes	A	10.0
+genes	B	10.0
+genes	C	10.0
+genes	D	10.0
+genes	E	10.0
+samples	A	10.0
+samples	B	10.0
+samples	C	10.0
