@@ -93,10 +93,13 @@ class BatchStats:
 
 class Para:
     "interface to the parasol para command"
-    def __init__(self, *, paraHost=None, jobFile=None, runDir=None, paraDir=None, cpu=None, mem=None, maxJobs=None, retries=None):
-        """"will chdir to runDir, which default to cwd.  paraDir should be relative
+    def __init__(self, *, paraHost=None, jobFile=None, runDir=None, paraDir=None, cpu=None, mem=None, maxJobs=None, retries=None,
+                 stderr=2):
+        """will chdir to runDir, which default to cwd.  paraDir should be relative
         to runDir or absolute, defaults to runDir to jobFile should be relative to runDir
-        or absolute.
+        or absolute.  The stderr argument determines where stderr goes; use
+        stderr=pipettor.DataReader to return the error in an Exception, otherwise it
+        shares the existing stderr with the default of 2.
         """
         self.paraHost = paraHost
         # symlinks can confuse parasol, as it can give two different names for a job.
@@ -111,16 +114,16 @@ class Para:
         self.mem = mem
         self.maxJobs = maxJobs
         self.retries = retries
+        self.stderr = stderr
         absJobFile = _mkAbs(self.runDir, self.jobFile)
         if not os.path.exists(absJobFile):
             raise PycbioException("job file not found: {}".format(absJobFile))
         fileOps.ensureDir(_mkAbs(self.runDir, self.paraDir))
 
-    def _para(self, *paraArgs, stderr=pipettor.DataReader):
+    def _para(self, *paraArgs, stderr=None):
         """ssh to the remote machine and run the para command.  paraArgs are
         passed as arguments to the para command. Returns stdout as a list of
-        lines, stderr in ProcException if the remote program encouners an
-        error. There is a possibility for quoting hell here."""
+        lines. """
         paraCmd = ["para", f"-batch={self.paraDir}"]
         for pa in paraArgs:
             paraCmd.append(shlex.quote(pa))
@@ -137,6 +140,8 @@ class Para:
         else:
             remCmd = "cd {} && {}".format(shlex.quote(self.runDir), shlex.join(paraCmd))
             cmd = ["ssh", "-nx", "-o", "ClearAllForwardings=yes", self.paraHost, remCmd]
+        if stderr is None:
+            stderr = self.stderr
         return pipettor.runout(cmd, stderr=stderr).split('\n')
 
     def wasStarted(self):
@@ -146,8 +151,7 @@ class Para:
 
     def make(self):
         "run para make"
-        # want to keep status streaming to stderr
-        self._para("make", self.jobFile, stderr='/dev/stderr')
+        self._para("make", self.jobFile)
 
     def check(self):
         "run para check and return statistics"
@@ -157,7 +161,7 @@ class Para:
     def freeBatch(self):
         "free the batch, no-op if it doesn't exist"
         try:
-            self._para("freeBatch")
+            self._para("freeBatch", stderr=pipettor.DataReader)
         except pipettor.exceptions.ProcessException as ex:
             if ex.stderr.find("Batch not found") < 0:
                 raise
@@ -165,7 +169,7 @@ class Para:
     def clearSickNodes(self):
         "clearSickNodes for a batch, no-op if it doesn't exist"
         try:
-            self._para("clearSickNodes")
+            self._para("clearSickNodes", stderr=pipettor.DataReader)
         except pipettor.exceptions.ProcessException as ex:
             if ex.stderr.find("Batch not found") < 0:
                 raise
