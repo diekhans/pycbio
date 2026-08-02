@@ -368,6 +368,38 @@ function _dirEndDrag() {
 }
 document.documentElement.addEventListener("mouseleave", _dirEndDrag);
 window.addEventListener("blur", _dirEndDrag);
+
+// Give the table back to the frame when the frame changes size.  Tabulator sizes
+// its scrolling area in PIXELS when it is built; the containing div is a flex
+// item and grows, but the table inside keeps the height it was born with, so
+// dragging the frameset divider to make the directory taller just adds blank
+// space under the table.  A redraw recomputes it.
+//
+// Plain redraw(), not redraw(true): the height is all that has to be recomputed,
+// and a full redraw would also throw away the column widths the reader dragged.
+// Both signals, since neither covers the other: a frameset divider need not
+// raise a window resize, and a window resize need not change this element's box.
+// Debounced, and the observer only fires on a height it has not already handled,
+// so a redraw cannot feed itself.
+var _dirResizeTimer = null;
+function _dirRelayout() {
+    if (_dirResizeTimer !== null) clearTimeout(_dirResizeTimer);
+    _dirResizeTimer = setTimeout(function() {
+        _dirResizeTimer = null;
+        _dirTable.redraw();
+    }, 60);
+}
+window.addEventListener("resize", _dirRelayout);
+if (window.ResizeObserver) {
+    var _dirLastHeight = 0;
+    new ResizeObserver(function(entries) {
+        var h = Math.round(entries[0].contentRect.height);
+        if (h !== _dirLastHeight) {
+            _dirLastHeight = h;
+            _dirRelayout();
+        }
+    }).observe(document.getElementById("dirTable"));
+}
 var _searchFields = _colSpec.map(function(c) { return c.textField; });
 function _dirGlobalSearch() {
     var v = document.getElementById("dirSearch").value;
