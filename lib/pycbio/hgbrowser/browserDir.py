@@ -429,6 +429,13 @@ body { display: flex; flex-direction: column; font-family: sans-serif; }
 .dirDesc { flex: 0 0 auto; max-width: 60em; max-height: 40vh; overflow-y: auto;
            margin: 0 4px 4px; padding: 2px 8px;
            border: 1px solid #ccc; background: #f8f8f8; }
+/* a page description is usually prose plus a column glossary, and the browser's own
+   spacing for a definition list is too loose to read as a list of columns */
+.dirDesc h4 { margin: 8px 0 2px; }
+.dirDesc dl { margin: 4px 0; }
+.dirDesc dt { margin-top: 4px; }
+.dirDesc dd { margin: 0 0 0 1.4em; }
+.dirDesc code { background: #eee; padding: 0 2px; }
 .tabulator-row.dirCurrent { background-color: #ffe08a !important;
                             box-shadow: inset 3px 0 0 #d97706; }
 .tabulator-row .tabulator-cell.dirWrap,
