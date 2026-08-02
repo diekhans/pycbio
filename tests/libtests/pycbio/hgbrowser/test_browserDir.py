@@ -235,3 +235,87 @@ def testDynamicMirna(request):
     assert osp.exists(osp.join(outDir, "index.html"))
     assert osp.exists(osp.join(outDir, "dir.html"))
     _diffDir(request)
+
+
+##
+# a page whose pageDesc is long (mirrors hub-family-browser, where the header
+# explains why the family is under review): the description must go in a
+# .dirDesc box, which the style caps and scrolls, rather than being emitted
+# raw and squeezing the table to a sliver.
+#
+# BELOW THE IMAGE, as those pages are: the directory is then a short frame of
+# its own, which is the layout the caps have to work in -- and the layout that
+# ruled out floating the filter help over the table, since a frame clips it.
+##
+# the modal copy count the rows depart from, as a family page states in its header
+_pageDescMode = 49
+_pageDescCols = ("gene", "assembly", "abbrv", "pop", "copies", "vs mode", "chrom",
+                 "locations", "GRCh38 location")
+_pageDescPops = ("AFR", "AMR", "EAS", "EUR", "SAS")
+
+def _pageDescData():
+    """enough rows, and enough columns, that the table is the point of the page: 60
+    departures over three members, counts either side of the mode the way a real family's
+    are, and the identifying / linking columns such a page carries"""
+    genes = ("TESTFAM1", "TESTFAM2", "TESTFAM3")
+    rows = []
+    for i in range(60):
+        copies = _pageDescMode + (i % 9) - 4
+        copies = copies if copies != _pageDescMode else copies + 5
+        sample = 18852605 + i * 30
+        rows.append({"gene": genes[i % len(genes)],
+                     "assembly": "GCA_{:09d}.1".format(sample),
+                     "abbrv": "TS{:05d}_hap{}".format(sample % 100000, (i % 2) + 1),
+                     "pop": _pageDescPops[i % len(_pageDescPops)],
+                     "copies": copies,
+                     "chrom": "chr{}".format((i % 22) + 1),
+                     "seq": "CM{:06d}.1".format(94060 + (i % 22)),
+                     "start": 1000000 + i * 5000,
+                     "ref": 112256 + i * 40})
+    return rows
+
+def _pageDescRow(brDir, rec):
+    "one row: plain text, numbers that sort as numbers, and two linked positions"
+    span = "{}:{}-{}".format(rec["seq"], rec["start"], rec["start"] + 4000)
+    ref = "chr18:{}-{}".format(rec["ref"], rec["ref"] + 83)
+    delta = rec["copies"] - _pageDescMode
+    return [rec["gene"], rec["assembly"], rec["abbrv"], rec["pop"],
+            browserDir.Cell(value=rec["copies"]),
+            browserDir.Cell(value=delta),
+            rec["chrom"],
+            browserDir.Cell(value=span,
+                            html=brDir.mkAnchor(span, text="{} ({})".format(span, 2))),
+            brDir.mkAnchor(ref, text=ref)]
+
+def _pageDescTest(outDir):
+    desc = ("<p>expansion rank 1: frac_off_mode = 0.8457 over 460 callable assemblies"
+            " (460 carry it). <b>caveats:</b> segdup;flagged"
+            " &mdash; look at the locus in the browser | check the Flagger track.</p>"
+            "<p>GRCh38: chr18:112256-112339. Members: TESTFAM1,TESTFAM2,TESTFAM3</p>"
+            "<p><b>Rows are DEPARTURES from each member's modal copy count.</b>"
+            " TESTFAM1 mode 49 in 71; TESTFAM2 mode 49 in 68; TESTFAM3 mode 49 in 70"
+            " assemblies.</p>")
+    brDir = browserDir.BrowserDirDynamic(browserDir.GENOME_UCSC_URL, "hg38",
+                                         colNames=_pageDescCols,
+                                         title="TEST-FAM (page-description test)",
+                                         pageDesc=desc,
+                                         below=True, dirPercent=25,
+                                         colDefs={"copies": {"filter": "range"},
+                                                  "vs mode": {"filter": "range"},
+                                                  "locations": {"fit": True,
+                                                                "expand": True},
+                                                  "GRCh38 location": {"fit": True}})
+    for rec in _pageDescData():
+        brDir.addRow(_pageDescRow(brDir, rec))
+    brDir.write(outDir)
+
+def testDynamicPageDesc(request):
+    outDir = ts.get_test_output_file(request)
+    _pageDescTest(outDir)
+    html = Path(osp.join(outDir, "dir.html")).read_text()
+    # the ? sits in the title, and the description it reveals starts hidden: the table
+    # gets the whole frame until someone asks what the page is
+    assert '<h3 id="dirTitle">TEST-FAM (page-description test)' in html
+    assert '<button id="dirDescBtn"' in html
+    assert '<div id="dirDesc" class="dirDesc" hidden>' in html
+    _diffDir(request)

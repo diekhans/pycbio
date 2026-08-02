@@ -405,15 +405,30 @@ html, body { height: 100%; margin: 0; }
 body { display: flex; flex-direction: column; font-family: sans-serif; }
 #dirSearchBar { padding: 4px; flex: 0 0 auto; }
 #dirSearch { width: 20em; }
-#dirHelpBtn { margin-left: 6px; width: 1.6em; height: 1.6em; line-height: 1;
+#dirHelpBtn, #dirDescBtn { margin-left: 6px; width: 1.6em; height: 1.6em; line-height: 1;
               padding: 0; border: 1px solid #999; border-radius: 50%;
-              background: #f0f0f0; font-weight: bold; cursor: pointer; }
-#dirHelp { flex: 0 0 auto; max-width: 60em; margin: 0 4px 4px; padding: 2px 8px;
+              background: #f0f0f0; font-weight: bold; cursor: pointer;
+              vertical-align: middle; }
+#dirTitle { margin: 4px; flex: 0 0 auto; }
+/* The help stays IN THE FLOW and scrolls within its own box.  Floating it over the table
+   was tried and does not work here: these pages are usually a frameset with the directory
+   in a short frame, and an absolutely-positioned panel is clipped by that frame rather
+   than floating above the window.  A capped, scrolling block gets the same benefit -- a
+   long help cannot push the table away or run off the end -- with nothing to clip. */
+#dirHelp { flex: 0 0 auto; max-width: 60em; max-height: 40vh; overflow-y: auto;
+           margin: 0 4px 4px; padding: 2px 8px;
            border: 1px solid #ccc; background: #f8f8f8; }
 #dirHelp ul { margin: 4px 0; padding-left: 1.4em; }
 #dirHelp code { background: #eee; padding: 0 2px; }
-#dirTable { flex: 1 1 auto; }
+#dirTable { flex: 1 1 auto; min-height: 0; }
 .dirDoc { flex: 0 0 auto; margin: 0 4px 4px; }
+/* The page description is BEHIND the ? beside the title, hidden until asked for.  Capping
+   and scrolling it was not enough: on a short frame even a scrolled box is more of the
+   window than the text deserves, and the table is what the page is for.  Shown, it is the
+   same kind of panel as the filter help. */
+.dirDesc { flex: 0 0 auto; max-width: 60em; max-height: 40vh; overflow-y: auto;
+           margin: 0 4px 4px; padding: 2px 8px;
+           border: 1px solid #ccc; background: #f8f8f8; }
 .tabulator-row.dirCurrent { background-color: #ffe08a !important;
                             box-shadow: inset 3px 0 0 #d97706; }
 .tabulator-row .tabulator-cell.dirWrap { white-space: normal;
@@ -679,6 +694,28 @@ class BrowserDirDynamic(BrowserDirBase):
                          "matches as plain text instead.")
         return items
 
+    def _addTitle(self, pg):
+        """the title, carrying the ? that reveals the page description.  Beside the title
+        because that is where a reader looks to find out what a page is, and because the
+        other ? -- filtering -- belongs with the search box it explains."""
+        if not self.title:
+            return
+        button = ('<button id="dirDescBtn" type="button" title="about this page" '
+                  'onclick="_dirToggleDesc()">?</button>' if self.pageDesc is not None
+                  else "")
+        pg.add("<h3 id=\"dirTitle\">{}{}</h3>".format(self.title, button))
+
+    def _addPageDesc(self, pg):
+        """the caller's description, hidden until the ? beside the title is clicked.
+
+        HIDDEN, not merely capped: it was emitted raw first, which left the table a
+        sliver, then capped and scrolled, which still spent a quarter of a short frame on
+        text that is read once.  The table is what the page is for."""
+        if self.pageDesc is not None:
+            pg.add('<div id="dirDesc" class="dirDesc" hidden>')
+            pg.add(self.pageDesc)
+            pg.add('</div>')
+
     def _addFilterHelp(self, pg):
         "the (initially hidden) filter-help block, with any caller-supplied HTML"
         pg.add('<div id="dirHelp" hidden>')
@@ -694,11 +731,9 @@ class BrowserDirDynamic(BrowserDirBase):
         headExtra = '<link href="{}" rel="stylesheet">\n<script src="{}"></script>'.format(
             _tabulatorCssUrl(self.tabulatorVersion), _tabulatorJsUrl(self.tabulatorVersion))
         pg = HtmlPage(title=self.title, headExtra=headExtra, inStyle=_dynamicStyle)
-        if self.title:
-            pg.h3(self.title)
+        self._addTitle(pg)
         self._addDoc(pg)
-        if self.pageDesc is not None:
-            pg.add(self.pageDesc)
+        self._addPageDesc(pg)
         self._addSearchBar(pg)
         pg.add('<div id="dirTable"></div>')
         pg.add('<script>')

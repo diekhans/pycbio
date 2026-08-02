@@ -9,15 +9,30 @@ html, body { height: 100%; margin: 0; }
 body { display: flex; flex-direction: column; font-family: sans-serif; }
 #dirSearchBar { padding: 4px; flex: 0 0 auto; }
 #dirSearch { width: 20em; }
-#dirHelpBtn { margin-left: 6px; width: 1.6em; height: 1.6em; line-height: 1;
+#dirHelpBtn, #dirDescBtn { margin-left: 6px; width: 1.6em; height: 1.6em; line-height: 1;
               padding: 0; border: 1px solid #999; border-radius: 50%;
-              background: #f0f0f0; font-weight: bold; cursor: pointer; }
-#dirHelp { flex: 0 0 auto; max-width: 60em; margin: 0 4px 4px; padding: 2px 8px;
+              background: #f0f0f0; font-weight: bold; cursor: pointer;
+              vertical-align: middle; }
+#dirTitle { margin: 4px; flex: 0 0 auto; }
+/* The help stays IN THE FLOW and scrolls within its own box.  Floating it over the table
+   was tried and does not work here: these pages are usually a frameset with the directory
+   in a short frame, and an absolutely-positioned panel is clipped by that frame rather
+   than floating above the window.  A capped, scrolling block gets the same benefit -- a
+   long help cannot push the table away or run off the end -- with nothing to clip. */
+#dirHelp { flex: 0 0 auto; max-width: 60em; max-height: 40vh; overflow-y: auto;
+           margin: 0 4px 4px; padding: 2px 8px;
            border: 1px solid #ccc; background: #f8f8f8; }
 #dirHelp ul { margin: 4px 0; padding-left: 1.4em; }
 #dirHelp code { background: #eee; padding: 0 2px; }
-#dirTable { flex: 1 1 auto; }
+#dirTable { flex: 1 1 auto; min-height: 0; }
 .dirDoc { flex: 0 0 auto; margin: 0 4px 4px; }
+/* The page description is BEHIND the ? beside the title, hidden until asked for.  Capping
+   and scrolling it was not enough: on a short frame even a scrolled box is more of the
+   window than the text deserves, and the table is what the page is for.  Shown, it is the
+   same kind of panel as the filter help. */
+.dirDesc { flex: 0 0 auto; max-width: 60em; max-height: 40vh; overflow-y: auto;
+           margin: 0 4px 4px; padding: 2px 8px;
+           border: 1px solid #ccc; background: #f8f8f8; }
 .tabulator-row.dirCurrent { background-color: #ffe08a !important;
                             box-shadow: inset 3px 0 0 #d97706; }
 .tabulator-row .tabulator-cell.dirWrap { white-space: normal;
@@ -33,7 +48,7 @@ body { display: flex; flex-direction: column; font-family: sans-serif; }
 </style>
 </head>
 <body>
-<h3>hg38 genes</h3>
+<h3 id="dirTitle">hg38 genes</h3>
 <div id="dirSearchBar">
 Search: <input id="dirSearch" type="text" oninput="_dirGlobalSearch()" placeholder="search all columns">
 <button id="dirHelpBtn" type="button" title="how filtering works" onclick="_dirToggleHelp()">?</button>
@@ -99,10 +114,25 @@ function _anySearch(data, params) {
     }
     return false;
 }
+function _dirToggleDesc() {
+    var desc = document.getElementById("dirDesc");
+    desc.hidden = !desc.hidden;
+}
 function _dirToggleHelp() {
     var help = document.getElementById("dirHelp");
     help.hidden = !help.hidden;
 }
+// Escape closes it too.  Not a click anywhere off it: the help is in the flow rather
+// than over the table, so it hides nothing, and a stray click closing it while being
+// read is worse than leaving it open.
+document.addEventListener("keydown", function(ev) {
+    if (ev.key === "Escape") {
+        var help = document.getElementById("dirHelp");
+        if (help) help.hidden = true;
+        var desc = document.getElementById("dirDesc");
+        if (desc) desc.hidden = true;
+    }
+});
 function _rangeEditor(cell, onRendered, success, cancel, params) {
     var wrap = document.createElement("span");
     var lo = document.createElement("input");
