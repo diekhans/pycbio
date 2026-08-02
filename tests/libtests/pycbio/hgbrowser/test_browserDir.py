@@ -270,21 +270,35 @@ def _pageDescData():
                      "copies": copies,
                      "chrom": "chr{}".format((i % 22) + 1),
                      "seq": "CM{:06d}.1".format(94060 + (i % 22)),
+                     "seq2": "JBHRQP{:06d}.1".format(10000 + (i % 22)),
                      "start": 1000000 + i * 5000,
                      "ref": 112256 + i * 40})
     return rows
 
+def _pageDescLoc(brDir, rec, seq, start):
+    "one linked location, the chromosome ahead of the accession that does not name it"
+    span = "{}:{}-{}".format(seq, start, start + 4000)
+    label = "{}&nbsp;{}&nbsp;(2)".format(rec["chrom"], span)
+    return span, brDir.mkAnchor(span, text=label)
+
+def _pageDescLocations(brDir, rec):
+    """the several locations of one row, ONE PER LINE.  This is the cell the
+    breakWords=False wrapping is for: joined by <br> it breaks between locations and
+    nowhere else, so no coordinate is split across two lines."""
+    locs = [_pageDescLoc(brDir, rec, rec["seq"], rec["start"]),
+            _pageDescLoc(brDir, rec, rec["seq2"], rec["start"] + 240000)]
+    return browserDir.Cell(value=" ".join(span for span, _a in locs),
+                           html="<br>".join(anchor for _s, anchor in locs))
+
 def _pageDescRow(brDir, rec):
-    "one row: plain text, numbers that sort as numbers, and two linked positions"
-    span = "{}:{}-{}".format(rec["seq"], rec["start"], rec["start"] + 4000)
+    "one row: plain text, numbers that sort as numbers, and the linked positions"
     ref = "chr18:{}-{}".format(rec["ref"], rec["ref"] + 83)
     delta = rec["copies"] - _pageDescMode
     return [rec["gene"], rec["assembly"], rec["abbrv"], rec["pop"],
             browserDir.Cell(value=rec["copies"]),
             browserDir.Cell(value=delta),
             rec["chrom"],
-            browserDir.Cell(value=span,
-                            html=brDir.mkAnchor(span, text="{} ({})".format(span, 2))),
+            _pageDescLocations(brDir, rec),
             brDir.mkAnchor(ref, text=ref)]
 
 def _pageDescTest(outDir):
@@ -302,7 +316,8 @@ def _pageDescTest(outDir):
                                          below=True, dirPercent=25,
                                          colDefs={"copies": {"filter": "range"},
                                                   "vs mode": {"filter": "range"},
-                                                  "locations": {"fit": True,
+                                                  "locations": {"wrap": True,
+                                                                "breakWords": False,
                                                                 "expand": True},
                                                   "GRCh38 location": {"fit": True}})
     for rec in _pageDescData():
@@ -318,4 +333,8 @@ def testDynamicPageDesc(request):
     assert '<h3 id="dirTitle">TEST-FAM (page-description test)' in html
     assert '<button id="dirDescBtn"' in html
     assert '<div id="dirDesc" class="dirDesc" hidden>' in html
+    # the locations column wraps at the breaks the cell carries and nowhere else, so a
+    # coordinate is never split across two lines
+    assert '"wrap": true, "breakWords": false' in html
+    assert ".tabulator-cell.dirWrapKeep { word-break: normal;" in html
     _diffDir(request)

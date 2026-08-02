@@ -35,10 +35,18 @@ body { display: flex; flex-direction: column; font-family: sans-serif; }
            border: 1px solid #ccc; background: #f8f8f8; }
 .tabulator-row.dirCurrent { background-color: #ffe08a !important;
                             box-shadow: inset 3px 0 0 #d97706; }
-.tabulator-row .tabulator-cell.dirWrap { white-space: normal;
-                                         overflow: visible;
-                                         text-overflow: clip;
-                                         word-break: break-word; }
+.tabulator-row .tabulator-cell.dirWrap,
+.tabulator-row .tabulator-cell.dirWrapKeep { white-space: normal;
+                                             overflow: visible;
+                                             text-overflow: clip; }
+/* dirWrap breaks anywhere it must, so no word can overflow the column. */
+.tabulator-row .tabulator-cell.dirWrap { word-break: break-word; }
+/* dirWrapKeep (breakWords=False) breaks only where the CONTENT offers a break -- a
+   space, a <br>, a <wbr> -- and never inside a token.  A cell of coordinates needs
+   this: broken anywhere, chr1:1,000-2,000 is split across two lines and reads as two
+   positions.  The caller then chooses the break points, using &nbsp; where a space
+   must not become one. */
+.tabulator-row .tabulator-cell.dirWrapKeep { word-break: normal; overflow-wrap: normal; }
 .dirRange { display: flex; gap: 2px; }
 .dirRange input { width: 50%; box-sizing: border-box; }
 .dirRange input::-webkit-outer-spin-button,
@@ -257,7 +265,9 @@ var _columns = _colSpec.map(function(c) {
             col.headerFilterFuncParams = {field: c.textField};
         }
     }
-    if (c.wrap) col.cssClass = "dirWrap";
+    // one class, not two: Tabulator's cssClass splitting is its business, and a
+    // wrap column differs only in whether a token may be broken to fit
+    if (c.wrap) col.cssClass = (c.breakWords === false) ? "dirWrapKeep" : "dirWrap";
     if (c.headerWrap) col.headerWordWrap = true;
     if ("align" in c) col.hozAlign = c.align;               // data cells
     if ("headerAlign" in c) col.headerHozAlign = c.headerAlign;

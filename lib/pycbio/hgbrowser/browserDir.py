@@ -431,10 +431,18 @@ body { display: flex; flex-direction: column; font-family: sans-serif; }
            border: 1px solid #ccc; background: #f8f8f8; }
 .tabulator-row.dirCurrent { background-color: #ffe08a !important;
                             box-shadow: inset 3px 0 0 #d97706; }
-.tabulator-row .tabulator-cell.dirWrap { white-space: normal;
-                                         overflow: visible;
-                                         text-overflow: clip;
-                                         word-break: break-word; }
+.tabulator-row .tabulator-cell.dirWrap,
+.tabulator-row .tabulator-cell.dirWrapKeep { white-space: normal;
+                                             overflow: visible;
+                                             text-overflow: clip; }
+/* dirWrap breaks anywhere it must, so no word can overflow the column. */
+.tabulator-row .tabulator-cell.dirWrap { word-break: break-word; }
+/* dirWrapKeep (breakWords=False) breaks only where the CONTENT offers a break -- a
+   space, a <br>, a <wbr> -- and never inside a token.  A cell of coordinates needs
+   this: broken anywhere, chr1:1,000-2,000 is split across two lines and reads as two
+   positions.  The caller then chooses the break points, using &nbsp; where a space
+   must not become one. */
+.tabulator-row .tabulator-cell.dirWrapKeep { word-break: normal; overflow-wrap: normal; }
 .dirRange { display: flex; gap: 2px; }
 .dirRange input { width: 50%; box-sizing: border-box; }
 .dirRange input::-webkit-outer-spin-button,
@@ -473,6 +481,12 @@ class BrowserDirDynamic(BrowserDirBase):
         colDefs is an optional dict giving per-column behavior, keyed by column
         name or zero-based index; each value is a dict with any of:
           - wrap:       True to word-wrap the cell content
+          - breakWords: False to wrap ONLY where the content offers a break --
+                        a space, a <br>, a <wbr> -- rather than anywhere a line
+                        happens to end.  Use it for a cell of coordinates or
+                        ids, which read as two values when split mid-token; the
+                        caller then places the breaks, with &nbsp; where a space
+                        must not become one.  Only meaningful with wrap.
           - fit:        True to size the column (client-side) to the widest of
                         its data and its header.  A fit column's header
                         word-wraps by default, so the header contributes only
@@ -543,6 +557,8 @@ class BrowserDirDynamic(BrowserDirBase):
         wrap = bool(cd.get("wrap"))
         if wrap:
             entry["wrap"] = True
+            if not cd.get("breakWords", True):
+                entry["breakWords"] = False
         if "width" in cd:
             entry["width"] = cd["width"]
         flexWrap = wrap and ("width" not in cd)   # a wrap column that flexes
