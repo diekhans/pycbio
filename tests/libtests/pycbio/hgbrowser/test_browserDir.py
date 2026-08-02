@@ -318,6 +318,7 @@ def _pageDescTest(outDir):
                                                   "vs mode": {"filter": "range"},
                                                   "locations": {"wrap": True,
                                                                 "breakWords": False,
+                                                                "fit": True,
                                                                 "expand": True},
                                                   "GRCh38 location": {"fit": True}})
     for rec in _pageDescData():
@@ -336,5 +337,7 @@ def testDynamicPageDesc(request):
     # the locations column wraps at the breaks the cell carries and nowhere else, so a
     # coordinate is never split across two lines
     assert '"wrap": true, "breakWords": false' in html
+    # and it fits its longest LINE, so a location is never narrower than it reads
+    assert '"wrap": true, "breakWords": false, "grow": 3, "minWidth": 120, "fit": true' in html
     assert ".tabulator-cell.dirWrapKeep { word-break: normal;" in html
     _diffDir(request)

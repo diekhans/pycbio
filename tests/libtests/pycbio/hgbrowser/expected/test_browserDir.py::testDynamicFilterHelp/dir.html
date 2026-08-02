@@ -197,14 +197,42 @@ function _maxDataWidth(ctx, field) {
 // definition and the live column must be set: the layout reads the definition
 // (a column with a width is excluded from the flex pool, and minWidth is read
 // off the column), but only setWidth/setMinWidth resize what is rendered.
+//
+// EVERY fit column also gets the measured size as its minWidth, pinned or not.
+// Without it the layout still shrinks a pinned column when the columns do not
+// fit the window, and the content does not shrink with it: a wrapped cell has
+// overflow visible, so its text runs over the next column, and a plain cell
+// loses characters to the ellipsis.  The measured size is what the content
+// needs, so it is the floor.
 function _setFitWidth(col, spec, need) {
-    if (spec.grow) {
-        col.getDefinition().minWidth = need;
-        col._getSelf().setMinWidth(need);
-    } else {
+    col.getDefinition().minWidth = need;
+    col._getSelf().setMinWidth(need);
+    if (!spec.grow) {
         col.getDefinition().width = need;
         col.setWidth(need);
     }
+}
+// The lines a wrapped cell actually renders as: its content split at the breaks
+// it carries, with the markup taken out.  Measuring the whole cell instead would
+// size the column to every line laid end to end, which is the opposite of
+// wrapping; measuring the plain text field would miss the breaks, since they are
+// markup and the text field has none.
+function _htmlLines(value) {
+    return ("" + value).split(/<br\s*\/?>/i).map(function(s) {
+        return s.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ")
+                .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+    });
+}
+function _maxLineWidth(ctx, field) {
+    var w = 0;
+    for (var i = 0; i < _tableData.length; i++) {
+        var lines = _htmlLines(_tableData[i][field] == null ? "" : _tableData[i][field]);
+        for (var j = 0; j < lines.length; j++) {
+            var lw = ctx.measureText(lines[j]).width;
+            if (lw > w) w = lw;
+        }
+    }
+    return w;
 }
 function _maxWordWidth(ctx, text) {
     var words = ("" + text).split(" ");
@@ -230,7 +258,10 @@ function _fitColumnWidths() {
     var ctx = document.createElement("canvas").getContext("2d");
     fits.forEach(function(c) {
         ctx.font = cellFont;
-        var data = _maxDataWidth(ctx, c.textField);
+        // a wrap column fits its longest LINE -- what has to fit across is one
+        // line of the cell, not the cell
+        var data = c.wrap ? _maxLineWidth(ctx, c.field)
+                          : _maxDataWidth(ctx, c.textField);
         ctx.font = hdrFont;
         var header = c.headerWrap ? _maxWordWidth(ctx, c.title)
                                   : ctx.measureText(c.title).width;
@@ -281,6 +312,11 @@ var _columns = _colSpec.map(function(c) {
 var _currentId = null;
 var _config = {data: _tableData, columns: _columns, layout: _opts.layout,
                height: "100%", index: "_id",
+               // dragging a column edge moves the NEXT column's edge with it, so
+               // the table still ends at the window edge.  Without this, widening
+               // one column pushes the rest off to the right and narrowing one
+               // leaves blank space where the table used to reach.
+               resizableColumnFit: true,
                rowFormatter: function(row) {
                    var el = row.getElement();
                    var data = row.getData();
@@ -307,6 +343,25 @@ function _dirSetCurrent(e, row) {
 }
 _dirTable.on("rowClick", _dirSetCurrent);
 _dirTable.on("tableBuilt", _fitColumnWidths);
+
+// A column drag that leaves this document never ends: the resize listens for
+// mouseup on the document, and once the pointer is over a DIFFERENT frame -- the
+// browser image beside the directory, or the page outside it -- that is where the
+// mouseup lands.  The column then follows the mouse until the next click in here.
+// Dragging past the rightmost edge is how it happens, since the pointer leaves at
+// the one edge a resize handle sits on.  Ending the drag when the pointer goes is
+// what the missing mouseup would have done.
+var _dirDragging = false;
+document.addEventListener("mousedown", function() { _dirDragging = true; });
+document.addEventListener("mouseup", function() { _dirDragging = false; });
+function _dirEndDrag() {
+    if (_dirDragging) {
+        _dirDragging = false;
+        document.dispatchEvent(new MouseEvent("mouseup", {bubbles: true, cancelable: true}));
+    }
+}
+document.documentElement.addEventListener("mouseleave", _dirEndDrag);
+window.addEventListener("blur", _dirEndDrag);
 var _searchFields = _colSpec.map(function(c) { return c.textField; });
 function _dirGlobalSearch() {
     var v = document.getElementById("dirSearch").value;

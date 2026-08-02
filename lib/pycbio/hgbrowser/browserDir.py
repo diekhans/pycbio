@@ -495,6 +495,15 @@ class BrowserDirDynamic(BrowserDirBase):
                         expanded, or explicitly sized; set fit=False to opt out.
                         A fit column is pinned to that width, unless it also
                         expands, in which case the width becomes its floor.
+                        Either way the measured size is a MINIMUM: the layout
+                        will not shrink the column below what its content
+                        needs, which is what keeps a narrow window from
+                        running one column's text over the next.
+                        On a WRAP column, fit measures the longest LINE the
+                        cell renders as (its content split at its <br>s) rather
+                        than the whole cell, so the column is wide enough for
+                        one line of it.  Worth setting with breakWords=False,
+                        where a line cannot be broken to fit a narrower column.
           - expand:     True to make the column flex, absorbing extra space as
                         the window widens and giving it back as it narrows
                         (widthGrow with a small minWidth floor); use for the
