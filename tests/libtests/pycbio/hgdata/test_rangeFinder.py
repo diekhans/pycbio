@@ -223,7 +223,7 @@ def testMergerNoStrand3():
     ]
 
 ###
-# Helper function tests
+# calcBin and getOverlappingBins tests
 ###
 def testCalcBin():
     """Test calcBin function"""

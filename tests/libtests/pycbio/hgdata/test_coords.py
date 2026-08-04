@@ -213,7 +213,7 @@ def FIXME_testCoordsSortRegress():
     assert sorted(cs, key=lambda c: (c.name, c.start, c.end, c.strand)) == sorted(cs)
 
 ###
-# Helper function tests
+# reverseRange and reverseStrand tests
 ###
 def testReverseRange():
     """Test reverseRange function"""

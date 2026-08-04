@@ -375,7 +375,7 @@ def testParseBed9(request):
     assert bed.numStdCols == 9
 
 ###
-# Helper function tests
+# defaultIfNone and encodeRow tests
 ###
 def testDefaultIfNone(request):
     """Test defaultIfNone function"""

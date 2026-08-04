@@ -10,7 +10,8 @@ pycbio is Mark Diekhans's Python 3 library for computational biology and bioinfo
 
 ### Command Line Parsing (`pycbio.sys.cli`)
 
-The cli module provides argparse helpers with integrated logging and error handling.
+The cli module wraps argparse parsing to add logging options, split options from positional
+arguments, and print errors without a traceback.
 
 **Standard program structure:**
 

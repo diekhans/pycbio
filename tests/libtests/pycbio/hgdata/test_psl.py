@@ -147,7 +147,7 @@ def testMultiMapSam(request):
     ts.diff_results_expected(request, ".psl")
 
 ###
-# Helper function tests
+# reverseCoords, reverseStrand and dropQueryUniq tests
 ###
 def testReverseCoords():
     """Test reverseCoords function"""
