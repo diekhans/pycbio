@@ -1,6 +1,6 @@
 ---
 name: pycbio
-description: Conventions and API for writing Python tools with markd's pycbio library — TSV I/O (TsvReader/TsvWriter, attribute-access rows), atomic file writes (fileOps), CLI arg parsing + error handling (sys.cli), and SymEnum. Use whenever creating or editing a Python script that reads/writes TSVs or follows the pycbio tool style.
+description: Conventions and API for writing Python tools with markd's pycbio library — TSV I/O (TsvReader/TsvWriter, attribute-access rows), atomic file writes (fileOps), CLI arg parsing + error handling (sys.cli), SymEnum, and Snakemake workflows that fan a stage out over a cluster (pycbio.snakemake). Use whenever creating or editing a Python script that reads/writes TSVs, a Snakefile of that shape, or anything following the pycbio tool style.
 ---
 
 # Writing tools with pycbio
@@ -147,6 +147,53 @@ main()
   for the listed exception types; anything else gets a full stack. Raise
   `cli.PycbioException` for expected user-facing errors.
 - Validate arguments in `parse_args` with `parser.error(...)`.
+
+## Snakemake workflows — `pycbio.snakemake`
+
+For a workflow whose stages each run one job per ITEM (assembly, sample,
+chromosome) over a batch system. Read the package docstring before changing a
+workflow of this shape: it records why, and what each departure cost.
+
+```python
+from pycbio.snakemake import (ProductScan, BatchRunner, ParasolBatch,
+                              timed, set_timing_log, env_flag, outputs_current)
+from pycbio.sys.fileOps import fast_remove
+
+set_timing_log(f"{BUILD_TMP}/timings.tsv")      # per-rule elapsed/CPU/wait TSV
+
+scan = ProductScan(items=assemblies, stamp=SCAN_STAMP, sentinels=ALL_SENTINELS,
+                   watch=DROP_DIRS, full_check=env_flag("FULL_CHECK"),
+                   log=logger.info)
+work = scan.pending(blast_products)             # [(item, [missing])]
+runner = BatchRunner(BUILD_TMP, ParasolBatch(para_host=HOST), prefix="bin/para-wrapper")
+
+rule blast_index:
+    output: scan.pending_products(work), touch(SENTINEL)
+    run:
+        with timed("blast_index"):
+            runner.run_pending("blast_index", [cmd(item) for item, _ in work])
+
+scan.record_if_clean()                          # last statement in the Snakefile
+```
+
+- **Rule outputs are the MISSING products**, so adding one item builds that item
+  and touching the catalog builds nothing. `rule all` must request every leaf
+  product (`scan.all_products`): snakemake prunes a job whose outputs exist, and
+  a missing input of a pruned job does not un-prune it.
+- **A stage is one batch, not thousands of snakemake jobs.** The stage writes a
+  job file, blocks on one batch, and per-job incrementality comes from the tools
+  skipping completed outputs. `ParasolBatch` / `SlurmBatch` are interchangeable;
+  anything with `run()`, `batch_dir()` and `failure_help()` works.
+- **`outputs_current(outputs, inputs)`, not "the output exists"**, wherever a
+  stage's inputs can change: the oldest output is compared against the newest
+  input, and a missing input is ignored rather than treated as infinitely new.
+- **`record_if_clean()` goes last** — only there has every stage's `pending()`
+  run, so only there is "nothing was missing" final.
+- **`fast_remove(specs, label)`** for clean rules: directories are renamed aside
+  to `.drop` siblings and one detached `rm -rf` is fired off, so the rule returns
+  without waiting on the recursive delete.
+- The profile needs `drop-metadata: true` and `rerun-triggers: [mtime]`; the
+  package docstring has the measurements that force both.
 
 ## Enums — `SymEnum`
 
