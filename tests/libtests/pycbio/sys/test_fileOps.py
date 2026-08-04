@@ -1,6 +1,8 @@
 # Copyright 2006-2026 Mark Diekhans
 import os
+import os.path as osp
 import sys
+import time
 import shutil
 import re
 from pathlib import Path
@@ -376,3 +378,69 @@ def testReadFileLinesPath(request):
     """readFileLines accepts Path"""
     lines = fileOps.readFileLines(Path(ts.get_test_input_file(request, "simple1.txt")))
     assert simple1Lines == lines
+
+###
+# fast_remove: rename aside, delete in the background
+###
+def _waitGone(path, timeout=10.0):
+    "the background rm is asynchronous, so poll for it (returns True if it finished)"
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        if not osp.exists(path):
+            return True
+        time.sleep(0.1)
+    return False
+
+def _mkTree(root, name):
+    "a directory with a file in a subdirectory, as a data tree to discard"
+    tree = root / name
+    (tree / "sub").mkdir(parents=True)
+    (tree / "sub" / "data.txt").write_text("data\n")
+    return tree
+
+def testFastRemoveDir(tmp_path, capsys):
+    """a directory is renamed aside at once and deleted in the background"""
+    tree = _mkTree(tmp_path, "products")
+    dropped = fileOps.fast_remove([tree])
+    assert not tree.exists()                       # gone before the delete finishes
+    assert len(dropped) == 1
+    assert dropped[0].startswith(str(tmp_path / "products."))
+    assert dropped[0].endswith(fileOps.FAST_REMOVE_SUFFIX)
+    assert "renamed aside, removing in background" in capsys.readouterr().err
+    assert _waitGone(dropped[0]), f"background rm did not remove {dropped[0]}"
+
+def testFastRemoveFile(tmp_path, capsys):
+    """a plain file is unlinked outright, not renamed aside"""
+    path = tmp_path / "scan.stamp"
+    path.write_text("stamp\n")
+    assert fileOps.fast_remove([path]) == []
+    assert not path.exists()
+    assert f"clean: removed {path}\n" == capsys.readouterr().err
+
+def testFastRemoveSymlinkToDir(tmp_path):
+    """a symlink is unlinked; what it points at is left alone"""
+    tree = _mkTree(tmp_path, "products")
+    link = tmp_path / "latest"
+    link.symlink_to(tree)
+    assert fileOps.fast_remove([link]) == []
+    assert not link.exists()
+    assert tree.exists()
+
+def testFastRemoveGlob(tmp_path):
+    """one glob spec may match several trees, all discarded by one background rm"""
+    _mkTree(tmp_path, "asm-1")
+    _mkTree(tmp_path, "asm-2")
+    keep = _mkTree(tmp_path, "other")
+    dropped = fileOps.fast_remove([tmp_path / "asm-*"])
+    assert len(dropped) == 2
+    assert not (tmp_path / "asm-1").exists()
+    assert not (tmp_path / "asm-2").exists()
+    assert keep.exists()
+    for path in dropped:
+        assert _waitGone(path), f"background rm did not remove {path}"
+
+def testFastRemoveNothing(tmp_path, capsys):
+    """removing what is not there is not an error, and says so"""
+    assert fileOps.fast_remove([tmp_path / "never-built", tmp_path / "none-*"],
+                               label="clean-blast") == []
+    assert "clean-blast: nothing to remove\n" == capsys.readouterr().err

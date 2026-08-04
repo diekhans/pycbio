@@ -6,6 +6,7 @@ import os.path as osp
 from pathlib import Path
 import sys
 import re
+import glob
 import socket
 import tempfile
 import pipettor
@@ -72,6 +73,73 @@ def rmTree(root):
             rmdirIfExists(dir)
     else:
         unlinkIfExists(root)
+
+
+FAST_REMOVE_SUFFIX = ".drop"    # marks a tree renamed aside, awaiting removal
+_GLOB_CHARS = "*?["             # a path spec containing any of these is a pattern
+
+
+def _glob_matches(spec):
+    "the existing paths a spec refers to; a glob pattern may match several"
+    spec = os.fspath(spec)
+    if any(c in spec for c in _GLOB_CHARS):
+        return sorted(glob.glob(spec))
+    return [spec] if osp.lexists(spec) else []
+
+
+def _partition_dirs(targets):
+    "(directories, other paths) among targets; a symlink counts as an other path"
+    dirs, others = [], []
+    for target in targets:
+        isdir = osp.isdir(target) and not osp.islink(target)
+        (dirs if isdir else others).append(target)
+    return dirs, others
+
+
+def _rename_aside(path):
+    "rename a directory to a unique <name>.<uniq>.drop sibling, returning the new name"
+    parent = osp.dirname(osp.abspath(path))
+    base = osp.basename(osp.normpath(path))
+    drop = tempfile.mktemp(prefix=base + ".", suffix=FAST_REMOVE_SUFFIX, dir=parent)
+    os.rename(path, drop)
+    return drop
+
+
+def _background_rm(paths):
+    """fire off a detached `rm -rf` of paths; the caller neither waits nor checks it.
+    setsid puts it in its own session, so it is not killed by a hangup on the
+    terminal that started it."""
+    pipettor.Pipeline(["setsid", "rm", "-rf", *paths], stdout=1, stderr=2).start()
+
+
+def _report_removed(label, dropped, unlinked):
+    "report what was renamed aside for background removal and what was unlinked"
+    for path in dropped:
+        prfErr(f"{label}: renamed aside, removing in background: {path}")
+    for path in unlinked:
+        prfErr(f"{label}: removed {path}")
+    if not (dropped or unlinked):
+        prfErr(f"{label}: nothing to remove")
+
+
+def fast_remove(specs, label="clean"):
+    """Discard paths without waiting for the (slow) recursive delete: each existing
+    directory is renamed aside to a unique .drop sibling and one detached `rm -rf`
+    is fired off for them all, so the caller returns immediately and the space is
+    reclaimed on its own; other paths (plain files, symlinks) are unlinked outright.
+    Specs may be str or Path, and may be glob patterns.  Renaming is a rename within
+    the parent directory, so a spec's parent must be on one filesystem.  Returns the
+    renamed-aside names.
+    """
+    targets = [match for spec in specs for match in _glob_matches(spec)]
+    dirs, others = _partition_dirs(targets)
+    dropped = [_rename_aside(path) for path in dirs]
+    for path in others:
+        os.unlink(path)
+    _report_removed(label, dropped, others)
+    if dropped:
+        _background_rm(dropped)
+    return dropped
 
 
 def isCompressed(path):
