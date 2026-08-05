@@ -47,3 +47,8 @@ output/
 
 .emacs.bak/
 .claude.bak/
+
+# local scratch
+/NOTES.org
+/log
+/tmp/
