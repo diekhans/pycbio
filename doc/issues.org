@@ -478,3 +478,105 @@ see bin/mirna-compare-summary
 
 * a Counter-like class that used fieldnames
 or this already exist
+
+* by-CC 2026-08-04 design review: drop and fix candidates
+Survey of lib/pycbio for pieces to update or drop.  Usage counts are greps over
+lib, bin, and tests with .emacs.bak excluded.  Broken-import list came from
+importing every module under pycbio.
+
+** broken today, and unused, so nobody noticed
+*** hgdata/genePredMySqlReader.py imports genePredFromDictRow
+renamed to genePredFromDict; the module cannot be imported at all.
+no users.  drop, or repoint at genePredFromDict if the mysql readers stay.
+*** hgdata/overlapSelectStats.py imports TsvTable
+TsvTable is no longer in pycbio.tsv; module cannot be imported.
+no users.  drop, or keep just the reader as a TsvReader with typeMap.
+*** hgdata/binnerSA.py imports sqlalchemy
+sqlalchemy is in no requirements file, so it never imports in a clean install.
+no users.  drop; the existing note about converting to peewee is not worth it.
+*** sys/testingSupport.py CheckRaisesCauses.__exit__ uses self.expect_chain
+no such attribute, so any use raises AttributeError.  self.expect_spec[1] as
+the expectation list also disagrees with the docstring.  no users.
+drop the class, or finish it and write a test for it.
+*** sys/testingSupport.py _mk_err_spec is a pass stub, _print_err_spec prints on every check
+debug scaffolding on the checking path.  drop both.
+*** hgdata/genome.py _GenomeTwoBit.get_seq with end=None
+calls self._fh.get_seq_length(), which is not a TwoBitFile method and takes no
+seq_id here.  should be self.get_seq_length(seq_id).  untested path: the twobit
+test only calls get_seq_ids.
+*** Genome.get_seq_length abstract declares no seq_id
+both implementations take seq_id.  fix the abstract signature.
+
+** dead modules: no importer in lib, bin, or tests
+drop these; git history keeps them.
+*** sys/testCaseBase.py, 229 lines
+the only remaining unittest importer in the tree.  already on the list as
+"remove testCaseBase"; nothing references it, so it can go now.
+*** sys/fifo.py, 164 lines
+*** sys/intervalSkipList.py, 110 lines
+overlaps rangeFinder, and the note above prefers an outside interval tree.
+*** sys/debugOps.py, 85 lines
+overlaps trace.py and perfOps.py; three debug facilities, no callers for this one.
+*** sys/pprint2.py, 30 lines
+*** sys/strOps.py, 42 lines
+no importers.  splitAtSpaces and hasSpaces are one-liners on re, dup(n, s) is s * n.
+*** sys/setOps.py: only setJoin has callers
+mkfzset carries its own "this is silly" FIXME.  reduce the module to what is used.
+
+** mysql stack is a closed island
+hgDb.py, db/mysqlOps.py, pslMySqlReader.py, genePredMySqlReader.py import only
+each other; the sole outside user is tests/libtests/pycbio/hgdata/test_pslMySql.py,
+which skips off hgwdev.  hgConf.py is used by hgDb and the test check only.
+decide once rather than maintaining it in place: either commit to
+mysql-connector-python (already noted above) with one reader, or drop the mysql
+modules and keep hgConf plus the sqlite path.
+
+** sqlite table classes
+all of hgSqlite, pslSqlite, genePredSqlite, sequenceSqlite, gencodeSqlite are
+exercised only by test_hgSqlite.py; bin/pslLoadSqlLite is the one real caller.
+concrete reason the existing "not that useful, could be functions" note is right:
+HgSqliteTable._formatSql str.format-substitutes {table}, {columns}, {values} into
+each caller's SQL literal, so at a call site it is not visible which parts are
+interpolated and which are bound, and query() takes a columns argument it uses
+only for formatting.  functions returning (sql, params) would say it plainly.
+
+** naming has split three ways
+camelCase in most of lib; snake_case in snakemake/*, sys/testingSupport.py, and
+hgdata/genome.py.  CLAUDE.md now says new code should be snake_case.  write the
+cut-over rule down: new modules snake_case, no renaming of existing public API,
+never mixed within a module.  otherwise it drifts per file.
+
+** Decoration is a Bed that cannot round-trip
+Decoration.parse raises "not implement", so a written decoration file cannot be
+read back.  this is the concrete cost of the Bed extra-column problem noted
+above: one declarative extra-column spec should generate both toRow and parse.
+
+** psl.py still ships 12 @deprecated methods
+already on the list.  pick a cut and delete them, since there is no release
+process to stage it against.
+
+** record and reader APIs are inconsistent
+construction: Bed.parse and Psl classmethods, genePredFromRow and
+genePredFromDict module functions, Gff3Parser.parse instance method.
+reading: BedReader and GenePredReader are generator functions, PslReader is a class.
+pick one shape for both before adding more formats.
+
+** module-level side effects in testingSupport
+installs SIGQUIT and SIGABRT handlers and computes MAXFD at import, so any
+importer gets them.  move into an opt-in fixture.
+
+** cli.ErrorHandler.__exit__ calls the builtin exit(1)
+that comes from site and is not guaranteed present; use sys.exit(1).
+
+** hgdata/genome.py has a #!/usr/bin/env python3 shebang
+it is a library module.
+
+** packaging: three dependency lists that drift
+setup.py install_requires lists flake8, which is a dev tool, and omits
+twobitreader, which requirements.txt has; requirements-dev.txt is a third list.
+move to pyproject.toml with a dev extra, one source.
+also 10 of the 26 bin programs are not in setup.py scripts (bedFlatten,
+bedToIntronBed, fastaSelect, ncbiAssemblyReportToTsv, spliceJunctionCheck,
+sra-map-tool, tsv-to-xlsx, utf8ToAscii, xlsx-to-tsv), so pip installs some tools
+and not others with no stated rule.
+
