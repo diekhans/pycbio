@@ -49,6 +49,7 @@ output/
 .claude.bak/
 
 # local scratch
-/NOTES.org
-/log
-/tmp/
+NOTES.org
+log
+tmp
+die
