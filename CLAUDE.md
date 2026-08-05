@@ -99,6 +99,7 @@ the `scripts` list in `setup.py`.
 - PEP-8, except the flake8 ignores in `setup.cfg`; end Python source files with a newline.
 - Library functions, methods, and attributes are camelCase (`ensureFileDir`, `numStdCols`).
   `sys/testingSupport.py` is deliberately snake_case to match pytest.
+- Would like to move to snakeCase for new code.
 - Underscore naming rules are in `doc/conventions.txt`: `_leading` is module internal,
   `__leading` is class private.
 - Record classes that are hot in loops use `__slots__`; keep that when subclassing.
