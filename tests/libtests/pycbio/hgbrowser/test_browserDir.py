@@ -237,6 +237,45 @@ def testDynamicMirna(request):
     _diffDir(request)
 
 
+def _mirnaOpenFirstRowTest(outDir, hubUrl):
+    "the same page, opened where the first row's link points"
+    brDir = browserDir.BrowserDirDynamic(browserDir.GENOME_UCSC_URL, _mirnaAssembly,
+                                         colNames=_mirnaCols, dirPercent=100,
+                                         title="miRNA loci ({})".format(_mirnaAssembly),
+                                         hubUrls=hubUrl, openFirstRow=True)
+    for rec in _mirnaData:
+        _mirnaAddRow(brDir, rec)
+    brDir.write(outDir)
+    return brDir
+
+
+def testDynamicOpenFirstRow(request):
+    """the browser frame opens on the first row's own link, hub attached, and that row
+    is marked current so it carries the highlight a clicked row gets"""
+    outDir = ts.get_test_output_file(request)
+    hubUrl = "https://example.org/hub.txt"
+    brDir = _mirnaOpenFirstRowTest(outDir, hubUrl)
+    first = brDir.firstRowUrl()
+    assert first is not None
+    assert "position=" in first
+    assert "hubUrl=" in first
+    frame = open(osp.join(outDir, "index.html")).read()
+    assert 'name="browser" src="{}"'.format(first) in frame
+    assert '"currentId": 0' in open(osp.join(outDir, "dir.html")).read()
+
+
+def testDynamicOpenFirstRowEmpty(request):
+    "no rows, so there is no link to open: the frame falls back to the default"
+    outDir = ts.get_test_output_file(request)
+    brDir = browserDir.BrowserDirDynamic(browserDir.GENOME_UCSC_URL, _mirnaAssembly,
+                                         colNames=_mirnaCols, openFirstRow=True)
+    brDir.write(outDir)
+    assert brDir.firstRowUrl() is None
+    frame = open(osp.join(outDir, "index.html")).read()
+    assert 'name="browser" src="{}"'.format(brDir.mkDefaultUrl()) in frame
+    assert '"currentId": null' in open(osp.join(outDir, "dir.html")).read()
+
+
 ##
 # a page whose pageDesc is long (mirrors hub-family-browser, where the header
 # explains why the family is under review): the description must go in a

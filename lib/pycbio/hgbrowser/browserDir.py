@@ -204,6 +204,11 @@ def _buildRefsList(argName, urls):
         urls = [urls]
     return [_makeUrlArg(argName, u) for u in urls]
 
+
+# the first link in a row, for openFirstRow
+_HREF_RE = re.compile(r'href="([^"]+)"')
+
+
 class BrowserDirBase:
     """Base class for genome browser directories.  Holds the common
     configuration, URL construction, and row collection.  Subclasses implement
@@ -213,7 +218,7 @@ class BrowserDirBase:
     def __init__(self, browserUrl, defaultDb, *, colNames=None, pageSize=50,
                  title=None, dirPercent=15, below=False, pageDesc=None,
                  doc=None, tracks={}, initTracks={}, style=defaultStyle,
-                 customTrackUrls=None, hubUrls=None):
+                 customTrackUrls=None, hubUrls=None, openFirstRow=False):
         """The tracks arg is a dict of track name to setting, it is added to
         each URL and the initial setting of the frame. The initTracks arg is
         similar, however its only set in the initial frame and not added to
@@ -221,6 +226,12 @@ class BrowserDirBase:
         doc is optional documentation shown on each directory page below the
         header; it may be an HTML string or a list of HTML strings, each
         rendered as its own paragraph.
+
+        openFirstRow opens the browser frame where the first row's link points,
+        as though the reader had clicked it, and marks that row current.  Without
+        it the frame opens on defaultDb at its default position, which is the
+        reference -- useful when the rows are elsewhere, wasted when they are the
+        point of the page.  An empty table falls back to the default.
         """
         self.browserUrl = browserUrl
         if self.browserUrl.endswith("/"):
@@ -239,6 +250,7 @@ class BrowserDirBase:
         self.initTrackArgs = _buildTrackArgsList(initTracks)
         self.customTrackArgs = _buildRefsList("hgt.customText", customTrackUrls)
         self.hubArgs = _buildRefsList("hubUrl", hubUrls)
+        self.openFirstRow = openFirstRow
 
     def mkUrl(self, coords, db=None, extraArgs=None):
         """can make URL to default db or another other db.  trackArgs are added if
@@ -258,6 +270,38 @@ class BrowserDirBase:
     def mkDefaultUrl(self):
         return self.mkUrl("default", db=self.defaultDb,
                           extraArgs=self.initTrackArgs + self.customTrackArgs + self.hubArgs)
+
+    def firstRowUrl(self):
+        """the URL the first row's first link points at, or None when there are no
+        rows or the first row has no link.
+
+        Taken from the row's own HTML rather than rebuilt from coordinates: the
+        anchor is what a click would follow, so this cannot drift from it.  The
+        hub and custom-track args are added, since mkAnchor leaves them to
+        mkDefaultUrl and a hub genome will not load without them."""
+        url = self._firstRowHref()
+        if url is None:
+            return None
+        extra = self.customTrackArgs + self.hubArgs
+        return url + ("&" + "&".join(extra) if extra else "")
+
+    def _firstRowHref(self):
+        "the href of the first anchor in the first row, or None"
+        if not self.rows:
+            return None
+        for cell in self.rows[0].row:
+            m = _HREF_RE.search(_cellHtml(cell))
+            if m is not None:
+                return html.unescape(m.group(1))
+        return None
+
+    def frameBrowserUrl(self):
+        "what the browser frame opens on: the first row's link, else the default"
+        if self.openFirstRow:
+            url = self.firstRowUrl()
+            if url is not None:
+                return url
+        return self.mkDefaultUrl()
 
     def mkAnchor(self, coords, text=None, db=None, target="browser"):
         if text is None:
@@ -295,7 +339,7 @@ class BrowserDirBase:
         pg = HtmlPage(title=title, framesetAttrs=(fsAttr,))
 
         fdir = '<frame name="dir" src="{}">'.format(dirSrc)
-        fbr = '<frame name="browser" src="{}">'.format(self.mkDefaultUrl())
+        fbr = '<frame name="browser" src="{}">'.format(self.frameBrowserUrl())
         if below:
             pg.add(fbr)
             pg.add(fdir)
@@ -676,6 +720,10 @@ class BrowserDirDynamic(BrowserDirBase):
                 "headerFilters": self.headerFilters,
                 "regexpFilters": self.regexpFilters,
                 "layout": self.layout,
+                # the row the frame opened on, so it carries the same highlight a
+                # clicked row does; null when the frame opened on the default
+                "currentId": (0 if (self.openFirstRow
+                                    and self.firstRowUrl() is not None) else None),
                 "extra": self.tabulatorOptions or {}}
         parts = ["var _colSpec = {};".format(self._jsonEmbed(self._colSpec())),
                  "var _tableData = {};".format(self._jsonEmbed(self._tableData())),
