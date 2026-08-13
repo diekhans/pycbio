@@ -277,6 +277,72 @@ def testDynamicOpenFirstRowEmpty(request):
 
 
 ##
+# multi-select pull-down filters: a column of a few repeated values is picked from
+# a list rather than typed into.  conflict and family are closed value sets; the
+# GRCh38 location column is empty for the loci with no reference locus, so it also
+# carries an emptyChoice to select exactly those.
+##
+def _selectTest(outDir):
+    brDir = browserDir.BrowserDirDynamic(browserDir.GENOME_UCSC_URL, _mirnaAssembly,
+                                         colNames=_mirnaCols, dirPercent=100,
+                                         title="miRNA loci ({})".format(_mirnaAssembly),
+                                         colDefs={"family": {"filter": "select"},
+                                                  "conflict": {"filter": "select"},
+                                                  "copies": {"filter": "range"},
+                                                  "assembly location": {"expand": True},
+                                                  "GRCh38 location": {"filter": "select",
+                                                                      "emptyChoice": "unmapped",
+                                                                      "expand": True}})
+    for rec in _mirnaData:
+        _mirnaAddRow(brDir, rec)
+    brDir.write(outDir)
+
+def testDynamicSelect(request):
+    outDir = ts.get_test_output_file(request)
+    _selectTest(outDir)
+    html = Path(osp.join(outDir, "dir.html")).read_text()
+    # the choices are the column's own values, numbers numerically and the rest by text
+    assert ('"filter": "select", "selectValues": ["LET-7", "MIR-10", "MIR-1246", '
+            '"MIR-127", "MIR-21", "MIR-3648", "MIR-451", "MIR-9"]') in html
+    assert '"filter": "select", "selectValues": ["family", "gene", "no"]' in html
+    # a location column selects on the anchor TEXT, not the markup, and gets plain
+    # text order, which is not genomic order (chr17 ahead of chr1:): a column wanting
+    # another order supplies selectValues
+    assert '"selectValues": ["chr17:28861371-28861442", ' in html
+    assert '"emptyLabel": "unmapped"' in html
+    # and the help says how a pull-down and its empty choice behave
+    assert "Some columns have a pull-down of their values instead" in html
+    assert "<b>unmapped</b> choice in a pull-down keeps the rows with no value" in html
+    _diffDir(request)
+
+def testDynamicSelectValues(request):
+    "caller-supplied choices, in the order given, and the default empty label"
+    outDir = ts.get_test_output_file(request)
+    brDir = browserDir.BrowserDirDynamic(browserDir.GENOME_UCSC_URL, _mirnaAssembly,
+                                         colNames=_mirnaCols,
+                                         colDefs={"conflict": {"filter": "select",
+                                                               "selectValues": ("no", "gene",
+                                                                                "family"),
+                                                               "emptyChoice": True}})
+    for rec in _mirnaData:
+        _mirnaAddRow(brDir, rec)
+    brDir.write(outDir)
+    html = Path(osp.join(outDir, "dir.html")).read_text()
+    assert '"filter": "select", "selectValues": ["no", "gene", "family"]' in html
+    assert '"emptyLabel": "None"' in html
+
+def testDynamicFilterTypeUnknown(request):
+    "a misspelled filter type is an error, not a text filter"
+    brDir = browserDir.BrowserDirDynamic(browserDir.GENOME_UCSC_URL, _mirnaAssembly,
+                                         colNames=_mirnaCols,
+                                         colDefs={"conflict": {"filter": "multiselect"}})
+    for rec in _mirnaData:
+        _mirnaAddRow(brDir, rec)
+    with pytest.raises(Exception, match="unknown filter type 'multiselect' for column 'conflict'"):
+        brDir.write(ts.get_test_output_file(request))
+
+
+##
 # a page whose pageDesc is long (mirrors hub-family-browser, where the header
 # explains why the family is under review): the description must go in a
 # .dirDesc box, which the style caps and scrolls, rather than being emitted

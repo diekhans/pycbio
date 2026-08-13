@@ -8,6 +8,16 @@ Mark Diekhans's personal Python 3 library and command-line tools for computation
 geared to UCSC Genome Browser data.  No formal release process; API compatibility may be
 broken at will.  Library lives in `lib/pycbio`, installable scripts in `bin/`.
 
+This library is used by a lot of code outside this repository: project trees, analysis
+scripts, and pipelines that are not checked in here.  Consequences for any change:
+
+- A grep of this repository cannot show whether a function, class, or module has callers.
+  No in-repo user is not evidence that something is unused.
+- Never propose removing or renaming public API on the strength of an in-repo search.  Ask,
+  or state plainly that only this repo was searched.
+- Deletions and signature changes are the expensive kind of change here, since the breakage
+  shows up in another tree at run time.  Additions and internal fixes are cheap.
+
 `skills/pycbio/SKILL.md` is the house style for writing tools on this library (TSV I/O,
 atomic writes, `cli` arg parsing, SymEnum, snakemake stages).  Read it before writing or
 editing a script that uses pycbio.

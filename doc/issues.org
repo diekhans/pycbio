@@ -580,3 +580,50 @@ bedToIntronBed, fastaSelect, ncbiAssemblyReportToTsv, spliceJunctionCheck,
 sra-map-tool, tsv-to-xlsx, utf8ToAscii, xlsx-to-tsv), so pip installs some tools
 and not others with no stated rule.
 
+* tsv: what a table holds, from using it hard in miRNA-HPRC
+
+The typeMap covers most of what a schema needs already: a (parse, format) pair read and
+writes one column, strOrNoneType and friends carry empty as empty, and TsvWriter takes the
+reader's own map so a table round-trips.  Five suggestions from wiring five tables through
+it, in order of what they would have caught.
+
+** orNoneType(type): the blank wrapper, for any type
+strOrNoneType, intOrNoneType and floatOrNoneType are the same three lines each, and the
+fourth case is not there: a SymEnum column that may be empty.  A factory would cover every
+type and retire the three instances:
+
+    def orNoneType(parse):
+        return (lambda v: None if v == "" else parse(v),
+                lambda v: "" if v is None else str(v))
+
+** TsvReader should be able to require its columns
+A reader is given a typeMap naming the columns it expects, and a file whose header has
+drifted is read anyway: a renamed column is silently untyped, an added one shifts nothing
+but goes unnoticed, and a missing one fails later as an AttributeError on a row.  An option
+to check the header against an expected list, naming both lists in the error, turns that
+into one clear failure at open time.  A caller can do it by hand from reader.columns, which
+is what I did, but every caller has to remember to.
+
+** a uniqueness option for the key columns
+Indexing a table by a column is the commonest thing done with one of these files, and a
+repeated key silently keeps the last row.  Something like TsvReader(..., uniqueKey="id")
+or a tsvIndex(path, key) that raises on a duplicate would remove a class of quiet wrong
+answers.  I check it after the fact in bin/check-tsv-tables.
+
+** the (parse, format) pair is undocumented where it is discovered
+tsvReader's module docstring and the class docstring both describe typeMap as column to
+type, and the pair form appears only in TsvWriter's parameter text and in the three
+OrNone constants.  It is the more useful half: it is what makes a column round-trip.
+Worth a sentence in TsvReader's own docs and an example in doc/conventions.txt.
+
+** a numeric column formatted two ways is easy to write and hard to see
+statistics.mean over ints returns an int when the mean is exact, so a float column came out
+holding "2" on some rows and "0.017" on others, and nothing noticed until a read-then-write
+round trip was compared byte for byte.  Neither the library nor the caller can know the
+intent, but a note in the conventions that a typed column should be built with float() or
+a formatter, plus the round-trip comparison as a testing idiom, would have saved the hour:
+
+    write(out, read(src)); assert filecmp.cmp(src, out, shallow=False)
+
+That idiom found the only formatting inconsistency in five tables of 1,700 rows, and it
+needs nothing the library does not already have.

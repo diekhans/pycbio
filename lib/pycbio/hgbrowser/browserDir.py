@@ -20,6 +20,7 @@ import warnings
 import functools
 import importlib.resources
 from urllib.parse import quote
+from pycbio import PycbioException
 from pycbio.html.htmlPage import HtmlPage
 from pycbio.sys import fileOps
 
@@ -134,6 +135,29 @@ def _cellNumber(cell):
         num = _toNumber(cell.sortKey)
         return num if num is not None else _toNumber(cell.value)
     return _toNumber(_stripTags(str(cell)))
+
+
+# header filter types a column may ask for
+_FILTER_TYPES = ("text", "range", "select", "none")
+
+# default label for a select filter's choice that matches cells with no value
+SELECT_EMPTY_LABEL = "None"
+
+def _selectChoiceKey(value):
+    "sort key for select-filter choices: numbers in numeric order, then text"
+    num = _toNumber(value)
+    if num is not None:
+        return (0, num, "")
+    return (1, 0, value.lower())
+
+def _selectEmptyLabel(cd):
+    """label for the select choice matching cells with no value, or None when the
+    column does not offer one.  emptyChoice is True for the default label, or the
+    label to use."""
+    choice = cd.get("emptyChoice", False)
+    if choice is False:
+        return None
+    return SELECT_EMPTY_LABEL if choice is True else str(choice)
 
 def _sortKeyIsBlank(cell):
     "True if a cell's sort key is an empty/whitespace string"
@@ -573,8 +597,18 @@ class BrowserDirDynamic(BrowserDirBase):
                         flexible column claims (default 3 for a wrap column)
           - shrink:     widthShrink
           - filter:     "text" (default, regexp or substring match, see
-                        regexpFilters), "range" (numeric min/max filter), or
-                        "none" (no header filter)
+                        regexpFilters), "range" (numeric min/max filter),
+                        "select" (multi-select pull-down of the column's
+                        values), or "none" (no header filter)
+          - selectValues: the choices a "select" filter offers, in the order
+                        given; defaults to the distinct non-empty values in the
+                        column, numbers in numeric order and the rest by text.
+                        A choice matches a cell whose text equals it exactly, so
+                        a caller-supplied list must use the cell text.
+          - emptyChoice: for a "select" filter, adds a choice that keeps the
+                        rows with no value in that column, which no other choice
+                        matches.  True uses the label "None"; a string is the
+                        label to show, e.g. emptyChoice="unmapped".
           - align:      data-cell horizontal alignment "left", "center", or
                         "right"; "range" columns default to "right"
           - headerAlign: header-title alignment (defaults to left, so a
@@ -582,7 +616,9 @@ class BrowserDirDynamic(BrowserDirBase):
         A wrapping column with no explicit width defaults to grow=3 and
         minWidth=120 so it absorbs width and re-flows as the window resizes.
         A "range" filter column needs a numeric value per cell (a Cell whose
-        sortKey or value is a number, or a plain numeric cell).
+        sortKey or value is a number, or a plain numeric cell).  A "select"
+        filter column matches on cell text, so a column of anchors selects on
+        the link text (a Cell value) rather than the markup.
 
         tabulatorOptions is an optional dict merged into the Tabulator
         configuration.
@@ -632,8 +668,24 @@ class BrowserDirDynamic(BrowserDirBase):
             entry["shrink"] = cd["shrink"]
 
     def _colFilterType(self, i, title):
-        "header filter type for a column: text, range, or none"
-        return self._colDef(i, title).get("filter", "text")
+        "header filter type for a column: text, range, select, or none"
+        filterType = self._colDef(i, title).get("filter", "text")
+        if filterType not in _FILTER_TYPES:
+            raise PycbioException("unknown filter type '{}' for column '{}'; use one of: {}"
+                                  .format(filterType, title, ", ".join(_FILTER_TYPES)))
+        return filterType
+
+    def _colTexts(self, i):
+        "the filter text of column i, one per row, stripped"
+        return [_cellText(row.row[i]).strip() for row in self.rows]
+
+    def _colSelectValues(self, i, cd):
+        """choices offered by a select filter: the caller's selectValues, else the
+        distinct non-empty values in the column"""
+        if "selectValues" in cd:
+            return [str(v) for v in cd["selectValues"]]
+        values = {text for text in self._colTexts(i) if text != ""}
+        return sorted(values, key=_selectChoiceKey)
 
     def _colSpec(self):
         "specification of columns, passed to the client as JSON"
@@ -649,6 +701,11 @@ class BrowserDirDynamic(BrowserDirBase):
                 entry["filter"] = filterType
             if filterType == "range":
                 entry["numberField"] = "c{}n".format(i)
+            if filterType == "select":
+                entry["selectValues"] = self._colSelectValues(i, cd)
+                emptyLabel = _selectEmptyLabel(cd)
+                if emptyLabel is not None:
+                    entry["emptyLabel"] = emptyLabel
             align = cd.get("align", "right" if filterType == "range" else None)
             if align is not None:
                 entry["align"] = align
@@ -684,6 +741,18 @@ class BrowserDirDynamic(BrowserDirBase):
         "set of column indices that use a numeric range filter"
         return {i for i, title in enumerate(self._colTitles())
                 if self._colFilterType(i, title) == "range"}
+
+    def _selectCols(self):
+        "set of column indices that use a multi-select filter"
+        return {i for i, title in enumerate(self._colTitles())
+                if self._colFilterType(i, title) == "select"}
+
+    def _selectEmptyLabels(self):
+        "the empty-value choice labels offered by the select columns"
+        labels = {_selectEmptyLabel(self._colDef(i, title))
+                  for i, title in enumerate(self._colTitles())
+                  if self._colFilterType(i, title) == "select"}
+        return sorted(label for label in labels if label is not None)
 
     def _colNumericSort(self, i):
         "True if every non-blank sort key is numeric and at least one exists"
@@ -766,6 +835,13 @@ class BrowserDirDynamic(BrowserDirBase):
             if self._rangeCols():
                 items.append("Numeric columns have <b>min</b>/<b>max</b> boxes instead; "
                              "fill in just one for an open-ended range.")
+            if self._selectCols():
+                items.append("Some columns have a pull-down of their values instead; pick "
+                             "any number of them and the column keeps the rows matching "
+                             "any one you picked.")
+            for label in self._selectEmptyLabels():
+                items.append("The <b>{}</b> choice in a pull-down keeps the rows with no "
+                             "value in that column.".format(html.escape(label)))
         if self.globalSearch:
             items.append("The <b>Search</b> box matches against all columns at once.")
         items.append("Filters combine: a row is shown only when it passes every one of them.")
