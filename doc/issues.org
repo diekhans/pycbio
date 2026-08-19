@@ -178,6 +178,8 @@ use case ~/compbio/kznf/projs/znf649-rescue/bin/deseq.py
 - hide in _columnSpecs_, access through one function?
 - make functions rather than methods?  this seems the best.
 - _names_ ?
+- what it looks like when it bites: a column named getRow leaves row.getRow as the
+  string value, and the caller gets "TypeError: 'str' object is not callable"
 ** TsvReader could create named tuples.
 what about the class name and serialization
 maybe just make row lighter weight?
@@ -627,3 +629,24 @@ a formatter, plus the round-trip comparison as a testing idiom, would have saved
 
 That idiom found the only formatting inconsistency in five tables of 1,700 rows, and it
 needs nothing the library does not already have.
+
+* by-CC 2026-08-18 from a scan of a vendored copy, plus what it left open
+The scan was of an older copy, so some of its findings did not apply here: the score
+cap on write is gone, FileAccessor already takes a Path through isFilePath, and
+strArraySplit decodes bytes before the empty tests.  What did apply is fixed, with a
+test each.  What is left is below.
+
+** BED widths of 7, 10 and 11, as they now stand
+Every width from 3 to 12 is a BED; what differs is whether Bed can carry the columns.
+ - no numStdCols: the row is read as the widest width whose field groups are complete
+   plus extra columns, so 7 is BED6+1, 10 is BED9+1 and 11 is BED9+2, each
+   round-tripping byte for byte.  A 7th column is taken as an extra column rather
+   than thickStart, since thickStart without thickEnd draws nothing.
+ - numStdCols=7: thickStart is a standard column, and it round-trips.
+ - numStdCols=10 or 11 at parse: an error.  Blocks need all three of blockCount,
+   blockSizes and chromStarts, so those columns can not be carried, and the error
+   names the two widths that work.  If a declared BED10 ever has to round-trip, the
+   object needs somewhere to keep the raw block columns.
+ - a Bed that HAS blocks may be written at width 10 or 11, where blockCount and
+   blockSizes are real.
+numColumns and the width of toRow now agree at every width, which is a test.

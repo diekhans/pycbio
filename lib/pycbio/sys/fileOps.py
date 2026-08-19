@@ -8,6 +8,7 @@ import sys
 import re
 import glob
 import socket
+import threading
 import tempfile
 import pipettor
 from shutil import which
@@ -304,6 +305,13 @@ def prRowv(fh, *objs):
     prRow(fh, objs)
 
 
+def fileSpecName(fspec):
+    "name to use for a file spec in an error message; file objects may have one"
+    if isFilePath(fspec):
+        return os.fspath(fspec)
+    return getattr(fspec, "name", "<file>")
+
+
 class FileAccessor:
     """Context manager that opens a file (possibly compressed) if specified as
     a string, otherwise assume it is file-like and don't open/close"""
@@ -327,7 +335,7 @@ def iterLines(fspec):
     not be closed."""
     with FileAccessor(fspec) as fh:
         for line in fh:
-            yield line[:-1]
+            yield line.rstrip("\n")
 
 
 def iterRows(fspec):
@@ -337,7 +345,7 @@ def iterRows(fspec):
     closed."""
     with FileAccessor(fspec) as fh:
         for line in fh:
-            yield line[0:-1].split("\t")
+            yield line.rstrip("\n").split("\t")
 
 
 def readFileLines(fspec):
@@ -430,7 +438,10 @@ def atomicTmpFile(finalPath):
         return finalPath
     finalBasename = osp.basename(finalPath)
     finalExt = osp.splitext(finalPath)[1]
-    tmpBasename = "{}.{}.{}.tmp{}".format(finalBasename, socket.gethostname(), os.getpid(), finalExt)
+    # the thread id is part of the name for the thread-safety the docstring claims:
+    # host and pid alone gave two threads of one process the same temporary file
+    tmpBasename = "{}.{}.{}.{}.tmp{}".format(finalBasename, socket.gethostname(), os.getpid(),
+                                             threading.get_ident(), finalExt)
     tmpPath = osp.join(finalDir, tmpBasename)
     if osp.exists(tmpPath):
         os.unlink(tmpPath)
@@ -479,11 +490,7 @@ def AtomicFileOpen(finalPath, mode='w', *, buffering=-1, encoding=None,
 
 def uncompressedBase(path):
     "return the file path, removing a compression extension if it exists"
-    path = os.fspath(path)
-    if path.endswith(".gz") or path.endswith(".bz2") or path.endswith(".Z"):
-        return osp.splitext(path)[0]
-    else:
-        return path
+    return compressBaseName(path)
 
 
 _devNullFh = None

@@ -154,3 +154,25 @@ def testPickle():
     c1pkl = pickle.dumps(c1)
     c2 = pickle.loads(c1pkl)
     assert c1, c2
+
+###
+# hsv given to the constructor, and repr
+###
+def testFromHsvKeepsHue():
+    """with saturation zero the RGB has no hue to recover, so the value handed to
+    fromHsv has to be the one kept"""
+    c = Color.fromHsv(0.5, 0.0, 1.0)
+    _assertHsv(c, 0.5, 0.0, 1.0)
+
+def testFromHsvKeepsHueBlack():
+    c = Color.fromHsv(0.25, 0.5, 0.0)
+    _assertHsv(c, 0.25, 0.5, 0.0)
+
+def testFromHsvRgbUnchanged():
+    "keeping the hsv must not change the RGB it converts to"
+    _assertRgb(Color.fromHsv(0.5, 0.0, 1.0), 1.0, 1.0, 1.0)
+
+def testReprIsBalanced():
+    c = Color.fromRgb(0.5, 0.3, 0.4)
+    assert repr(c) == "Color(0.5, 0.3, 0.4, None)"
+    assert repr(Color.fromRgb(0.5, 0.3, 0.4, 0.25)) == "Color(0.5, 0.3, 0.4, 0.25)"

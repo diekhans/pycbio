@@ -2,7 +2,7 @@
 
 # FIXME: needed for faster readings, but needs cleaned up, need reader/writer
 # classes
-# FIXME add try and error msg with file/line num, move to row reader class; see fileOps.iterRows
+from pycbio import PycbioDataError
 from pycbio.sys import fileOps
 
 
@@ -21,18 +21,29 @@ class TabFile(list):
 
 def TabFileReader(fspec, rowClass=None, hashAreComments=False, skipBlankLines=False):
     """generator over tab file rows"""
-    def processLine(line):
+    def buildRow(row, lineNum):
+        try:
+            return rowClass(row)
+        except Exception as ex:
+            raise PycbioDataError("{}:{}: can not build row from: {}".format(
+                fileOps.fileSpecName(fspec), lineNum, row)) from ex
+
+    def processLine(line, lineNum):
+        # rstrip rather than line[:-1]: the last line of a file need not have a
+        # newline, and dropping its final character loses a character from the
+        # last column
+        line = line.rstrip("\n")
         if hashAreComments and line.startswith("#"):
             return None
-        if skipBlankLines and (len(line) <= 1):  # include \n
+        if skipBlankLines and (line == ""):
             return None
-        row = line[0:-1].split('\t')
-        return rowClass(row) if rowClass is not None else row
+        row = line.split('\t')
+        return buildRow(row, lineNum) if rowClass is not None else row
 
-    lineNum = -1
+    lineNum = 0
     with fileOps.FileAccessor(fspec) as fh:
         for line in fh:
             lineNum += 1
-            row = processLine(line)
+            row = processLine(line, lineNum)
             if row is not None:
                 yield row

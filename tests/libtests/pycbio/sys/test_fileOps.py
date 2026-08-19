@@ -444,3 +444,51 @@ def testFastRemoveNothing(tmp_path, capsys):
     assert fileOps.fast_remove([tmp_path / "never-built", tmp_path / "none-*"],
                                label="clean-blast") == []
     assert "clean-blast: nothing to remove\n" == capsys.readouterr().err
+
+###
+# last line without a newline
+###
+def _writeNoEol(request, text):
+    outf = ts.get_test_output_file(request, ".tsv")
+    with open(outf, "w") as fh:
+        fh.write(text)
+    return outf
+
+def testIterLinesNoTrailingNewline(request):
+    "the last line of a file need not end in a newline"
+    inf = _writeNoEol(request, "first\nlast")
+    assert list(fileOps.iterLines(inf)) == ["first", "last"]
+
+def testIterRowsNoTrailingNewline(request):
+    inf = _writeNoEol(request, "a\tb\nc\tlastname")
+    assert list(fileOps.iterRows(inf)) == [["a", "b"], ["c", "lastname"]]
+
+def testIterRowsEmptyLastColumn(request):
+    "a trailing tab is an empty column, not something to strip"
+    inf = _writeNoEol(request, "a\tb\t\n")
+    assert list(fileOps.iterRows(inf)) == [["a", "b", ""]]
+
+###
+# compression suffixes and temporary names
+###
+def testUncompressedBaseBgz():
+    "uncompressedBase knows every suffix compressBaseName does, .bgz included"
+    for path in ("f.txt.gz", "f.txt.bgz", "f.txt.bz2", "f.txt.Z", "f.txt"):
+        assert fileOps.uncompressedBase(path) == fileOps.compressBaseName(path)
+    assert fileOps.uncompressedBase("f.txt.bgz") == "f.txt"
+
+def testAtomicTmpFileThreadDistinct(request):
+    """the name carries the thread id, so two threads writing one final path do not
+    share a temporary file, which is what the docstring promises"""
+    import threading
+    outf = ts.get_test_output_file(request, ".out")
+    names = []
+
+    def record():
+        names.append(fileOps.atomicTmpFile(outf))
+    t = threading.Thread(target=record)
+    t.start()
+    t.join()
+    mine = fileOps.atomicTmpFile(outf)
+    assert names[0] != mine
+    assert mine.endswith(".tmp.out")

@@ -2,6 +2,7 @@
 Operations associated with logging
 """
 import logging
+import logging.config
 import os
 import sys
 from logging.handlers import SysLogHandler
@@ -61,7 +62,7 @@ def setupLogger(logger, handler, level=logging.INFO, *, formatter=None):
     logger = _loggerBySpec(logger)
     if level is not None:
         logger.setLevel(_convertLevel(level))
-    if handler.level is not None:
+    if handler.level != logging.NOTSET:
         logger.setLevel(min(handler.level, logger.level))
     logger.addHandler(handler)
     if formatter is not None:

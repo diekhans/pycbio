@@ -2,6 +2,8 @@
 import sys
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
+import pytest
+from pycbio import PycbioDataError
 from pycbio.tsv import TabFile, TabFileReader
 import pycbio.sys.testingSupport as ts
 import pipettor
@@ -118,3 +120,46 @@ def testReaderAllOptions(request):
     assert len(rows) == 2
     assert isinstance(rows[0], TypeRow)
     assert rows[0].col0 == "a"
+
+###
+# last line without a newline
+###
+def testReaderNoTrailingNewline(request):
+    """the last line of a file need not end in a newline; dropping its final
+    character silently took a character off the last column"""
+    outf = ts.get_test_output_file(request, ".tsv")
+    with open(outf, "w") as fh:
+        fh.write("chr1\t100\t200\tfirstname\n")
+        fh.write("chr1\t300\t400\tlastname")
+    rows = list(TabFileReader(outf))
+    assert rows == [["chr1", "100", "200", "firstname"],
+                    ["chr1", "300", "400", "lastname"]]
+
+def testReaderNoTrailingNewlineOneLine(request):
+    "a file of one line and no newline at all"
+    outf = ts.get_test_output_file(request, ".tsv")
+    with open(outf, "w") as fh:
+        fh.write("a\tb")
+    assert list(TabFileReader(outf)) == [["a", "b"]]
+
+def testReaderTrailingTabKept(request):
+    "an empty last column is a column, not a newline to strip"
+    outf = ts.get_test_output_file(request, ".tsv")
+    with open(outf, "w") as fh:
+        fh.write("a\tb\t\n")
+    assert list(TabFileReader(outf)) == [["a", "b", ""]]
+
+def testReaderRowClassError(request):
+    "a row that the rowClass rejects names the file and line"
+    outf = ts.get_test_output_file(request, ".tsv")
+    with open(outf, "w") as fh:
+        fh.write("a\tb\tc\td\n")
+        fh.write("tooFew\n")
+
+    class Strict:
+        def __init__(self, row):
+            if len(row) != 4:
+                raise ValueError("expected 4 columns, got {}".format(len(row)))
+
+    with pytest.raises(PycbioDataError, match=r"{}:2: can not build row from".format(outf)):
+        list(TabFileReader(outf, rowClass=Strict))

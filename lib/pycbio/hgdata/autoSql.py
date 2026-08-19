@@ -1,5 +1,6 @@
 # Copyright 2006-2026 Mark Diekhans
 """support classes for parsing autoSql generated objects"""
+from pycbio import PycbioDataError
 
 ##
 # string array
@@ -33,10 +34,12 @@ strArrayType = (strArraySplit, strArrayJoin)
 ##
 def intArraySplit(commaStr):
     "parser for comma-separated string list into a list of ints"
-    ints = []
-    for s in strArraySplit(commaStr):
-        ints.append(int(s))
-    return ints
+    strs = strArraySplit(commaStr)
+    try:
+        return [int(s) for s in strs]
+    except (TypeError, ValueError) as ex:
+        raise PycbioDataError("not a comma-separated list of integers: '{}'".format(
+            commaStr)) from ex
 
 
 def intArrayJoin(ints):

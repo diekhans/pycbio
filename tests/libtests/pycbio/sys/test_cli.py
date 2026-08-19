@@ -305,3 +305,41 @@ def testCmdHanderSysExit100(request):
                                                 sysExit=100)
     assert stderr == ""
     assert returncode == 100
+
+###
+# exception chain reporting
+###
+def testSuppressedContextNotReported():
+    """`raise X from None' asks for the context to be left out; the chain walk used
+    __cause__ or __context__, which reported it anyway"""
+    try:
+        try:
+            raise ValueError("inner detail")
+        except ValueError:
+            raise RuntimeError("what the user sees") from None
+    except RuntimeError as ex:
+        msg = cli._exceptionFormat(ex, showTraceback=False)
+    assert "what the user sees" in msg
+    assert "inner detail" not in msg
+
+def testCauseStillReported():
+    "an explicit cause is still reported"
+    try:
+        try:
+            raise ValueError("inner detail")
+        except ValueError as ex:
+            raise RuntimeError("outer") from ex
+    except RuntimeError as ex:
+        msg = cli._exceptionFormat(ex, showTraceback=False)
+    assert "Caused by: ValueError: inner detail" in msg
+
+def testImplicitContextStillReported():
+    "an implicit context, with no suppression, is still reported"
+    try:
+        try:
+            raise ValueError("inner detail")
+        except ValueError:
+            raise RuntimeError("outer")
+    except RuntimeError as ex:
+        msg = cli._exceptionFormat(ex, showTraceback=False)
+    assert "Caused by: ValueError: inner detail" in msg

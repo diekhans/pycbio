@@ -3,6 +3,7 @@ import os
 import os.path as osp
 import sys
 import pickle
+import pytest
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 import pycbio.sys.testingSupport as ts
@@ -400,3 +401,111 @@ def testBedReaderEmpty(request):
     beds = list(BedReader(tmpfile))
     assert len(beds) == 0
     os.unlink(tmpfile)
+
+###
+# BED widths that are not a valid BED: 7, 10 and 11 columns are a narrower BED
+# plus extra columns, since thickStart/thickEnd come as a pair and the block
+# columns as a trio.  Consuming them as standard columns dropped the real blocks
+# and wrote a fabricated one.
+###
+def testParse11Cols():
+    row = "chr1 100 200 n 0 + 100 200 0,0,0 2 50,50".split()
+    bed = Bed.parse(row)
+    assert bed.numStdCols == 9
+    assert bed.extraCols == ("2", "50,50")
+    assert bed.blocks is None
+    assert bed.numColumns == 11
+    assert bed.toRow() == row
+
+def testParse10Cols():
+    row = "chr1 100 200 n 0 + 100 200 0,0,0 2".split()
+    bed = Bed.parse(row)
+    assert bed.numStdCols == 9
+    assert bed.extraCols == ("2",)
+    assert bed.toRow() == row
+
+def testParse7Cols():
+    "the thickStart column is an extra column, and it survives a write"
+    row = "chr1 100 200 n 0 + 100".split()
+    bed = Bed.parse(row)
+    assert bed.numStdCols == 6
+    assert bed.extraCols == ("100",)
+    assert bed.numColumns == 7
+    assert bed.toRow() == row
+
+def testParse12ColsStillBlocks():
+    row = "chr1 100 200 n 0 + 100 200 0,0,0 2 50,50, 0,50,".split()
+    bed = Bed.parse(row)
+    assert bed.numStdCols == 12
+    assert len(bed.blocks) == 2
+    assert bed.toRow() == row
+
+def testDeclaredWidth7():
+    "a caller whose 7th column IS thickStart says so, and it round-trips"
+    row = "chr1 100 200 n 0 + 100".split()
+    bed = Bed.parse(row, numStdCols=7)
+    assert (bed.numStdCols, bed.thickStart, bed.thickEnd) == (7, 100, None)
+    assert bed.extraCols == ()
+    assert bed.toRow() == row
+
+def testConstructWidth7():
+    "thickStart without thickEnd derives a BED7 rather than demanding a BED8"
+    bed = Bed("chr1", 100, 200, "n", strand="+", thickStart=100)
+    assert bed.numStdCols == 7
+    assert len(bed.toRow()) == 7
+
+def testDeclaredWidths10And11Rejected():
+    """blocks need all three of blockCount, blockSizes and chromStarts, so a Bed can
+    not carry a declared BED10 or BED11; parsing one is an error rather than a silent
+    drop of the columns it can not hold"""
+    row = "chr1 100 200 n 0 + 100 200 0,0,0 2 50,50".split()
+    for numStdCols in (10, 11):
+        with pytest.raises(BedException, match="parsing of BED row failed") as exc:
+            Bed.parse(row, numStdCols=numStdCols)
+        assert "blocks need all three of" in str(exc.value.__cause__)
+        assert "numStdCols=9" in str(exc.value.__cause__)
+
+def testWidths10And11WrittenFromRealBlocks():
+    "a BED that HAS blocks may be written at those widths, where the counts are real"
+    bed = Bed.parse("chr1 100 200 n 0 + 100 200 0,0,0 2 50,50, 0,50,".split())
+    for numStdCols, expectTail in ((10, ["2"]), (11, ["2", "50,50,"]),
+                                   (12, ["2", "50,50,", "0,50,"])):
+        bed.numStdCols = numStdCols
+        assert bed.toRow()[9:] == expectTail
+        assert bed.numColumns == len(bed.toRow())
+
+def testWidthOutOfRange():
+    for bad in (2, 13):
+        with pytest.raises(BedException, match="numStdCols must be in the range 3 to 12"):
+            Bed("chr1", 100, 200, "n", numStdCols=bad)
+
+def testNumColumnsMatchesToRow():
+    """numColumns and the width of toRow agree at every width.  10 and 11 are not
+    parsable, see testDeclaredWidths10And11Rejected; they are covered on the write
+    path by testWidths10And11WrittenFromRealBlocks"""
+    row = "chr1 100 200 n 0 + 100 200 0,0,0 2 50,50, 0,50,".split()
+    for numStdCols in (3, 4, 5, 6, 7, 8, 9, 12):
+        bed = Bed.parse(row, numStdCols=numStdCols)
+        assert bed.numColumns == len(bed.toRow()), "numStdCols={}".format(numStdCols)
+
+def testParseTooFewCols():
+    "parse wraps the failure, so the count is in the chained cause"
+    with pytest.raises(BedException, match=r"parsing of BED row failed") as exc:
+        Bed.parse("chr1 100".split())
+    assert "a BED needs at least 3 columns, found 2" in str(exc.value.__cause__)
+
+def testGetGapsNeedsBlocks():
+    with pytest.raises(BedException, match="getGaps needs a BED12; this BED has 4 standard columns"):
+        Bed.parse("chr1 100 200 n".split()).getGaps()
+
+def testMergeNeedsBlocks():
+    beds = [Bed.parse("chr1 100 200 n 0 +".split()), Bed.parse("chr1 300 400 n 0 +".split())]
+    with pytest.raises(BedException, match="merging blocks needs BED12s"):
+        bedMergeBlocks("merged", beds)
+
+def testGetByNameNeedsNameIdx(request):
+    outf = ts.get_test_output_file(request, ".bed")
+    with open(outf, "w") as fh:
+        fh.write("chr1\t100\t200\tn\n")
+    with pytest.raises(BedException, match="getByName needs a BedTable built with nameIdx=True"):
+        BedTable(outf).getByName("n")

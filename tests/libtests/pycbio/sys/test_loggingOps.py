@@ -238,3 +238,43 @@ def testCmdOptionsInvalidLevel():
     loggingOps.addCmdOptions(parser)
     with pytest.raises(SystemExit):
         parser.parse_args(['--log-level', 'invalid'])
+
+###
+# --log-conf, and a handler left at NOTSET
+###
+def _writeLogConf(request):
+    conf = ts.get_test_output_file(request, ".conf")
+    with open(conf, "w") as fh:
+        fh.write("[loggers]\nkeys=root\n"
+                 "[handlers]\nkeys=h\n"
+                 "[formatters]\nkeys=f\n"
+                 "[logger_root]\nlevel=INFO\nhandlers=h\n"
+                 "[handler_h]\nclass=StreamHandler\nlevel=INFO\nformatter=f\nargs=(sys.stderr,)\n"
+                 "[formatter_f]\nformat=%(message)s\n")
+    return conf
+
+def testSetupFromCmdLogConf(request):
+    """--log-conf calls logging.config.fileConfig, which needs logging.config
+    imported; importing logging alone left it an AttributeError"""
+    parser = argparse.ArgumentParser()
+    loggingOps.addCmdOptions(parser)
+    args = parser.parse_args(["--log-conf", _writeLogConf(request)])
+    loggingOps.setupFromCmd(args)
+    assert logging.getLogger().level == logging.INFO
+
+def testSetupLoggerNotsetHandler():
+    """a handler left at NOTSET must not pull the logger down with it: NOTSET is 0,
+    so min(handler.level, level) was 0 and the level argument was discarded"""
+    tlog = ts.LoggerForTests()
+    handler = logging.StreamHandler()
+    assert handler.level == logging.NOTSET
+    loggingOps.setupLogger(tlog.logger, handler, level=logging.WARNING)
+    assert tlog.logger.level == logging.WARNING
+
+def testSetupLoggerHandlerLevelStillCaps():
+    "a handler with a level of its own still lowers the logger to it"
+    tlog = ts.LoggerForTests()
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.DEBUG)
+    loggingOps.setupLogger(tlog.logger, handler, level=logging.WARNING)
+    assert tlog.logger.level == logging.DEBUG
