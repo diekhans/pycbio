@@ -39,7 +39,7 @@ gbffFetchTest: mkdirs
 gbffFetchIdOutTest: mkdirs
 	@rm -rf output/$@ && mkdir -p output/$@
 	${ncbiGbFetch} ${email} --outDir=output/$@ ${testAccver}
-	for acc in ${testAccver}; do ${diff} expected/$@/$${acc}.gbff output/$@/$${acc}.gbff ; done
+	for acc in ${testAccver}; do ${diff} expected/$@/$${acc}.gbff output/$@/$${acc}.gbff || exit 1 ; done
 
 faFetchTest: mkdirs
 	${ncbiGbFetch} ${email} --fasta --out=output/$@.fa ${testAccver}
@@ -48,7 +48,7 @@ faFetchTest: mkdirs
 faFetchIdOutTest: mkdirs
 	@rm -rf output/$@ && mkdir -p output/$@
 	${ncbiGbFetch} ${email} --fasta --outDir=output/$@ ${testAccver}
-	for acc in ${testAccver}; do ${diff} expected/$@/$${acc}.fa output/$@/$${acc}.fa ; done
+	for acc in ${testAccver}; do ${diff} expected/$@/$${acc}.fa output/$@/$${acc}.fa || exit 1 ; done
 
 ##
 # ncbiAssemblyReportConvert

@@ -1,0 +1,24 @@
+rows: 15
+header filters:
+  gene: input
+  family: list multiselect clearable
+  gene_id: input
+  copies: function
+  conflict: list multiselect clearable
+  assembly location: input
+  GRCh38 location: list multiselect clearable
+select columns:
+  family choices: LET-7, MIR-10, MIR-1246, MIR-127, MIR-21, MIR-3648, MIR-451, MIR-9
+    picked [LET-7] keeps 3 rows
+    picked [LET-7, MIR-9] keeps 6 rows
+    nothing picked is no filter: true
+  conflict choices: family, gene, no
+    picked [family] keeps 5 rows
+    picked [family, no] keeps 12 rows
+    nothing picked is no filter: true
+  GRCh38 location choices: unmapped(empty), chr17:28861371-28861442, chr17:48632267-48632377, chr17:59841266-59841337, chr1:156390133-156390221, chr21:8205348-8205422, chr2:176155838-176155948, chr9:94175957-94176036
+    picked [chr17:28861371-28861442] keeps 1 rows
+    picked [chr17:28861371-28861442, chr9:94175957-94176036] keeps 4 rows
+    picked [<empty>] keeps 3 rows
+    picked [<empty>, chr17:28861371-28861442] keeps 4 rows
+    nothing picked is no filter: true

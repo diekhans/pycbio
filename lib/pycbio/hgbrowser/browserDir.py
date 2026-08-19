@@ -144,18 +144,21 @@ _FILTER_TYPES = ("text", "range", "select", "none")
 SELECT_EMPTY_LABEL = "None"
 
 def _selectChoiceKey(value):
-    "sort key for select-filter choices: numbers in numeric order, then text"
+    """sort key for select-filter choices: numbers in numeric order, then text.
+    The value itself ends the key so that choices that tie on the number ("1"
+    and "1.0") or on the lowercased text ("no" and "No") still have one fixed
+    order; without it the order came from the set and varied between runs."""
     num = _toNumber(value)
     if num is not None:
-        return (0, num, "")
-    return (1, 0, value.lower())
+        return (0, num, "", value)
+    return (1, 0, value.lower(), value)
 
 def _selectEmptyLabel(cd):
     """label for the select choice matching cells with no value, or None when the
     column does not offer one.  emptyChoice is True for the default label, or the
     label to use."""
     choice = cd.get("emptyChoice", False)
-    if choice is False:
+    if not choice:
         return None
     return SELECT_EMPTY_LABEL if choice is True else str(choice)
 
@@ -608,7 +611,10 @@ class BrowserDirDynamic(BrowserDirBase):
           - emptyChoice: for a "select" filter, adds a choice that keeps the
                         rows with no value in that column, which no other choice
                         matches.  True uses the label "None"; a string is the
-                        label to show, e.g. emptyChoice="unmapped".
+                        label to show, e.g. emptyChoice="unmapped".  The choice
+                        is offered whether or not the column has an empty cell,
+                        so on a full column it simply matches nothing.
+                        Anything false, including None, means no such choice.
           - align:      data-cell horizontal alignment "left", "center", or
                         "right"; "range" columns default to "right"
           - headerAlign: header-title alignment (defaults to left, so a
@@ -631,6 +637,7 @@ class BrowserDirDynamic(BrowserDirBase):
         self.regexpFilters = regexpFilters
         self.filterHelp = filterHelp
         self.colDefs = colDefs or {}
+        self._checkColDefs()
         self.tabulatorVersion = tabulatorVersion
         self.tabulatorOptions = tabulatorOptions
 
@@ -667,13 +674,28 @@ class BrowserDirDynamic(BrowserDirBase):
         if "shrink" in cd:
             entry["shrink"] = cd["shrink"]
 
+    def _checkColDefs(self):
+        """check the colDefs entries at construction; a typo caught in write() is
+        found only after the frameset has been written"""
+        for key, cd in self.colDefs.items():
+            self._checkColDef(key, cd)
+
+    def _checkColDef(self, key, cd):
+        "check one colDefs entry for a filter type, and for keys that need one"
+        filterType = cd.get("filter", "text")
+        if filterType not in _FILTER_TYPES:
+            raise PycbioException("unknown filter type '{}' in colDefs['{}']; use one of: {}"
+                                  .format(filterType, key, ", ".join(_FILTER_TYPES)))
+        if filterType != "select":
+            for selectKey in ("selectValues", "emptyChoice"):
+                if selectKey in cd:
+                    raise PycbioException("{} in colDefs['{}'] needs filter=\"select\", "
+                                          "the filter there is \"{}\""
+                                          .format(selectKey, key, filterType))
+
     def _colFilterType(self, i, title):
         "header filter type for a column: text, range, select, or none"
-        filterType = self._colDef(i, title).get("filter", "text")
-        if filterType not in _FILTER_TYPES:
-            raise PycbioException("unknown filter type '{}' for column '{}'; use one of: {}"
-                                  .format(filterType, title, ", ".join(_FILTER_TYPES)))
-        return filterType
+        return self._colDef(i, title).get("filter", "text")
 
     def _colTexts(self, i):
         "the filter text of column i, one per row, stripped"

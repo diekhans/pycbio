@@ -2,11 +2,14 @@
 import sys
 import os.path as osp
 import glob
+import shutil
+import subprocess
 import pytest
 from pathlib import Path
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 import pycbio.sys.testingSupport as ts
+from pycbio import PycbioException
 from pycbio.hgbrowser import browserDir
 
 ##
@@ -315,6 +318,24 @@ def testDynamicSelect(request):
     assert "<b>unmapped</b> choice in a pull-down keeps the rows with no value" in html
     _diffDir(request)
 
+
+_node = shutil.which("node")
+
+
+@pytest.mark.skipif(_node is None, reason="node is needed to run the page JavaScript")
+def testDynamicSelectJs(request):
+    """run the generated page's own JavaScript, which the expected-output tests only
+    compare as text: what it builds for a select column, and which rows its filter
+    function keeps for a given set of picks"""
+    outDir = ts.get_test_output_file(request)
+    _selectTest(outDir)
+    driver = osp.join(ts.get_test_dir(request), "bin", "dynamicFilterDriver.js")
+    report = subprocess.run([_node, driver, osp.join(outDir, "dir.html")],
+                            check=True, capture_output=True, text=True)
+    with open(ts.get_test_output_file(request, ".txt"), "w") as fh:
+        fh.write(report.stdout)
+    ts.diff_results_expected(request, ".txt")
+
 def testDynamicSelectValues(request):
     "caller-supplied choices, in the order given, and the default empty label"
     outDir = ts.get_test_output_file(request)
@@ -331,15 +352,79 @@ def testDynamicSelectValues(request):
     assert '"filter": "select", "selectValues": ["no", "gene", "family"]' in html
     assert '"emptyLabel": "None"' in html
 
+def _selectSpec(rows, colDefs, colNames=("num", "word")):
+    "the client column spec of a small dynamic page, by column title"
+    brDir = browserDir.BrowserDirDynamic(browserDir.GENOME_UCSC_URL, "hg38",
+                                         colNames=colNames, colDefs=colDefs)
+    for row in rows:
+        brDir.addRow(row)
+    return {entry["title"]: entry for entry in brDir._colSpec()}
+
+def _selectChoices(rows, colDefs, colNames=("num", "word")):
+    "the choices each column's select filter offers, by column title"
+    return {title: entry.get("selectValues")
+            for title, entry in _selectSpec(rows, colDefs, colNames).items()}
+
+def testDynamicSelectChoiceOrder(request):
+    """choices that TIE on the sort key still have one fixed order: the values are
+    collected in a set, so without the value itself ending the key the order came
+    out of the set and changed from run to run"""
+    rows = (("1", "no"), ("1.0", "No"), ("01", "NO"), ("2", "yes"), ("10", "abc"))
+    choices = _selectChoices(rows, {"num": {"filter": "select"},
+                                    "word": {"filter": "select"}})
+    # numbers in numeric order (10 after 2), ties among the ways of writing one
+    # number broken by the text
+    assert choices["num"] == ["01", "1", "1.0", "2", "10"]
+    # text by lowercased value, ties among case variants broken by the value
+    assert choices["word"] == ["abc", "NO", "No", "no", "yes"]
+
+def testDynamicSelectChoiceOrderStable(request):
+    "the same rows give the same choices however the set happens to be ordered"
+    rows = (("1", "no"), ("1.0", "No"), ("01", "NO"), ("2", "yes"), ("10", "abc"))
+    first = _selectChoices(rows, {"num": {"filter": "select"},
+                                  "word": {"filter": "select"}})
+    for _ in range(20):
+        assert _selectChoices(rows, {"num": {"filter": "select"},
+                                     "word": {"filter": "select"}}) == first
+
+def testDynamicSelectEmptyChoiceOff(request):
+    """anything false means no empty choice.  None used to reach str() and give a
+    choice labelled None, the opposite of what the caller asked for."""
+    rows = (("a", "x"), ("b", ""))
+    for off in (False, None, "", 0):
+        word = _selectSpec(rows, {"word": {"filter": "select", "emptyChoice": off}})["word"]
+        assert "emptyLabel" not in word, "emptyChoice={!r}".format(off)
+        assert word["selectValues"] == ["x"]
+
+def testDynamicSelectEmptyChoiceOn(request):
+    "True gives the default label, a string gives that label"
+    rows = (("a", "x"), ("b", ""))
+    for choice, label in ((True, browserDir.SELECT_EMPTY_LABEL), ("unmapped", "unmapped")):
+        word = _selectSpec(rows, {"word": {"filter": "select", "emptyChoice": choice}})["word"]
+        assert word["emptyLabel"] == label
+
 def testDynamicFilterTypeUnknown(request):
-    "a misspelled filter type is an error, not a text filter"
-    brDir = browserDir.BrowserDirDynamic(browserDir.GENOME_UCSC_URL, _mirnaAssembly,
-                                         colNames=_mirnaCols,
-                                         colDefs={"conflict": {"filter": "multiselect"}})
-    for rec in _mirnaData:
-        _mirnaAddRow(brDir, rec)
-    with pytest.raises(Exception, match="unknown filter type 'multiselect' for column 'conflict'"):
-        brDir.write(ts.get_test_output_file(request))
+    """a misspelled filter type is an error, and it is raised on construction: caught
+    in write(), it is found only after the frameset has been written"""
+    outDir = ts.get_test_output_file(request)
+    shutil.rmtree(outDir, ignore_errors=True)
+    with pytest.raises(PycbioException,
+                       match=r"unknown filter type 'multiselect' in colDefs\['conflict'\]"):
+        browserDir.BrowserDirDynamic(browserDir.GENOME_UCSC_URL, _mirnaAssembly,
+                                     colNames=_mirnaCols,
+                                     colDefs={"conflict": {"filter": "multiselect"}})
+    assert not osp.exists(outDir), "nothing should have been written"
+
+def testDynamicSelectKeysNeedSelect(request):
+    "selectValues and emptyChoice mean nothing without filter=select, so they are errors"
+    for key, value in (("selectValues", ("a", "b")), ("emptyChoice", True)):
+        for filterType in ("text", "range", "none"):
+            with pytest.raises(PycbioException,
+                               match=r"{} in colDefs\['conflict'\] needs filter=\"select\"".format(key)):
+                browserDir.BrowserDirDynamic(browserDir.GENOME_UCSC_URL, _mirnaAssembly,
+                                             colNames=_mirnaCols,
+                                             colDefs={"conflict": {"filter": filterType,
+                                                                   key: value}})
 
 
 ##
