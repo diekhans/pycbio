@@ -630,11 +630,12 @@ a formatter, plus the round-trip comparison as a testing idiom, would have saved
 That idiom found the only formatting inconsistency in five tables of 1,700 rows, and it
 needs nothing the library does not already have.
 
-* by-CC 2026-08-18 from a scan of a vendored copy, plus what it left open
+* by-CC 2026-08-18 from a scan of a vendored copy
 The scan was of an older copy, so some of its findings did not apply here: the score
 cap on write is gone, FileAccessor already takes a Path through isFilePath, and
 strArraySplit decodes bytes before the empty tests.  What did apply is fixed, with a
-test each.  What is left is below.
+test each.  The column names shadowing the TsvRow methods is the known issue above,
+under clean up TsvRow.  Nothing from the scan is left open.
 
 ** BED widths of 7, 10 and 11, as they now stand
 Every width from 3 to 12 is a BED; what differs is whether Bed can carry the columns.
@@ -645,8 +646,8 @@ Every width from 3 to 12 is a BED; what differs is whether Bed can carry the col
  - numStdCols=7: thickStart is a standard column, and it round-trips.
  - numStdCols=10 or 11 at parse: an error.  Blocks need all three of blockCount,
    blockSizes and chromStarts, so those columns can not be carried, and the error
-   names the two widths that work.  If a declared BED10 ever has to round-trip, the
-   object needs somewhere to keep the raw block columns.
+   names the two widths that work.  Neither width is a valid BED, so no round trip is
+   owed one; Bed will not keep raw block columns beside the parsed blocks.
  - a Bed that HAS blocks may be written at width 10 or 11, where blockCount and
    blockSizes are real.
 numColumns and the width of toRow now agree at every width, which is a test.
