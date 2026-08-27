@@ -2,6 +2,14 @@
 """support classes for parsing autoSql generated objects"""
 from pycbio import PycbioDataError
 
+
+def _arrayElemStr(value, fmt=None):
+    """a value as it appears in a comma-separated list; a missing value is an empty
+    element, never the string "None", which would land in the data file"""
+    if value is None:
+        return ""
+    return fmt.format(value) if fmt is not None else str(value)
+
 ##
 # string array
 ##
@@ -23,7 +31,7 @@ def strArrayJoin(strs):
     converted to a string"""
     if (strs is None) or (len(strs) == 0):
         return ""
-    return ",".join([str(s) for s in strs]) + ","
+    return ",".join([_arrayElemStr(s) for s in strs]) + ","
 
 
 # TSV typeMap tuple for str arrays
@@ -46,10 +54,7 @@ def intArrayJoin(ints):
     "formatter for a list of ints into a comma seperated string"
     if (ints is None) or (len(ints) == 0):
         return ""
-    strs = []
-    for i in ints:
-        strs.append(str(i))
-    return ",".join(strs) + ","
+    return ",".join([_arrayElemStr(i) for i in ints]) + ","
 
 
 # TSV typeMap tuple for str arrays
@@ -60,20 +65,19 @@ intArrayType = (intArraySplit, intArrayJoin)
 ##
 def floatArraySplit(commaStr):
     "parser for comma-separated string list into a list of floats"
-    floats = []
-    for s in strArraySplit(commaStr):
-        floats.append(float(s))
-    return floats
+    strs = strArraySplit(commaStr)
+    try:
+        return [float(s) for s in strs]
+    except (TypeError, ValueError) as ex:
+        raise PycbioDataError("not a comma-separated list of numbers: '{}'".format(
+            commaStr)) from ex
 
 
 def floatArrayJoin(floats, fmt=None):
     "formatter for a list of floats a comma seperated string"
     if (floats is None) or (len(floats) == 0):
         return ""
-    strs = []
-    for f in floats:
-        strs.append(fmt.format(f) if fmt is not None else str(f))
-    return ",".join(strs) + ","
+    return ",".join([_arrayElemStr(f, fmt) for f in floats]) + ","
 
 
 # TSV typeMap tuple for str arrays
