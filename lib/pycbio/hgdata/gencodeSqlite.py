@@ -454,11 +454,11 @@ class GencodeGeneSqliteTable(HgSqliteTable):
         start and end to None.  If raw is specified. Don't convert to GencodeGene
         objects if raw is True."""
         if start is None:
-            rangeWhere = "(chrom = '{}')".format(chrom)
+            rangeWhere, sqlArgs = "(chrom = ?)", [chrom]
         else:
-            rangeWhere = rangeFinder.getOverlappingSqlExpr("bin", "chrom", "txStart", "txEnd", chrom, start, end)
-            sql = "SELECT {{columns}} FROM {{table}} WHERE {}".format(rangeWhere)
-            sqlArgs = []
+            rangeWhere, params = rangeFinder.getOverlappingSqlExpr("bin", "chrom", "txStart", "txEnd", chrom, start, end)
+            sqlArgs = list(params)
+        sql = "SELECT {{columns}} FROM {{table}} WHERE {}".format(rangeWhere)
         if strand is not None:
             sql += " AND (strand = ?)"
             sqlArgs.append(strand)

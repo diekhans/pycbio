@@ -100,25 +100,27 @@ class AssemblyReport:
 
     def _parse(self, asmReport):
         with fileOps.opengz(asmReport) as fh:
-            self._parseMetaData(fh)
-            self._skipToSeqTable(fh)
-            self._parseRecords(fh)
+            # one line iterator for all three passes; iterLines drops only the
+            # newline, so a last line without one keeps its final character
+            lines = fileOps.iterLines(fh)
+            self._parseMetaData(lines)
+            self._skipToSeqTable(lines, asmReport)
+            self._parseRecords(lines)
 
-    def _parseMetaData(self, fh):
+    def _parseMetaData(self, lines):
         "parse metaData records at start"
         # Assembly Name:  GRCh38.p2
-        for line in fh:
-            line = line[0:-1]
+        for line in lines:
             if line == "#":
                 break
             _parseMetaDataLine(self.metaData, line)
 
-    def _skipToSeqTable(self, fh):
+    def _skipToSeqTable(self, lines, asmReport):
         "skip past header line before sequence records"
-        for line in fh:
-            if line[0:-1] == self.expectedHeader:
+        for line in lines:
+            if line == self.expectedHeader:
                 return
-        raise AssemblyReportException("expected assembly report header not found in " + fh.name)
+        raise AssemblyReportException("expected assembly report header not found in " + str(asmReport))
 
     def _parseRecord(self, line):
         rec = _parseRecord(line.split('\t'))
@@ -131,9 +133,9 @@ class AssemblyReport:
         if rec.ucscStyleName is not None:
             self.byUcscStyleName[rec.ucscStyleName] = rec
 
-    def _parseRecords(self, fh):
-        for line in fh:
-            self._parseRecord(line[0:-1])
+    def _parseRecords(self, lines):
+        for line in lines:
+            self._parseRecord(line)
 
     @property
     def assemblyName(self):

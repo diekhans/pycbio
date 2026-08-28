@@ -5,9 +5,11 @@ from pycbio.hgdata import rangeFinder
 from sqlalchemy import and_, or_
 
 
-def getOverlappingSqlExprSA(seqCol, binCol, startCol, endCol, seq, start, end):
-    """General sqlalchemy experssion to select for overlaps with the specified range. Columns
-    are SA column objects.  Returns an and__ object"""
+def getOverlappingSqlExprSA(binCol, seqCol, startCol, endCol, seq, start, end):
+    """General sqlalchemy expression to select for overlaps with the specified range.
+    Columns are SA column objects.  Returns an and_ object.  The argument order
+    matches rangeFinder.getOverlappingSqlExpr; both take column identifiers, so a
+    swapped call is not a type error, just a query that matches nothing."""
     # build bin parts
     parts = []
     for bins in rangeFinder.getOverlappingBins(start, end):

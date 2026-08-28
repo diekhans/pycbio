@@ -22,6 +22,26 @@ def lsOpen(msg=None, file=sys.stderr, pid=None):
         if os.path.exists(fdp):
             print("   ", fd, " -> ", os.readlink(fdp), file=file)
 
+def _slotNames(obj):
+    "every __slots__ name of the class and its bases, in mro order"
+    names = []
+    for cls in type(obj).__mro__:
+        slots = cls.__dict__.get("__slots__")
+        if isinstance(slots, str):
+            slots = (slots,)
+        if slots is not None:
+            names.extend(slots)
+    return names
+
+def _objAttrValues(obj):
+    """name to value of an object's data attributes, for a class with __dict__,
+    __slots__, or both.  vars() alone fails on a __slots__ class."""
+    attrs = dict(getattr(obj, "__dict__", {}))
+    for name in _slotNames(obj):
+        if hasattr(obj, name):
+            attrs[name] = getattr(obj, name)
+    return attrs
+
 def _prettyPrintRecurse(name, value, seen, indent, level, filter_func, fh):
     if (filter_func is None) or filter_func(name):
         print(' ' * (indent * (level + 1)) + f"{name}=", end="", file=fh)
@@ -29,6 +49,7 @@ def _prettyPrintRecurse(name, value, seen, indent, level, filter_func, fh):
 
 def _prettyPrint(obj, seen, indent, level, filter_func, fh, *, inline=False):
     if id(obj) in seen:
+        print(('' if inline else ' ' * (indent * level)) + "<recursion>", file=fh)
         return
     seen.add(id(obj))
     space = ' ' * (indent * level)
@@ -52,15 +73,15 @@ def _prettyPrint(obj, seen, indent, level, filter_func, fh, *, inline=False):
         print(space + "}", file=fh)
     elif hasattr(obj, "__dict__") or hasattr(obj, "__slots__"):
         print(startsp + f"{obj.__class__.__name__}(", file=fh)
-        for key, value in vars(obj).items():
+        for key, value in _objAttrValues(obj).items():
             _prettyPrintRecurse(key, value, seen, indent, level, filter_func, fh)
         print(space + ")", file=fh)
     else:
         print(startsp + repr(obj), file=fh)
 
-    # this allow an object to be output multiple times as long as
-    # it isn't on the recursion path
-    seen.clear()
+    # dropping only this object, not the whole set, allows an object to be
+    # output multiple times as long as it isn't on the recursion path
+    seen.discard(id(obj))
 
 def prettyPrint(obj, *, label=None, indent=4, fh=sys.stderr, filter_func=None):
     """
@@ -82,4 +103,4 @@ def printCurrentStack(msg=None, *, file=sys.stderr):
     print("Stack trace:\n", stack_trace, file=file)
 
 
-__all__ = [lsOpen.__name__, prettyPrint.__name__, printCurrentStack]
+__all__ = [lsOpen.__name__, prettyPrint.__name__, printCurrentStack.__name__]

@@ -263,7 +263,7 @@ class Color:
             for i in range(3):
                 parts[i] = int(parts[i])
                 if not (0 <= parts[i] <= 255):
-                    raise ValueError("color must be in the range 0..255: {}", parts[i])
+                    raise ValueError("color must be in the range 0..255: {}".format(parts[i]))
             return Color.fromRgb8(*parts)
         except ValueError as ex:
             raise ValueError("invalid RGB8 color string: {}".format(rgb8str)) from ex
@@ -279,9 +279,12 @@ class Color:
         return Color(r, g, b, a, hsv=(h, s, v))
 
     @staticmethod
-    def fromHsv8(h, s, v):
-        "construct from integer HSV values"
-        return Color.fromHsv(h / 306.0, s / 100.0, v / 100.0)
+    def fromHsv8(h, s, v, a=None):
+        """construct from integer HSV values: hue as an angle in 0..360,
+        saturation and value as percents in 0..100.  This is the inverse of
+        the hsv8 property."""
+        a8 = _int8ToReal(a) if a is not None else None
+        return Color.fromHsv(h / 360.0, s / 100.0, v / 100.0, a8)
 
     @staticmethod
     def fromHtmlColor(hcolor):

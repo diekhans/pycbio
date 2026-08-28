@@ -58,7 +58,7 @@ class Coord:
         """create a new coord object that is on the opposite strand, does not change
         coordinate system"""
         if self.isAbs:
-            return Coord(self.seqId, self.start, self.end, self.size, self.strand, True)
+            return Coord(self.seqId, self.start, self.end, self.size, otherStrand[self.strand], True)
         else:
             return Coord(self.seqId, (self.size - self.end), (self.size - self.start), self.size, otherStrand[self.strand], False)
 
@@ -384,8 +384,8 @@ class PairAlign(list):
             if blk.isAln():
                 while oblk is not None:
                     if oblk.isAln():
-                        if oblk.t.start > blk.t.end:
-                            return False
+                        if oblk.t.start >= blk.t.end:
+                            break   # past this block; the next one may still overlap
                         elif blk.t.overlaps(oblk.t.start, oblk.t.end):
                             return True
                     oblk = oblk.next
@@ -468,8 +468,11 @@ class PairAlign(list):
     @staticmethod
     def _mapCdsForContained(srcSubSeqs, destSubSeqs):
         "assign CDS for all blks contained in srcSubSeq CDS range"
-        cdsStart = srcSubSeqs[PairAlign.findFirstCdsIdx(srcSubSeqs)].cds.start
-        cdsEnd = srcSubSeqs[PairAlign.findLastCdsIdx(srcSubSeqs)].cds.end
+        firstIdx = srcSubSeqs.findFirstCdsIdx()
+        if firstIdx is None:
+            return   # no CDS to map
+        cdsStart = srcSubSeqs[firstIdx].cds.start
+        cdsEnd = srcSubSeqs[srcSubSeqs.findLastCdsIdx()].cds.end
         for destSs in destSubSeqs:
             if (destSs is not None) and destSs.overlaps(cdsStart, cdsEnd):
                 destSs.updateCds(max(cdsStart, destSs.start),
@@ -486,7 +489,7 @@ class PairAlign(list):
         destSubSeqs = self.getSubseq(destSeq)
         destSubSeqs.clearCds()
         if contained:
-            PairAlign._mapCdsForOverlap(srcSubSeqs, destSubSeqs)
+            PairAlign._mapCdsForContained(srcSubSeqs, destSubSeqs)
         else:
             PairAlign._mapCdsForOverlap(srcSubSeqs, destSubSeqs)
 

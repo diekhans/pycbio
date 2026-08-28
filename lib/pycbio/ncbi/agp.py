@@ -113,7 +113,7 @@ class Agp:
         #   Gaps: object object_beg object_end part_number     N          gap_length   gap_type      linkage        evidence
         row = line.split('\t')
         if len(row) != 9:
-            raise AgpException("invalid AGP row, expected 9 columns, got".format(len(row)))
+            raise AgpException("invalid AGP row, expected 9 columns, got {}".format(len(row)))
         if row[4] not in "NU":
             self.recs.append(self._parseBlock(row))
         else:

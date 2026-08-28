@@ -99,18 +99,26 @@ def getOverlappingBins(start, end):
         for bins in _getOverlappingBinsForOffsets(start, end, BIN_OFFSET_TO_EXTENDED, BIN_OFFSETS_EXTENDED):
             yield bins
 
-def getOverlappingSqlExpr(binCol, seqCol, startCol, endCol, seq, start, end):
-    """generate an SQL expression for overlaps with the specified range
-    in order to efficiently query, there should be an index on (seqName, bin)
+def getOverlappingSqlExpr(binCol, seqCol, startCol, endCol, seq, start, end, *, placeHolder="?"):
+    """generate an SQL expression for overlaps with the specified range, returning
+    (expr, params).  The params must be bound to the query in the order returned;
+    seq, start and end come from files and command lines, so they are never
+    interpolated into the SQL.  In order to efficiently query, there should be an
+    index on (seqName, bin).  Use placeHolder="%s" for a DB-API driver using
+    format paramstyle, such as mysqlclient.
     """
-    # build bin parts
+    # bin numbers are computed here, not caller data, so they are literals
     parts = []
     for bins in getOverlappingBins(start, end):
         if bins[0] == bins[1]:
             parts.append("({}={})".format(binCol, bins[0]))
         else:
             parts.append("({}>={} and {}<={})".format(binCol, bins[0], binCol, bins[1]))
-    return "(({}=\"{}\") and ({}<{}) and ({}>{}) and ({}))".format(seqCol, seq, startCol, end, endCol, start, " or ".join(parts))
+    expr = "(({}={}) and ({}<{}) and ({}>{}) and ({}))".format(seqCol, placeHolder,
+                                                               startCol, placeHolder,
+                                                               endCol, placeHolder,
+                                                               " or ".join(parts))
+    return expr, (seq, end, start)
 
 
 class Entry(namedtuple("Entry",
@@ -176,9 +184,9 @@ class RangeBins:
     def remove(self, entry):
         """Remove an entry with the particular range and value"""
         try:
-            bucket = self.buckets[(calcBin(entry.start, entry.end))]  # exception if no bucket
-            bucket.remove(entry)  # exception if no value
-        except (IndexError, ValueError):
+            bucket = self.buckets[(calcBin(entry.start, entry.end))]  # KeyError if no bucket
+            bucket.remove(entry)  # ValueError if no value
+        except (KeyError, IndexError, ValueError):
             raise _EntryNotFound()
 
     def values(self):
@@ -310,7 +318,10 @@ class RangeFinder:
 
     def _removeFromSeqBin(self, seqId, strand, entry):
         # strand maybe None
-        self.seqBins.get((seqId, strand)).remove(entry)
+        bins = self.seqBins.get((seqId, strand))
+        if bins is None:
+            raise _EntryNotFound()
+        bins.remove(entry)
 
     def _removeBothStrands(self, seqId, entry):
         "remove an entry, checking both strands"
@@ -374,11 +385,15 @@ class RangeFinder:
         if not self.haveStrand:
             return _getRange(seqId, None)
         elif strand is None:
+            # a sequence may have entries on only one strand
             r1 = _getRange(seqId, '+')
-            if r1[0] is None:
-                return None, None  # don't have seqId
             r2 = _getRange(seqId, '-')
-            return (min(r1[0], r2[0]), max(r1[1], r2[1]))
+            if r1[0] is None:
+                return r2
+            elif r2[0] is None:
+                return r1
+            else:
+                return (min(r1[0], r2[0]), max(r1[1], r2[1]))
         else:
             return _getRange(seqId, strand)
 

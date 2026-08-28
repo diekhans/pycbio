@@ -12,6 +12,7 @@
 #        https://pypi.python.org/pypi/html/1.16 (no dev info
 #         https://pypi.python.org/pypi/PyHTML/1.3.1 (2017-05-30)
 # FIXME: add class TableCell
+from pycbio.tsv.tsvRow import tsvRowGetColumns
 
 
 class HtmlPage(list):
@@ -145,7 +146,7 @@ class HtmlPage(list):
 
     def tableRow(self, row, hclasses=None):
         if self.tableBodyCnt == 0:
-            self.add("<tbody")
+            self.add("<tbody>")
         self.tableBodyCnt += 1
         self._addTableRow("td", row, hclasses)
 
@@ -161,7 +162,7 @@ class HtmlPage(list):
             self.tableHeader(header)
         for row in rows:
             self.tableRow(row)
-        self.tableEnd
+        self.tableEnd()
 
     def tsvTable(self, rows, cols=None, caption=None):
         self.tableStart(caption=caption)
@@ -170,7 +171,7 @@ class HtmlPage(list):
             for row in rows:
                 self.tableRow(row.getColumns(cols))
         else:
-            self.tableHeader(rows[0]._columns_)
+            self.tableHeader(tsvRowGetColumns(rows[0]))
             for row in rows:
                 self.tableRow(row)
         self.tableEnd()
@@ -182,7 +183,7 @@ class HtmlPage(list):
             return "</body></html>"
 
     def __str__(self):
-        return "\n".join(self + self._pageClose())
+        return "\n".join(list(self) + [self._pageClose()]) + "\n"
 
     def writeFile(self, fname):
         fh = open(fname, "w")

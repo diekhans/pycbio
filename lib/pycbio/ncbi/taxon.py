@@ -5,6 +5,7 @@
 """
 import sys
 from collections import defaultdict
+from pycbio import PycbioDataError
 from pycbio.sys import fileOps
 
 
@@ -23,6 +24,17 @@ class DmpFileParser:
                 yield row
 
 
+def _parseDmpFlag(val):
+    """parse a dmp boolean column; the values are the strings "0" and "1", both
+    of which are truthy to bool()"""
+    if val == "0":
+        return False
+    elif val == "1":
+        return True
+    else:
+        raise PycbioDataError("expected a dmp flag of 0 or 1, got: '{}'".format(val))
+
+
 class Node:
     "A record from nodes.dmp table"
     def __init__(self, row):
@@ -31,13 +43,13 @@ class Node:
         self.rank = sys.intern(row[2])
         self.emblCode = sys.intern(row[3])
         self.divisionId = int(row[4])
-        self.inheritedDivFlag = bool(row[5])
+        self.inheritedDivFlag = _parseDmpFlag(row[5])
         self.geneticCodeId = int(row[6])
-        self.inheritedGCflag = bool(row[7])
+        self.inheritedGCflag = _parseDmpFlag(row[7])
         self.mitochondrialGeneticCodeId = int(row[8])
-        self.inheritedMGCflag = bool(row[9])
-        self.genBankHiddenFlag = bool(row[10])
-        self.hiddenSubtreeRootFlag = bool(row[11])
+        self.inheritedMGCflag = _parseDmpFlag(row[9])
+        self.genBankHiddenFlag = _parseDmpFlag(row[10])
+        self.hiddenSubtreeRootFlag = _parseDmpFlag(row[11])
         self.comments = row[12]
 
 
@@ -68,7 +80,7 @@ class Tree:
         for row in DmpFileParser(dmpDir + "/nodes.dmp"):
             node = Node(row)
             self.nodes[node.taxId] = node
-            self.parentNodeRefs.append(node.parentTaxId, node)
+            self.parentNodeRefs[node.parentTaxId].append(node)
 
     def __init__(self, dmpDir):
         "parse *.dmp files in dmpDir"

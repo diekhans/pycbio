@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright 2025-2026 Mark Diekhans
 import os
 import re
@@ -21,7 +20,7 @@ class Genome(ABC):
         pass
 
     @abstractmethod
-    def get_seq_length(self):
+    def get_seq_length(self, seq_id):
         "length of a sequence"
         pass
 
@@ -63,7 +62,7 @@ class _GenomeTwoBit(Genome):
         if start is None:
             start = 0
         if end is None:
-            end = self._fh.get_seq_length()
+            end = self.get_seq_length(seq_id)
         return self._fh[seq_id][start:end]
 
 

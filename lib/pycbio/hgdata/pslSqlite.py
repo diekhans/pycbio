@@ -119,14 +119,16 @@ class PslSqliteTable(HgSqliteTable):
         (one or two) and maybe a list of multiple value.  The where is ANDed
         with the query if supplied."""
         if tStart is None:
-            rangeWhere = "(tName = '{}')".format(tName)
+            rangeWhere, sqlArgs = "(tName = ?)", [tName]
         else:
-            rangeWhere = rangeFinder.getOverlappingSqlExpr("bin", "tName", "tStart", "tEnd", tName, tStart, tEnd)
+            rangeWhere, params = rangeFinder.getOverlappingSqlExpr("bin", "tName", "tStart", "tEnd", tName, tStart, tEnd)
+            sqlArgs = list(params)
         sql = "SELECT {{columns}} FROM {{table}} WHERE {}".format(rangeWhere)
         if strand is not None:
             if isinstance(strand, str):
                 strand = [strand]
-            sql += " AND (strand in ({}))".format(','.join(["'{}'".format(s) for s in strand]))
+            sql += " AND (strand in ({}))".format(','.join(len(strand) * ["?"]))
+            sqlArgs.extend(strand)
         if extraWhere is not None:
             sql += " AND ({})".format(extraWhere)
-        return self.queryRows(sql, self.columnNames, self._getRowFactory(raw))
+        return self.queryRows(sql, self.columnNames, self._getRowFactory(raw), *sqlArgs)

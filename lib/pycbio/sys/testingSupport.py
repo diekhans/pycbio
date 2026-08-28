@@ -120,16 +120,12 @@ def diff_results_binary_expected(request, ext, expect_basename=None):
 
     assert outBytes == expBytes
 
-def _mk_err_spec(re_part, const_part):
-    """Generate an exception matching regexp with a re part and an escaped static part
-    This is manually used to generate error_sets.  Uses while developing tests."""
-    pass
-
-def _print_err_spec(setname, expect_spec, got_chain):
-    """print out to use to manually edit test expected data"""
+def _print_err_spec(setname, got_chain):
+    """print the chain that was raised, in the form of an expect_spec, to paste
+    into the test.  Only called when a check fails."""
     print('@>', setname, file=sys.stderr)
     for got in got_chain:
-        print(f"  {got[0].__name__}", repr(got[1]), file=sys.stderr)
+        print(f"  ({got[0].__name__}, {re.escape(got[1])!r}),", file=sys.stderr)
 
 def assert_regex_dotall(obj, expectRe, msg=None):
     """Fail if the str(obj) does not match expectRe operator, including `.' matching newlines"""
@@ -175,8 +171,12 @@ def assert_num_open_files_same(prev_num_open):
 
 
 class CheckRaisesCauses:
-    """
-    Validate exception chain against  [(exception, regex), ...].
+    """Context manager that validates a raised exception and its __cause__ chain
+    against expect_spec, a list of (exception class, message regexp), outermost
+    exception first.  The expected exception is consumed, as with pytest.raises.
+    On a mismatch, the chain that was actually raised is printed to stderr in
+    expect_spec form, to paste into the test.  setname names the check in that
+    output.
     """
     def __init__(self, setname, expect_spec):
         self.setname = setname
@@ -201,22 +201,25 @@ class CheckRaisesCauses:
         if not re.search(expect[1], got[1]):
             raise AssertionError(f"Expected message matching `{expect[1]}', got `{got[1]}'")
 
+    def _check_chain(self, got_chain):
+        # check values before checking length, to be easier to debug
+        for got, expect in zip(got_chain, self.expect_spec):
+            self._check_except(got, expect)
+        if len(self.expect_spec) != len(got_chain):
+            raise AssertionError(f"Expect exception cause chain of {len(self.expect_spec)}, got {len(got_chain)}: {got_chain}")
+
     def __exit__(self, exc_type, exc_value, traceback):
         """
         Checks the raised exception and its causes against the provided list.
         """
         if exc_type is None:
-            raise AssertionError("No exception was raised")
+            raise AssertionError(f"{self.setname}: no exception was raised")
         got_chain = self._build_got_chain(exc_value)
-        _print_err_spec(self.setname, self.expect_spec, got_chain)
-
-        # check values before checking length to be easier to debug
-        for got, expect in zip(got_chain, self.expect_spec[1]):
-            self._check_except(got, expect)
-
-        if len(self.expect_chain) != len(got_chain):
-            raise AssertionError(f"Expect exception cause chain of {len(self.expect_chain)}, got {len(got_chain)}: {got_chain}")
-
+        try:
+            self._check_chain(got_chain)
+        except AssertionError:
+            _print_err_spec(self.setname, got_chain)
+            raise
         return True
 
 class LoggerForTests():

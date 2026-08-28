@@ -149,7 +149,7 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         elif self.size is not None:
             return ((self.size - self.end) == other.start) and ((self.size - self.start) == other.end)
         elif other.size is not None:
-            return (self.start == (other.size - other.size)) and (self.end == (other.size - other.start))
+            return (self.start == (other.size - other.end)) and (self.end == (other.size - other.start))
         else:
             return False
 
@@ -157,7 +157,10 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
         return super(Coords, self).__hash__()
 
     def __eq__(self, other):
-        self._checkCmpType(other)
+        # equality against another type is False, not an error, so that `in',
+        # dict lookups and assertEqual work; the ordering operators still raise
+        if not isinstance(other, Coords):
+            return NotImplemented
         return ((self.name == other.name)
                 and (self.start == other.start)
                 and (self.end == other.end)
@@ -232,13 +235,13 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
 
     @property
     def absStart(self):
-        "get start of positive strand"
-        return self.start if self.strand == '+' else self.size - self.end
+        "get start of positive strand; a strand of None is positive, as in overlaps()"
+        return self.size - self.end if self.strand == '-' else self.start
 
     @property
     def absEnd(self):
-        "get end of positive strand"
-        return self.end if self.strand == '+' else self.size - self.start
+        "get end of positive strand; a strand of None is positive, as in overlaps()"
+        return self.size - self.start if self.strand == '-' else self.end
 
     def adjust(self, **kwargs):
         "return version with any field update via keyword arguments"
@@ -270,4 +273,4 @@ class Coords(namedtuple("Coords", ("name", "start", "end", "strand", "size"))):
     def contains(self, other):
         "is other fully contained in this object, ignoring strand"
         self._checkCmpType(other)
-        return (other.name == self.name) and (other.start >= self.start) and (other.end <= other.end)
+        return (other.name == self.name) and (other.start >= self.start) and (other.end <= self.end)

@@ -43,6 +43,10 @@ class DefaultObjDict(defaultdict):
     __slots__ = ()
 
     def __getattr__(self, name):
+        # dunder names are Python protocol probes (__deepcopy__, __getstate__, ...);
+        # creating an entry for them corrupts the data and breaks copy and pickle.
+        if name.startswith("__") and name.endswith("__"):
+            _attributeError(name)
         return self[name]
 
     def __setattr__(self, name, value):

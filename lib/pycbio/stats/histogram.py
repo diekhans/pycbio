@@ -1,6 +1,6 @@
 # Copyright 2006-2026 Mark Diekhans
+import math
 from pycbio.sys.fileOps import prLine, iterRows
-from pycbio import PycbioException
 
 # FIXME: computed histo should be an object, not just a list
 # FIXME: binnins doesn't work for values in the range [-1.0, 1.0]
@@ -135,17 +135,27 @@ class Histogram:
         if self.binMinUse is None:
             self.binSizeUse = self.binFloorUse = self.binCeilUse = 0
         elif self.binSizeUse is None:
-            # compute bin size from num bins
-            estBinSize = (self.binMaxUse - self.binMinUse) / (self.numBinsUse - 1)
-            self.binSizeUse = (self.binMaxUse - self.binMinUse + estBinSize) / self.numBinsUse
-            self.binFloorUse = self.binMinUse - (self.binSizeUse / 2.0)
-            self.binCeilUse = self.binFloorUse + (self.numBinsUse * self.binSizeUse)
+            # compute bin size from num bins; bins are centered on the data range
+            self._calcSizeFromNumBins()
         else:
-            # compute num bins from bin size
-            raise PycbioException("doesn't work")
-            self.numBinsUse = (self.binMaxUse - self.binMinUse) // self.binSizeUse
-            self.binFloorUse = self.binMinUse
-            self.binCeilUse = self.binMaxUse
+            # compute num bins from bin size; bins start at the data minimum
+            self._calcNumBinsFromSize()
+
+    def _calcSizeFromNumBins(self):
+        span = self.binMaxUse - self.binMinUse
+        if self.numBinsUse <= 1:
+            self.binSizeUse = span if span > 0 else 0.0
+        else:
+            estBinSize = span / (self.numBinsUse - 1)
+            self.binSizeUse = (span + estBinSize) / self.numBinsUse
+        self.binFloorUse = self.binMinUse - (self.binSizeUse / 2.0)
+        self.binCeilUse = self.binFloorUse + (self.numBinsUse * self.binSizeUse)
+
+    def _calcNumBinsFromSize(self):
+        span = self.binMaxUse - self.binMinUse
+        self.numBinsUse = max(1, int(math.ceil(span / self.binSizeUse)))
+        self.binFloorUse = self.binMinUse
+        self.binCeilUse = self.binFloorUse + (self.numBinsUse * self.binSizeUse)
 
     def _getBinIdx(self, val):
         "Get the integer bin number for a value, or None to ignore"
@@ -156,7 +166,10 @@ class Histogram:
         elif val > self.binMaxUse:
             return None if self.truncMax else self.numBinsUse - 1
         else:
-            return (val - self.binFloorUse) // self.binSizeUse
+            # int(), since a float index can not subscript the bin list; clamped
+            # because a value at binMax divides out to numBinsUse
+            idx = int((val - self.binFloorUse) // self.binSizeUse)
+            return min(max(idx, 0), self.numBinsUse - 1)
 
     def _mkBins(self):
         self.bins = []
@@ -204,5 +217,6 @@ class Histogram:
             prLine(fh, desc)
         prLine(fh, "  data: len: {}  min: {} max: {}".format(len(self.data), self.data.min, self.data.max))
         prLine(fh, "  bins: num: {} size: {} min: {} max: {}".format(self.numBins, self.binSize, self.binMin, self.binMax))
-        prLine(fh, "  use:  num: {} size: {} min: {} max: {} floor: {} ceil: {}".format(self.numBinsUse, self.binSizeUse, "", self.binMinUse, self.binMaxUse,
+        prLine(fh, "  use:  num: {} size: {} min: {} max: {} floor: {} ceil: {}".format(self.numBinsUse, self.binSizeUse,
+                                                                                        self.binMinUse, self.binMaxUse,
                                                                                         self.binFloorUse, self.binCeilUse))

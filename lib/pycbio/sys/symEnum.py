@@ -72,14 +72,6 @@ class _SymEnumDict(_EnumDict):
             value = value.value
         super().__setitem__(key, value)
 
-    def toExternalName(self, internalName):
-        "return name unchanged if no mapping"
-        return self.internalToExternal.get(internalName, internalName)
-
-    def toInternalName(self, externalName):
-        "return name unchanged if no mapping"
-        return self.externalToInternal.get(externalName, externalName)
-
 
 class SymEnumMeta(EnumMeta):
     """metaclass for SysEnumMeta that implements looking up of singleton members
@@ -148,16 +140,21 @@ class SymEnumMixin:
     """Mixin that adds comparisons and other functions for SymEnum"""
 
     def __hash__(self):
-        return hash(self.value)
+        # class is part of the key, otherwise two SymEnums numbered from one
+        # collide in a dict or set
+        return hash((self.__class__, self.value))
 
     def __eq__(self, other):
         if isinstance(other, SymEnum):
-            return self.value == other.value
+            return (self.__class__ is other.__class__) and (self.value == other.value)
         else:
             return self.value == other
 
     def __lt__(self, other):
         if isinstance(other, SymEnum):
+            if self.__class__ is not other.__class__:
+                raise TypeError("can not order {} against {}".format(type(self).__name__,
+                                                                     type(other).__name__))
             return self.value < other.value
         else:
             return self.value < other
@@ -207,6 +204,21 @@ class SymEnum(SymEnumMixin, Enum, metaclass=SymEnumMeta):  # noqa: F811
 
     The functional API works as with Enum, and the auto() method of field
     initialization may be used instead of integer constants.
+
+    A member is always looked up by name, never by value, when the argument is
+    a str, so a member whose value is itself a string can not be constructed
+    from that value:
+
+        >>> class Strand(SymEnum):
+        ...     plus = "+"
+        ...     minus = "-"
+        >>> Strand("+")
+        Traceback (most recent call last):
+        ValueError: '+' is not a member, external name, or alias of Strand
+
+    Use SymEnumValue to give the member an external name instead of a string
+    value; the external name is what str() returns and what construction
+    accepts.
 
     To handle string values that are not valid Python member names, an
     external name can be associated with a field using a SymEnumValue object:

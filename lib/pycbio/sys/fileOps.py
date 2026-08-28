@@ -60,17 +60,26 @@ def rmFiles(*files):
             unlinkIfExists(f)
 
 
+def _rmTreeEntries(dir, subdirs, files):
+    """unlink the files and the symlinked directories of one directory of a walk;
+    os.walk reports a symlink to a directory in subdirs and does not descend into
+    it, so it must be unlinked here or its parent is not empty."""
+    dir_fd = os.open(dir, os.O_DIRECTORY)
+    try:
+        for f in files:
+            unlinkIfExists(f, dir_fd=dir_fd)
+        for d in subdirs:
+            if os.path.islink(osp.join(dir, d)):
+                unlinkIfExists(d, dir_fd=dir_fd)
+    finally:
+        os.close(dir_fd)
+
 def rmTree(root):
-    """remove a file hierarchy, root can be a file or a directory, missing files don't
-    generate errors"""
-    if osp.isdir(root):
+    """remove a file hierarchy, root can be a file, a symlink, or a directory,
+    missing files don't generate errors.  Symlinks are removed, not followed."""
+    if osp.isdir(root) and not osp.islink(root):
         for dir, subdirs, files in os.walk(root, topdown=False):
-            dir_fd = os.open(dir, os.O_DIRECTORY)
-            try:
-                for f in files:
-                    unlinkIfExists(f, dir_fd=dir_fd)
-            finally:
-                os.close(dir_fd)
+            _rmTreeEntries(dir, subdirs, files)
             rmdirIfExists(dir)
     else:
         unlinkIfExists(root)
@@ -189,19 +198,19 @@ def decompressCmd(path):
         return ["cat"]
 
 
-def opengz(fileName, mode="r", *, buffering=-1, encoding=None, errors=None, bgzip=False):
+def opengz(fileName, mode="r", *, buffering=-1, encoding=None, errors=None, newline=None, bgzip=False):
     """open a file, if it ends in an extension indicating compression, open
     with a compression or decompression pipe.  If bgzip is specified for write,
     it is used to writing"""
     fileName = os.fspath(fileName)
     if not isCompressed(fileName):
-        return open(fileName, mode, buffering=buffering, encoding=encoding, errors=errors)
+        return open(fileName, mode, buffering=buffering, encoding=encoding, errors=errors, newline=newline)
     elif mode.startswith("r"):
         cmd = decompressCmd(fileName)
-        return pipettor.Popen(cmd + [fileName], mode=mode, buffering=buffering, encoding=encoding, errors=errors)
+        return pipettor.Popen(cmd + [fileName], mode=mode, buffering=buffering, encoding=encoding, errors=errors, newline=newline)
     elif mode.startswith("w"):
         cmd = compressCmd(fileName, bgzip=bgzip)
-        return pipettor.Popen(cmd, mode=mode, stdout=fileName, buffering=buffering, encoding=encoding, errors=errors)
+        return pipettor.Popen(cmd, mode=mode, stdout=fileName, buffering=buffering, encoding=encoding, errors=errors, newline=newline)
     else:
         raise PycbioException("mode {} not support with compression for {}".format(mode, fileName))
 
@@ -477,15 +486,17 @@ def AtomicFileCreate(finalPath, *, keep=False):
 
 @contextmanager
 def AtomicFileOpen(finalPath, mode='w', *, buffering=-1, encoding=None,
-                   errors=None, newline=None, keep=False):
-    """Context manager to open a temporary file.  Entering returns path to
-    the temporary file in the same directory as finalPath.  If the code in
-    context succeeds, the file renamed to its actually name.  If an error
+                   errors=None, newline=None, bgzip=False, keep=False):
+    """Context manager to open a temporary file.  Entering returns an open file
+    object on a temporary file in the same directory as finalPath.  If the code
+    in context succeeds, the file renamed to its actually name.  If an error
     occurs, the file is not installed and is removed unless keep is specified.
     The output directory will be created if it doesn't exist.  Thread-safe.
+    A compression extension on finalPath is honored, as with opengz.
     """
     with AtomicFileCreate(finalPath, keep=keep) as tmpFileName:
-        with open(tmpFileName, mode=mode, buffering=buffering, encoding=encoding, errors=errors, newline=newline) as fh:
+        with opengz(tmpFileName, mode=mode, buffering=buffering, encoding=encoding,
+                    errors=errors, newline=newline, bgzip=bgzip) as fh:
             yield fh
 
 def uncompressedBase(path):

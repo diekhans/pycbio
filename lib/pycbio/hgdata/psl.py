@@ -6,6 +6,7 @@ from pycbio.hgdata.autoSql import intArraySplit, intArrayJoin, strArraySplit, st
 from pycbio.tsv.tabFile import TabFileReader
 from pycbio.hgdata import dnaOps
 from pycbio.hgdata.cigar import cigarStringParse, cigarFromPysam
+from pycbio import PycbioDataError
 
 # Notes:
 #  - terms plus and minus are used because `positive' is long and `pos' abbreviation is
@@ -158,7 +159,9 @@ class Psl:
         psl.tNumInsert = int(row[6])
         psl.tBaseInsert = int(row[7])
         blockCount = int(row[17])
-        haveSeqs = len(row) > 21
+        if len(row) not in (21, 23):
+            raise PycbioDataError("invalid PSL row, expected 21 columns, or 23 for a PSLX, got {}".format(len(row)))
+        haveSeqs = len(row) == 23
         cls._parseBlocks(psl, blockCount, row[18], row[19], row[20],
                          (row[21] if haveSeqs else None),
                          (row[22] if haveSeqs else None))
@@ -282,14 +285,14 @@ class Psl:
             return (self.tSize - end, self.tSize - start)
 
     def isProtein(self):
-        lastBlock = self.blockCount - 1
+        "is this a translated (protein) alignment, by the last block's target extent"
         if len(self.strand) < 2:
             return False
-        return (((self.strand[1] == '+') and
-                 (self.tEnd == self.tStarts[lastBlock] + 3 * self.blockSizes[lastBlock]))
+        lastBlock = self.blocks[-1]
+        lastEnd = lastBlock.tStart + 3 * lastBlock.size
+        return (((self.strand[1] == '+') and (self.tEnd == lastEnd))
                 or
-                ((self.strand[1] == '-') and
-                 (self.tStart == (self.tSize - (self.tStarts[lastBlock] + 3 * self.blockSizes[lastBlock])))))
+                ((self.strand[1] == '-') and (self.tStart == (self.tSize - lastEnd))))
 
     @property
     def tLength(self):
@@ -304,8 +307,9 @@ class Psl:
         return (tName == self.tName) and (tStart < self.tEnd) and (tEnd > self.tStart)
 
     def tBlkOverlap(self, tStart, tEnd, iBlk):
-        "does the specified block overlap the target range"
-        return (tStart < self.getTEndPos(iBlk)) and (tEnd > self.getTStartPos(iBlk))
+        "does the specified block overlap the target range, in positive-strand coordinates"
+        blk = self.blocks[iBlk]
+        return (tStart < blk.tEndPlus) and (tEnd > blk.tStartPlus)
 
     def toRow(self):
         "convert PSL to array of strings"
@@ -570,7 +574,7 @@ class PslTbl(list):
     def _mkTNameIdx(self):
         self.tNameMap = defaultdict(list)
         for psl in self:
-            self.tNameMap[psl.tName](psl)
+            self.tNameMap[psl.tName].append(psl)
         self.tNameMap.default_factory = None
 
     def getQNames(self):

@@ -452,8 +452,7 @@ class BrowserDirStatic(BrowserDirBase):
             numPages = 1
         for pageNum in range(1, numPages + 1):
             first = (pageNum - 1) * self.pageSize
-            last = first + (self.pageSize - 1)
-            pgRows = self.rows[first:last]
+            pgRows = self.rows[first:first + self.pageSize]
             self._writeDirPage(outDir, pgRows, pageNum, numPages)
 
     def write(self, outDir):

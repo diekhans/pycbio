@@ -94,11 +94,18 @@ class TsvWriter:
         self.close()
 
     def _writeHeader(self):
-        """Write the column header line."""
-        self._writer.writerow(self.columns)
+        """Write the column header line.  The external names are written, so a
+        columnSpecs taken from a reader that had a columnNameMapper writes the
+        header the file had, matching TsvRow.getHeader."""
+        self._writer.writerow(self.columnSpecs.extColumns)
+
+    def _checkRowLen(self, row):
+        if len(row) != len(self.columns):
+            raise TsvError("row has {} columns, expected {}: {}".format(len(row), len(self.columns), row))
 
     def _rowFromSequence(self, row):
         """Format a list/tuple, assuming values are in column order."""
+        self._checkRowLen(row)
         return [self.columnSpecs.fmtValue(i, row[i]) for i in range(len(self.columns))]
 
     def _rowFromMapping(self, row):

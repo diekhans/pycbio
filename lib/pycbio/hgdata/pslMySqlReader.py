@@ -33,6 +33,7 @@ class PslMySqlReader:
         query = "select " + ",".join(PslMySqlReader.pslColumns)
         if haveSeqs:
             query += "," + ",".join(PslMySqlReader.pslSeqColumns)
-        query += " from " + table + " where " \
-            + rangeFinder.getOverlappingSqlExpr("bin", "tName", "tStart", "tEnd", tName, tStart, tEnd)
-        return PslMySqlReader(conn, query)
+        rangeWhere, queryArgs = rangeFinder.getOverlappingSqlExpr("bin", "tName", "tStart", "tEnd",
+                                                                  tName, tStart, tEnd, placeHolder="%s")
+        query += " from " + table + " where " + rangeWhere
+        return PslMySqlReader(conn, query, queryArgs)

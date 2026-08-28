@@ -21,7 +21,7 @@ def cgBoolFormat(val):
     elif val is False:
         return "n"
     else:
-        raise ValueError("expected bool type, got: " + type(val))
+        raise ValueError("expected bool type, got: " + type(val).__name__)
 
 
 cgBoolSpec = (cgBoolParse, cgBoolFormat)

@@ -35,10 +35,19 @@ class Range(namedtuple("Range", ("start", "end"))):
     __slots__ = ()
 
     def __eq__(self, other):
-        return (other is not None) and (self.start == other.start) and (self.end == other.end)
+        # equality against another type is False, not an error; defining __eq__
+        # on a namedtuple subclass sets __hash__ to None, so redeclare it
+        if not isinstance(other, Range):
+            return NotImplemented
+        return (self.start == other.start) and (self.end == other.end)
 
     def __ne__(self, other):
-        return (other is None) or (self.start != other.start) or (self.end != other.end)
+        if not isinstance(other, Range):
+            return NotImplemented
+        return (self.start != other.start) or (self.end != other.end)
+
+    def __hash__(self):
+        return super(Range, self).__hash__()
 
     def size(self):
         return self.end - self.start
@@ -554,10 +563,10 @@ class GenePredTbl(list):
     def _buildIdx(self):
         self.names = defaultdict(list)
         for row in self:
-            self.names.append(row.name, row)
+            self.names[row.name].append(row)
 
     def _buildRangeIdx(self):
-        from pycbio.hgdata.RangeFinder import RangeFinder
+        from pycbio.hgdata.rangeFinder import RangeFinder
         self.rangeMap = RangeFinder()
         for gene in self:
             self.rangeMap.add(gene.chrom, gene.txStart, gene.txEnd, gene, gene.strand)

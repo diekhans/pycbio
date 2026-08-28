@@ -145,9 +145,16 @@ def testSetupNullLogger():
 def testSetupNullLoggerWithLevel():
     tlog = ts.LoggerForTests()
     loggingOps.setupNullLogger(tlog.logger, level=logging.ERROR)
-    # Note: setupNullLogger sets handler level but setupLogger defaults
-    # logger level to INFO, then takes min(handler, logger) = INFO
-    assert tlog.logger.level == logging.INFO
+    assert tlog.logger.level == logging.ERROR
+
+def testSetupLoggerNoneLevel():
+    "level=None must not drop a fresh logger to NOTSET; the handler level stands"
+    logger = logging.getLogger("testSetupLoggerNoneLevel")
+    assert logger.level == logging.NOTSET
+    handler = logging.NullHandler()
+    handler.setLevel(logging.ERROR)
+    loggingOps.setupLogger(logger, handler, level=None)
+    assert logger.level == logging.ERROR
 
 
 # getSyslogAddress tests
@@ -175,7 +182,26 @@ def testStreamToLoggerWriteMultiline():
     stl.write("line1\nline2\nline3")
     assert "line1" in tlog.data
     assert "line2" in tlog.data
-    assert "line3" in tlog.data
+    # line3 has no newline yet, so it is held for the write that completes it
+    assert "line3" not in tlog.data
+    stl.write("more\n")
+    assert "line3more" in tlog.data
+
+def testStreamToLoggerWritePartialLine():
+    "a line split over two writes is one log record, not two"
+    tlog = ts.LoggerForTests()
+    stl = loggingOps.StreamToLogger(tlog.logger, logging.WARNING)
+    stl.write("abc")
+    stl.write("def\n")
+    assert tlog.data == "abcdef\n"
+
+def testStreamToLoggerFlushPartial():
+    tlog = ts.LoggerForTests()
+    stl = loggingOps.StreamToLogger(tlog.logger, logging.WARNING)
+    stl.write("tail")
+    assert tlog.data == ""
+    stl.flush()
+    assert tlog.data == "tail\n"
 
 def testStreamToLoggerFlush():
     tlog = ts.LoggerForTests()

@@ -64,8 +64,8 @@ class Trace:
         if self.fh is not None:
             self.disable()
             _activeTraceFds.remove(self.fh.fileno())
-            if self._wasOpen:
-                self.fh.close()
+            if not self._wasOpen:
+                self.fh.close()   # only close what this object opened
             self.fh = None
 
     def log(self, *args):
@@ -79,7 +79,7 @@ class Trace:
                 msg.append(": ")
             if self.inclThread:
                 # can only include id, getting name will cause deadlock
-                msg.append(str(threading._get_ident()))
+                msg.append(str(threading.get_ident()))
                 msg.append(": ")
             for a in args:
                 msg.append(str(a))

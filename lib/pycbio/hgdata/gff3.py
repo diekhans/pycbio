@@ -20,10 +20,10 @@ class GFF3Exception(PycbioException):
     """
     Exception associated with GFF3 data.
     """
-    def __init__(self, message, fileName=None, lineNumber=None, cause=None):
+    def __init__(self, message, fileName=None, lineNumber=None):
         if fileName is not None:
             message = "{}:{}: {}".format(fileName, lineNumber, message)
-        super(GFF3Exception, self).__init__(message, cause)
+        super(GFF3Exception, self).__init__(message)
 
 
 # characters forcing encode for columns
@@ -116,7 +116,7 @@ class Feature:
         """
         Return the object as a valid GFF3 record line.
         """
-        return "\t".join([self.seqname, self.source, self.type,
+        return "\t".join([_encodeCol(self.seqname), _encodeCol(self.source), _encodeCol(self.type),
                           str(self.start + 1), str(self.end), self._dotIfNone(self.score),
                           self._dotIfNone(self.strand), self._dotIfNone(self.frame),
                           self._attrStrs()])
@@ -316,15 +316,14 @@ class Gff3Parser:
         """
         self.fileName = gff3File
         self.lineNumber = 0
-        fh = fileOps.opengz(gff3File, 'r') if gff3Fh is None else gff3Fh
         try:
             gff3Set = Gff3Set(self.fileName)
-            for line in fh:
+            # iterLines drops only a newline, so a last line without one keeps
+            # its final character, and it closes only what it opened
+            for line in fileOps.iterLines(gff3File if gff3Fh is None else gff3Fh):
                 self.lineNumber += 1
-                self._parseLine(gff3Set, line[0:-1])
+                self._parseLine(gff3Set, line)
         finally:
             self.fileName = self.lineNumber = None
-            if gff3Fh is None:
-                fh.close()
         gff3Set.finish()
         return gff3Set

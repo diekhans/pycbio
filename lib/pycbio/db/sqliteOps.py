@@ -4,6 +4,7 @@ Functions and classes for working with Sqlite 3 databases.
 """
 import apsw
 
+from pycbio import PycbioException
 from pycbio.sys.objDict import ObjDict
 
 # FIXME: no tests
@@ -11,7 +12,7 @@ from pycbio.sys.objDict import ObjDict
 # FIXME: add options to do logging, both of exceptions (apsw handler) and queries
 # FIXME  gets Obj of rows:
 
-class SqliteOpsError(Exception):
+class SqliteOpsError(PycbioException):
     "Error wrapped around sqlite exceptions to add information"
     pass
 
@@ -70,7 +71,7 @@ def connect(sqliteDb, create=False, readonly=True, timeout=None, synchronous=Non
     try:
         conn = apsw.Connection(sqliteDb, **kwargs)
     except apsw.CantOpenError as ex:
-        raise apsw.CantOpenError(str(apsw.CantOpenError) + ": " + sqliteDb) from ex
+        raise SqliteOpsError("can not open sqlite database `{}': {}".format(sqliteDb, ex)) from ex
     if synchronous is not None:
         setSynchronous(conn, synchronous)
     if rowFactory is not None:

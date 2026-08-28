@@ -124,14 +124,16 @@ class Venn:
             if (cnt > 0) or (not excludeEmpty):
                 fileOps.prRowv(fh, self.formatSubsetName(subset, subsetNameSeparator, setNameFormatter), cnt)
 
-    def writeSets(self, fh, *, subsetNameSeparator=" ", setNameFormatter=str, excludeEmpty=False):
-        "write TSV of subsets and ids to an open file"
-        # FIXME: same code as above
+    def writeSets(self, fh, *, subsetNameSeparator=" ", setNameFormatter=str, excludeEmpty=False,
+                  idSeparator=","):
+        """write TSV of subsets and the ids in each to an open file; the ids
+        column holds the ids, separated by idSeparator"""
         fileOps.prRowv(fh, "subset", "ids")
         for subset in self.subsets.getSubsets():
-            cnt = self.getSubsetCounts(subset)
-            if (cnt > 0) or (not excludeEmpty):
-                fileOps.prRowv(fh, self.formatSubsetName(subset, subsetNameSeparator, setNameFormatter), cnt)
+            ids = self.getSubsetIds(subset)
+            if (len(ids) > 0) or (not excludeEmpty):
+                fileOps.prRowv(fh, self.formatSubsetName(subset, subsetNameSeparator, setNameFormatter),
+                               idSeparator.join(sorted([str(i) for i in ids])))
 
     def _getCountRow(self, setNames, subset, count, setNameFormatter):
         return [1 if sn in subset else 0 for sn in setNames] + [count]

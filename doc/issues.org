@@ -1,87 +1,159 @@
 #+STARTUP: nologdone
 #+TODO: TODO ACTIVE PAUSED | DONE CANCELED
+#+PRIORITIES: A C B
 
-* quick
+Organized by package, mirroring lib/pycbio.  General holds what spans packages;
+Build, Testing, Docs and Programs hold what is not library code at all.
+Priorities: A is a correctness trap or something that blocks use, B is a real
+defect or a wanted feature, C is an idea.
+
+Entries added by a review carry the review date.  Entries closed by the
+2026-08-27 review pass are marked DONE rather than removed.
+
+* General
+** TODO [#B] __eq__ should return NotImplemented rather than raise?
+2026-08-27: done for hgdata.Coords and genePred.Range, which now return
+NotImplemented for a non-matching type while the ordering operators still raise.
+The same question is open for every other record class that defines __eq__.
+** TODO [#C] make most classes pickle-friendly
+** TODO [#B] add use of PycbioDataError and ErrorHandler
+Neither is used consistently; a user-input error should reach the command
+without a stack trace.
+** TODO [#C] rename pycbio.sys, has caused problems with relative imports
+forget relative imports
+** TODO [#B] record and reader APIs are inconsistent (2026-08-04)
+construction: Bed.parse and Psl classmethods, genePredFromRow and
+genePredFromDict module functions, Gff3Parser.parse instance method.
+reading: BedReader and GenePredReader are generator functions, PslReader is a class.
+pick one shape for both before adding more formats.
+** TODO [#B] reader functions
+*** make all reader functions also context managers
+*** have factories for reader functions to support derived class
+** TODO [#B] naming has split three ways (2026-08-04)
+camelCase in most of lib; snake_case in snakemake/*, sys/testingSupport.py, and
+hgdata/genome.py.  CLAUDE.md now says new code should be snake_case.  write the
+cut-over rule down: new modules snake_case, no renaming of existing public API,
+never mixed within a module.  otherwise it drifts per file.
+** TODO [#B] the *Tbl readers are mostly not useful (2026-08-27)
+PslTbl, GenePredTbl and the like read a whole file into a list and build
+optional indexes.  Every index option had a bug that no test covered, because
+almost nothing constructs them: the callers want the reader plus their own dict.
+Decide whether these classes earn their place, or reduce them to a reader plus
+an index function that a caller asks for explicitly.
+** TODO [#B] look for clunky code across the tree (2026-08-27)
+Standing task, not a defect.  The recurring shapes found so far, each worth a
+sweep of its own: an option that only one constructor path exercises, an error
+path built from string concatenation, and a second copy of a function that the
+tree renamed on one side only.
+** TODO [#C] add containers package
+class StrictDict(dict):
+    def __setitem__(self, key, value):
+        if key in self:
+            raise KeyError(f"Duplicate key: '{key}'")
+        super().__setitem__(key, value)
+** TODO [#C] check this on using realpath to find library
+https://patmaddox.com/doc/trunk/www/2023-12-sh-relative-shell-script-includes-with-realpath-on-freebsd/
+
+* Build and packaging
+** TODO [#C] quick
 remove unnecessary progtests/*/Makefile:4:export PYTHONPATH
 make put dup mkdirs and clean in a command include
+** TODO [#B] packaging: three dependency lists that drift (2026-08-04)
+setup.py install_requires lists flake8, which is a dev tool, and omits
+twobitreader, which requirements.txt has; requirements-dev.txt is a third list.
+move to pyproject.toml with a dev extra, one source.
+also 10 of the 26 bin programs are not in setup.py scripts (bedFlatten,
+bedToIntronBed, fastaSelect, ncbiAssemblyReportToTsv, spliceJunctionCheck,
+sra-map-tool, tsv-to-xlsx, utf8ToAscii, xlsx-to-tsv), so pip installs some tools
+and not others with no stated rule.
 
-* add this, plus option to drop _hap1
-def chrom_sort_key(chrom):
-    suffix = re.sub(r"^chr(.+)$", r"\1", chrom)
-    assert suffix != chrom
-    if suffix.isdigit():
-        return int(suffix)
-    else:
-        return sum([100 + ord(c) for c in suffix])
+* Testing
+** TODO [#A] upgrade the tests (2026-08-27)
+The 2026-08-27 review found roughly fifty defects, none of them covered by a
+test, and three of them recorded in expected files so the tests defended the
+bug.  What the gaps have in common:
+- A constructor option no test passes: PslTbl tNameIdx, GenePredTbl buildIdx and
+  buildRangeIdx, taxon.Tree.  Each was broken and each has a working sibling
+  option that is tested.
+- An expected file that was never read: browserDir static pagination was three
+  pages of four rows, pairAlign testMapCds.out and testMapCdsContained.out were
+  byte for byte identical, venn writeSets wrote counts under an ids header.
+  A test whose expected data nobody has read asserts nothing.
+- Whole modules with no test at all: fileOps.rmTree, stats/histogram (its two
+  tests were named X_test* so pytest did not collect them), htmlPage.
+Worth a pass that enumerates the options and entry points of each class and
+asks which have never been called.
+** TODO [#B] convert fully to pytest
+** TODO [#B] need to finish making tests run without mysql
+see decorator in tests/libtests/pycbio/hgdata/test_pslMySql.py
+this can be make general, for now in TestCaseBase.  Eventually
+isolate this more, we use it less and less.
+** TODO [#B] remove mysql stuff from TestCaseBase
+** TODO [#C] reverse asserts so order is expect, got
+corresponds to diff output, see pslMapTests
+** TODO [#C] exceptTests has to hack around unit test _AssertRaisesContext not saving traceback
+see unittest/case.py: # store exception, without traceback, for later retrieval
+** TODO [#B] remove testCaseBase
+2026-08-04: the only remaining unittest importer in the tree, 229 lines, no
+references.  it can go now.
+** TODO [#C] capture=no on test_cli
+pytest  --verbose --capture=no test_cli.py
+prints logging message and stack traces for unknown reasons however
+test succeed.  running tests individually doesn't do this
+** TODO [#B] module-level side effects in testingSupport (2026-08-04)
+installs SIGQUIT and SIGABRT handlers and computes MAXFD at import, so any
+importer gets them.  move into an opt-in fixture.
+** DONE testingSupport CheckRaisesCauses could not be used
+2026-08-04: CheckRaisesCauses.__exit__ uses self.expect_chain; no such
+attribute, so any use raises AttributeError.  self.expect_spec[1] as the
+expectation list also disagrees with the docstring.  no users.  drop the class,
+or finish it and write a test for it.  _mk_err_spec is a pass stub and
+_print_err_spec prints on every check: debug scaffolding on the checking path,
+drop both.
+2026-08-27: __exit__ read self.expect_chain, which does not exist, on the
+success path too.  expect_spec is now the documented [(exception, regex), ...]
+chain, the diagnostic print happens only on a failure, and _mk_err_spec, a pass
+stub, is gone.
 
-* programs to add:
-** cls-t2t-primate/bin/phylop-score-bed
+* Docs
+** TODO [#C] document generators
+http://codespeak.net/~mwh/pydoctor/ - discussion of others
 
-* ArgumentParser need introspection
+* Programs
+** TODO [#C] programs to add
+cls-t2t-primate/bin/phylop-score-bed
+** TODO [#C] csvToTsv add ability to fix column names to be legal python
+** TODO [#C] python selectById, with explicit TSV support
+** TODO [#C] ncbiGbFetch - BioPython already has a retry loop
+
+* pycbio/sys
+** sys/cli
+*** TODO [#B] ArgumentParser need introspection
 write ticket
 implementation makes this hard with subparsers
-
-* CLI
-** should this just go to click? uses optparse
-*** make cli.py compatible with both argparse and optparse
-** add help formatter that includes default value in message
+*** TODO [#B] should this just go to click? uses optparse
+**** make cli.py compatible with both argparse and optparse
+*** TODO [#C] add help formatter that includes default value in message
 but this happens in ArgumentParser constructor with sises
 with overriding above.
-*** adding after the fact suggerstions
+**** adding after the fact suggerstions
 - parser.formatter_class = DefaultFormatter - before adding argumebnt
-- parser._action_groups[0].formatter_class = DefaultFormatter 
-**  argparse with the issues extending it.
+- parser._action_groups[0].formatter_class = DefaultFormatter
+*** TODO [#C] argparse with the issues extending it
 - find arguments argument types for splitting options and arguments,
   find the subparser that actually parsed the options
   look in side for definitions
 - extending to add options on parse and then process then after parsing
   can't do per options, as need multiple options as input
-
-* capture=no on test_cli
-pytest  --verbose --capture=no test_cli.py
-prints logging message and stack traces for unknown reasons however
-test succeed.  running tests individually doesn't do this
-
-
-* have cli exceptionPrint indent continuation lines message
+*** TODO [#C] have cli exceptionPrint indent continuation lines message
 ./bin/cliTestProg --error-class=new_line_msg no_stack
-
-* can StrEnum replace SymNum?
-maybe with parse function for external values
-but lose numeric values, sometimes used for order.
-but look at StrEnum code in any case.
-or maybe just need a non-Enum based implementations, because Enum has gotten heavy-weight?
-
-* add retried NCBI query
-see hprc-year2-annotation/bin/ncbi-asm-query  
-maybe add for both biopytion and direct request
-biopyton doesn't retry timeouts, only network errors
-
-* sqliteOps error max len should be part of an options object
-* ncbiGbFetch - BioPython already has a retry loop
-
-* bx-python has an interval tree
-
-* testing
-** convert fully to pyttest
-** need to finish making tests run without mysql
-see decorator in tests/libtests/pycbio/hgdata/test_pslMySql.py
-this can be make general, for now in TestCaseBase.  Eventually
-isolate this more, we use it less and less.
-** remove mysql stuff from TestCaseBase
-** reverse asserts so order is expect, got (corresponds to diff outout, see pslMapTests)
-** exceptTests has to hack around unit test _AssertRaisesContext not saving traceback
-see unittest/case.py: # store exception, without traceback, for later retrieval
-
-* commands
-** add standard catch in programs
-*** hide stack of some/all errors without debug
+*** TODO [#B] add standard catch in programs
+**** hide stack of some/all errors without debug
 ssl.SSLCertVerificationError ?
-*** be able to specify exceptions to not dump as an option
-
-** move to more standard option naming
+**** be able to specify exceptions to not dump as an option
+*** TODO [#C] move to more standard option naming
 --syslog-debug instead of --syslogDebug
-** provide support for implementing commands that have optional stdin/stdout
+*** TODO [#B] provide support for implementing commands that have optional stdin/stdout
 using /dev/stdout doesn't work, as it reset file to the beginning, rather
 that append to current location.  Doing:
   fh = os.fdopen(os.dup(sys.stdout.fileno()), "w")
@@ -89,89 +161,204 @@ works better
 partial test implemented here:
 tests/libtests/pycbio/sys/fileOpsTests.py::DISABLED_testOpengzDevStdout()
 bed-analysis-tools has some tools that were quickly hacked to compare mappings and alignments for the cactus paper.  It got rather hacky, but there might be some seeds of good commands here.
+*** TODO [#B] cli.ErrorHandler.__exit__ calls the builtin exit(1) (2026-08-04)
+that comes from site and is not guaranteed present; use sys.exit(1).
 
-* threads:
-add wrapper for subprocess to propagate errors or find a package:
-see uniprotFeatMap/bin/uniprotAnnotsToDecorators
+** sys/typeOps
+*** TODO [#A] cached_immutable_property returns another object's value once an id is reused (2026-08-27)
+_memo_cache is keyed by id(obj) and the only thing that removes an entry is a
+__del__ the class author has to remember to write.  CPython reuses the address
+of a freed object, so the next object at that address reads the first one's
+cached value.  Reproduced with a class that has the property and no __del__:
+five objects landed on one address and all five reported the first value.
+The docstring states the __del__ requirement as an aside, so omitting it is
+silent wrong data, not an error.
+The intent was something lighter weight than weakref, which may itself be the
+mistake: a weakref.WeakKeyDictionary, or a per-object dict keyed by weakref,
+drops the __del__ contract entirely, and namedtuple subclasses are
+weak-referenceable.  Decide whether the lighter-weight scheme can be made safe
+at all; if not, use weakref and take the cost.
+The only in-repo use is the test, which does write __del__; callers outside this
+tree are the exposure.
+*** TODO [#C] add dynamic mixing function
+https://stackoverflow.com/questions/8544983/dynamically-mixin-a-base-class-to-an-instance-in-python
+def add_mixing(obj, cls):
+    """Apply mixins to a class instance after creation"""
+    base_cls = obj.__class__
+    base_cls_name = obj.__class__.__name__
+    obj.__class__ = type(base_cls_name, (cls, base_cls), {})
+but how does an existing instance get added?
+*** TODO [#C] add function to init from __init__ args
+http://code.activestate.com/recipes/286185-automatically-initializing-instance-variables-from/
+*** TODO [#C] attrdict falls back to dir(obj) for a __slots__ class
+2026-08-27: the fallback returns every method and dunder, not the data
+attributes, so it is not the two-case version its docstring implies.
+debugOps.prettyPrint needed a slot-aware version and now carries its own.
+Either make attrdict walk __slots__ over the mro, or say in the docstring that
+the fallback is a dir() dump.
 
-* reader functions
-** make all reader functions also context managers
-** have factories for reader functions to support
-derived class
-
-* Psl, genePred, autoSeql class should allow extra columns
-** extra columns: make TsvReader columnMap more general to work with extra bed and psl columns
-** autoSql derived bed building program in branch
-
-* symEnum
-** SymEnum is invasive to with Enum, can it be cleaner, like other derived enum class?
+** sys/symEnum
+*** TODO [#B] a SymEnum with string values can not be constructed from a value (2026-08-27)
+__call__ sends every str to _lookUpByStr, so a value is only ever tried as a
+name, an external name or an alias:
+  class Strand(SymEnum): plus = "+"; minus = "-"
+  Strand("+") -> ValueError
+The intended spelling is plus = SymEnumValue(1, "+").  This is a limitation of
+the design, not a crash, and the class docstring now says so with an example.
+Open question: should a str that is not a name fall back to a value lookup?
+That would make the two spellings interchangeable, at the cost of an ambiguity
+when a name and another member's value collide.
+*** TODO [#B] SymEnum is invasive to with Enum, can it be cleaner, like other derived enum class?
 Enum has gotten really complex, more so in 3.12. It isn't clear how to do this with
 a lot of the internal structures.  Perhaps just make a class independent of enum.
 Most of the complexity is in EnumType.__new__
-** The external name is returned with str(), but how to get internal name?
-** standard enum has gotten complex and (maybe) slow, some alternatives:
-*** https://pypi.org/project/fastenum/ - tiny
-*** https://github.com/python/cpython/issues/93910 - perf history, 3.12 speedup
-has speed test program
+*** TODO [#B] the external name is returned with str(), but how to get internal name?
+*** TODO [#C] can StrEnum replace SymEnum?
+maybe with parse function for external values
+but lose numeric values, sometimes used for order.
+but look at StrEnum code in any case.
+or maybe just need a non-Enum based implementations, because Enum has gotten heavy-weight?
+*** TODO [#C] standard enum has gotten complex and (maybe) slow, some alternatives
+- https://pypi.org/project/fastenum/ - tiny
+- https://github.com/python/cpython/issues/93910 - perf history, 3.12 speedup
+  has speed test program
+*** DONE members of different SymEnums compared and hashed equal
+2026-08-27: __eq__ compared self.value to other.value with no class test and
+__hash__ was hash(self.value), so two enums numbered from one shared dict keys.
+Both now include the class; comparison to a raw value is unchanged, and
+ordering across classes now raises rather than answering.
+*** DONE _SymEnumDict.toExternalName and toInternalName could only raise
+2026-08-27: they read attributes that live on self.externalNameMap.  Nothing
+called them; both deleted.
 
-* sys functions:
-** should rmTree use shutil.rmtree
+** sys/fileOps
+*** TODO [#B] should rmTree use shutil.rmtree
 rmTree fails on errors other than missing files, but can do this with onerror
 need more tests
+2026-08-27: rmTree now unlinks a symlinked directory rather than walking past
+it, which was leaving the tree half removed with an ENOTEMPTY escaping.  The
+question of replacing it with shutil.rmtree stands.
+*** TODO [#C] fileops compressCmd, maybe just return cmd name rather than a list
+*** DONE add AtomicFileOpen()
+2026-08-27: AtomicFileOpen exists and is now compression transparent, going
+through opengz like the rest of the module; writing to "out.bed.gz" was
+installing a plain text file under a name that says gzip.  opengz gained a
+newline argument in the same change.
 
-* cigar
-** create cigar iterator to track query and reference coordinates
+** sys/loggingOps
+*** TODO [#B] use more complete logging for non-stderr logs
+*** TODO [#C] default to labels for all info?
+*** TODO [#C] name mapping
+getLevelNamesMapping() - use this
+addLevelName(level, levelName) - use from name parsing
+*** TODO [#B] need to think it through a bit more
+need to better understand how to configure propagation, handles
+see ~/compbio/gencode/projs/lrgasp/src/lrgasp-submissions/bin/lrgasp-synapse-download
+*** TODO [#B] macos syslog no longer works with apple unified logging
+- https://developer.apple.com/documentation/os/logging
+- https://pypi.org/project/pyoslog/
+*** TODO [#B] ident not passed through to syslog
+*** TODO [#B] for multiprocess, need to use QueueHandler, stderr is lost with spawn
+*** DONE setupNullLogger and setupSyslogLogger dropped their level argument
+2026-08-27: both set the handler level and then called setupLogger without
+passing level, so the logger took setupLogger's INFO default.  Also fixed:
+setupLogger with level=None dropped a fresh logger to NOTSET, since the min()
+was taken over a level that was not set.
+*** DONE StreamToLogger logged a partial write as its own line
+2026-08-27: write() split its buffer and logged every piece, so one logical
+line written in two calls became two records.  self.linebuf, initialized and
+never used, is where the held-over text now goes, and flush() emits it.
 
+** sys/objDict
+*** TODO [#C] could ObjDict be a types.SimpleNamespace ?
+*** TODO [#B] vars doesn't work with ObjDict
+*** TODO [#B] DefaultObjDict jsonpickle doesn't work
+see disabled in objDictTests.py
+**** this is hard because one needs to be pickle default_factory, which can be
+a class or function.
+seems like you can: https://medium.com/@emlynoregan/serialising-all-the-functions-in-python-cd880a63b591
+**** when jsonpickle loaded, it adds fields
+ ('__dict__', []), ('__getnewargs__', []), ('__getnewargs_ex__', []), ('__getinitargs__', []), ('_jsonpickle_exclude', []), ('default_factory', <class 'list'>))
+ not sure why.
+**** Can handle default_factory with
+def __getstate__(self):
+    return {'default_factory': self.default_factory, **dict(self)}
 
-* collect plot functions
-~/compbio/kznf/projs/gene-homology/kznf-gene-homology/builds/2022-09/analysis/bin/geneAnnotPlot
+def __setstate__(self, state):
+    factory = state.pop('default_factory', None)
+    self.__init__(factory)
+    self.update(state)
+*** TODO [#C] objDict.py remove dup code with a mixin?
+*** DONE DefaultObjDict manufactured an entry for every dunder probe
+2026-08-27: __getattr__ returned self[name], which for a defaultdict creates the
+entry, so copy.deepcopy failed and left a '__deepcopy__' key in the data that
+pickle then round-tripped.  __getattr__ now raises AttributeError for a dunder
+name; a non-dunder name still creates the entry, which is the point of the class.
 
+** sys/color
+*** TODO [#B] clean up RGBA
+need fromRGBA8Str?
+maybe a single function to parse RGBA and RGB8 strs
+*** TODO [#B] more rgba tests
+*** TODO [#B] need more Color and SvgColors tests
+*** TODO [#C] Color could be a named tuple
+*** DONE fromHsv8 scaled hue by 306 instead of 360
+2026-08-27: hue8 on the way out is round(360 * hue), so an integer HSV colour
+did not survive a round trip and the assert in fromHsv rejected every hue from
+307 to 359.  fromHsv8 also now takes alpha, like fromRgb8.  Separately,
+fromRgb8Str's range message passed the value as a second argument instead of
+through format, so the cause read as a tuple.
 
-* BED
-** BedReader with and empty dict as file did nothing rather than error
-** if Bed is created without a score and with a strand, zero score is output and no strand
-(maybe fixed)
-** Bed extension needs work (see decoration.py)
-*** bed.encodeRow maybe from autoSql module
-*** ability to define extra columns easily
-- from autoSql
-- or a specificaiton, like TsvReader
-** check for overlapping blocks.
-** this is ugly, need a different approach
- making parse a function outside of class might fix this
-class CatBed(Bed):
-    extra_names = ('name2', 'cdsStartStat', 'cdsEndStat', 'exonFrames', 'txId', 'type',  'extra_paralog')
-    _expected_row_len = len(extra_names) + 12
+** sys/config
+*** TODO [#B] configInPy.py _evalConfigFile doesn't give file name in errors
+caused by: invalid syntax. Perhaps you forgot a comma? (<string>, line 22)
+*** TODO [#B] configInPy is not very elegant and hard to use
+should also handle config hierarchy (cmdline -> config file -> defaults)
 
-    @classmethod
-    def parse(cls, row, numStdCols=None):
-        if len(row) != cls._expected_row_len:
-            raise Exception(f"expected {cls._expected_row_len} columns in row, got {len(row)}: {row}")
-        bed = super(CatBed, cls).parse(row[0:12], 12)
-        for n, v in zip(cls.extra_names, row[12:]):
-            setattr(bed, n, v)
-        return bed
+** sys, other
+*** TODO [#B] threads: add wrapper for subprocess to propagate errors or find a package
+see uniprotFeatMap/bin/uniprotAnnotsToDecorators
+*** TODO [#A] nasty BUG: calling pipeline in a loop against an open file truncates it each exec
+ouch, this happens with subprocess.call_check too
+does this happen in pipettor?
+*** TODO [#B] dead modules: no importer in lib, bin, or tests (2026-08-04)
+drop these; git history keeps them.
+- sys/fifo.py, 164 lines
+- sys/pprint2.py, 30 lines
+- sys/strOps.py, 42 lines: splitAtSpaces and hasSpaces are one-liners on re,
+  dup(n, s) is s * n
+- sys/setOps.py: only setJoin has callers; mkfzset carries its own "this is
+  silly" FIXME.  reduce the module to what is used.
+- sys/debugOps.py, 85 lines: overlaps trace.py and perfOps.py.  2026-08-27:
+  three bugs in it were fixed rather than dropping it, since a caller outside
+  this tree cannot be ruled out.  The drop question stands.
+*** TODO [#B] sys/intervalSkipList.py is an unfinished skeleton (2026-08-27)
+insert, remove, _search, _placeMarkers, randomLevel and the rest are all "pass".
+The one method with a body, _findIntervals, reads x.forward[i].start, and Node
+has no start; its key field is pos.  Nothing imports it and no caller outside
+could be using it, since insert does nothing.  rangeFinder is the working
+range-overlap structure.  Agreed to remove; the deletion is still to be made.
+*** DONE trace.py close() closed the caller's file and leaked the one it opened
+2026-08-27: _wasOpen is true when the constructor was handed an open file, and
+close() had the test the wrong way round.  Also fixed in the same file:
+inclThread=True raised on every log line, from threading._get_ident, the
+Python 2 spelling.
 
-** maybe store BED itemRgb, fillColor, as a Color and convert on format.
-or optional
-
-
-* TSVs
-** this could be it's own pypi package!!
-** should removing hash at top of TSV be an option?
-** option to skip number of lines because of things like featureCounts
-** option to edit header or body on the way in?
+* pycbio/tsv
+** TODO [#C] this could be it's own pypi package!!
+** TODO [#C] should removing hash at top of TSV be an option?
+** TODO [#C] option to skip number of lines because of things like featureCounts
+** TODO [#B] option to edit header or body on the way in?
 like had a header with a duplicated column
 fix body
 better would be option to read from and iterable
-** make TsvReader a context manager
-** Ability to change typeMap after opening
+** TODO [#B] make TsvReader a context manager
+** TODO [#B] Ability to change typeMap after opening
 allows for column discover without open/close
 use case ~/compbio/kznf/projs/znf649-rescue/bin/deseq.py
-** TsvReader should use fspec stuff
-*** TsvReader inFh is annoy name and can go away if fspec is used
-** add TsvWriter
-** clean up TsvRow
+** TODO [#B] TsvReader should use fspec stuff
+TsvReader inFh is annoy name and can go away if fspec is used
+** TODO [#A] clean up TsvRow
 *** could it be a ObjDict?  Functionally it already is, but doesn't use the code.
 *** how to make column names not colide with functions
 - error on collisions, suggest columNameMapping
@@ -180,12 +367,11 @@ use case ~/compbio/kznf/projs/znf649-rescue/bin/deseq.py
 - _names_ ?
 - what it looks like when it bites: a column named getRow leaves row.getRow as the
   string value, and the caller gets "TypeError: 'str' object is not callable"
-** TsvReader could create named tuples.
+** TODO [#C] TsvReader could create named tuples
 what about the class name and serialization
 maybe just make row lighter weight?
-** tsvreader issues
+** TODO [#B] tsvreader issues
 *** make rowClass (rename rowFactory) so that it can be able to construct and object.  Move parsing of columns outside of tsvRow (good for peewee)
-*** extColumns is not used for writing.  The ColumnSpecs header should be used.
 *** extColumns behavior is not clear, for instance with type map, is it internal or external?
 *** create error with file name/line number
 *** carefully consider naming of functions in Row, as they could conflict with fields.  Maybe put in a base-class??
@@ -200,12 +386,12 @@ maybe just make row lighter weight?
 *** switch to row derived from namedtuple
 *** rowClass interface is hacky.  It could be a keyword/value and not have to do column lookup.
 *** add default handling for column not in file to typemap
-** add type for split/join comma separated array fields.  
+** TODO [#B] add type for split/join comma separated array fields
 This is different than autosql, due to trailing comma
-** rename getRow() functions to toRow()
-** separate writing from row, have a TsvWriter class
-** could also have a simple columnNameMap dict
-** create row factories for:
+** TODO [#C] rename getRow() functions to toRow()
+** TODO [#C] separate writing from row, have a TsvWriter class
+** TODO [#C] could also have a simple columnNameMap dict
+** TODO [#C] create row factories for:
     Python dict (the old standby)
     Python class
     Python class with __slots__ (this idea was added after suggestion from an engineer)
@@ -213,383 +399,31 @@ This is different than autosql, due to trailing comma
     recordclass (still beta)
     NamedTuple an extension of collections
 https://tommyseattle.com/python-class-dict-named-tuple-performance-and-memory-usage/
-
-
-* PSL
-** psl check for overlapping blocks, etc
-** psl.repr less than ideal, but block object makes it hard with back-reference
-** changes Psl, ChromInfo to have parse functions instead of methods, as with genePred.
-** psl.tOverlap should consider strand?? how?
-** support psl sqlite stuff to build query bin ranges
-** drop sequence support, it is almost never used
-** remove deprecated functions
-
-
-* add PslMapInfo class from:
-uniprotFeatMap/lib/uniprotmap/mapping.py
-
-
-* genePred
-** make genePred.Exon a named tuple and not reference gene
-it will have to contains its CDS bounds, or maybe CDS separate
-getting features can then be lazy and drop featureSplit
-** GenePred, etc should have abstraction around from dbColIdxMap, could be good
-switch to dictcursors
-
-* add functions to build bigBed stuff
-
-* rangefinder:
-** make have-strand explict on creating finder
-** might be easier to keep on SeqBins with strand as part of entry,
-or at least not part of the key, with another level
-** RangeFinder.addCoords a bit klunky
-** rangefinder: coords strand is like PSL strand, not BED= strand,
-but a lot overlap are strand on the chrom coords.  Make this clean
-and add a separate strand to rangefinder, maybe rename coords.strand
-to clear up confusion,  Maybe coords.orient?
-** rangeFinder need items() to get keys and values() for when values don't include range
-
-
-
-* HtmlPage
-** is there some pypi library to do this?
-** addTableRow is clunky, whould convert types to str, special attribute throubh
-cell class rather than "If a cell is
-a list or tuple. then the remain arguments become TH or TD
-attributes.
-
-* BrowserDir
-** implement subrow functionality bu allowing rows within rows
-** build java script sortable table?
-
-* Coords:
-** should it really contain strand?
-easily confused with annotation strand.
-Maybe 'reverse' or 'prime3'?
-or drop
-** derived class for annotation strand
-need to use typing.NamedTuple as base class
-** total ordering tests disabled
-** paired coordinates features for genome/transcript is really useful:
-PrimerS-JuJu/lib/primersjuju/target_transcripts.py
-** make genePred.Range a base class of Coords
-** look at biocantor
-** write a conceptual model; strand coordinate vs strand, different?
-  see isoseq-xspecies/bin/mappedAlignToAnnot got very confused by putting query strand
-  on target coordinates
-** add intersect function
-** add Region with just start, end
-** construction looks at object type and takes fields that make 
-  sense, so can make a Region from Coords.
-** should there be a type (abs vs strand) see isoseq-xspecies/bin/mappedAlignToAnnot
-  negative strand coordinates is not the same as negative strand
-  confusion arrived because strand in t-coords not t-strand in psl for blocks,
-  tstrand gets revsered for block
-** Coords.adjust is a horrible name
-** change parse to function
-
-
-* add AtomicFileOpen()
-
-* the hgDb autoload long convert doesn't seem to work.
-Happends with raw reads of PSL rows without cursorclass
-    with hgDb.connect(ucscSpec, cursorclass=None) as conn:
-        return [r[1:] for r in mysqlOps.query(conn, sql)]  # drop bin column
-
-* Add functions to locate UCSC data
-some is already in kznf
-
-* database
-** for APSW, something like sqlite3.Row as; it is both a tuple and a dict
-however, it can't be passed to apsw, as it expects a sqlite3 cursor.
-Either suggest as an addition to APSW or port to here
-cpython-main/Modules/_sqlite/row.{c,h}
-
-https://docs.python.org/3/howto/clinic.html
-Currently Argument Clinic is considered internal-only for CPython.
-
-** blob conversion doesn't work:
-see kznf-gene-homology/bin/refseqBuildGeneSet
-could it be dictionary cursor?
-** do away with sqlite weird interface.
-Not sure what this is
-** convert lib/pycbio/hgdata/binnerSA.py to peewee
-or just maybe make generic in some way or even drop
-
-* also custom cursors that work off of namedtuples would be great, especially to unify the sqlite/mysql interface stuff.
-* sqlite wrapper classes really are not that useful, they could just be functions instead.
-* hglite-split spliting up hglite stuff
-** ideas: 
- - hglite* table -> model, not just a reader, not confusing with other tables.
-   but models are records in am ORM, 
-- get*() to read*() methods
-
-* make most classes pickle-friendly
-
-* config
-** configInPy.py _evalConfigFile doesn't give file name in errors:
-caused by: invalid syntax. Perhaps you forgot a comma? (<string>, line 22)
-
-** configInPy is not very elegant and hard to use
-should also handle config hierarchy (cmdline -> config file -> defaults)
-
-* __eq__ should return NotImplemented rather than raise?
-* objdict
-** could ObjDict be a types.SimpleNamespace ?
-** vars doesn't work with ObjDict
-** DefaultObjDict jsonpickle doesn't work (see disabled in objDictTests.py)
-*** this is hard because one needs to be pickle default_factory, which can be
-a class or function.
-seems like you can: https://medium.com/@emlynoregan/serialising-all-the-functions-in-python-cd880a63b591
-*** when jsonpickle loaded, it adds fields
- ('__dict__', []), ('__getnewargs__', []), ('__getnewargs_ex__', []), ('__getinitargs__', []), ('_jsonpickle_exclude', []), ('default_factory', <class 'list'>))
- not sure why.  
-
-**** Can handle default_factory with
-def __getstate__(self):
-    return {'default_factory': self.default_factory, **dict(self)}
-
-def __setstate__(self, state):
-    factory = state.pop('default_factory', None)
-    self.__init__(factory)
-    self.update(state)
-
-
-
-** objDict.py remove dup code with a mixin?
-
-* build clustering module based on:
-t2t-chm13/gene-annotation/t2t-chm13-gene-analysis/bin/geneBoundsLib.py
-kznf-gene-homology/bin/paralogClassify
-
-* coords:
-* create some common genome mapping functions related to
-isoseq-xspecies/bin/mappedAlignToAnnot
-* coords rich comparison not working
-see disabled tests in
-tests/libtests/pycbio/hgdata/coordsTests.py
-* logger:
-** use more complete logging for non-stderr logs
-** default to labels for all info?
-** name mapping:
-getLevelNamesMapping() - use this
-addLevelName(level, levelName) - use from name parsing
-** need to think it through a bit more; need to better understand how to configure propagation, handles
-see ~/compbio/gencode/projs/lrgasp/src/lrgasp-submissions/bin/lrgasp-synapse-download
-** macos syslog no longer works with apple unified logging
-*** https://developer.apple.com/documentation/os/logging
-*** https://pypi.org/project/pyoslog/
-** ident not pass through to syslog
-** for multiprocess, need to user QueueHandler, stderr is lost with spawn
-
-* add dynamic mixing function to typeOps
-https://stackoverflow.com/questions/8544983/dynamically-mixin-a-base-class-to-an-instance-in-python
-def add_mixing(obj, cls):
-    """Apply mixins to a class instance after creation"""
-    base_cls = obj.__class__
-    base_cls_name = obj.__class__.__name__
-    obj.__class__ = type(base_cls_name, (cls, base_cls), {})
-but how does an existing instance get added?
-
-* create clustering library, see:
-t2t-chm13-gene-analysis/bin/geneBoundsLib.py
-* convert to use:
-import mysql.connector  # pip install mysql-connector-python
-* way to determine primary assembly in a consistent way.
-including ungaped sizes
-see ~/compbio/kznf/projs/te-insertions/TEInsertions/bin/getRepGenomeCover
-
-* venn: add ability to output upset plot format
-gencode/meetings/2021/2021-03-30-gencode/ucsc/bin/plotGeneSetIntersections
-gencode/meetings/2021/2021-03-30-gencode/ucsc/data/hprc/gene-missing-venn.tsv
-* venn: easier to collect counts, although maybe existing this would have worked fine:
-~/compbio/gencode/projs/nrcseq/response/bin/makeVennSets
-
-* switch to pip install mysql-connector-python (has named tuple cursor, uses to kznf TE project)
-* stats
-** venn doesn't document what inclusive really is
-** pycbio.stats.venn writeSets and writeCounts are the same
-is this even a useful format?
-
-* modify lib/pycbio/hgdata/gff3 to use gencode gtf/gff paradigm
-* nasty BUG:  calling pipeline in a loop agaisnt an open file truncates it each exec
-    ouch, this happens with subprocess.call_check too
-    does this happen in pipettor?
-* document generators:
-  http://codespeak.net/~mwh/pydoctor/ - discussion of others
-
-* rename pycbio.sys, has caused problems with relative imports
-forget relative imports
-
-* add function to init from __init__ args
-http://code.activestate.com/recipes/286185-automatically-initializing-instance-variables-from/
-
-
-* color
-** clean up RGBA
-need fromRGBA8Str?
-maybe a single function to parse RGBA and RGB8 strs
-** more rgba tests
-** need more Color and SvgColors tests
-** Color could be a named tuple 
-
-
-* check this on the using realpath to find library: https://patmaddox.com/doc/trunk/www/2023-12-sh-relative-shell-script-includes-with-realpath-on-freebsd/
-
-
-* pslFromCigar should have a direct function to create a cigar using the tuple
-
-* remove testCaseBase
-
-* add containers package, include 
-class StrictDict(dict):
-    def __setitem__(self, key, value):
-        if key in self:
-            raise KeyError(f"Duplicate key: '{key}'")
-        super().__setitem__(key, value)
-
-* PslStats object should have a reader
-store type in objects too, or maybe make derived classes
-
-* fileops compressCmd, maybe just return cmd name rather than a list
-
-* chrom sort, works with _hap1, _hap2
-def chrom_key(chrom):
-    import re
-    m = re.match(r'chr([^_]+)(_hap\d+)?$', chrom)
-    if not m:
-        return (2, 0, chrom, '')
-    base, hap = m.group(1), m.group(2) or ''
-    if base.isdigit():
-        return (0, int(base), '', hap)
-    return (1, 0, base, hap)
-
-* add use of PycbioDataError and ErrorHandler
-
-* csvToTsv add ability to fix column names to be legal python
-* python selectById, with explicit TSV support
-
-* browser dir should handle url quoting
-from urllib.parse import quote
-see ~/compbio/mirna/projs/hprc/miRNA-HPRC/bin/gencode-not-found-browser-dir
-
-* write columns should handle named tupples better:
+** TODO [#B] write columns should handle named tupples better
 see bin/mirna-compare-summary
    tw.writeColumns(mirgenedb_gene=summ.mirgenedb_gene, hgnc_symbol$
                             **class_counts(summ.idc, summ.mapc)._asdict())
+** DONE add TsvWriter
+TsvWriter exists, takes the reader's own columnSpecs, and writing is separate
+from the row.
+** DONE extColumns is not used for writing.  The ColumnSpecs header should be used.
+2026-08-27: TsvWriter._writeHeader wrote columnSpecs.columns, the internal
+names, so a columnSpecs taken from a reader with a columnNameMapper wrote the
+mapped header rather than the file's, and disagreed with TsvRow.getHeader.  It
+now writes extColumns.
+** DONE a row of the wrong width was truncated or crashed
+2026-08-27: TsvWriter._rowFromSequence indexed by column position, so a longer
+sequence lost its tail and a shorter one raised IndexError out of csv with no
+file, row or column named.  It now raises TsvError with both counts, as
+TsvReader does for either direction.
 
-* a Counter-like class that used fieldnames
-or this already exist
-
-* by-CC 2026-08-04 design review: drop and fix candidates
-Survey of lib/pycbio for pieces to update or drop.  Usage counts are greps over
-lib, bin, and tests with .emacs.bak excluded.  Broken-import list came from
-importing every module under pycbio.
-
-** broken today, and unused, so nobody noticed
-*** hgdata/genePredMySqlReader.py imports genePredFromDictRow
-renamed to genePredFromDict; the module cannot be imported at all.
-no users.  drop, or repoint at genePredFromDict if the mysql readers stay.
-*** hgdata/overlapSelectStats.py imports TsvTable
-TsvTable is no longer in pycbio.tsv; module cannot be imported.
-no users.  drop, or keep just the reader as a TsvReader with typeMap.
-*** hgdata/binnerSA.py imports sqlalchemy
-sqlalchemy is in no requirements file, so it never imports in a clean install.
-no users.  drop; the existing note about converting to peewee is not worth it.
-*** sys/testingSupport.py CheckRaisesCauses.__exit__ uses self.expect_chain
-no such attribute, so any use raises AttributeError.  self.expect_spec[1] as
-the expectation list also disagrees with the docstring.  no users.
-drop the class, or finish it and write a test for it.
-*** sys/testingSupport.py _mk_err_spec is a pass stub, _print_err_spec prints on every check
-debug scaffolding on the checking path.  drop both.
-*** hgdata/genome.py _GenomeTwoBit.get_seq with end=None
-calls self._fh.get_seq_length(), which is not a TwoBitFile method and takes no
-seq_id here.  should be self.get_seq_length(seq_id).  untested path: the twobit
-test only calls get_seq_ids.
-*** Genome.get_seq_length abstract declares no seq_id
-both implementations take seq_id.  fix the abstract signature.
-
-** dead modules: no importer in lib, bin, or tests
-drop these; git history keeps them.
-*** sys/testCaseBase.py, 229 lines
-the only remaining unittest importer in the tree.  already on the list as
-"remove testCaseBase"; nothing references it, so it can go now.
-*** sys/fifo.py, 164 lines
-*** sys/intervalSkipList.py, 110 lines
-overlaps rangeFinder, and the note above prefers an outside interval tree.
-*** sys/debugOps.py, 85 lines
-overlaps trace.py and perfOps.py; three debug facilities, no callers for this one.
-*** sys/pprint2.py, 30 lines
-*** sys/strOps.py, 42 lines
-no importers.  splitAtSpaces and hasSpaces are one-liners on re, dup(n, s) is s * n.
-*** sys/setOps.py: only setJoin has callers
-mkfzset carries its own "this is silly" FIXME.  reduce the module to what is used.
-
-** mysql stack is a closed island
-hgDb.py, db/mysqlOps.py, pslMySqlReader.py, genePredMySqlReader.py import only
-each other; the sole outside user is tests/libtests/pycbio/hgdata/test_pslMySql.py,
-which skips off hgwdev.  hgConf.py is used by hgDb and the test check only.
-decide once rather than maintaining it in place: either commit to
-mysql-connector-python (already noted above) with one reader, or drop the mysql
-modules and keep hgConf plus the sqlite path.
-
-** sqlite table classes
-all of hgSqlite, pslSqlite, genePredSqlite, sequenceSqlite, gencodeSqlite are
-exercised only by test_hgSqlite.py; bin/pslLoadSqlLite is the one real caller.
-concrete reason the existing "not that useful, could be functions" note is right:
-HgSqliteTable._formatSql str.format-substitutes {table}, {columns}, {values} into
-each caller's SQL literal, so at a call site it is not visible which parts are
-interpolated and which are bound, and query() takes a columns argument it uses
-only for formatting.  functions returning (sql, params) would say it plainly.
-
-** naming has split three ways
-camelCase in most of lib; snake_case in snakemake/*, sys/testingSupport.py, and
-hgdata/genome.py.  CLAUDE.md now says new code should be snake_case.  write the
-cut-over rule down: new modules snake_case, no renaming of existing public API,
-never mixed within a module.  otherwise it drifts per file.
-
-** Decoration is a Bed that cannot round-trip
-Decoration.parse raises "not implement", so a written decoration file cannot be
-read back.  this is the concrete cost of the Bed extra-column problem noted
-above: one declarative extra-column spec should generate both toRow and parse.
-
-** psl.py still ships 12 @deprecated methods
-already on the list.  pick a cut and delete them, since there is no release
-process to stage it against.
-
-** record and reader APIs are inconsistent
-construction: Bed.parse and Psl classmethods, genePredFromRow and
-genePredFromDict module functions, Gff3Parser.parse instance method.
-reading: BedReader and GenePredReader are generator functions, PslReader is a class.
-pick one shape for both before adding more formats.
-
-** module-level side effects in testingSupport
-installs SIGQUIT and SIGABRT handlers and computes MAXFD at import, so any
-importer gets them.  move into an opt-in fixture.
-
-** cli.ErrorHandler.__exit__ calls the builtin exit(1)
-that comes from site and is not guaranteed present; use sys.exit(1).
-
-** hgdata/genome.py has a #!/usr/bin/env python3 shebang
-it is a library module.
-
-** packaging: three dependency lists that drift
-setup.py install_requires lists flake8, which is a dev tool, and omits
-twobitreader, which requirements.txt has; requirements-dev.txt is a third list.
-move to pyproject.toml with a dev extra, one source.
-also 10 of the 26 bin programs are not in setup.py scripts (bedFlatten,
-bedToIntronBed, fastaSelect, ncbiAssemblyReportToTsv, spliceJunctionCheck,
-sra-map-tool, tsv-to-xlsx, utf8ToAscii, xlsx-to-tsv), so pip installs some tools
-and not others with no stated rule.
-
-* tsv: what a table holds, from using it hard in miRNA-HPRC
-
+** what a table holds, from using it hard in miRNA-HPRC
 The typeMap covers most of what a schema needs already: a (parse, format) pair read and
 writes one column, strOrNoneType and friends carry empty as empty, and TsvWriter takes the
 reader's own map so a table round-trips.  Five suggestions from wiring five tables through
 it, in order of what they would have caught.
 
-** orNoneType(type): the blank wrapper, for any type
+*** TODO [#B] orNoneType(type): the blank wrapper, for any type
 strOrNoneType, intOrNoneType and floatOrNoneType are the same three lines each, and the
 fourth case is not there: a SymEnum column that may be empty.  A factory would cover every
 type and retire the three instances:
@@ -598,7 +432,7 @@ type and retire the three instances:
         return (lambda v: None if v == "" else parse(v),
                 lambda v: "" if v is None else str(v))
 
-** TsvReader should be able to require its columns
+*** TODO [#B] TsvReader should be able to require its columns
 A reader is given a typeMap naming the columns it expects, and a file whose header has
 drifted is read anyway: a renamed column is silently untyped, an added one shifts nothing
 but goes unnoticed, and a missing one fails later as an AttributeError on a row.  An option
@@ -606,19 +440,19 @@ to check the header against an expected list, naming both lists in the error, tu
 into one clear failure at open time.  A caller can do it by hand from reader.columns, which
 is what I did, but every caller has to remember to.
 
-** a uniqueness option for the key columns
+*** TODO [#B] a uniqueness option for the key columns
 Indexing a table by a column is the commonest thing done with one of these files, and a
 repeated key silently keeps the last row.  Something like TsvReader(..., uniqueKey="id")
 or a tsvIndex(path, key) that raises on a duplicate would remove a class of quiet wrong
 answers.  I check it after the fact in bin/check-tsv-tables.
 
-** the (parse, format) pair is undocumented where it is discovered
+*** TODO [#B] the (parse, format) pair is undocumented where it is discovered
 tsvReader's module docstring and the class docstring both describe typeMap as column to
 type, and the pair form appears only in TsvWriter's parameter text and in the three
 OrNone constants.  It is the more useful half: it is what makes a column round-trip.
 Worth a sentence in TsvReader's own docs and an example in doc/conventions.txt.
 
-** a numeric column formatted two ways is easy to write and hard to see
+*** TODO [#C] a numeric column formatted two ways is easy to write and hard to see
 statistics.mean over ints returns an int when the mean is exact, so a float column came out
 holding "2" on some rows and "0.017" on others, and nothing noticed until a read-then-write
 round trip was compared byte for byte.  Neither the library nor the caller can know the
@@ -630,14 +464,119 @@ a formatter, plus the round-trip comparison as a testing idiom, would have saved
 That idiom found the only formatting inconsistency in five tables of 1,700 rows, and it
 needs nothing the library does not already have.
 
-* by-CC 2026-08-18 from a scan of a vendored copy
-The scan was of an older copy, so some of its findings did not apply here: the score
-cap on write is gone, FileAccessor already takes a Path through isFilePath, and
-strArraySplit decodes bytes before the empty tests.  What did apply is fixed, with a
-test each.  The column names shadowing the TsvRow methods is the known issue above,
-under clean up TsvRow.  Nothing from the scan is left open.
+* pycbio/hgdata
+** hgdata, general
+*** TODO [#B] Psl, genePred, autoSql class should allow extra columns
+**** extra columns: make TsvReader columnMap more general to work with extra bed and psl columns
+**** autoSql derived bed building program in branch
+*** TODO [#C] add functions to build bigBed stuff
+*** TODO [#C] Add functions to locate UCSC data
+some is already in kznf
+*** TODO [#B] way to determine primary assembly in a consistent way
+including ungaped sizes
+see ~/compbio/kznf/projs/te-insertions/TEInsertions/bin/getRepGenomeCover
+*** TODO [#C] chrom sort key, with an option to drop _hap1
+def chrom_sort_key(chrom):
+    suffix = re.sub(r"^chr(.+)$", r"\1", chrom)
+    assert suffix != chrom
+    if suffix.isdigit():
+        return int(suffix)
+    else:
+        return sum([100 + ord(c) for c in suffix])
 
-** BED widths of 7, 10 and 11, as they now stand
+works with _hap1, _hap2:
+def chrom_key(chrom):
+    import re
+    m = re.match(r'chr([^_]+)(_hap\d+)?$', chrom)
+    if not m:
+        return (2, 0, chrom, '')
+    base, hap = m.group(1), m.group(2) or ''
+    if base.isdigit():
+        return (0, int(base), '', hap)
+    return (1, 0, base, hap)
+
+** hgdata/coords
+*** TODO [#A] chr:start-end format is 1-based by definition (2026-08-27)
+The parse and str of a Coords use the chr:start-end form, which everywhere else
+in genomics means 1-based inclusive, while Coords holds 0-based half-open.  A
+Coords printed and re-parsed round-trips, so nothing inside the library
+notices, but every value pasted into or out of a browser or a command line is
+off by one at the start.  Decide and write it down: either the string form is
+1-based and parse/str convert, or the class documents that its string form is
+not the usual one and names what it is.  This is the same confusion as the
+strand-coordinate question below and should be settled with it.
+*** TODO [#B] should it really contain strand?
+easily confused with annotation strand.
+Maybe 'reverse' or 'prime3'?
+or drop
+*** TODO [#B] derived class for annotation strand
+need to use typing.NamedTuple as base class
+*** TODO [#B] total ordering tests disabled
+coords rich comparison not working, see disabled tests in
+tests/libtests/pycbio/hgdata/coordsTests.py
+*** TODO [#B] paired coordinates features for genome/transcript is really useful
+PrimerS-JuJu/lib/primersjuju/target_transcripts.py
+*** TODO [#C] make genePred.Range a base class of Coords
+*** TODO [#C] look at biocantor
+*** TODO [#A] write a conceptual model; strand coordinate vs strand, different?
+see isoseq-xspecies/bin/mappedAlignToAnnot got very confused by putting query strand
+on target coordinates
+should there be a type (abs vs strand)
+  negative strand coordinates is not the same as negative strand
+  confusion arrived because strand in t-coords not t-strand in psl for blocks,
+  tstrand gets revsered for block
+*** TODO [#C] add intersect function
+*** TODO [#C] add Region with just start, end
+*** TODO [#C] construction looks at object type and takes fields that make sense
+so can make a Region from Coords.
+*** TODO [#C] Coords.adjust is a horrible name
+*** TODO [#C] change parse to function
+*** TODO [#C] create some common genome mapping functions
+related to isoseq-xspecies/bin/mappedAlignToAnnot
+*** DONE contains() compared other.end to itself, so it never checked the right edge
+2026-08-27: a range running past the end was reported as contained; only the
+left edge was tested.
+*** DONE absStart and absEnd treated a strandless Coords as negative
+2026-08-27: the test was "self.start if self.strand == '+' else ...", so a
+strand of None took the negative branch, where the rest of the class treats
+None as positive.  A Coords with neither strand nor size, the common form,
+could not ask for its own absolute start at all.
+*** DONE eqAbsLoc subtracted other.size from itself
+2026-08-27: in the branch where only other carries a size the test reduced to
+self.start == 0, so two coords naming the same bases on opposite strands
+compared unequal and anything starting at 0 compared equal.
+
+** hgdata/bed
+*** TODO [#B] BedReader with an empty dict as file did nothing rather than error
+*** TODO [#B] if Bed is created without a score and with a strand, zero score is output and no strand
+(maybe fixed)
+*** TODO [#B] Bed extension needs work (see decoration.py)
+**** bed.encodeRow maybe from autoSql module
+**** ability to define extra columns easily
+- from autoSql
+- or a specificaiton, like TsvReader
+*** TODO [#B] Decoration is a Bed that cannot round-trip (2026-08-04)
+Decoration.parse raises "not implement", so a written decoration file cannot be
+read back.  this is the concrete cost of the Bed extra-column problem noted
+above: one declarative extra-column spec should generate both toRow and parse.
+*** TODO [#B] check for overlapping blocks
+*** TODO [#B] this is ugly, need a different approach
+ making parse a function outside of class might fix this
+class CatBed(Bed):
+    extra_names = ('name2', 'cdsStartStat', 'cdsEndStat', 'exonFrames', 'txId', 'type',  'extra_paralog')
+    _expected_row_len = len(extra_names) + 12
+
+    @classmethod
+    def parse(cls, row, numStdCols=None):
+        if len(row) != cls._expected_row_len:
+            raise Exception(f"expected {cls._expected_row_len} columns in row, got {len(row)}: {row}")
+        bed = super(CatBed, cls).parse(row[0:12], 12)
+        for n, v in zip(cls.extra_names, row[12:]):
+            setattr(bed, n, v)
+        return bed
+*** TODO [#C] maybe store BED itemRgb, fillColor, as a Color and convert on format
+or optional
+*** BED widths of 7, 10 and 11, as they now stand (2026-08-18)
 Every width from 3 to 12 is a BED; what differs is whether Bed can carry the columns.
  - no numStdCols: the row is read as the widest width whose field groups are complete
    plus extra columns, so 7 is BED6+1, 10 is BED9+1 and 11 is BED9+2, each
@@ -651,3 +590,356 @@ Every width from 3 to 12 is a BED; what differs is whether Bed can carry the col
  - a Bed that HAS blocks may be written at width 10 or 11, where blockCount and
    blockSizes are real.
 numColumns and the width of toRow now agree at every width, which is a test.
+
+** hgdata/psl
+*** TODO [#B] psl check for overlapping blocks, etc
+*** TODO [#B] psl.repr less than ideal, but block object makes it hard with back-reference
+*** TODO [#C] changes Psl, ChromInfo to have parse functions instead of methods, as with genePred
+*** TODO [#B] psl.tOverlap should consider strand?? how?
+*** TODO [#B] support psl sqlite stuff to build query bin ranges
+*** TODO [#C] drop sequence support, it is almost never used
+*** TODO [#B] psl.py still ships 12 @deprecated methods (2026-08-04)
+pick a cut and delete them, since there is no release process to stage it against.
+*** TODO [#C] add PslMapInfo class from uniprotFeatMap/lib/uniprotmap/mapping.py
+*** TODO [#C] pslFromCigar should have a direct function to create a cigar using the tuple
+*** TODO [#B] PslStats object should have a reader
+store type in objects too, or maybe make derived classes
+*** DONE isProtein and tBlkOverlap used attributes Psl does not have
+2026-08-27: both were left from a column-array representation; the record holds
+blocks.  isProtein now reads self.blocks[-1] and tBlkOverlap the block's
+tStartPlus and tEndPlus.
+*** DONE PslTbl(tNameIdx=True) always raised TypeError
+2026-08-27: _mkTNameIdx called the list the defaultdict just made instead of
+appending to it.  The query side was correct, so the target index had never
+worked and no test built one.
+*** DONE a 22-column PSL row indexed past the end
+2026-08-27: haveSeqs was "len(row) > 21" and the sequence columns are row[21]
+and row[22].  A PSL has 21 columns and a PSLX 23; 22 is now reported as a bad
+row rather than raising IndexError.
+
+** hgdata/genePred
+*** TODO [#B] make genePred.Exon a named tuple and not reference gene
+it will have to contains its CDS bounds, or maybe CDS separate
+getting features can then be lazy and drop featureSplit
+*** TODO [#B] GenePred, etc should have abstraction around from dbColIdxMap, could be good
+switch to dictcursors
+*** DONE GenePredTbl(buildIdx=True) and buildRangeIdx both raised
+2026-08-27: _buildIdx did names.append(name, row) on a defaultdict, and
+_buildRangeIdx imported pycbio.hgdata.RangeFinder, which is rangeFinder.
+buildUniqIdx, the third option, worked; only it had a test.
+*** DONE Range was unhashable and could not be compared to a tuple
+2026-08-27: defining __eq__ on a namedtuple subclass sets __hash__ to None, so
+the class lost the hashability every other record type in hgdata has.  __hash__
+is redeclared and __eq__ returns NotImplemented for another type.
+
+** hgdata/rangeFinder
+*** TODO [#B] make have-strand explicit on creating finder
+*** TODO [#B] might be easier to keep on SeqBins with strand as part of entry
+or at least not part of the key, with another level
+*** TODO [#C] RangeFinder.addCoords a bit klunky
+*** TODO [#B] coords strand is like PSL strand, not BED strand
+but a lot overlap are strand on the chrom coords.  Make this clean
+and add a separate strand to rangefinder, maybe rename coords.strand
+to clear up confusion,  Maybe coords.orient?
+*** TODO [#B] need items() to get keys and values() for when values don't include range
+*** TODO [#C] bx-python has an interval tree
+*** DONE remove() of an entry that is not there raised AttributeError or KeyError
+2026-08-27: the docstring says value error if not found, and only one of the
+three not-found cases produced one.  _removeFromSeqBin did seqBins.get(key).remove
+with no test for the None an unknown sequence returns, and RangeBins.remove
+caught (IndexError, ValueError) where an absent bucket raises KeyError.
+*** DONE getSeqRange raised when a sequence had entries on one strand only
+2026-08-27: with strands in use and no strand asked for it took min/max over
+both strand ranges and only guarded the missing plus strand.
+*** DONE range queries interpolated the sequence name into SQL
+2026-08-27: getOverlappingSqlExpr formatted the name into the WHERE clause with
+double quotes, and pslSqlite's whole-sequence branch with single quotes, from
+names that came from a file or a command line.  It now returns (expr, params)
+and the callers bind; pass placeHolder="%s" for a format-paramstyle driver.
+The bin numbers, which are computed rather than caller data, stay literals.
+Callers updated: pslSqlite, genePredSqlite, gencodeSqlite, pslMySqlReader.
+
+** hgdata/gff3
+*** TODO [#B] modify gff3 to use gencode gtf/gff paradigm
+*** DONE the last line of a file with no trailing newline lost a character
+2026-08-27: parse passed line[0:-1] to the line parser, the same construct fixed
+in tabFile and fileOps.  A GFF3 record's last column is the attributes, so what
+was lost was the last attribute value, silently.  Both gff3 and ncbi/assembly
+now read through fileOps.iterLines, which is the one place that strips a line.
+*** DONE every GFF3 error message printed as a tuple
+2026-08-27: GFF3Exception passed (message, cause) to PycbioException, which
+takes only a message, so str() showed both with a trailing None.  The cause
+argument is gone; chain with "raise ... from ex", as the rest of the library does.
+*** DONE _encodeCol was dead, and the columns it protects were written raw
+2026-08-27: Feature.__str__ encoded attribute names and values and wrote
+seqname, source and type unencoded, so any of them holding a tab, newline or
+percent produced a broken record.
+
+** hgdata, other modules
+*** TODO [#B] cigar: create cigar iterator to track query and reference coordinates
+*** DONE dnaOps.isValidBase rejected N, S and W, which complement() passes through
+2026-08-27: the translation table covered acgtrymkbdhv, and the validity set is
+built from it.  n, s and w, the self-complementary IUPAC codes, are now in the
+table mapping to themselves, which is correct for complement and fixes the set.
+N is the code that appears in every assembly.
+*** DONE binnerSA took its first two arguments in the other order
+2026-08-27: rangeFinder.getOverlappingSqlExpr(binCol, seqCol, ...) against
+binnerSA.getOverlappingSqlExprSA(seqCol, binCol, ...), same name and purpose.
+Both take column identifiers, so a swapped call was a query that silently
+matched nothing.  The SA version now matches.  See also the standing note under
+pycbio/db about dropping or converting binnerSA.
+*** DONE genePredMySqlReader and overlapSelectStats could not be imported
+2026-08-04 said of each:
+- hgdata/genePredMySqlReader.py imports genePredFromDictRow, renamed to
+  genePredFromDict; the module cannot be imported at all.  no users.  drop, or
+  repoint at genePredFromDict if the mysql readers stay.
+- hgdata/overlapSelectStats.py imports TsvTable; TsvTable is no longer in
+  pycbio.tsv, so the module cannot be imported.  no users.  drop, or keep just
+  the reader as a TsvReader with typeMap.
+2026-08-27: repointed and kept, taking the second option in each case, since a
+caller outside this tree cannot be ruled out by a grep of this repo.
+OverlapSelectStatsTbl is now a list subclass with its own byInId and
+bySelectId indexes rather than a TsvTable.  Both failed at import, so anyone
+who did use them has been broken for a while.
+*** DONE clusterGenes.cgBoolFormat's error path raised TypeError
+2026-08-27: it concatenated a type object to a str, so the intended ValueError
+never reached the caller.
+*** DONE genome.py: the two-bit reader could not return a whole sequence
+2026-08-04: _GenomeTwoBit.get_seq with end=None calls self._fh.get_seq_length(),
+which is not a TwoBitFile method and takes no seq_id here.  should be
+self.get_seq_length(seq_id).  untested path: the twobit test only calls
+get_seq_ids.  Genome.get_seq_length abstract declares no seq_id while both
+implementations take one; fix the abstract signature.  hgdata/genome.py also has
+a #!/usr/bin/env python3 shebang; it is a library module.
+2026-08-27: _GenomeTwoBit.get_seq defaulted end with self._fh.get_seq_length(),
+the wrapper's own method name called on the twobitreader object and without a
+seq_id, so get_seq(seqId) and get_seq(seqId, start) both raised.  The abstract
+Genome.get_seq_length declared no seq_id while both implementations take one;
+fixed, along with the shebang on a library module.
+
+* pycbio/db
+** TODO [#B] mysql stack is a closed island (2026-08-04)
+hgDb.py, db/mysqlOps.py, pslMySqlReader.py, genePredMySqlReader.py import only
+each other; the sole outside user is tests/libtests/pycbio/hgdata/test_pslMySql.py,
+which skips off hgwdev.  hgConf.py is used by hgDb and the test check only.
+decide once rather than maintaining it in place: either commit to
+mysql-connector-python (already noted below) with one reader, or drop the mysql
+modules and keep hgConf plus the sqlite path.
+** TODO [#B] switch to pip install mysql-connector-python
+has named tuple cursor, used by the kznf TE project
+convert to: import mysql.connector
+** TODO [#B] sqlite table classes are exercised only by tests (2026-08-04)
+all of hgSqlite, pslSqlite, genePredSqlite, sequenceSqlite, gencodeSqlite are
+exercised only by test_hgSqlite.py; bin/pslLoadSqlLite is the one real caller.
+concrete reason the existing "not that useful, could be functions" note is right:
+HgSqliteTable._formatSql str.format-substitutes {table}, {columns}, {values} into
+each caller's SQL literal, so at a call site it is not visible which parts are
+interpolated and which are bound, and query() takes a columns argument it uses
+only for formatting.  functions returning (sql, params) would say it plainly.
+2026-08-27: the range queries now do exactly that, returning (expr, params);
+the rest of the class still formats.
+** TODO [#B] sqlite wrapper classes really are not that useful
+they could just be functions instead.
+** TODO [#B] for APSW, something like sqlite3.Row
+it is both a tuple and a dict, however it can't be passed to apsw, as it expects
+a sqlite3 cursor.  Either suggest as an addition to APSW or port to here
+cpython-main/Modules/_sqlite/row.{c,h}
+https://docs.python.org/3/howto/clinic.html
+Currently Argument Clinic is considered internal-only for CPython.
+** TODO [#B] blob conversion doesn't work
+see kznf-gene-homology/bin/refseqBuildGeneSet
+could it be dictionary cursor?
+** TODO [#C] do away with sqlite weird interface
+Not sure what this is
+** TODO [#B] convert lib/pycbio/hgdata/binnerSA.py to peewee
+or just maybe make generic in some way or even drop.
+2026-08-04: hgdata/binnerSA.py imports sqlalchemy; sqlalchemy is in no
+requirements file, so it never imports in a clean install.  no users.  drop;
+the existing note about converting to peewee is not worth it.  2026-08-27: its argument order was made to match rangeFinder in the
+meantime, so dropping it costs nothing either way.
+** TODO [#C] custom cursors that work off of namedtuples would be great
+especially to unify the sqlite/mysql interface stuff.
+** TODO [#B] hglite-split: splitting up hglite stuff
+ideas:
+- hglite* table -> model, not just a reader, not confusing with other tables.
+  but models are records in an ORM
+- get*() to read*() methods
+** TODO [#B] the hgDb autoload long convert doesn't seem to work
+Happens with raw reads of PSL rows without cursorclass
+    with hgDb.connect(ucscSpec, cursorclass=None) as conn:
+        return [r[1:] for r in mysqlOps.query(conn, sql)]  # drop bin column
+** TODO [#C] sqliteOps error max len should be part of an options object
+** DONE the connect failure message named the class, not the error
+2026-08-27: str(apsw.CantOpenError) is the class repr, so the original message
+("unable to open database file") was dropped.  It now raises SqliteOpsError
+with the message and chains the cause; SqliteOpsError also derives from
+PycbioException now, so a caller catching PycbioException catches it.
+
+* pycbio/align
+** DONE anyTOverlap returned False for alignments that share a block
+2026-08-27: the merge scan returned as soon as the other alignment's current
+block started past the end of this one's, which only means this block can not
+overlap; the next block still can.  It now breaks to the next block.
+** DONE mapCds ignored its contained argument
+2026-08-27: both arms of "if contained" called _mapCdsForOverlap, so
+_mapCdsForContained was dead, and it would not have run if called: it did
+PairAlign.findFirstCdsIdx(srcSubSeqs), a method of SubSeqs.  The tests baked
+the bug in, with testMapCds.out and testMapCdsContained.out byte for byte
+identical; the contained expected file has been regenerated and the two now
+differ.
+** DONE Coord.toRev did nothing for an absolute coordinate
+2026-08-27: the isAbs branch copied every field, strand included.  For an
+absolute coordinate only the strand should change, since the range is already
+strand independent.
+
+* pycbio/hgbrowser
+** TODO [#B] BrowserDir: implement subrow functionality by allowing rows within rows
+** TODO [#C] BrowserDir: build javascript sortable table?
+** TODO [#B] browser dir should handle url quoting
+from urllib.parse import quote
+see ~/compbio/mirna/projs/hprc/miRNA-HPRC/bin/gencode-not-found-browser-dir
+** DONE static pagination dropped one row per page
+2026-08-27: _writeDirPages computed "last = first + (pageSize - 1)" and sliced
+rows[first:last], an exclusive end, so each page held pageSize-1 rows and the
+row at the page boundary went to no page at all.  25 rows at pageSize 10 wrote
+23.  The expected files baked it in and have been regenerated: 15 rows at
+pageSize 5 are now three pages of five.  BrowserDirDynamic writes one page and
+was unaffected.
+
+* pycbio/html
+** TODO [#C] is there some pypi library to do this?
+** TODO [#B] addTableRow is clunky
+should convert types to str, special attribute through a cell class rather than
+"If a cell is a list or tuple, then the remaining arguments become TH or TD
+attributes."
+** DONE table() never closed the table
+2026-08-27: "self.tableEnd" with no call, so neither </tbody> nor </table> was
+written.  Three more in the same file, all on paths nothing exercised: str() of
+a page added a str to a list and raised TypeError, tsvTable without cols read
+rows[0]._columns_, a name from an older TsvRow, and tableRow opened the body
+with "<tbody", missing its ">".
+
+* pycbio/ncbi
+** TODO [#B] add retried NCBI query
+see hprc-year2-annotation/bin/ncbi-asm-query
+maybe add for both biopython and direct request
+biopython doesn't retry timeouts, only network errors
+** DONE assembly.py: the last line of a report with no trailing newline lost a character
+2026-08-27: three line[0:-1] strips, in the metadata, header and record loops.
+What was lost was the UCSC-style name of the last sequence, which is a key in
+byUcscStyleName.  The three loops now share one fileOps.iterLines iterator.
+** DONE taxon.py: Tree() always raised, and every dmp flag parsed as True
+2026-08-27: _loadNodes did parentNodeRefs.append(taxId, node) on a defaultdict,
+the third instance of that typo in the tree, so the class could not be
+constructed at all.  Node also parsed its six flag columns with bool(row[n]),
+and the dmp columns are the strings "0" and "1", both truthy, so every flag in
+every node read as True.
+** DONE agp.py: the column-count error dropped the count it means to report
+2026-08-27: no {} in the format string, so the message ended at "got".
+
+* pycbio/stats
+** TODO [#B] venn: add ability to output upset plot format
+gencode/meetings/2021/2021-03-30-gencode/ucsc/bin/plotGeneSetIntersections
+gencode/meetings/2021/2021-03-30-gencode/ucsc/data/hprc/gene-missing-venn.tsv
+** TODO [#B] venn: easier to collect counts
+although maybe existing this would have worked fine:
+~/compbio/gencode/projs/nrcseq/response/bin/makeVennSets
+** TODO [#B] venn doesn't document what inclusive really is
+** TODO [#B] histogram: freqs are not computed when the data sums to zero (2026-08-27)
+build() guards _computeFreqs with "if self.data.total != 0.0", and total is the
+sum of the values, not the count, so a dataset that happens to sum to zero gets
+every freq left at 0.0.  len(self.data) is what the guard wants.  Found while
+fixing the bin index; not changed, since a caller may be reading the current
+behavior.
+** TODO [#C] collect plot functions
+~/compbio/kznf/projs/gene-homology/kznf-gene-homology/builds/2022-09/analysis/bin/geneAnnotPlot
+** TODO [#C] build a clustering module
+based on t2t-chm13/gene-annotation/t2t-chm13-gene-analysis/bin/geneBoundsLib.py
+and kznf-gene-homology/bin/paralogClassify
+** TODO [#C] a Counter-like class that used fieldnames
+or this already exists
+** DONE pycbio.stats.venn writeSets and writeCounts were the same
+2026-08-27: writeSets was writeCounts with the header changed, computing and
+writing cnt under an "ids" header; the ids it is named for were never fetched.
+It now writes the ids, joined by idSeparator, and the expected files have been
+regenerated.  Whether this format is useful at all is still open.
+** DONE histogram build() raised for any data
+2026-08-27: _getBinIdx returned a float index, since binSizeUse is a float, so
+indexing the bin list failed for int and float data alike.  The index is now an
+int and clamped, so a value at binMax lands in the last bin.  The other branch
+of _calcParams, binSize given rather than numBins, opened with raise
+PycbioException("doesn't work") and is now implemented: bins start at the data
+minimum and numBins is the ceiling of the span over the size.  dump's use line
+had six {} and seven arguments, shifting every field by one; fixed.  The two
+tests were named X_test* so pytest did not collect them; the file is now a real
+test module of eight tests.
+
+* pycbio/distrib
+** DONE para arguments were quoted for a shell that is not there
+2026-08-27: _para did shlex.quote on each paraArg and then shlex.join on the
+whole command for the ssh case, quoting twice; without ssh, pipettor ran the
+argv with no shell, so the quotes were part of the argument.  paraArgs are argv
+elements, and shlex.join is now the single point that quotes them.
+** DONE runDir was honored only when running over ssh
+2026-08-27: the docstring opens with "will chdir to runDir, which defaults to
+cwd", and the local branch ran para in the caller's cwd.  pipettor has no cwd
+argument, so the local case now runs through "sh -c 'cd <runDir> && para ...'",
+the same string the ssh branch sends.
+
+* pycbio/snakemake
+No open issues recorded.
+
+* Reviews
+Each review's findings are filed under the package they belong to, above.  What
+is kept here is what each review covered and what it concluded as a whole.
+
+** by-CC 2026-08-04 design review: drop and fix candidates
+Survey of lib/pycbio for pieces to update or drop.  Usage counts are greps over
+lib, bin, and tests with .emacs.bak excluded.  Broken-import list came from
+importing every module under pycbio.
+
+Its headings were: broken today and unused so nobody noticed; dead modules with
+no importer in lib, bin, or tests; the mysql stack is a closed island; sqlite
+table classes; naming has split three ways; Decoration is a Bed that cannot
+round-trip; psl.py still ships 12 deprecated methods; record and reader APIs are
+inconsistent; module-level side effects in testingSupport; cli.ErrorHandler
+calls the builtin exit(1); hgdata/genome.py has a shebang; packaging has three
+dependency lists that drift.
+
+** by-CC 2026-08-18 from a scan of a vendored copy
+The scan was of an older copy, so some of its findings did not apply here: the score
+cap on write is gone, FileAccessor already takes a Path through isFilePath, and
+strArraySplit decodes bytes before the empty tests.  What did apply is fixed, with a
+test each.  The column names shadowing the TsvRow methods is the known issue above,
+under clean up TsvRow.  Nothing from the scan is left open.
+
+The one durable note from it, the BED widths, is under pycbio/hgdata bed.
+
+** by-CC 2026-08-27 complete review of the tree
+Read every module under lib/pycbio and reproduced each candidate defect against
+the checkout before writing it down; imported every library module and every bin
+script's pycbio imports; checked every literal .format() call's arity; ran lint
+and the full test suite.  It did not judge the genomics semantics of pslMap,
+gencodeSqlite or gencode/biotypes beyond reading them, and did not review the
+bin scripts line by line.
+
+State of the tree at the time: make lint clean, 605 libtests passing, every
+progtest passing, and not one of the findings covered by a test.
+
+What repeated across the findings:
+- A defaultdict indexed with .append(key, value) rather than [key].append(value):
+  genePred.GenePredTbl._buildIdx, psl.PslTbl._mkTNameIdx, ncbi.taxon.Tree._loadNodes.
+  Three sites, same typo, each in the one constructor option no test uses.
+- An attribute or module name the tree renamed and one caller kept: psl.isProtein
+  (tStarts), psl.tBlkOverlap (getTEndPos), htmlPage.tsvTable (_columns_),
+  genePred._buildRangeIdx (RangeFinder), genePredMySqlReader (genePredFromDictRow),
+  overlapSelectStats (TsvTable).
+- Error paths that are themselves errors: clusterGenes.cgBoolFormat, the gff3
+  exception constructor, sqliteOps.connect's message, agp's column count,
+  rangeFinder.remove.
+- Comparison and hashing on record classes: coords.Coords.__eq__ raising on another
+  type, genePred.Range unhashable, symEnum members equal across classes.
+- The expected files recorded three of the bugs, so the tests defended them:
+  browserDir static pagination, pairAlign mapCds contained, venn writeSets.
+Nothing found was a regression from a recent change; every finding was code that
+had never been exercised, or a check that had never been made.

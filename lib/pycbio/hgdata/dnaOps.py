@@ -7,10 +7,12 @@ from pycbio import PycbioException
 ##
 # from: http://edwards.sdsu.edu/labsite/index.php/robs/396-reverse-complement-dna-sequences-in-python
 ##
-_strComplements = str.maketrans('acgtrymkbdhvACGTRYMKBDHV',
-                                'tgcayrkmvhdbTGCAYRKMVHDB')
-_bytesComplements = bytes.maketrans(b'acgtrymkbdhvACGTRYMKBDHV',
-                                    b'tgcayrkmvhdbTGCAYRKMVHDB')
+# nswNSW are the self-complementary IUPAC codes; they map to themselves, and are
+# in the table so that isValidBase, which is built from it, accepts them
+_strComplements = str.maketrans('acgtrymkbdhvnswACGTRYMKBDHVNSW',
+                                'tgcayrkmvhdbnswTGCAYRKMVHDBNSW')
+_bytesComplements = bytes.maketrans(b'acgtrymkbdhvnswACGTRYMKBDHVNSW',
+                                    b'tgcayrkmvhdbnswTGCAYRKMVHDBNSW')
 
 # odd: _strComplements is a dict wutg ints ints
 #      _bytesComplements is a byte string, don't see how it works

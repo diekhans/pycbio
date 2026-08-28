@@ -124,9 +124,10 @@ class Para:
         """ssh to the remote machine and run the para command.  paraArgs are
         passed as arguments to the para command. Returns stdout as a list of
         lines. """
+        # paraArgs are argv elements, not shell words; the shlex.join below is the
+        # single point that quotes them for the shell
         paraCmd = ["para", f"-batch={self.paraDir}"]
-        for pa in paraArgs:
-            paraCmd.append(shlex.quote(pa))
+        paraCmd.extend(paraArgs)
         if self.cpu is not None:
             paraCmd.append("-cpu={}".format(self.cpu))
         if self.mem is not None:
@@ -135,11 +136,14 @@ class Para:
             paraCmd.append("-maxJob={}".format(self.maxJobs))
         if self.retries is not None:
             paraCmd.append("-retries={}".format(self.retries))
+        # runDir is honored whether or not ssh is used, as the docstring says;
+        # pipettor has no cwd, so the local case goes through a shell too.  The
+        # command is shlex.join'ed exactly once, here.
+        runCmd = "cd {} && {}".format(shlex.quote(self.runDir), shlex.join(paraCmd))
         if self.paraHost is None:
-            cmd = paraCmd
+            cmd = ["sh", "-c", runCmd]
         else:
-            remCmd = "cd {} && {}".format(shlex.quote(self.runDir), shlex.join(paraCmd))
-            cmd = ["ssh", "-nx", "-o", "ClearAllForwardings=yes", self.paraHost, remCmd]
+            cmd = ["ssh", "-nx", "-o", "ClearAllForwardings=yes", self.paraHost, runCmd]
         if stderr is None:
             stderr = self.stderr
         return pipettor.runout(cmd, stderr=stderr).split('\n')
