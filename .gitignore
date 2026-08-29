@@ -41,6 +41,9 @@ docs/_build
 docs/modules.rst
 docs/pipettor.rst
 
+
+/.claude/settings.local.json
+
 # test output
 output/
 /tests/common-output/
