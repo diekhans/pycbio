@@ -10,9 +10,11 @@ from pycbio.sys import fileOps
 # The paradigm this supports, for a workflow that runs one job per ITEM (assembly,
 # sample, chromosome) over a batch system:
 #
-#   * Staleness is per PRODUCT, not per catalog.  A stage declares the products it
-#     is missing as its rule outputs, so adding one item builds that item and
-#     touching the catalog builds nothing.
+#   * Staleness is per PRODUCT, not per catalog.  A stage declares the products that
+#     need building as its rule outputs, so adding one item builds that item and
+#     touching the catalog builds nothing.  A product needs building when it is
+#     missing, or -- where the caller names what each item is built from -- when it is
+#     older than that.
 #   * A stage's rule also outputs a SENTINEL, which is what orders the stages.
 #   * `rule all` must REQUEST every leaf product (all_products()).  Snakemake prunes
 #     a job whose outputs exist, and a missing INPUT of a pruned job does not
@@ -148,24 +150,51 @@ class ProductScan:
 
     # ---- the three product lists ----
 
-    def pending(self, products, items=None):
-        """[(item, [its missing products])] for the items with work to do.  A None
-        path is not required -- that is how an item that cannot have a product (no
-        input for it) is excluded without special-casing the caller.  Nothing is
-        pending on the fast path."""
+    def pending(self, products, items=None, sources=None):
+        """[(item, [its products that need building])] for the items with work to do.
+
+        A None path is not required -- that is how an item that cannot have a product (no
+        input for it) is excluded without special-casing the caller.  Nothing is pending on
+        the fast path.
+
+        sources, when given, is item -> the paths that item's products are built FROM, and
+        a product older than the newest of them is pending as surely as a missing one.
+        Existence is not currency: a source rebuilt in place leaves a product that exists
+        and is wrong, and a stage that tests only for existence hands it on.  That is not
+        hypothetical -- an assembly's CAT annotation was regenerated nine minutes after its
+        loci were built from the previous one, and every stage downstream reported success
+        over the stale file for a day.
+
+        Without sources the test is existence alone, which is right for a stage whose
+        products cannot go stale: a per-item BLAST against a genome that never changes.
+        """
         if self.skip_scan:
             return []
         items = self.items() if items is None else items
-        work = [(item, self._missing(products, item)) for item in items]
-        pending = [(item, missing) for item, missing in work if missing]
+        work = [(item, self._stale(products, item, sources)) for item in items]
+        pending = [(item, stale) for item, stale in work if stale]
         self._found_work = self._found_work or bool(pending)
         return pending
 
     @staticmethod
-    def _missing(products, item):
-        "an item's products that are neither excluded (None) nor already built"
-        return [p for p in products(item)
-                if p is not None and not os.path.exists(str(p))]
+    def _stale(products, item, sources=None):
+        """an item's products that are neither excluded (None) nor built and current.
+
+        A missing source is ignored rather than treated as infinitely new, for the reason
+        outputs_current gives: some inputs are legitimately absent, and a stage must not
+        rebuild forever because of one."""
+        newest = 0.0
+        if sources is not None:
+            times = [_mtime(str(p)) for p in sources(item) if p is not None]
+            newest = max([t for t in times if t is not None], default=0.0)
+        out = []
+        for path in products(item):
+            if path is None:
+                continue
+            built = _mtime(str(path))
+            if built is None or built < newest:
+                out.append(path)
+        return out
 
     @staticmethod
     def pending_products(work):

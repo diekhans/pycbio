@@ -137,6 +137,40 @@ def testPendingItemsOverride(tmp_path):
     work = scan.pending(_mkProducts(tmp_path), items=("b",))
     assert work == [("b", [str(tmp_path / "b.out")])]
 
+def _mkSources(tmp_path):
+    "item -> what its product is built from, the shape pending() wants"
+    return lambda item: [str(tmp_path / f"{item}.src")]
+
+def testPendingWithSourcesRebuildsTheStale(tmp_path):
+    "a product older than its source is pending, though it exists"
+    _touch(tmp_path / "a.src", 2000)
+    _touch(tmp_path / "a.out", 1000)
+    _touch(tmp_path / "b.src", 1000)
+    _touch(tmp_path / "b.out", 2000)
+    scan, _ = _mkScan(tmp_path, items=("a", "b"))
+    work = scan.pending(_mkProducts(tmp_path), sources=_mkSources(tmp_path))
+    assert work == [("a", [str(tmp_path / "a.out")])]
+
+def testPendingWithSourcesSameMtimeIsCurrent(tmp_path):
+    "built in the same second as its source counts as current, as outputs_current has it"
+    _touch(tmp_path / "a.src", 1000)
+    _touch(tmp_path / "a.out", 1000)
+    scan, _ = _mkScan(tmp_path, items=("a",))
+    assert scan.pending(_mkProducts(tmp_path), sources=_mkSources(tmp_path)) == []
+
+def testPendingWithSourcesMissingSourceIgnored(tmp_path):
+    "a source that does not exist does not make its product rebuild forever"
+    _touch(tmp_path / "a.out", 1000)
+    scan, _ = _mkScan(tmp_path, items=("a",))
+    assert scan.pending(_mkProducts(tmp_path), sources=_mkSources(tmp_path)) == []
+
+def testPendingWithoutSourcesIgnoresMtime(tmp_path):
+    "the old behaviour, for a stage whose products cannot go stale"
+    _touch(tmp_path / "a.src", 2000)
+    _touch(tmp_path / "a.out", 1000)
+    scan, _ = _mkScan(tmp_path, items=("a",))
+    assert scan.pending(_mkProducts(tmp_path)) == []
+
 def testAllProductsIncludesBuiltAndSkipsNone(tmp_path):
     _touch(tmp_path / "a.out")
     scan, _ = _mkScan(tmp_path, items=("a", "b", "none"))
