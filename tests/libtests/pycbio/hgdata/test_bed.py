@@ -272,6 +272,25 @@ def testFixScores(request):
             bed.write(fh)
     ts.diff_results_expected(request, ".bed")
 
+def testRawScores(request):
+    "rawScores keeps what the file has, on both read and write"
+    with open(ts.get_test_output_file(request, ".bed"), 'w') as fh:
+        for bed in BedReader(ts.get_test_input_file(request, "fixscores.bed"), numStdCols=5,
+                             fixScores=True, rawScores=True):
+            bed.write(fh, rawScores=True)
+    ts.diff_results_expected(request, ".bed")
+
+def testScoreClamp():
+    "the score column is an int clamped to 0..1000, as the browser shows it"
+    def scoreCol(score):
+        return Bed("chr1", 1000, 2000, "fred", score=score, numStdCols=5).toRow()[4]
+    assert scoreCol(500) == "500"
+    assert scoreCol(1000.9) == "1000"
+    assert scoreCol(2500) == "1000"
+    assert scoreCol(-100) == "0"
+    assert scoreCol(None) == "0"
+    assert Bed("chr1", 1000, 2000, "fred", score=2500, numStdCols=5).toRow(rawScores=True)[4] == "2500"
+
 def testAddExtra(request):
     testRow = ["chrZ", "1000", "2000", "fred"]
     extraCols = ["barney", "wilma"]
