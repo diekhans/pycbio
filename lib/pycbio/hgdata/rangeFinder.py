@@ -18,7 +18,6 @@ generating SQL where clauses to restrict by bin."""
 
 import sys
 from collections import namedtuple
-from deprecation import deprecated
 from pycbio import PycbioException
 
 
@@ -362,10 +361,6 @@ class RangeFinder:
     def getSeqIds(self):
         """get set of sequences"""
         return frozenset([k[0] for k in self.seqBins.keys()])
-
-    @deprecated()
-    def getSeqs(self):
-        return self.getSeqIds()
 
     def getSeqRange(self, seqId, strand=None):
         """Return the minimum start and maximum end for a given sequence.  Useful for
