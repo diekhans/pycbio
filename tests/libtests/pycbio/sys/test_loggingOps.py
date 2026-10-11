@@ -304,3 +304,32 @@ def testSetupLoggerHandlerLevelStillCaps():
     handler.setLevel(logging.DEBUG)
     loggingOps.setupLogger(tlog.logger, handler, level=logging.WARNING)
     assert tlog.logger.level == logging.DEBUG
+
+def _subcommandCopyParser():
+    parser = argparse.ArgumentParser(prog="prog")
+    loggingOps.addCmdOptions(parser)
+    subparsers = parser.add_subparsers(dest="subcommand", required=True)
+    sub = subparsers.add_parser("cmd")
+    loggingOps.addCmdOptions(sub, subcommandCopy=True)
+    return parser, sub
+
+def testSubcommandCopyBefore():
+    parser = _subcommandCopyParser()[0]
+    args = parser.parse_args(["--log-level", "ERROR", "cmd"])
+    assert args.log_level == "ERROR"
+
+def testSubcommandCopyAfter():
+    parser = _subcommandCopyParser()[0]
+    args = parser.parse_args(["cmd", "--log-level", "ERROR"])
+    assert args.log_level == "ERROR"
+
+def testSubcommandCopyKeepsMainDefault():
+    "the copy sets no defaults, so the main parser's default survives the subparser"
+    parser = _subcommandCopyParser()[0]
+    args = parser.parse_args(["cmd"])
+    assert args.log_level == logging.WARNING
+    assert args.log_debug is False
+
+def testSubcommandCopyHiddenFromHelp():
+    sub = _subcommandCopyParser()[1]
+    assert "--log-level" not in sub.format_help()
