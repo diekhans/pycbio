@@ -209,7 +209,7 @@ _newLineMsgExpect = (
 
 def _runCmdHandlerTestProg(request, errorWrap, *, errorClass=None,
                            printStackFilter=None, sysExit=None,
-                           debugLog=False):
+                           debugLog=False, logLevel=None):
     cmd = [sys.executable, osp.join(ts.get_test_dir(request), "bin/cliTestProg")]
     if errorClass is not None:
         cmd.append("--error-class=" + errorClass)
@@ -217,6 +217,8 @@ def _runCmdHandlerTestProg(request, errorWrap, *, errorClass=None,
         cmd.append("--print-stack-filter=" + printStackFilter)
     if debugLog:
         cmd.append("--log-level=DEBUG")
+    if logLevel is not None:
+        cmd.append("--log-level=" + logLevel)
     if sysExit is not None:
         cmd.append(f"--system-exit={sysExit}")
     cmd.append(errorWrap)
@@ -243,6 +245,18 @@ def testCmdHanderUser(request):
 def testCmdHanderUserStack(request):
     returncode, stderr = _runCmdHandlerTestProg(request, 'no_stack', debugLog=True)
     ts.assert_regex_dotall(stderr, _userCausedStackExpectRe)
+    assert returncode == 1
+
+def testCmdHanderQuietLevel(request):
+    "the error is reported at the quietest level there is a name for"
+    returncode, stderr = _runCmdHandlerTestProg(request, 'no_stack', logLevel='CRITICAL')
+    assert stderr == _userCausedMsgExpect
+    assert returncode == 1
+
+def testCmdHanderAboveCritical(request):
+    "the error is reported with logging disabled above CRITICAL, written to stderr"
+    returncode, stderr = _runCmdHandlerTestProg(request, 'no_stack', logLevel='60')
+    assert stderr == _userCausedMsgExpect
     assert returncode == 1
 
 def testCmdHanderBug(request):
