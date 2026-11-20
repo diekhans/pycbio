@@ -171,7 +171,7 @@ def setupFromCmd(args, *, logger=None, prog=None):
     sys.arg.  Logger maybe a logger, logger name, or None for default logger,
     returns the logger.
 
-    Will log to stderr if not other login option is specified.
+    Will log to stderr if no other login option is specified.
 
     Additional level names maybe added with logging.addLevelName(level, levelName)
     before calling this function.  All of the names should be uppercase.
