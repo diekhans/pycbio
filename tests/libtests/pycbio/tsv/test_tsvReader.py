@@ -9,7 +9,9 @@ import pipettor
 if __name__ == '__main__':
     sys.path.insert(0, "../../../../lib")
 from collections import namedtuple
-from pycbio.tsv import TsvReader, tsvRowToDict, printf_basic_dialect
+import pytest
+from pycbio import NoStackError
+from pycbio.tsv import TsvError, TsvReader, tsvRowToDict, printf_basic_dialect
 import pycbio.sys.testingSupport as ts
 from pycbio.hgdata.autoSql import intArrayType
 
@@ -226,3 +228,12 @@ def testWeirdCharsUnixCsv(request):
 
 def testWeirdCharsUnixTab(request):
     _weirdCaseTester(request, "weird-chars.unix.tab", excel_tab)
+
+def testTsvErrorHasNoStack():
+    "a TSV error reports the file, so cli.ErrorHandler prints it without a stack"
+    assert issubclass(TsvError, NoStackError)
+
+def testOpenOfMissingTsv(tmp_path):
+    "the usual way to meet one: the file is not there"
+    with pytest.raises(TsvError, match="open of TSV failed"):
+        TsvReader(str(tmp_path / "nosuch.tsv"))
